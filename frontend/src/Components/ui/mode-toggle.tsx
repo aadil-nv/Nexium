@@ -1,7 +1,7 @@
 import React from "react"; // Import React
 import { Moon, Sun } from "lucide-react";
 import { Button } from "./button";
-import { useTheme } from "../landingPage/theme-provider";
+import { useTheme } from "../../Components/Landing/landingPage/theme-provider";
 
 export function ModeToggle() {
   const { theme, setTheme } = useTheme(); // Get the current theme and setTheme function

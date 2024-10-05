@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ContactImage from "../../assets/landingPageAssets/Agent2.png";
+import ContactImage from "../../../assets/landingPageAssets/Agent2.png";
 
 export default function LandingContact() {
   const [formData, setFormData] = useState({

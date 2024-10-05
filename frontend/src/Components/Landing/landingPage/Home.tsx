@@ -1,5 +1,5 @@
 import React from 'react';
-import mainPic from '../../assets/landingPageAssets/Human-Resources-square-ezgif.com-webp-to-png-converter.png';
+import mainPic from '../../../assets/landingPageAssets/Human-Resources-square-ezgif.com-webp-to-png-converter.png';
 import { useTheme } from './theme-provider'; // Ensure this is the correct path to your theme provider
 
 export default function Home() {

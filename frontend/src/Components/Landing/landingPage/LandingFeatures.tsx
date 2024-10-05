@@ -1,8 +1,7 @@
 import React from "react";
-import { TypewriterEffect } from "../ui/typewriter-effect";
-import FeaturesLeave from '../../assets/landingPageAssets/leavemgmt.png';
-import FeaturesDatabase from '../../assets/landingPageAssets/Human-Resources-square-ezgif.com-webp-to-png-converter.png'; 
-import FeaturesOnboarding from '../../assets/landingPageAssets/Onboarding-ezgif.com-webp-to-png-converter.png'; 
+import FeaturesLeave from '../../../assets/landingPageAssets/leavemgmt.png';
+import FeaturesDatabase from '../../../assets/landingPageAssets/Human-Resources-square-ezgif.com-webp-to-png-converter.png'; 
+import FeaturesOnboarding from '../../../assets/landingPageAssets/Onboarding-ezgif.com-webp-to-png-converter.png'; 
 
 export default function Features() {
   const featuresList = [
