@@ -67,3 +67,20 @@
     @apply bg-background text-foreground;
   }
 }
+
+.scrollbar-thin {
+  scrollbar-width: 3px; /* For Firefox */
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 2px; /* For Chrome, Safari and Edge (thinner scrollbar) */
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #9CA3AF; /* Scrollbar color (gray-400) */
+  border-radius: 4px; /* Rounded corners for the scrollbar thumb */
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #E5E7EB; /* Background for the scrollbar track (gray-200) */
+}

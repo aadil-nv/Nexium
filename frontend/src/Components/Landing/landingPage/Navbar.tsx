@@ -1,7 +1,8 @@
 import React, { useState } from "react"; // Import React here
 import logo from "../../../assets/landingPageAssets/adhil_logo_PNG[1].png"
 import { IoMenu } from "react-icons/io5";
-import { FaXmark } from "react-icons/fa6";
+// import { FaXmark } from "react-icons/fa6";
+import {FaXmark } from "react-icons/fa6";
 import { ModeToggle } from "../../ui/mode-toggle";
 import { useTheme } from "../landingPage/theme-provider"; 
 import { Link } from "lucide-react";

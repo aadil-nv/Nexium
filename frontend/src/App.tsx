@@ -9,9 +9,15 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* landing Page Routes */}
+
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LandingLoginPage />} />
         <Route path="/signup" element={<SignUp />} />
+
+
+        {/* Admin Routes */}
+        
         <Route path="/super-admin" element={<AdminDashBoard />} />
         
       </Routes>
