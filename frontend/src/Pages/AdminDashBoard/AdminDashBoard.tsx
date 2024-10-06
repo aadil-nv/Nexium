@@ -6,11 +6,11 @@ import Navbar from "../../Components/AdminDashboard/Navbar";
 import Footer from "../../Components/AdminDashboard/Footer"; // Consider using this in the layout
 import ThemeSettings from "../../Components/AdminDashboard/ThemeSettings"; // Consider adding this where needed
 
-const AdminDashBoard: React.FC = () => {
+const AdminDashBoard = () => {
   const activeMenu = true;
 
   return (
-    <div className="flex relative dark:bg-main-dark-bg min-h-screen">
+    <>
       {/* Sidebar */}
       {activeMenu ? (
         <div className="w-72 fixed sidebar dark:bg-secondary-dark-bg bg-white">
@@ -29,8 +29,12 @@ const AdminDashBoard: React.FC = () => {
         }`}
       >
         {/* Navbar */}
-        <div className="fixed mf:static bg-main-bg dark:bg-main-dark-bg navbar w-full">
+        <div className="fixed top-0 bg-main-bg dark:bg-main-dark-bg navbar w-full z-50">
           <Navbar />
+        </div>
+
+        <div className="pt-16"> 
+          {/* Add main content here */}
         </div>
 
         {/* Settings Button */}
@@ -46,10 +50,7 @@ const AdminDashBoard: React.FC = () => {
           </TooltipComponent>
         </div>
       </div>
-
-      {/* Footer - Uncomment if needed */}
-      {/* <Footer /> */}
-    </div>
+    </>
   );
 };
 

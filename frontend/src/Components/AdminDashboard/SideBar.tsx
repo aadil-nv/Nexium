@@ -2,7 +2,9 @@ import { TooltipComponent } from '@syncfusion/ej2-react-popups';
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { FiMenu } from "react-icons/fi";
-import { FaChartPie, FaBuilding, FaClipboardList, FaServicestack, FaUsers, FaCog, FaFileAlt, FaBoxOpen, FaMoneyBillWave, FaComments, FaBell, FaQuestionCircle } from "react-icons/fa"; // Import appropriate icons
+import { FaChartPie, FaBuilding, FaClipboardList, FaServicestack, FaUsers, FaCog, FaBoxOpen, FaMoneyBillWave, FaComments, FaBell, FaQuestionCircle } from "react-icons/fa"; 
+import { useSelector, useDispatch } from 'react-redux';
+import { setActiveMenu } from '../../features/menuSlice'; // Import the setActiveMenu action
 
 interface LinkItem {
   title: string;
@@ -24,30 +26,36 @@ const links: LinkItem[] = [
   { title: 'Help', route: '/help', icon: <FaQuestionCircle /> },
 ];
 
-const Sidebar: React.FC = () => {
-  const activeMenu = true;
+const Sidebar = () => { // Removed the React.FC type
+  const dispatch = useDispatch();
+  const activeMenuState = useSelector((state: { menu: { activeMenu: boolean } }) => state.menu.activeMenu);
+
+  const handleMenuToggle = () => {
+    dispatch(setActiveMenu(!activeMenuState)); // Toggle the menu state
+  };
 
   return (
-    <div className='w-64 h-screen fixed top-0 left-0 overflow-auto bg-gray-100 shadow-lg transition-all duration-300 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200'>
-      {activeMenu && (
-        <>
+    <>
+      {activeMenuState && ( // Conditionally render the entire sidebar when activeMenuState is true
+        <div className='w-64 h-screen fixed top-0 left-0 overflow-auto bg-gray-100 shadow-lg transition-all duration-300 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200'>
           <div className="flex justify-between items-center p-4">
             <NavLink 
-              to="/dashboard" 
+              to="/super-admin" 
               className="items-center gap-3 flex text-xl font-extrabold tracking-tight text-gray-800"
             >
               <span>Admin Dashboard</span>
             </NavLink>
+
             <TooltipComponent content="Menu" position="BottomCenter">
               <button 
-                onClick={() => {}} 
+                onClick={handleMenuToggle} 
                 className="text-xl rounded-full p-2 bg-black-100 hover:bg-gray-200 transition duration-200 text-black"
               > 
                 <FiMenu />
               </button>
             </TooltipComponent>
           </div>
-          
+
           <div className='mt-4'>
             {links.map((item, index) => (
               <NavLink 
@@ -63,9 +71,9 @@ const Sidebar: React.FC = () => {
               </NavLink>
             ))}
           </div>
-        </>
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
