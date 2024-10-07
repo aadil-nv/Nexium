@@ -89,3 +89,13 @@
 .scrollbar-thin::-webkit-scrollbar-track {
   background: #E5E7EB; /* Background for the scrollbar track (gray-200) */
 }
+/* Hide scrollbar for Chrome, Safari, and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE and Edge */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
