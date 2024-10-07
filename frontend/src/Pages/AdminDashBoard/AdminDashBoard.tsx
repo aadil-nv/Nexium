@@ -3,38 +3,25 @@ import Sidebar from "../../Components/AdminDashboard/SideBar";
 import { FiSettings } from "react-icons/fi";
 import { TooltipComponent } from "@syncfusion/ej2-react-popups";
 import Navbar from "../../Components/AdminDashboard/Navbar";
-import Footer from "../../Components/AdminDashboard/Footer"; // Consider using this in the layout
-import ThemeSettings from "../../Components/AdminDashboard/ThemeSettings"; // Consider adding this where needed
+import { useSelector } from "react-redux";
 
 const AdminDashBoard = () => {
-  const activeMenu = true;
+  const activeMenu = useSelector((state: { menu: { activeMenu: boolean } }) => state.menu.activeMenu);
 
   return (
-    <>
+    <div className="flex">
       {/* Sidebar */}
-      {activeMenu ? (
-        <div className="w-72 fixed sidebar dark:bg-secondary-dark-bg bg-white">
-          <Sidebar />
-        </div>
-      ) : (
-        <div className="w-0 dark:bg-secondary-dark-bg">
-          <Sidebar />
-        </div>
-      )}
+      <div className={`fixed h-screen bg-gray-100 text-white z-50 transition-all duration-300 
+        ${activeMenu ? 'w-64' : 'w-0 overflow-hidden'}`}>
+        <Sidebar />
+      </div>
 
       {/* Main Content */}
-      <div
-        className={`dark:bg-main-dark-bg bg-main-bg min-h-screen w-full ${
-          activeMenu ? "md:ml-72" : "flex-2"
-        }`}
-      >
+      <div className={`flex-1 bg-gray-100 min-h-screen transition-all duration-300 
+        ${activeMenu ? 'ml-64' : 'ml-0'}`}>
         {/* Navbar */}
-        <div className="fixed top-0 bg-main-bg dark:bg-main-dark-bg navbar w-full z-50">
+        <div className="w-full z-50">
           <Navbar />
-        </div>
-
-        <div className="pt-16"> 
-          {/* Add main content here */}
         </div>
 
         {/* Settings Button */}
@@ -42,15 +29,14 @@ const AdminDashBoard = () => {
           <TooltipComponent content="Settings" position="TopCenter">
             <button
               type="button"
-              className="text-3xl p-3 hover:drop-shadow-xl hover:bg-light-gray text-white rounded-full"
-              style={{ background: "blue" }}
+              className="text-3xl p-3 hover:drop-shadow-xl bg-blue-500 text-white rounded-full"
             >
               <FiSettings />
             </button>
           </TooltipComponent>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
