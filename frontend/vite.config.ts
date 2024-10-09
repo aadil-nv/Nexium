@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': '/src', // Ensure this matches your tsconfig paths
+      '@': '/src', 
     },
   },
 });

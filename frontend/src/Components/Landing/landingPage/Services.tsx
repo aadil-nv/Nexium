@@ -1,15 +1,5 @@
 import React from "react";
 import { cn } from "../../../lib/utils";
-import {
-  IconAdjustmentsBolt,
-  IconCloud,
-  IconCurrencyDollar,
-  IconEaseInOut,
-  IconHeart,
-  IconHelp,
-  IconRouteAltLeft,
-  IconTerminal2,
-} from "@tabler/icons-react";
 
 const FeaturesSectionDemo = () => {
   const features = [
@@ -17,47 +7,47 @@ const FeaturesSectionDemo = () => {
       title: "Built for developers",
       description:
         "Built for engineers, developers, dreamers, thinkers and doers.",
-      icon: <IconTerminal2 />,
+      icon: React.lazy(() => import("@tabler/icons-react").then(module => ({ default: module.IconTerminal2 }))),
     },
     {
       title: "Ease of use",
       description:
         "It's as easy as using an Apple, and as expensive as buying one.",
-      icon: <IconEaseInOut />,
+      icon: React.lazy(() => import("@tabler/icons-react").then(module => ({ default: module.IconEaseInOut }))),
     },
     {
       title: "Pricing like no other",
       description:
         "Our prices are best in the market. No cap, no lock, no credit card required.",
-      icon: <IconCurrencyDollar />,
+      icon: React.lazy(() => import("@tabler/icons-react").then(module => ({ default: module.IconCurrencyDollar }))),
     },
     {
       title: "100% Uptime guarantee",
       description: "We just cannot be taken down by anyone.",
-      icon: <IconCloud />,
+      icon: React.lazy(() => import("@tabler/icons-react").then(module => ({ default: module.IconCloud }))),
     },
     {
       title: "Multi-tenant Architecture",
       description: "You can simply share passwords instead of buying new seats",
-      icon: <IconRouteAltLeft />,
+      icon: React.lazy(() => import("@tabler/icons-react").then(module => ({ default: module.IconRouteAltLeft }))),
     },
     {
       title: "24/7 Customer Support",
       description:
         "We are available a 100% of the time. At least our AI Agents are.",
-      icon: <IconHelp />,
+      icon: React.lazy(() => import("@tabler/icons-react").then(module => ({ default: module.IconHelp }))),
     },
     {
       title: "Money back guarantee",
       description:
         "If you do not like EveryAI, we will convince you to like us.",
-      icon: <IconAdjustmentsBolt />,
+      icon: React.lazy(() => import("@tabler/icons-react").then(module => ({ default: module.IconAdjustmentsBolt }))),
     },
     {
       title: "And everything else",
       description:
         "I just ran out of copy ideas. Accept my sincere apologies",
-      icon: <IconHeart />,
+      icon: React.lazy(() => import("@tabler/icons-react").then(module => ({ default: module.IconHeart }))),
     },
   ];
 
@@ -70,15 +60,15 @@ const FeaturesSectionDemo = () => {
   );
 };
 
-const Feature = ({
+const Feature = React.memo(({
   title,
   description,
-  icon,
+  icon: Icon,
   index,
 }: {
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon: React.LazyExoticComponent<React.FC>;
   index: number;
 }) => {
   return (
@@ -96,7 +86,9 @@ const Feature = ({
         <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-gradient-to-b from-neutral-100 dark:from-neutral-800 to-transparent pointer-events-none" />
       )}
       <div className="mb-4 relative z-10 px-10 text-neutral-600 dark:text-neutral-400">
-        {icon}
+        <React.Suspense fallback={<div>Loading...</div>}>
+          <Icon />
+        </React.Suspense>
       </div>
       <div className="text-lg font-bold mb-2 relative z-10 px-10">
         <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-1 rounded-tr-full rounded-br-full bg-neutral-300 dark:bg-neutral-700 group-hover/feature:bg-blue-500 transition-all duration-200 origin-center" />
@@ -109,7 +101,7 @@ const Feature = ({
       </p>
     </div>
   );
-};
+});
 
 // Exporting the component as default
 export default FeaturesSectionDemo;

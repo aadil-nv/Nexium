@@ -11,6 +11,7 @@ import Finance from './Components/AdminDashboard/AdminPages/Finance';
 import Users from './Components/AdminDashboard/AdminPages/Users';
 import Inventorys from './Components/AdminDashboard/AdminPages/Inventorys';
 import ServiceRequests from './Components/AdminDashboard/AdminPages/ServiceRequests';
+import AdminLoginPage from './Pages/AdminDashBoard/AdminLoginPage';
 
 function App() {
   return (
@@ -31,6 +32,8 @@ function App() {
           <Route path="/super-admin/inventory" element={<Inventorys />} />
           <Route path="/super-admin/finance" element={<Finance />} />
         </Route>
+
+        <Route path='/super-admin/login' element={<AdminLoginPage />} />
       </Routes>
     </Router>
   );
