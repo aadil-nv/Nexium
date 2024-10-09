@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import logo from "../../../assets/landingPageAssets/adhil_logo_PNG[1].png";
+import logo from "../../../assets/landingPageAssets/nnn logo 1000[1].png";
 import { IoMenu } from "react-icons/io5";
 import { FaXmark } from "react-icons/fa6";
 import { ModeToggle } from "../../ui/mode-toggle";
 import { useTheme } from "../landingPage/theme-provider";
-import { Link, useLocation } from "react-router-dom"; // Import useLocation here
+import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
-  const { theme } = useTheme(); // Get the current theme
-  const location = useLocation(); // Get the current location
+  const { theme } = useTheme();
+  const location = useLocation();
 
   const navItems = [
     { link: "Home", path: "/" },
@@ -19,13 +19,11 @@ const Navbar = () => {
     { link: "Contact", path: "/contact" },
   ];
 
-  // Determine the button link and text based on the current path
-  const isSignup = location.pathname === "/signup"; // Check if current path is "/signup"
-  const isHome = location.pathname === "/"; // Check if current path is "/"
+  const isSignup = location.pathname === "/signup";
+  const isHome = location.pathname === "/";
 
-  // Button styles
   const buttonStyle =
-    "flex items-center justify-center w-24 h-10 text-center font-bold rounded transform transition-transform duration-300 hover:scale-105 active:scale-95 text-sm"; // Ensures text is centered
+    "flex items-center justify-center w-24 h-10 text-center font-bold rounded transform transition-transform duration-300 hover:scale-105 active:scale-95 text-sm";
 
   return (
     <nav
@@ -40,7 +38,7 @@ const Navbar = () => {
             <img
               src={logo}
               alt="Logo"
-              className="w-10 h-10 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-11 lg:h-11 object-contain"
+              className="w-24 h-auto max-w-full max-h-16 object-contain"
             />
           </a>
         </div>
@@ -61,12 +59,12 @@ const Navbar = () => {
         </ul>
 
         {/* Right: Login and Sign Up */}
-        <div className="hidden md:flex items-center space-x-4"> {/* Reduced space between buttons */}
+        <div className="hidden md:flex items-center space-x-4">
           {isHome ? (
             <>
               <Link
                 to="/login"
-                className={`${buttonStyle} bg-blue-600 hover:bg-blue-700 text-white`} // Login button style
+                className={`${buttonStyle} bg-blue-600 hover:bg-blue-700 text-white`}
               >
                 Login
               </Link>
@@ -74,7 +72,7 @@ const Navbar = () => {
                 to="/signup"
                 className={`${buttonStyle} bg-transparent border border-blue-600 hover:bg-blue-600 hover:text-white ${
                   theme === "dark" ? "text-gray-300" : "text-blue-600"
-                }`} // Transparent Sign Up button style with dark mode text color
+                }`}
               >
                 Sign Up
               </Link>
@@ -87,11 +85,18 @@ const Navbar = () => {
               {isSignup ? "Login" : "Sign Up"}
             </Link>
           )}
+        </div>
+
+        {/* Dark Mode Toggle on Right */}
+        <div className="ml-4 hidden md:flex items-center"> {/* Add some left margin for spacing */}
           <ModeToggle />
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="md:hidden ml-auto">
+        <div className="md:hidden ml-auto flex items-center">
+        <div >
+            <ModeToggle />
+          </div>
           <button onClick={toggleMenu} className="text-primary focus:outline-none">
             {isMenuOpen ? (
               <FaXmark className="w-6 h-6" />
@@ -99,6 +104,8 @@ const Navbar = () => {
               <IoMenu className="w-6 h-6" />
             )}
           </button>
+          {/* Dark Mode Toggle for Mobile */}
+          
         </div>
       </div>
 
@@ -113,7 +120,6 @@ const Navbar = () => {
             theme === "dark" ? "bg-black-900 text-white" : "bg-white text-primary"
           } p-4 rounded-lg`}
         >
-          {/* Mobile Menu Items */}
           {navItems.map(({ link, path }) => (
             <Link
               key={link}
@@ -128,19 +134,16 @@ const Navbar = () => {
 
           <Link
             to="/login"
-            className={`${buttonStyle} bg-blue-600 hover:bg-blue-700 text-white`} // Login button style for mobile
+            className={`${buttonStyle} bg-blue-600 hover:bg-blue-700 text-white`}
           >
             Login
           </Link>
           <Link
             to="/signup"
-            className={`${buttonStyle} bg-transparent border border-green-600 hover:bg-green-600 hover:text-white text-green-600`} // Transparent Sign Up button style for mobile
+            className={`${buttonStyle} bg-transparent border border-green-600 hover:bg-green-600 hover:text-white text-green-600`}
           >
             Sign Up
           </Link>
-          <div className="flex items-center justify-center">
-            <ModeToggle />
-          </div>
         </div>
       </div>
     </nav>
