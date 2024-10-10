@@ -37,7 +37,9 @@ export default function AdminLogin() {
       if (!response.ok) {
         throw new Error(data.message || 'Network response was not ok');
       }
-
+      
+      console.log("Login Successful...")
+      
       toast.success('Login successful!');
       navigate('/super-admin/dashboard');
 

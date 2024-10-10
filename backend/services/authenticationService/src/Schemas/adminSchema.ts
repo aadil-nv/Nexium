@@ -1,28 +1,14 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import { IAdmin } from '../entities/adminEntity';
+// src/Schemas/adminSchema.ts
+import { Schema, model,Document } from 'mongoose';
+import { IAdmin } from '../entities/adminEntity'; // Import the same IAdmin interface
 
-const AdminSchema: Schema = new Schema(
-    {
-        email: {
-            type: String,
-            required: true,
-            unique: true,
-            lowercase: true,
-            trim: true,
-        },
-        password: {
-            type: String,
-            required: true,
-        },
-        role: {
-            type: String,
-            required: true,
-            default: 'admin',
-        },
-    },
-    {
-        timestamps: true, 
-    }
-);
 
-export default mongoose.model<IAdmin>('Admin', AdminSchema);
+const adminSchema = new Schema<IAdmin & Document>({
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, required: true },
+});
+
+// Create the Admin model using the schema
+const Admin = model<IAdmin>('Admin', adminSchema);
+export default Admin;

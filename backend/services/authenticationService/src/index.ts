@@ -1,25 +1,26 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors'; // Import cors here
+import cors from 'cors';
 import connectDB from './Config/connectDB';
 import adminRoutes from './Routes/adminRoutes';
+import 'colors' ;
 
-dotenv.config(); // Load environment variables
 
-const app = express(); // Declare app here
+dotenv.config(); 
+
+const app = express(); 
 const PORT = process.env.PORT || 3000;
-connectDB(); // Connect to the database
+connectDB(); 
 
-app.use(cors()); // Use CORS middleware
-app.use(express.json()); // Middleware to parse JSON bodies
+app.use(cors());
+app.use(express.json()); 
 
 app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
-// You can define your admin routes here
-app.use('/api/admin', adminRoutes); // Use the admin routes
+app.use('/api/admin', adminRoutes); 
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`authService is running on http://localhost:${PORT}`.bgGreen.bold);
 });
