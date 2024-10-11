@@ -2,13 +2,16 @@
 import { ObjectId } from 'mongoose'; // Use mongoose's ObjectId for consistency
 
 export interface IAdmin {
-    _id: ObjectId; // Use ObjectId from mongoose
+    _id: ObjectId;     // Use ObjectId from mongoose
+    username: string;  // Added username property
     email: string;
     password: string;
-    role: string;
+    role: string;      // Ensure this property is present if required
 }
 
-export interface ILoginResponse {
+// Keep the IExtendedLoginResponse interface as defined in adminEntity
+export interface IExtendedLoginResponse {
     token: string;
-    admin: IAdmin; // Expect admin to be of type IAdmin
+    refreshToken: string;
+    admin: Omit<IAdmin, 'password'>; // This should match the above definition
 }

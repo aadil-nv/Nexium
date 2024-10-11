@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import logo from "../../../assets/landingPageAssets/nnn logo 1000[1].png";
 
 export default function AdminLogin() {
+  const [username, setUsername] = useState<string>(''); // Added username state
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string>(''); 
@@ -19,38 +20,43 @@ export default function AdminLogin() {
     e.preventDefault();
     setLoading(true);
     setError(''); 
-
+  
     try {
-      const response = await fetch('http://localhost:7000/api/admin/login', {
+      const response = await fetch('http://localhost:7000/api/admin/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          username, // Include username in the request body
           email,
           password,
         }),
       });
-
-      const data = await response.json();
-
+  
+      // Check if the response is OK (status code 200-299)
       if (!response.ok) {
-        throw new Error(data.message || 'Network response was not ok');
+        const errorData = await response.json(); // Attempt to parse the response
+        throw new Error(errorData.message || 'Registration failed'); // Use a meaningful error message
       }
       
-      console.log("Login Successful...")
+      const data = await response.json(); // Move this after the response check
+  
+      console.log("Registration Successful...");
+      console.log("New admin data is ", data);
       
-      toast.success('Login successful!');
+      toast.success('Registration successful!');
       navigate('/super-admin/dashboard');
-
+  
     } catch (err: any) {
-      console.error('Login failed:', err.message);
-      setError('Login failed. Please check your credentials.');
-      toast.error('Login failed. Please check your credentials.');
+      console.error('Registration failed:', err.message);
+      setError('Registration failed. Please check your credentials.');
+      toast.error('Registration failed. Please check your credentials.');
     } finally {
       setLoading(false); 
     }
   };
+  
 
   return (
     <div className='flex flex-col items-center justify-center min-h-screen py-2 bg-gray-200'>
@@ -68,6 +74,18 @@ export default function AdminLogin() {
 
             <div className='flex flex-col items-center'>
               <form onSubmit={handleLogin} className="flex flex-col items-center">
+                {/* Username Input */}
+                <div className='bg-gray-100 w-64 p-2 flex items-center mb-3 rounded-md'>
+                  <input
+                    type='text'
+                    placeholder='Username' // Placeholder for username
+                    className='bg-gray-100 outline-none text-sm text-black flex-1' 
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)} // Update username state
+                    required
+                  />
+                </div>
+
                 <div className='bg-gray-100 w-64 p-2 flex items-center mb-3 rounded-md'>
                   <FaEnvelope className='text-gray-400 m-2' />
                   <input
