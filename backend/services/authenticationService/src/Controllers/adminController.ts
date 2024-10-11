@@ -43,7 +43,8 @@ class AdminController {
             const refreshToken = generateRefreshToken(newAdmin);
 
 
-            console.log("adminRegister cotroller comeback" ,accessToken,refreshToken,);
+            console.log("Refresh token" ,refreshToken,);
+            console.log("Access token" ,accessToken,);
             
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
@@ -52,7 +53,7 @@ class AdminController {
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
 
-            console.log("access token is ==",accessToken);
+           
             
 
             return res.status(201).json({ accessToken, admin: newAdmin });
