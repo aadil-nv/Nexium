@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './Config/connectDB';
 import adminRoutes from './Routes/adminRoutes';
+import companyRouter from './Routes/companyRoutes';
 import 'colors' ;
 
 
@@ -20,6 +21,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/admin', adminRoutes); 
+app.use('/api/company', companyRouter); 
 
 app.listen(PORT, () => {
   console.log(`authService is running on http://localhost:${PORT}`.bgGreen.bold);

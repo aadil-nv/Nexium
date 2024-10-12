@@ -18,7 +18,7 @@ export default function Home() {
         </p>
         <div className='flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4'>
           <button className='bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 text-sm md:text-base'>
-            Get Started
+            <a href="/super-admin/login">Get started</a>
           </button>
           <button className='border border-blue-600 text-blue-600 font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 hover:text-white transition duration-300 text-sm md:text-base'>
             Learn More
