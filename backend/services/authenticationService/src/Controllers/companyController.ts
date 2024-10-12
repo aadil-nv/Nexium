@@ -6,12 +6,10 @@ const companyService = new CompanyService();
 
 export class CompanyController {
     async register(req: Request, res: Response): Promise<Response> {
-        console.log("hitting company controler...");
-        
-        const { company_name, registration_number, email, password,address,phone,website,documents,subscription } = req.body;
+        console.log("Hitting company controller...");
 
-       
-        
+        const { company_name, registration_number, email, password, address, phone, website, documents } = req.body;
+
         if (!company_name || !registration_number || !email || !password) {
             return res.status(400).json({ message: 'All fields are required' });
         }
@@ -21,12 +19,12 @@ export class CompanyController {
             const tokens = await companyService.register({
                 name: company_name,
                 registrationNumber: registration_number,
-                email:email,
-                password :password,
+                email: email,
+                password: password,
                 address: address, // Add address if needed
-                phone: phone ,  // Add phone if needed
+                phone: phone,  // Add phone if needed
                 website: website, // Add website if needed
-                documents: documents, // Add documents if needed
+                documents: documents || [], // Add documents if needed
                 subscription: {
                     planName: 'Trial',
                     planType: 'Trial',
@@ -50,7 +48,7 @@ export class CompanyController {
     }
 
     async login(req: Request, res: Response): Promise<Response> {
-        const { email, password ,registration_number } = req.body;
+        const { email, password, registration_number } = req.body;
 
         // Validate input data
         if (!email || !password) {
@@ -58,7 +56,7 @@ export class CompanyController {
         }
 
         try {
-            const tokens = await companyService.login(email, password ,registration_number);
+            const tokens = await companyService.login(email, password, registration_number);
             return res.status(200).json({
                 message: 'Login successful',
                 ...tokens,

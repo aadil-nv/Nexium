@@ -1,8 +1,10 @@
+// services/CompanyService.ts
 import { ICompany, ICompanyDocument, ITokenResponse } from '../../entities/ICompany';
 import CompanyRepository from '../../Repositery/implementaion/companyRepositery'; // Assuming this is the correct path
 import bcrypt from 'bcryptjs';
 import { generateCompanyAccessToken, generateCompanyRefreshToken } from '../../Utils/companyJwt';
 import mongoose from 'mongoose';
+import CompanyModel from '../../Schemas/companyRecordsSchema'; // Import your Mongoose model
 
 export class CompanyService {
     private companyRepository: CompanyRepository;
@@ -11,7 +13,7 @@ export class CompanyService {
         this.companyRepository = new CompanyRepository();
     }
 
-    async register(companyData: Partial<ICompanyDocument>): Promise<ITokenResponse> {
+    async register(companyData: Partial<ICompany>): Promise<ITokenResponse> {
         // Hash password if it exists
         if (companyData.password) {
             companyData.password = await bcrypt.hash(companyData.password, 10);
@@ -24,56 +26,58 @@ export class CompanyService {
 
         // Create a new database for the company
         const companyDbName = `company_${companyData.registrationNumber}`; // Define the company database name
-        await mongoose.connection.useDb(companyDbName).createCollection('dummyCollection'); // Create a dummy collection to initialize the database
+        const companyDb = mongoose.connection.useDb(companyDbName);
+        
+        // Create a dummy collection to initialize the database
+        await companyDb.createCollection('users'); // Create a 'users' collection in the new tenant database
 
-        // Prepare the new company data ensuring required fields are included
-        const newCompanyData: ICompanyDocument = {
-            _id: new mongoose.Types.ObjectId(), // Generate a new ObjectId
-            name: companyData.name || '', // Ensure name is provided
-            email: companyData.email || '', // Ensure email is provided
-            address: companyData.address || '', // Ensure address is provided
-            password: companyData.password || '', // Ensure password is provided
-            phone: companyData.phone || '', // Ensure phone is provided
-            website: companyData.website || '', // Optional field
-            registrationNumber: companyData.registrationNumber, // Required
-            documents: companyData.documents || [], // Optional
-            subscription: companyData.subscription || { // Optional subscription
+        // Prepare the new company data
+        const newCompanyData: ICompanyDocument = new CompanyModel({
+            _id: new mongoose.Types.ObjectId(),
+            name: companyData.name || '',
+            email: companyData.email || '',
+            address: companyData.address || '',
+            password: companyData.password || '',
+            phone: companyData.phone || '',
+            website: companyData.website,
+            registrationNumber: companyData.registrationNumber, // Keep this to satisfy the type
+            documents: companyData.documents || [],
+            subscription: companyData.subscription || {
                 planName: 'Trial',
                 planType: 'Trial',
                 startDate: new Date(),
-                endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // 1 year later
+                endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
                 status: 'Active',
             },
-        } as ICompanyDocument; // Cast to ICompanyDocument
+        });
 
-        // Save the company using the repository
-        const newCompany = await this.companyRepository.create(newCompanyData); // Pass the complete company data
+        // Save the company data in the main companies collection
+        const savedCompany = await this.companyRepository.create(newCompanyData);
 
-        // Generate tokens
-        const tokens = this.generateTokens(newCompany); // Pass the newCompany which is of type ICompanyDocument
+        // Return tokens for the registered company
+        const tokens = this.generateTokens(savedCompany);
         return tokens;
     }
 
-    generateTokens(company: ICompanyDocument): ITokenResponse { // Accept ICompanyDocument instead of ICompany
-        const accessToken = generateCompanyAccessToken(company);
-        const refreshToken = generateCompanyRefreshToken(company);
-        return { accessToken, refreshToken };
-    }
-
     async login(email: string, password: string, registrationNumber: string): Promise<ITokenResponse> {
-        const company = await this.companyRepository.findByEmail(email, registrationNumber); // Fetch by email
-
+        // Find the company by email
+        const company = await this.companyRepository.findByEmail(email, registrationNumber);
         if (!company) {
             throw new Error('Company not found');
         }
 
-        const isPasswordValid = await bcrypt.compare(password, company.password);
-
-        if (!isPasswordValid) {
+        // Check the password
+        const isMatch = await bcrypt.compare(password, company.password);
+        if (!isMatch) {
             throw new Error('Invalid password');
         }
 
-        const tokens = this.generateTokens(company); // company is already ICompanyDocument
-        return tokens;
+        return this.generateTokens(company);
+    }
+
+    generateTokens(company: ICompanyDocument): ITokenResponse {
+        const accessToken = generateCompanyAccessToken(company);
+        const refreshToken = generateCompanyRefreshToken(company);
+        return { accessToken, refreshToken };
     }
 }

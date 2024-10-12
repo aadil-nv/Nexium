@@ -18,7 +18,7 @@ export interface ICompanyDocument extends Document {
     password: string;
     phone: string;
     website?: string; // Make website optional
-    registrationNumber: string;
+    registrationNumber: string; // Registration number must be present
     documents: {
         documentName: string;
         documentUrl: string;
@@ -30,7 +30,6 @@ export interface ICompanyDocument extends Document {
 // Define the interface for the company entity used in registration and login
 export interface ICompany extends Omit<ICompanyDocument, '_id'> {
     // _id is omitted because it is automatically managed by Mongoose
-    // password is included for registration and login
 }
 
 // Define the interface for the token response
