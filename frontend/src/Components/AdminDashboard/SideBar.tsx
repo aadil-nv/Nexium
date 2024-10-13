@@ -2,9 +2,11 @@ import { TooltipComponent } from '@syncfusion/ej2-react-popups';
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { FiMenu } from "react-icons/fi";
-import { FaChartPie, FaBuilding, FaClipboardList, FaServicestack, FaUsers, FaCog, FaBoxOpen, FaMoneyBillWave, FaComments, FaBell, FaQuestionCircle } from "react-icons/fa";
+import { FaChartPie, FaBuilding, FaClipboardList, FaServicestack,
+   FaUsers, FaCog, FaBoxOpen, FaMoneyBillWave, FaComments, FaBell, FaQuestionCircle } from "react-icons/fa";
 import { useSelector, useDispatch } from 'react-redux';
 import { setActiveMenu } from '../../features/menuSlice';
+import {logo} from "../../../assets/landingPageAssets/nnn logo 1000[1].png";
 
 interface LinkItem {
   title: string;
@@ -61,6 +63,7 @@ const Sidebar = () => {
                 Admin
               </NavLink>
             </div>
+            
 
             {/* Scrollable Links Container */}
             <div className="mt-4 overflow-y-auto scrollbar-hide flex-grow">

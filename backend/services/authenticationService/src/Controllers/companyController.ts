@@ -48,6 +48,8 @@ export class CompanyController {
     }
 
     async login(req: Request, res: Response): Promise<Response> {
+        console.log("compnayController login touched...");
+        
         const { email, password, registration_number } = req.body;
 
         // Validate input data

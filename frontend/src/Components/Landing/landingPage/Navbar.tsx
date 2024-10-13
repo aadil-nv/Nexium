@@ -34,10 +34,10 @@ const Navbar = () => {
       <div className="text-lg container mx-auto flex items-center font-medium">
         {/* Left: Logo */}
         <div className="flex items-center">
-          <a href="#">
+          <a href="/">
             <img
               src={logo}
-              alt="Logo"
+              alt="Nexium_logo"
               className="w-24 h-auto max-w-full max-h-16 object-contain"
             />
           </a>

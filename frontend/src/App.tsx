@@ -12,6 +12,7 @@ import Users from './Components/AdminDashboard/AdminPages/Users';
 import Inventorys from './Components/AdminDashboard/AdminPages/Inventorys';
 import ServiceRequests from './Components/AdminDashboard/AdminPages/ServiceRequests';
 import AdminLoginPage from './Pages/AdminDashBoard/AdminLoginPage';
+import LandingOtp from './Pages/LandingPage/LandingOtpPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LandingLoginPage />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/otp" element={<LandingOtp />} />
 
         {/* Admin Routes (with AdminLayout) */}
         <Route element={<AdminLayout />}>

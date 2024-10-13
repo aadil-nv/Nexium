@@ -61,7 +61,7 @@ export class CompanyService {
 
     async login(email: string, password: string, registrationNumber: string): Promise<ITokenResponse> {
         // Find the company by email
-        const company = await this.companyRepository.findByEmail(email, registrationNumber);
+        const company = await this.companyRepository.findByEmail(email);
         if (!company) {
             throw new Error('Company not found');
         }
