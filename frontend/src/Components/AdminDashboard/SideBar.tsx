@@ -6,7 +6,6 @@ import { FaChartPie, FaBuilding, FaClipboardList, FaServicestack,
    FaUsers, FaCog, FaBoxOpen, FaMoneyBillWave, FaComments, FaBell, FaQuestionCircle } from "react-icons/fa";
 import { useSelector, useDispatch } from 'react-redux';
 import { setActiveMenu } from '../../features/menuSlice';
-import {logo} from "../../../assets/landingPageAssets/nnn logo 1000[1].png";
 
 interface LinkItem {
   title: string;

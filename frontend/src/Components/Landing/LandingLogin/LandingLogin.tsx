@@ -1,13 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../landingPage/theme-provider';
 import { motion } from 'framer-motion';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 export default function LandingLoginPage() {
-  const { theme } = useTheme(); // Get the current theme from the provider
+  const { theme } = useTheme();
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch('http://localhost:7000/api/company/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      console.log(data);
+      // Redirect to dashboard or another page on success
+      navigate('/company/dashboard');
+      
+    } catch (error) {
+      console.error('Error during login:', error);
+      // Optionally, you can set an error message state here
+    }
+  };
 
   return (
     <div className={`w-full h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
-      {/* Right side with login form */}
       <motion.div
         className={`p-8 rounded-lg w-[90%] max-w-2xl transition-shadow duration-300 ${
           theme === 'dark' ? 'bg-black shadow-lg shadow-blue-500' : 'bg-white shadow-md shadow-gray-200'
@@ -20,26 +55,27 @@ export default function LandingLoginPage() {
           Login
         </h2>
 
-        {/* Single login form */}
-        <form>
-          {/* Username input */}
+        {/* Login form */}
+        <form onSubmit={handleLogin}>
+          {/* Email input */}
           <div className='mb-4'>
-            <label className={`block ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`} htmlFor='username'>
-              Username
+            <label className={`block ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`} htmlFor='email'>
+              Email
             </label>
             <input
               className={`mt-1 p-2 border rounded w-full ${
                 theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
               } border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-shadow duration-200 hover:shadow-md`}
-              type='text'
-              id='username'
-              placeholder='Enter your username or email'
+              type='email'
+              id='email'
+              placeholder='Enter your email'
               required
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
 
           {/* Password input */}
-          <div className='mb-6'>
+          <div className='mb-6 relative'>
             <label className={`block ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`} htmlFor='password'>
               Password
             </label>
@@ -47,11 +83,19 @@ export default function LandingLoginPage() {
               className={`mt-1 p-2 border rounded w-full ${
                 theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
               } border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-shadow duration-200 hover:shadow-md`}
-              type='password'
+              type={showPassword ? 'text' : 'password'}
               id='password'
               placeholder='Enter your password'
               required
+              onChange={(e) => setPassword(e.target.value)}
             />
+            <button
+              type='button'
+              className="absolute right-2 pt-3"
+              onClick={() => setShowPassword(prev => !prev)}
+            >
+              {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+            </button>
           </div>
 
           {/* Login Button */}

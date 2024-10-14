@@ -18,7 +18,8 @@ export interface ICompanyDocument extends Document {
     password: string;
     phone: string;
     website?: string; // Make website optional
-    registrationNumber: string; // Registration number must be present
+    registrationNumber: string;
+    isVerified: boolean; // Registration number must be present
     documents: {
         documentName: string;
         documentUrl: string;

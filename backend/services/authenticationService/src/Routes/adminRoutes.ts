@@ -12,6 +12,8 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 });
 
+
+
 // Define admin register route
 router.post('/register', async (req: Request, res: Response) => {
     try {

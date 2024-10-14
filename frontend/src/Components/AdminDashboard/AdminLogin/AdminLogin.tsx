@@ -3,7 +3,7 @@ import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
-import logo from "../../../assets/landingPageAssets/nnn logo 1000[1].png";
+import logo from "/nnnlogo1000[1].png";
 import { loginSchema } from '../../../config/validationSchema'; // Import Zod schema
 
 // Define Form Inputs based on the Zod schema

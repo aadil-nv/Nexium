@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../landingPage/theme-provider';
 
+
 export default function LandingOtp() {
   const { theme } = useTheme();
   const [otp, setOtp] = useState(Array(6).fill(''));
   const [timeLeft, setTimeLeft] = useState(90); // Start with 90 seconds
   const [isTimerActive, setIsTimerActive] = useState(true);
+
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>; // Updated to use built-in type
@@ -27,7 +29,7 @@ export default function LandingOtp() {
       if (timeLeft > 0) {
         // Prevent the default behavior of refresh/close
         event.preventDefault();
-        event.returnValue = '';
+        
       }
     };
 
@@ -78,6 +80,27 @@ export default function LandingOtp() {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`; // Format seconds with leading zero
   };
 
+  const handleSubmit =async  (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    const response =await fetch('http://localhost:7000/api/company/otp-validation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        otp: otp.join(''),
+      }),
+    });
+    response.json().then((data) => {
+      if (data.success) {
+        console.log("data is ",data);
+  
+        console.log('OTP sent successfully');
+      }
+    })
+  };
+
   return (
     <div
       className={`w-full h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}
@@ -115,6 +138,7 @@ export default function LandingOtp() {
         <button
           type="submit"
           className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition-colors shadow-md hover:shadow-lg mb-4"
+          onClick={()=>handleSubmit}
         >
           Verify OTP
         </button>

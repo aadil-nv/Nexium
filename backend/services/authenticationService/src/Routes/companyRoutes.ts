@@ -13,4 +13,8 @@ companyRouter.post('/register', async (req: Request, res: Response) => {
     await companyController.register(req, res);
 });
 
+companyRouter.post('/otp-validation', async (req: Request, res: Response) => {
+    await companyController.validateOtp(req, res);
+});
+
 export default companyRouter;

@@ -13,6 +13,8 @@ import Inventorys from './Components/AdminDashboard/AdminPages/Inventorys';
 import ServiceRequests from './Components/AdminDashboard/AdminPages/ServiceRequests';
 import AdminLoginPage from './Pages/AdminDashBoard/AdminLoginPage';
 import LandingOtp from './Pages/LandingPage/LandingOtpPage';
+import PlansPage from './Pages/LandingPage/PlansPage';
+import CompanyLayout from './Pages/OwnerDashboard/CompanyLayout'; // Change to CompanyLayout
 
 function App() {
   return (
@@ -23,6 +25,7 @@ function App() {
         <Route path="/login" element={<LandingLoginPage />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/otp" element={<LandingOtp />} />
+        <Route path="/plans" element={<PlansPage />} />
 
         {/* Admin Routes (with AdminLayout) */}
         <Route element={<AdminLayout />}>
@@ -34,8 +37,19 @@ function App() {
           <Route path="/super-admin/inventory" element={<Inventorys />} />
           <Route path="/super-admin/finance" element={<Finance />} />
         </Route>
-
         <Route path='/super-admin/login' element={<AdminLoginPage />} />
+
+        {/* Company Routes */}
+        <Route element={<CompanyLayout />}> {/* Change to CompanyLayout */}
+          <Route path="/company/dashboard" element={<AdminDashBoard />} />
+          <Route path="/company/companies" element={<CompaniesList />} />
+          <Route path="/company/plans" element={<AllPlans />} />
+          <Route path="/company/services" element={<ServiceRequests />} />
+          <Route path="/company/users" element={<Users />} />
+          <Route path="/company/inventory" element={<Inventorys />} />
+          <Route path="/company/finance" element={<Finance />} />
+        </Route>
+
       </Routes>
     </Router>
   );

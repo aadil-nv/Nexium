@@ -7,24 +7,25 @@ const companyService = new CompanyService();
 export class CompanyController {
     async register(req: Request, res: Response): Promise<Response> {
         console.log("Hitting company controller...");
-
-        const { company_name, registration_number, email, password, address, phone, website, documents } = req.body;
-
-        if (!company_name || !registration_number || !email || !password) {
+    
+        const { companyName, registrationNumber, email, password, address, phone, website, documents } = req.body;
+    
+    
+        if (!companyName || !registrationNumber || !email || !password) {
             return res.status(400).json({ message: 'All fields are required' });
         }
-
+    
         try {
-            // Register company and get tokens
-            const tokens = await companyService.register({
-                name: company_name,
-                registrationNumber: registration_number,
+           
+            const { tokens, message } = await companyService.register({
+                name: companyName,
+                registrationNumber: registrationNumber,
                 email: email,
                 password: password,
-                address: address, // Add address if needed
-                phone: phone,  // Add phone if needed
-                website: website, // Add website if needed
-                documents: documents || [], // Add documents if needed
+                address: address,
+                phone: phone,
+                website: website,
+                documents: documents || [],
                 subscription: {
                     planName: 'Trial',
                     planType: 'Trial',
@@ -33,24 +34,26 @@ export class CompanyController {
                     status: 'Active',
                 },
             });
-
-            // Respond with success and tokens
+    
+            // Respond with success, tokens, and a message
             return res.status(201).json({
-                message: 'Company registered successfully',
-                ...tokens,
+                message: message || 'Registration successful',
+                tokens
             });
         } catch (error: unknown) {
             if (error instanceof Error) {
+                // Handle specific registration errors
                 return res.status(400).json({ message: error.message });
             }
             return res.status(400).json({ message: 'Registration failed', error: 'Unknown error occurred' });
         }
     }
-
+    
+    
     async login(req: Request, res: Response): Promise<Response> {
         console.log("compnayController login touched...");
         
-        const { email, password, registration_number } = req.body;
+        const { email, password} = req.body;
 
         // Validate input data
         if (!email || !password) {
@@ -58,7 +61,7 @@ export class CompanyController {
         }
 
         try {
-            const tokens = await companyService.login(email, password, registration_number);
+            const tokens = await companyService.login(email, password);
             return res.status(200).json({
                 message: 'Login successful',
                 ...tokens,
@@ -69,5 +72,13 @@ export class CompanyController {
             }
             return res.status(401).json({ message: 'Login failed', error: 'Unknown error occurred' });
         }
+    }
+
+    async validateOtp(req: Request, res: Response): Promise<Response> {
+        console.log("hitting validateOtp...");
+        
+        const { email, otp } = req.body;
+        const response = await companyService.validateOtp(email, otp);
+        return res.status(200).json(response);
     }
 }
