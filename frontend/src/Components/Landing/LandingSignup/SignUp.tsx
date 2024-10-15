@@ -3,6 +3,16 @@ import { useTheme } from '../landingPage/theme-provider';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { signUpSchema } from '../../../config/validationSchema';
+import axios from 'axios';
+
+// Spinner component
+const Spinner: React.FC = () => {
+  return (
+    <div className="flex justify-center items-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  );
+};
 
 const SignUp: React.FC = () => {
   const { theme } = useTheme();
@@ -17,10 +27,11 @@ const SignUp: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+  const [userMail, setUserMail] = useState<string>('');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
+  
     const validation = signUpSchema.safeParse({
       companyName,
       email,
@@ -29,7 +40,7 @@ const SignUp: React.FC = () => {
       phone,
       registrationNumber,
     });
-
+  
     if (!validation.success) {
       const formErrors = validation.error.errors.reduce(
         (acc, curr) => ({ ...acc, [curr.path[0]]: curr.message }),
@@ -38,31 +49,32 @@ const SignUp: React.FC = () => {
       setError(formErrors);
       return;
     }
-
+  
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:7000/api/company/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companyName,
-          registrationNumber,
-          email,
-          password,
-          phone,
-          address: 'local',
-          website: '',
-          documents: [],
-        }),
+      const response = await axios.post('http://localhost:7000/api/company/register', {
+        companyName,
+        registrationNumber,
+        email,
+        password,
+        phone,
+        address: 'local',
+        website: '',
+        documents: [],
       });
-
-      const data = await response.json();
+  
+      const data = response.data;
+  
       if (data.message === 'true') {
-        navigate('/otp');
+        console.log("MESSAge fron cont to frn",data);
+        
+        setUserMail(data.email);  
+        navigate('/otp', { state: { email: data.email } }); 
       } else {
         setError({ form: data.message });
       }
     } catch (error) {
+      console.error("Error during signup:", error);
       setError({ form: 'An error occurred during signup. Please try again.' });
     } finally {
       setLoading(false);
@@ -203,7 +215,7 @@ const SignUp: React.FC = () => {
                 : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:bg-blue-700'
             }`}
           >
-            {loading ? 'Signing Up...' : 'Sign Up'}
+            {loading ? <Spinner /> : 'Sign Up'}
           </button>
         </form>
       </motion.div>
@@ -212,4 +224,3 @@ const SignUp: React.FC = () => {
 };
 
 export default SignUp;
-``

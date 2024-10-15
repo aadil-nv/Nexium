@@ -44,154 +44,92 @@ export class CompanyService {
         return this.generateTokens(company);
     }
 
-    // async register(companyData: Partial<ICompany>): Promise<{ tokens?: ITokenResponse; message?: string }> {
-    //     console.log("CompanyService is hitting ---".bgCyan);
-    
-    //     if (companyData.password) {
-    //         companyData.password = await bcrypt.hash(companyData.password, 10);
-    //     }
-    
-    //     if (!companyData.registrationNumber) {
-    //         throw new Error('Registration number is required');
-    //     }
-    //     const existingCompany = await CompanyModel.findOne({
-    //         $or: [
-    //             { email: companyData.email },
-    //             { phone: companyData.phone },
-    //             { registrationNumber: companyData.registrationNumber }
-    //         ]
-    //     });
-    
+
      
-    //     if (existingCompany) {
-            
-    //         if (existingCompany.isVerified) {
-    //             throw new Error('Credentials already used. Please check the details.');
-    //         }
-    
-          
-    //         await this.sendOtp(existingCompany.email);
-    //         return { message: 'true' };
-    //     }
-    
-    
-    //     const companyDbName = `company_${companyData.registrationNumber}`;
-    //     const companyDb = mongoose.connection.useDb(companyDbName);
-    
-    //     await companyDb.createCollection('users');
-    
-    //     const newCompanyData: ICompanyDocument = new CompanyModel({
-    //         _id: new mongoose.Types.ObjectId(),
-    //         name: companyData.name || '',
-    //         email: companyData.email || '',
-    //         address: companyData.address || '',
-    //         password: companyData.password || '',
-    //         phone: companyData.phone || '',
-    //         website: companyData.website,
-    //         registrationNumber: companyData.registrationNumber,
-    //         documents: companyData.documents || [],
-    //         subscription: companyData.subscription || {
-    //             planName: 'Trial',
-    //             planType: 'Trial',
-    //             startDate: new Date(),
-    //             endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-    //             status: 'Active',
-    //         },
-    //         isVerified: false
-    //     });
-    
-    //     const savedCompany = await this.companyRepository.create(newCompanyData);
-    
-    //     // Send OTP for the newly registered company
-    //     await this.sendOtp(savedCompany.email);
-    
-    //     const tokens = this.generateTokens(savedCompany);
-    //     console.log("tokens:", tokens);
-        
-    //     return {
-    //         tokens,
-    //         message: 'true'
-    //     };
-    // }
-     
-    async register(companyData: Partial<ICompany>): Promise<{ tokens?: ITokenResponse; message?: string; email?: string }> {
-        console.log("CompanyService is hitting ---".bgCyan);
-    
-        // Hash password if provided
+    async register(
+        companyData: Partial<ICompany>
+      ): Promise<{ tokens?: ITokenResponse; message?: string; email?: string }> {
+        console.log('CompanyService is hitting ---'.bgCyan);
+      
+        // Hash the password if it exists
         if (companyData.password) {
-            companyData.password = await bcrypt.hash(companyData.password, 10);
+          companyData.password = await bcrypt.hash(companyData.password, 10);
         }
-    
+      
         // Ensure registration number is provided
         if (!companyData.registrationNumber) {
-            throw new Error('Registration number is required');
+          throw new Error('Registration number is required');
         }
-    
-        // Check if the company already exists by email, phone, or registration number
+      
+        // Check if the company already exists
         const existingCompany = await CompanyModel.findOne({
-            $or: [
-                { email: companyData.email },
-                { phone: companyData.phone },
-                { registrationNumber: companyData.registrationNumber }
-            ]
+          $or: [
+            { email: companyData.email },
+            { phone: companyData.phone },
+            { registrationNumber: companyData.registrationNumber },
+          ],
         });
-    
-        // If the company exists and is verified, throw an error
+      
         if (existingCompany) {
-            if (existingCompany.isVerified) {
-                throw new Error('Credentials already used. Please check the details.');
-            }
-    
-            // If not verified, resend OTP and return the email
-            await this.sendOtp(existingCompany.email);
-            return { message: 'true', email: existingCompany.email };
+          if (existingCompany.isVerified) {
+            throw new Error('Credentials already used. Please check the details.');
+          }
+      
+          // Send OTP to existing company if not verified
+          await this.sendOtp(existingCompany.email);
+          console.log('COMPANYDATA EMAIL', existingCompany.email);
+      
+          // Return the existing company's email if it's not verified
+          return { message: 'true', email: existingCompany.email };
         }
-    
+      
         // Create a new database for the company
         const companyDbName = `company_${companyData.registrationNumber}`;
         const companyDb = mongoose.connection.useDb(companyDbName);
-    
-        // Create a collection for users in the new company's database
+      
+        // Create a new 'users' collection in the company's database
         await companyDb.createCollection('users');
-    
-        // Prepare new company data for saving
+      
+        // Prepare the new company data
         const newCompanyData: ICompanyDocument = new CompanyModel({
-            _id: new mongoose.Types.ObjectId(),
-            name: companyData.name || '',
-            email: companyData.email || '',
-            address: companyData.address || '',
-            password: companyData.password || '',
-            phone: companyData.phone || '',
-            website: companyData.website,
-            registrationNumber: companyData.registrationNumber,
-            documents: companyData.documents || [],
-            subscription: companyData.subscription || {
-                planName: 'Trial',
-                planType: 'Trial',
-                startDate: new Date(),
-                endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-                status: 'Active',
-            },
-            isVerified: false
+          _id: new mongoose.Types.ObjectId(),
+          name: companyData.name || '',
+          email: companyData.email || '',
+          address: companyData.address || '',
+          password: companyData.password || '',
+          phone: companyData.phone || '',
+          website: companyData.website,
+          registrationNumber: companyData.registrationNumber,
+          documents: companyData.documents || [],
+          subscription: companyData.subscription || {
+            planName: 'Trial',
+            planType: 'Trial',
+            startDate: new Date(),
+            endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+            status: 'Active',
+          },
+          isVerified: false,
         });
-    
+      
         // Save the new company to the database
         const savedCompany = await this.companyRepository.create(newCompanyData);
-    
-        // Send OTP for the newly registered company
+      
+        // Send OTP to the newly registered company
         await this.sendOtp(savedCompany.email);
-    
+      
         // Generate tokens for the new company
         const tokens = this.generateTokens(savedCompany);
-        console.log("tokens:", tokens);
-    
-        // Return the tokens and email
+        console.log('++++EMAIL IS ++++', savedCompany.email);
+      
+        // Return the tokens and the email of the saved company
         return {
-            tokens,
-            message: 'true',
-            email: savedCompany.email
+          tokens,
+          message: 'true',
+          email: savedCompany.email,
         };
-    }
+      }
+      
+    
     
     
     async sendOtp(email: string): Promise<void> {
@@ -236,24 +174,39 @@ console.log('Email Pass:', process.env.EMAIL_PASS);
     }
 
     async validateOtp(email: string, otp: string): Promise<boolean> {
-        console.log("hitting validateOtp --- companyService".bgYellow);
-        
+        console.log("Hitting validateOtp --- companyService".bgYellow);
+        console.log("Email:", email);
+        console.log("OTP:", otp);
+    
         try {
+            // Retrieve the recorded company based on email
             const recordedCompany = await this.companyRepository.findOtpByEmail(email);
-            
+    
+            // Check if the company exists
             if (!recordedCompany) {
+                console.error("Company not found for email:", email);
                 throw new Error("Company not found");
             }
-
-            // Here, you would add the logic to check the OTP. Assuming `recordedCompany` has a stored OTP:
+    
+            // Check if the recorded OTP matches the provided OTP
             if (recordedCompany.otp === otp) { 
-                return true;
+                console.log("OTP validated successfully:", recordedCompany.otp);
+                const verfication = await this.companyRepository.updateVerificationStatus(email);
+
+                if(!verfication) {
+                    return false
+                }
+                    return true;
+                    
+                 
             } else {
-                return false;
+                console.log("Invalid OTP provided.");
+                return false;  
             }
         } catch (error) {
             console.error("Error validating OTP:", error);
-            return false;
+            return false;  
         }
     }
+    
 }

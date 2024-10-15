@@ -34,4 +34,11 @@ export default class CompanyRepository {
         return await OtpModel.findOne({ email }).exec(); // Search OTP based on email in OtpModel
     }
 
+    async updateVerificationStatus(email: string): Promise<any> {
+        console.log("CompanyRepository is hitting updateVerificationStatus ---");
+        console.log("Updating verification status for email:", email);
+    
+        return await CompanyModel.updateOne({ email }, { isVerified: true }).exec();
+    }
+
 }

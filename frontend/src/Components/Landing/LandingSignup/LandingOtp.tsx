@@ -1,17 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../landingPage/theme-provider';
+import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
+// Define the type for the location state
+type LocationState = {
+  email: string;
+};
 
-export default function LandingOtp() {
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center h-full">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
+  </div>
+);
+
+const LandingOtp: React.FC = () => {
   const { theme } = useTheme();
   const [otp, setOtp] = useState(Array(6).fill(''));
-  const [timeLeft, setTimeLeft] = useState(90); // Start with 90 seconds
+  const [timeLeft, setTimeLeft] = useState(90); 
   const [isTimerActive, setIsTimerActive] = useState(true);
-
+  const location = useLocation();
+  const email = (location.state as LocationState)?.email;
+  const navigate = useNavigate();
+ 
+  
 
   useEffect(() => {
-    let timer: ReturnType<typeof setInterval>; // Updated to use built-in type
+    let timer: ReturnType<typeof setInterval>;
 
     if (isTimerActive && timeLeft > 0) {
       timer = setInterval(() => {
@@ -27,9 +43,7 @@ export default function LandingOtp() {
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (timeLeft > 0) {
-        // Prevent the default behavior of refresh/close
         event.preventDefault();
-        
       }
     };
 
@@ -48,7 +62,6 @@ export default function LandingOtp() {
 
       setOtp(newOtp);
 
-      // Move to the next input
       if (value && index < otp.length - 1) {
         const nextInput = document.getElementById(`otp-${index + 1}`);
         if (nextInput) {
@@ -73,89 +86,97 @@ export default function LandingOtp() {
     setOtp(Array(6).fill('')); // Reset OTP input
   };
 
-  // Convert timeLeft into minutes and seconds
   const formatTimeLeft = () => {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`; // Format seconds with leading zero
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
-  const handleSubmit =async  (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    const response =await fetch('http://localhost:7000/api/company/otp-validation', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        otp: otp.join(''),
-      }),
-    });
-    response.json().then((data) => {
-      if (data.success) {
-        console.log("data is ",data);
-  
-        console.log('OTP sent successfully');
-      }
-    })
-  };
+    const otpString = otp.join('');
+    try {
+        const response = await axios.post('http://localhost:7000/api/company/otp-validation', {
+            email, 
+            otp: otpString, 
+        });
+
+        const data = response.data; 
+        console.log("Data from OTP validation:", data);
+        
+       
+        if (data === true) {
+            navigate('/plans'); 
+        } else {
+            console.error(data.message || 'Invalid OTP'); 
+        }
+    } catch (error) {
+        console.error('Error verifying OTP:', error);
+    }
+};
+
 
   return (
     <div
       className={`w-full h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}
     >
-      <motion.div
-        className={`p-8 rounded-lg w-[90%] max-w-2xl transition-shadow duration-300 ${
-          theme === 'dark' ? 'bg-black-800 shadow-md shadow-blue-500' : 'bg-white shadow-lg shadow-blue-500'
-        }`}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h2 className={`text-3xl font-bold mb-6 text-center ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
-          Enter OTP
-        </h2>
-
-        <div className="flex justify-center mb-6">
-          {otp.map((digit, index) => (
-            <input
-              key={index}
-              id={`otp-${index}`}
-              type="text"
-              value={digit}
-              onChange={(e) => handleChange(e, index)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
-              className={`w-12 h-12 mx-1 text-center text-2xl border rounded ${
-                theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-              }`}
-              maxLength={1}
-              autoFocus={index === 0}
-            />
-          ))}
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition-colors shadow-md hover:shadow-lg mb-4"
-          onClick={()=>handleSubmit}
+      <Suspense fallback={<LoadingSpinner />}>
+        <motion.div
+          className={`p-8 rounded-lg w-[90%] max-w-2xl transition-shadow duration-300 ${
+            theme === 'dark' ? 'bg-black-800 shadow-md shadow-blue-500' : 'bg-white shadow-lg shadow-blue-500'
+          }`}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          Verify OTP
-        </button>
+          <h2 className={`text-3xl font-bold mb-6 text-center ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
+            Enter OTP
+          </h2>
 
-        {isTimerActive ? (
-          <p className='text-center text-sm'>
-            Resend OTP in {formatTimeLeft()} seconds
-          </p>
-        ) : (
-          <button
-            onClick={handleResendOtp}
-            className='w-full text-blue-500 hover:underline text-center text-sm'
-          >
-            Resend OTP
-          </button>
-        )}
-      </motion.div>
+          <form onSubmit={handleSubmit} className="flex flex-col items-center">
+            <div className="flex justify-center mb-6">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  id={`otp-${index}`}
+                  type="text"
+                  value={digit}
+                  onChange={(e) => handleChange(e, index)}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
+                  className={`w-12 h-12 mx-1 text-center text-2xl border rounded ${
+                    theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
+                  }`}
+                  maxLength={1}
+                  autoFocus={index === 0}
+                />
+              ))}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition-colors shadow-md hover:shadow-lg mb-4"
+            >
+              Verify OTP
+            </button>
+
+            {isTimerActive ? (
+              <p className='text-center text-sm'>
+                Resend OTP in {formatTimeLeft()} seconds
+              </p>
+            ) : (
+              <button
+                onClick={handleResendOtp}
+                className='w-full text-blue-500 hover:underline text-center text-sm'
+              >
+                Resend OTP
+              </button>
+            )}
+          </form>
+        </motion.div>
+      </Suspense>
     </div>
   );
-}
+};
+
+export default LandingOtp;
