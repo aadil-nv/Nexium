@@ -1,44 +1,36 @@
-import mongoose from 'mongoose';
-import { ICompanyDocument } from '../../entities/ICompany';
-import CompanyModel from '../../Schemas/companyRecordsSchema';
-import OtpModel from '../../Schemas/otpScheema';
+import mongoose from "mongoose";
+import { ICompanyDocument,ISubscription } from "../../entities/ICompany";
+import CompanyModel from "../../Schemas/companyRecordsSchema";
+import OtpModel from "../../Schemas/otpScheema";
 
 export default class CompanyRepository {
-    private useCompanyDb(registrationNumber: string) {
-        console.log("CompanyRepository is hitting useCompanyDb ---");
-        
-        const dbName = `company_${registrationNumber}`; 
-        return mongoose.connection.useDb(dbName);
-    }
-    
-   
-    async findByEmail(email: string): Promise<ICompanyDocument | null> {
-        console.log("CompanyRepository is hitting finfdBYEmail ---");
-        console.log("repository email:", email);
-    
-        return await CompanyModel.findOne({ email }).exec();
-    }
-    
+  private useCompanyDb(registrationNumber: string) {
+    const dbName = `company_${registrationNumber}`;
+    return mongoose.connection.useDb(dbName);
+  }
 
-    async create(companyData: ICompanyDocument): Promise<ICompanyDocument> {
-        console.log("CompanyRepository is create  hitting ---");
-      
-        const company = new CompanyModel(companyData);
-        return await company.save();
-    }
-    
-    async findOtpByEmail(email: string): Promise<any | null> {
-        console.log("CompanyRepository is hitting findOtpByEmail ---");
-        console.log("Searching OTP for email:", email);
+  async findByEmail(email: string): Promise<ICompanyDocument | null> {
+    return await CompanyModel.findOne({ email }).exec();
+  }
 
-        return await OtpModel.findOne({ email }).exec(); // Search OTP based on email in OtpModel
-    }
+  async create(companyData: ICompanyDocument): Promise<ICompanyDocument> {
+    const company = new CompanyModel(companyData);
+    return await company.save();
+  }
 
-    async updateVerificationStatus(email: string): Promise<any> {
-        console.log("CompanyRepository is hitting updateVerificationStatus ---");
-        console.log("Updating verification status for email:", email);
-    
-        return await CompanyModel.updateOne({ email }, { isVerified: true }).exec();
-    }
+  async findOtpByEmail(email: string): Promise<any | null> {
+    return await OtpModel.findOne({ email }).exec();
+  }
 
+  async updateVerificationStatus(email: string): Promise<any> {
+    return await CompanyModel.updateOne({ email }, { isVerified: true }).exec();
+  }
+
+  async updateSubscriptionByEmail(email: string, subscription: ISubscription): Promise<ICompanyDocument | null> {
+    return await CompanyModel.findOneAndUpdate(
+      { email },
+      { subscription },
+      { new: true } // Return the updated document
+    ).exec();
+  }
 }

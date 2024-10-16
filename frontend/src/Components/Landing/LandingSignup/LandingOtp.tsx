@@ -103,11 +103,11 @@ const LandingOtp: React.FC = () => {
         });
 
         const data = response.data; 
-        console.log("Data from OTP validation:", data);
+        console.log("Data from OTP validation:", data.success, data.message, data.email);
         
        
-        if (data === true) {
-            navigate('/plans'); 
+        if (data.success === true) {
+            navigate('/plans',{ state: { email: data.email }}); 
         } else {
             console.error(data.message || 'Invalid OTP'); 
         }

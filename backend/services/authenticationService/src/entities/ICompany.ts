@@ -1,40 +1,38 @@
-import { Document, Types } from 'mongoose';
+import { Document, Types } from "mongoose";
 
-// Define the interface for subscription plans
 export interface ISubscription {
-    planName: string; // Name of the subscription plan
-    planType: string; // e.g., "Trial", "Monthly", "Yearly"
-    startDate: Date; // Start date of the subscription
-    endDate: Date; // End date of the subscription
-    status: string; // Status of the subscription (e.g., "Active", "Expired")
+  planName: string;
+  planType: string;
+  startDate: Date;
+  endDate: Date;
+  status: string;
 }
 
-// Define the interface for the Company document
 export interface ICompanyDocument extends Document {
-    _id: Types.ObjectId; // Ensure _id is of type ObjectId and required
-    name: string;
-    email: string;
-    address: string;
-    password: string;
-    phone: string;
-    website?: string; // Make website optional
-    registrationNumber: string;
-    isVerified: boolean; // Registration number must be present
-    documents: {
-        documentName: string;
-        documentUrl: string;
-        uploadedAt: Date;
-    }[];
-    subscription: ISubscription; // Subscription details
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+  address: string;
+  password: string;
+  phone: string;
+  website?: string;
+  registrationNumber: string;
+  isVerified: boolean;
+  documents: {
+    documentName: string;
+    documentUrl: string;
+    uploadedAt: Date;
+  }[];
+  subscription: ISubscription; 
 }
 
-// Define the interface for the company entity used in registration and login
-export interface ICompany extends Omit<ICompanyDocument, '_id'> {
-    // _id is omitted because it is automatically managed by Mongoose
-}
+export interface ICompany extends Omit<ICompanyDocument, "_id"> {}
 
-// Define the interface for the token response
 export interface ITokenResponse {
-    accessToken: string;
-    refreshToken: string;
+  accessToken: string;
+  refreshToken: string;
 }
+
+export interface IPaymentIntentResponse {
+    clientSecret: string;
+  }

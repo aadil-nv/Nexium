@@ -1,4 +1,4 @@
-// Utils/otp.ts
+
 
 export default function generateOtp(): string {
    console.log("Generating OTP...");

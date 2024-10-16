@@ -1,17 +1,16 @@
 // src/entities/adminEntity.ts
-import { ObjectId } from 'mongoose'; // Use mongoose's ObjectId for consistency
+import { ObjectId } from "mongoose";
 
 export interface IAdmin {
-    _id: ObjectId;  // Change 'id' to '_id' to match Mongoose convention
-    username: string;
-    email: string;
-    password?: string;
-    role?: string ;
-    // Other fields...
+  _id: ObjectId;
+  username: string;
+  email: string;
+  password?: string;
+  role?: string;
 }
 
 export interface IExtendedLoginResponse {
-    token: string;                     // Access token for authentication
-    refreshToken: string;              // Refresh token to obtain new access tokens
-    admin: Omit<IAdmin, 'password'>;   // Ensure password is omitted in responses for security
+  token: string;
+  refreshToken: string;
+  admin: Omit<IAdmin, "password">;
 }

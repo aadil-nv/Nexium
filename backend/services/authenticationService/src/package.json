@@ -12,6 +12,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@stripe/react-stripe-js": "^2.8.1",
+    "@stripe/stripe-js": "^4.8.0",
     "@types/jsonwebtoken": "^9.0.7",
     "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
@@ -25,7 +27,9 @@
     "nodemailer": "^6.9.15",
     "nodemon": "^3.1.7",
     "react-router-dom": "^6.26.2",
-    "react-toastify": "^10.0.5"
+    "react-toastify": "^10.0.5",
+    "strip": "^3.0.0",
+    "stripe": "^17.2.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

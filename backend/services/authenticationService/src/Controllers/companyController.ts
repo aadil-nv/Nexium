@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import { CompanyService } from "../Services/implementaion/companyService";
 import { ObjectId } from "mongodb"; // Ensure you import ObjectId for MongoDB document ID
+import { loadStripe, Stripe } from '@stripe/stripe-js';
+
+// Initialize Stripe (ensure your secret key is used)
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
 const companyService = new CompanyService();
 
@@ -93,20 +97,47 @@ export class CompanyController {
     const { email, otp } = req.body;
 
     try {
-      const response = await companyService.validateOtp(email, otp);
-      console.log("Response from validateOtp:", response);
+        const response = await companyService.validateOtp(email, otp);
+        console.log("Response from validateOtp:", response);
 
-      if (response) {
-        return res.status(200).json(response);
-      }
+        if (response.success) {
+            return res.status(200).json({
+                success: response.success,
+                email: response.email,
+            });
+        }
 
-      return res.status(200).json({ message: "OTP validated successfully" });
+        return res.status(400).json({
+            message: "Invalid OTP or verification failed. Please check and try again.",
+        });
     } catch (error) {
-      console.error("Error validating OTP:", error);
+        console.error("Error validating OTP:", error);
 
-      return res.status(400).json({
-        message: "OTP validation failed. Please check the OTP and try again.",
-      });
+        return res.status(500).json({
+            message: "OTP validation failed. Please try again later.",
+        });
     }
+}
+
+async createCheckoutSession(req: Request, res: Response): Promise<Response> {
+  console.log("Hitting Stripe Checkout Session controller...");
+
+  try {
+      const { plan, amount, currency, email } = req.body;
+
+      // Call service to handle business logic
+      const result = await companyService.createCheckoutSession(plan, amount, currency, email);
+
+      if (plan.id === 1) {
+          // If plan is Trial (ID = 1), return success message directly
+          return res.status(200).json({ message: result.message, success: result.success });
+      } else {
+          // For other plans, return Stripe session ID for payment
+          return res.status(200).json({ sessionId: result.id });
+      }
+  } catch (error) {
+      console.error('Error creating checkout session:', error);
+      return res.status(500).json({ message: 'Failed to create checkout session' });
   }
+}
 }

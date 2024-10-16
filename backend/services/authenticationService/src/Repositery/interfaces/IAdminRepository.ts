@@ -1,4 +1,4 @@
-// src/interfaces/IAdminRepository.ts
+
 import  {IAdmin}  from '../../entities/adminEntity';
 
 export interface IAdminRepository {

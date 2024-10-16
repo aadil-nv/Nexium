@@ -1,4 +1,4 @@
-// src/controllers/adminController.ts
+
 import { Request, Response } from 'express';
 import AdminService from '../Services/implementaion/adminService';
 import { generateAccessToken, generateRefreshToken } from '../Utils/jwt';
@@ -30,7 +30,6 @@ class AdminController {
         }
     }
 
-    // Admin registration handler
     async adminRegister(req: Request, res: Response): Promise<Response> {
         const { username, email, password } = req.body;
             console.log("adminController is touched.......");
@@ -92,7 +91,6 @@ class AdminController {
         }
     }
 
- 
     async logout(req: Request, res: Response): Promise<Response> {
         res.clearCookie('refreshToken'); 
         return res.status(200).json({ message: 'Logged out successfully.' });

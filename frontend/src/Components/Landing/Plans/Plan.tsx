@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import axios from 'axios';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 type Plan = {
   id: number;
@@ -7,81 +10,125 @@ type Plan = {
   features: string[];
 };
 
+type LocationState = {
+  email: string;
+};
+
 const plans: Plan[] = [
-    { 
-      id: 1, 
-      name: 'Trial', 
-      price: '$0/month', 
-      features: [
-        'Access to basic features', 
-        'Limited user support', 
-        'Community access only', 
-        '1 project limitation'
-      ] 
-    },
-    { 
-      id: 2, 
-      name: 'Standard', 
-      price: '$20/month', 
-      features: [
-        'All basic features', 
-        'Priority email support', 
-        'Access to all integrations', 
-        'Up to 5 projects', 
-        'Customizable dashboard'
-      ] 
-    },
-    { 
-      id: 3, 
-      name: 'Premium', 
-      price: '$30/month', 
-      features: [
-        'All Standard features', 
-        '24/7 dedicated support', 
-        'Unlimited projects', 
-        'Advanced reporting & analytics', 
-        'Team collaboration tools', 
-        'Early access to new features'
-      ] 
-    }
-  ];
-  
+  {
+    id: 1,
+    name: 'Trial',
+    price: '$0/month',
+    features: [
+      'Access to basic features',
+      'Limited user support',
+      'Community access only',
+      '1 project limitation',
+    ],
+  },
+  {
+    id: 2,
+    name: 'Standard',
+    price: '$20/month',
+    features: [
+      'All basic features',
+      'Priority email support',
+      'Access to all integrations',
+      'Up to 5 projects',
+      'Customizable dashboard',
+    ],
+  },
+  {
+    id: 3,
+    name: 'Premium',
+    price: '$30/month',
+    features: [
+      'All Standard features',
+      '24/7 dedicated support',
+      'Unlimited projects',
+      'Advanced reporting & analytics',
+      'Team collaboration tools',
+      'Early access to new features',
+    ],
+  },
+];
 
 const PlanSelection: React.FC = () => {
-  const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [stripePromise, setStripePromise] = useState<any>(null);
+  const location = useLocation();
+  const email = (location.state as LocationState)?.email;
+  const navigate = useNavigate();
 
-  const selectPlan = (id: number) => {
-    setSelectedPlan(id);
+  useEffect(() => {
+    setStripePromise(loadStripe('pk_test_51QA84MG0KgrlY5FBKX5uMqGIPF0QRwCB52FMUeaO4mMIqlaHjWaellTk26kdZYqYgM1USvDyz7jwfoAIL5Wovdpw00AYg8dWct'));
+  }, []);
+
+  const selectPlan = (plan: Plan) => {
+    setSelectedPlan(plan);
   };
 
-  const handlePayment = () => {
-    if (selectedPlan !== null) {
-      alert(`Proceeding to payment for ${plans.find(plan => plan.id === selectedPlan)?.name} plan.`);
-    } else {
-      alert('Please select a plan first.');
+  const handlePayment = async () => {
+    if (!selectedPlan) {
+      return alert('Please select a plan first.');
+    }
+
+    if (selectedPlan.id === 1) {
+      // For trial plan, navigate directly to dashboard without Stripe
+      navigate('/company/dashboard');
+      return;
+    }
+
+    try {
+      const stripe = await stripePromise;
+
+      if (!stripe) {
+        throw new Error('Stripe failed to load.');
+      }
+
+      // Post to backend to create checkout session
+      const response = await axios.post('http://localhost:7000/api/company/create-checkout-session', {
+        email,
+        plan: selectedPlan,
+        amount: selectedPlan.id === 2 ? 2000 : 3000, // Plan price in cents
+        currency: 'usd',
+      });
+
+      const { sessionId } = response.data;
+
+      if (sessionId) {
+        // Redirect to Stripe Checkout for paid plans
+        const { error } = await stripe.redirectToCheckout({ sessionId });
+        if (error) {
+          console.error('Error in payment redirection:', error.message);
+        }
+      }
+    } catch (error) {
+      console.error('Error in processing payment:', error);
+      alert('Payment processing error. Please try again.');
     }
   };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-white dark:bg-black transition-colors duration-300">
-      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8 transition-colors duration-300">Choose Your Plan</h1>
+      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8 transition-colors duration-300">
+        Choose Your Plan
+      </h1>
       <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {plans.map(plan => (
+        {plans.map((plan) => (
           <div
             key={plan.id}
-            className={`transform hover:scale-105 transition-transform duration-300 rounded-xl p-6 shadow-lg ${
-              selectedPlan === plan.id ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-800'
-            } hover:shadow-2xl`}
-            onClick={() => selectPlan(plan.id)}
+            className={`transform hover:scale-105 transition-transform duration-300 rounded-xl p-6 shadow-lg ${selectedPlan?.id === plan.id ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-800'} hover:shadow-2xl`}
+            onClick={() => selectPlan(plan)}
           >
             <div className="relative">
-              <h2 className={`text-2xl font-bold mb-4 ${selectedPlan === plan.id ? 'text-white' : 'text-gray-800 dark:text-gray-100'}`}>
+              <h2 className={`text-2xl font-bold mb-4 ${selectedPlan?.id === plan.id ? 'text-white' : 'text-gray-800 dark:text-gray-100'}`}>
                 {plan.name}
               </h2>
-              <p className={`text-xl font-semibold mb-6 ${selectedPlan === plan.id ? 'text-gray-200' : 'text-gray-900 dark:text-gray-300'}`}>
+              <p className={`text-xl font-semibold mb-6 ${selectedPlan?.id === plan.id ? 'text-gray-200' : 'text-gray-900 dark:text-gray-300'}`}>
                 {plan.price}
               </p>
-              <ul className={`space-y-2 ${selectedPlan === plan.id ? 'text-gray-200' : 'text-gray-700 dark:text-gray-400'}`}>
+              <ul className={`space-y-2 ${selectedPlan?.id === plan.id ? 'text-gray-200' : 'text-gray-700 dark:text-gray-400'}`}>
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-center">
                     <span className="mr-2 text-white">✅</span> {feature}
@@ -90,12 +137,10 @@ const PlanSelection: React.FC = () => {
               </ul>
             </div>
             <button
-              className={`mt-6 w-full py-2 rounded-lg text-lg font-bold ${
-                selectedPlan === plan.id ? 'bg-yellow-500 text-gray-900' : 'bg-blue-500 text-white dark:bg-blue-600'
-              } hover:bg-opacity-90 transition-all duration-300`}
-              onClick={() => selectPlan(plan.id)}
+              className={`mt-6 w-full py-2 rounded-lg text-lg font-bold ${selectedPlan?.id === plan.id ? 'bg-yellow-500 text-gray-900' : 'bg-blue-500 text-white dark:bg-blue-600'} hover:bg-opacity-90 transition-all duration-300`}
+              onClick={() => selectPlan(plan)}
             >
-              {selectedPlan === plan.id ? 'Selected' : 'Select Plan'}
+              {selectedPlan?.id === plan.id ? 'Selected' : 'Select Plan'}
             </button>
           </div>
         ))}
