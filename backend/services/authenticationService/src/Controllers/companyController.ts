@@ -9,60 +9,48 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 const companyService = new CompanyService();
 
 export class CompanyController {
-  async register(req: Request, res: Response): Promise<Response> {
+ async register(req: Request, res: Response): Promise<Response> {
     console.log("Hitting company controller...");
 
-    const {
-      companyName,
-      registrationNumber,
-      email,
-      password,
-      address,
-      phone,
-      website,
-      documents,
-    } = req.body;
+    const { companyName, registrationNumber, email, password, address, phone, website, documents } = req.body;
 
     if (!companyName || !registrationNumber || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     try {
-      const { tokens, message } = await companyService.register({
-        name: companyName,
-        registrationNumber: registrationNumber,
-        email: email,
-        password: password,
-        address: address,
-        phone: phone,
-        website: website,
-        documents: documents || [],
-        subscription: {
-          planName: "Trial",
-          planType: "Trial",
-          startDate: new Date(),
-          endDate: new Date(
-            new Date().setFullYear(new Date().getFullYear() + 1)
-          ),
-          status: "Active",
-        },
-      });
+        const registrationData = {
+          name: companyName,
+          registrationNumber,
+          email,
+          password,
+          address,
+          phone,
+          website,
+          documents: documents || [],
+          role: "BusinessOwner",
+          subscription: {
+              planName: "Trial",
+              planType: "Trial",
+              startDate: new Date(),
+              endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+              status: "Active",
+          },
+        };
 
-      return res.status(201).json({
-        message: message || "Registration successful",
-        tokens,
-        email,
-      });
+        const { tokens, message, email: registeredEmail } = await companyService.register(registrationData);
+
+        return res.status(201).json({
+            message: message || "Registration successful",
+            tokens,
+            email: registeredEmail,
+        });
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        return res.status(400).json({ message: error.message });
-      }
-      return res.status(400).json({
-        message: "Registration failed",
-        error: "Unknown error occurred",
-      });
+        const errorMessage = (error instanceof Error) ? error.message : "Unknown error occurred";
+        return res.status(400).json({ message: errorMessage });
     }
-  }
+}
+
 
   async login(req: Request, res: Response): Promise<Response> {
     console.log("compnayController login touched...");

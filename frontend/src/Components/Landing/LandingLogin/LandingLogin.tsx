@@ -3,6 +3,8 @@ import { useTheme } from '../landingPage/theme-provider';
 import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { setUserRole } from '../../../features/menuSlice';
 
 export default function LandingLoginPage() {
   const { theme } = useTheme();
@@ -10,6 +12,7 @@ export default function LandingLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,8 +35,8 @@ export default function LandingLoginPage() {
 
       const data = await response.json();
       console.log(data);
-      // Redirect to dashboard or another page on success
-      navigate('/company/dashboard');
+      dispatch(setUserRole('businessOwner'));
+      navigate('/businessOwner/dashboard');
       
     } catch (error) {
       console.error('Error during login:', error);

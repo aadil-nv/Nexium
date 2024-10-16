@@ -11,10 +11,9 @@ import {
 import { CSVLink } from "react-csv";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import { FaSearch, FaFileCsv, FaFileExcel, FaFilePdf } from "react-icons/fa";
+import { FaSearch, FaFileCsv, FaFileExcel, FaFilePdf, FaPlus } from "react-icons/fa"; // Added FaPlus
 import DebouncedInput from "../../ui/DebouncedInput";
 
-// Define the Company interface
 interface Subscription {
   planName: string;
   planType: string;
@@ -39,7 +38,6 @@ const CompaniesList: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Define table columns
   const columns = [
     columnHelper.accessor((row, index) => index + 1, {
       header: "No",
@@ -65,21 +63,8 @@ const CompaniesList: React.FC = () => {
       header: "Subscription Status",
       cell: (info) => <span>{info.getValue()}</span>,
     }),
-    columnHelper.display({
-      id: "details",
-      header: "Actions",
-      cell: (info) => (
-        <button
-          onClick={() => handleViewDetails(info.row.original)}
-          className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition"
-        >
-          View Details
-        </button>
-      ),
-    }),
   ];
 
-  // Fetch company data from the backend
   useEffect(() => {
     const fetchCompanies = async () => {
       setLoading(true);
@@ -87,9 +72,8 @@ const CompaniesList: React.FC = () => {
         const response = await axios.get("http://localhost:7001/api/super-admin/fetch-companies");
         console.log("Response from backend:", response.data);
         
-        // Map response data to match the Company interface
         const companies = response.data.map((company: any) => ({
-          id: company._id, // Assuming _id is used for the id
+          id: company._id,
           name: company.name,
           email: company.email,
           phone: company.phone,
@@ -97,7 +81,7 @@ const CompaniesList: React.FC = () => {
           subscription: company.subscription,
         }));
 
-        setData(companies); // Set the mapped companies
+        setData(companies);
       } catch (err) {
         setError("Failed to load data");
       } finally {
@@ -119,10 +103,6 @@ const CompaniesList: React.FC = () => {
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const handleViewDetails = (company: Company) => {
-    alert(`Details of ${company.name}: \nEmail: ${company.email} \nPhone: ${company.phone} \nRegistration Number: ${company.registrationNumber}`);
-  };
-
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -134,10 +114,15 @@ const CompaniesList: React.FC = () => {
     alert("Export to PDF feature coming soon!");
   };
 
+  // Function to handle adding workers
+  const handleAddWorkers = (companyId: number) => {
+    // Implement logic to show a modal or navigate to an employee form
+    console.log(`Add workers for company ID: ${companyId}`);
+  };
+
   return (
     <div className="p-5 max-w-6xl mx-auto bg-white text-gray-800 rounded-lg shadow-lg">
       <div className="flex flex-col lg:flex-row justify-between items-center mb-4 space-y-4 lg:space-y-0 lg:space-x-4">
-        {/* Search bar */}
         <div className="w-full lg:w-1/2 flex items-center space-x-2">
           <FaSearch className="text-gray-400" />
           <DebouncedInput
@@ -147,8 +132,6 @@ const CompaniesList: React.FC = () => {
             placeholder="Search companies..."
           />
         </div>
-
-        {/* Download buttons */}
         <div className="flex flex-wrap space-x-3 justify-center">
           <CSVLink data={data} filename={"Companies.csv"}>
             <button className="flex items-center bg-green-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-green-700">
@@ -170,7 +153,19 @@ const CompaniesList: React.FC = () => {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Add Worker Button */}
+      <div className="mb-4">
+        {data.map((company) => (
+          <button
+            key={company.id}
+            onClick={() => handleAddWorkers(company.id)}
+            className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-blue-600 mb-2"
+          >
+            <FaPlus className="mr-2" /> Add Worker for {company.name}
+          </button>
+        ))}
+      </div>
+
       <div className="overflow-x-auto">
         {loading ? (
           <div>Loading...</div>
@@ -215,7 +210,6 @@ const CompaniesList: React.FC = () => {
         )}
       </div>
 
-      {/* Pagination */}
       <div className="flex justify-center lg:justify-end mt-4 space-x-2">
         <button
           onClick={() => table.previousPage()}

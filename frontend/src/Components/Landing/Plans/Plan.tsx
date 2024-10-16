@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux'; // Import useDispatch
+import { setUserRole } from '../../../features/menuSlice'; // Import the action
 
 type Plan = {
   id: number;
@@ -59,6 +61,7 @@ const PlanSelection: React.FC = () => {
   const location = useLocation();
   const email = (location.state as LocationState)?.email;
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // Initialize useDispatch
 
   useEffect(() => {
     setStripePromise(loadStripe('pk_test_51QA84MG0KgrlY5FBKX5uMqGIPF0QRwCB52FMUeaO4mMIqlaHjWaellTk26kdZYqYgM1USvDyz7jwfoAIL5Wovdpw00AYg8dWct'));
@@ -74,7 +77,8 @@ const PlanSelection: React.FC = () => {
     }
 
     if (selectedPlan.id === 1) {
-      // For trial plan, navigate directly to dashboard without Stripe
+      // For trial plan, save role and navigate directly to dashboard without Stripe
+      dispatch(setUserRole('businessOwner')); // Set role in Redux store
       navigate('/company/dashboard');
       return;
     }
@@ -90,7 +94,7 @@ const PlanSelection: React.FC = () => {
       const response = await axios.post('http://localhost:7000/api/company/create-checkout-session', {
         email,
         plan: selectedPlan,
-        amount: selectedPlan.id === 2 ? 2000 : 3000, // Plan price in cents
+        amount: selectedPlan.id === 2 ? 2000 : 3000, 
         currency: 'usd',
       });
 

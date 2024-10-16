@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import logo from "/nnnlogo1000[1].png";
 import { loginSchema } from '../../../config/validationSchema'; // Import Zod schema
+import { useDispatch } from 'react-redux';
+import { setUserRole } from '../../../features/menuSlice';
 
 // Define Form Inputs based on the Zod schema
 interface FormInputs {
@@ -17,6 +19,8 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null); // State for error message
   const navigate = useNavigate();
+  const [role, setRole] = useState("");
+  const dispatch = useDispatch();
 
   // Initialize useForm with Zod validation
   const { register, handleSubmit, formState: { errors, isValid } } = useForm<FormInputs>({
@@ -34,6 +38,18 @@ export default function AdminLogin() {
         },
         body: JSON.stringify(data),
       });
+
+        if(response.ok){
+          const responseData = await response.json();
+          console.log(responseData.admin._doc.role);
+          setRole(responseData.admin._doc.role);
+          // Store the token in localStorage
+          localStorage.setItem('adminToken', responseData.accessToken);
+          dispatch(setUserRole(role)); 
+          navigate('/businessOwner/dashboard');
+        }
+
+      
 
       if (!response.ok) {
         const errorData = await response.json();

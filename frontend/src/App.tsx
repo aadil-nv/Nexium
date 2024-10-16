@@ -48,13 +48,13 @@ function App() {
 
           {/* Company Routes */}
           <Route element={<CompanyLayout />}>
-            <Route path="/company/dashboard" element={<AdminDashBoard />} />
-            <Route path="/company/companies" element={<CompaniesList />} />
-            <Route path="/company/plans" element={<AllPlans />} />
-            <Route path="/company/services" element={<ServiceRequests />} />
-            <Route path="/company/users" element={<Users />} />
-            <Route path="/company/inventory" element={<Inventorys />} />
-            <Route path="/company/finance" element={<Finance />} />
+            <Route path="/businessOwner/dashboard" element={<AdminDashBoard />} />
+            <Route path="/businessOwner/companies" element={<CompaniesList />} />
+            <Route path="/businessOwner/plans" element={<AllPlans />} />
+            <Route path="/businessOwner/services" element={<ServiceRequests />} />
+            <Route path="/businessOwner/users" element={<Users />} />
+            <Route path="/businessOwner/inventory" element={<Inventorys />} />
+            <Route path="/businessOwner/finance" element={<Finance />} />
           </Route>
 
         </Routes>

@@ -1,17 +1,23 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    },
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
+    },
+    "module": "commonjs",            // Use the module system Node.js uses
+    "target": "es6",                 // Compile for a compatible ECMAScript version
+    "strict": true,                  // Enable strict type checking
+    "esModuleInterop": true,         // Allows default imports from commonjs modules
+    "skipLibCheck": true,            // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "preserve",               // For React or leave out if not using JSX at all
+    "allowSyntheticDefaultImports": true, // Enable default imports
+    "resolveJsonModule": true        // Allows importing of .json files
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
     }
-  }
+  ]
 }

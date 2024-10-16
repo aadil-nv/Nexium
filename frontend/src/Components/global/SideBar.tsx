@@ -31,6 +31,7 @@ const Sidebar = () => {
   const dispatch = useDispatch();
   const activeMenuState = useSelector((state: { menu: { activeMenu: boolean } }) => state.menu.activeMenu);
   const currentColor = useSelector((state: { menu: { themeColor: string, themeMode: boolean } }) => state.menu.themeColor);
+  const userRole = useSelector((state: { menu: { userRole: string} }) => state.menu.userRole);
 
   const handleMenuToggle = () => {
     dispatch(setActiveMenu(!activeMenuState));
@@ -38,22 +39,23 @@ const Sidebar = () => {
 
   return (
     <div>
-      {/* Toggle Button for Mobile View */}
+      
       <button
         onClick={handleMenuToggle}
         className="p-4 text-gray-800 md:hidden"
-        style={{ backgroundColor: currentColor }} // Set dynamic background color
+        style={{ backgroundColor: currentColor }} 
       >
         <FiMenu size={28} />
       </button>
 
-      {/* Sidebar */}
+    
       <div className={`fixed top-0 left-0 h-screen overflow-hidden transition-all duration-300 z-40 
         ${activeMenuState ? 'w-64 bg-gray-100 shadow-lg' : 'w-0'}`}
       >
         {activeMenuState && (
           <div className="h-full flex flex-col">
             <div className="flex justify-between items-center p-4">
+              <h1 className='text-black'>UseRole is {userRole}</h1>
               <NavLink
                 to="/super-admin/dashboard"
                 className="items-center gap-3 flex text-xl font-extrabold tracking-tight text-gray-800"

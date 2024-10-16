@@ -221,7 +221,7 @@ export class CompanyService {
         // }
         async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<any> {
             console.log("Hitting Stripe Checkout Session Service", plan, amount, currency);
-        
+    
             try {
                 if (plan.id === 1) {
                     // For Trial plan, update the subscription directly without Stripe
@@ -232,12 +232,12 @@ export class CompanyService {
                         endDate: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000), // Trial for 7 days
                         status: 'Active',
                     };
-        
+    
                     // Update the company's subscription in the database
                     const updatedCompany = await this.companyRepository.updateSubscriptionByEmail(email, subscription);
-        
+    
                     if (updatedCompany) {
-                        return { message: 'Subscription updated successfully', success: true };
+                        return { message: 'Subscription updated successfully', success: true ,role:updatedCompany.role  };
                     } else {
                         throw new Error('Company not found');
                     }
@@ -262,12 +262,12 @@ export class CompanyService {
                         success_url: 'http://localhost:5173/company/dashboard',
                         cancel_url: 'http://localhost:5173/plan',
                     });
-        
+    
                     return session;
                 }
             } catch (error) {
                 console.error('Error in createCheckoutSession:', error);
-                throw new Error('Failed to process the request');
+                throw new Error('Failed to process the request: ' + error); // Include error message for clarity
             }
         }
       
