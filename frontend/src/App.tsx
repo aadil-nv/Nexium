@@ -18,11 +18,15 @@ import AdminLoginPage from './Pages/AdminDashBoard/AdminLoginPage';
 import LandingOtp from './Pages/LandingPage/LandingOtpPage';
 import PlansPage from './Pages/LandingPage/PlansPage';
 import CompanyLayout from './Pages/OwnerDashboard/CompanyLayout'; // Change to CompanyLayout
+import Workers from './Components/BusinessOwner/BusinessOwnerPages/Workers';
+import Dashboard from './Components/BusinessOwner/BusinessOwnerPages/Dashboard';
+import AddWorkersForm from './Components/BusinessOwner/BusinessOwnerPages/AddWorkersForm';
 
 // Load your Stripe public key
 const stripePromise = loadStripe('your-publishable-key-here'); // Replace with your actual Stripe public key
 
 function App() {
+  
   return (
     <Elements stripe={stripePromise}> {/* Wrap everything with Elements */}
       <Router>
@@ -48,13 +52,14 @@ function App() {
 
           {/* Company Routes */}
           <Route element={<CompanyLayout />}>
-            <Route path="/businessOwner/dashboard" element={<AdminDashBoard />} />
+            <Route path="/businessOwner/dashboard" element={<Dashboard />} />
             <Route path="/businessOwner/companies" element={<CompaniesList />} />
             <Route path="/businessOwner/plans" element={<AllPlans />} />
             <Route path="/businessOwner/services" element={<ServiceRequests />} />
-            <Route path="/businessOwner/users" element={<Users />} />
+            <Route path="/businessOwner/users" element={<Workers />} />
             <Route path="/businessOwner/inventory" element={<Inventorys />} />
             <Route path="/businessOwner/finance" element={<Finance />} />
+            <Route path="/businessOwner/addworkers" element={<AddWorkersForm />} />
           </Route>
 
         </Routes>

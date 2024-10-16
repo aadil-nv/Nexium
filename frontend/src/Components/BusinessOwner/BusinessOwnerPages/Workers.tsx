@@ -8,11 +8,9 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { CSVLink } from "react-csv";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
-import { FaSearch, FaFileCsv, FaFileExcel, FaFilePdf, FaPlus } from "react-icons/fa"; // Added FaPlus
+import { FaSearch, FaPlus } from "react-icons/fa";
 import DebouncedInput from "../../ui/DebouncedInput";
+import { useNavigate } from "react-router-dom";
 
 interface Subscription {
   planName: string;
@@ -34,9 +32,11 @@ interface Company {
 const CompaniesList: React.FC = () => {
   const columnHelper = createColumnHelper<Company>();
   const [globalFilter, setGlobalFilter] = useState("");
+  const [filterSubscriptionStatus, setFilterSubscriptionStatus] = useState(""); 
   const [data, setData] = useState<Company[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const columns = [
     columnHelper.accessor((row, index) => index + 1, {
@@ -70,8 +70,6 @@ const CompaniesList: React.FC = () => {
       setLoading(true);
       try {
         const response = await axios.get("http://localhost:7001/api/super-admin/fetch-companies");
-        console.log("Response from backend:", response.data);
-        
         const companies = response.data.map((company: any) => ({
           id: company._id,
           name: company.name,
@@ -93,7 +91,9 @@ const CompaniesList: React.FC = () => {
   }, []);
 
   const table = useReactTable({
-    data,
+    data: data.filter((company) =>
+      filterSubscriptionStatus ? company.subscription.status === filterSubscriptionStatus : true
+    ),
     columns,
     state: {
       globalFilter,
@@ -103,25 +103,14 @@ const CompaniesList: React.FC = () => {
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Companies");
-    XLSX.writeFile(workbook, "Companies.xlsx");
-  };
-
-  const exportToPDF = () => {
-    alert("Export to PDF feature coming soon!");
-  };
-
   // Function to handle adding workers
-  const handleAddWorkers = (companyId: number) => {
-    // Implement logic to show a modal or navigate to an employee form
-    console.log(`Add workers for company ID: ${companyId}`);
+  const handleAddWorkers = () => {
+    navigate("/businessOwner/addworkers");
   };
 
   return (
     <div className="p-5 max-w-6xl mx-auto bg-white text-gray-800 rounded-lg shadow-lg">
+      {/* Filter Section */}
       <div className="flex flex-col lg:flex-row justify-between items-center mb-4 space-y-4 lg:space-y-0 lg:space-x-4">
         <div className="w-full lg:w-1/2 flex items-center space-x-2">
           <FaSearch className="text-gray-400" />
@@ -132,38 +121,29 @@ const CompaniesList: React.FC = () => {
             placeholder="Search companies..."
           />
         </div>
-        <div className="flex flex-wrap space-x-3 justify-center">
-          <CSVLink data={data} filename={"Companies.csv"}>
-            <button className="flex items-center bg-green-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-green-700">
-              <FaFileCsv className="mr-2" /> CSV
-            </button>
-          </CSVLink>
-          <button
-            onClick={exportToExcel}
-            className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-blue-700"
+        {/* Filter by Subscription Status */}
+        <div className="w-full lg:w-1/4">
+          <select
+            value={filterSubscriptionStatus}
+            onChange={(e) => setFilterSubscriptionStatus(e.target.value)}
+            className="p-2 border-b-2 border-gray-600 bg-gray-100 text-gray-800 w-full transition-all"
           >
-            <FaFileExcel className="mr-2" /> Excel
-          </button>
-          <button
-            onClick={exportToPDF}
-            className="flex items-center bg-red-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-red-700"
-          >
-            <FaFilePdf className="mr-2" /> PDF
-          </button>
+            <option value="">All Subscription Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Expired">Expired</option>
+            <option value="Pending">Pending</option>
+          </select>
         </div>
       </div>
 
       {/* Add Worker Button */}
-      <div className="mb-4">
-        {data.map((company) => (
-          <button
-            key={company.id}
-            onClick={() => handleAddWorkers(company.id)}
-            className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-blue-600 mb-2"
-          >
-            <FaPlus className="mr-2" /> Add Worker for {company.name}
-          </button>
-        ))}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={handleAddWorkers}
+          className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-md transition-transform duration-300 hover:bg-blue-600 hover:scale-105"
+        >
+          <FaPlus className="mr-2" /> Add Workers
+        </button>
       </div>
 
       <div className="overflow-x-auto">
