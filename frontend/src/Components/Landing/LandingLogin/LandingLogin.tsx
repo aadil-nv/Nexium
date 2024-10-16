@@ -5,17 +5,39 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUserRole } from '../../../features/menuSlice';
+import { z } from 'zod';
+
+// Zod schema for validation
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters long')
+});
 
 export default function LandingLoginPage() {
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [credentialError, setCredentialError] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Validate form data using Zod
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      const validationErrors = result.error.format();
+      setErrors({
+        email: validationErrors.email?._errors[0],
+        password: validationErrors.password?._errors[0]
+      });
+      return;
+    } else {
+      setErrors({});
+    }
 
     try {
       const response = await fetch('http://localhost:7000/api/company/login', {
@@ -40,8 +62,14 @@ export default function LandingLoginPage() {
       
     } catch (error) {
       console.error('Error during login:', error);
-      // Optionally, you can set an error message state here
+      setCredentialError('Invalid email or password');
     }
+  };
+
+  const inputBorderStyle = (field: string) => {
+    if (errors[field]) return 'border-red-500';
+    if (email || password) return 'border-green-500';
+    return 'border-gray-300';
   };
 
   return (
@@ -58,7 +86,6 @@ export default function LandingLoginPage() {
           Login
         </h2>
 
-        {/* Login form */}
         <form onSubmit={handleLogin}>
           {/* Email input */}
           <div className='mb-4'>
@@ -68,13 +95,14 @@ export default function LandingLoginPage() {
             <input
               className={`mt-1 p-2 border rounded w-full ${
                 theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-              } border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-shadow duration-200 hover:shadow-md`}
+              } ${inputBorderStyle('email')} focus:ring focus:ring-blue-200 transition-shadow duration-200 hover:shadow-md`}
               type='email'
               id='email'
               placeholder='Enter your email'
-              required
               onChange={(e) => setEmail(e.target.value)}
+              value={email}
             />
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>
 
           {/* Password input */}
@@ -85,12 +113,12 @@ export default function LandingLoginPage() {
             <input
               className={`mt-1 p-2 border rounded w-full ${
                 theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-              } border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-shadow duration-200 hover:shadow-md`}
+              } ${inputBorderStyle('password')} focus:ring focus:ring-blue-200 transition-shadow duration-200 hover:shadow-md`}
               type={showPassword ? 'text' : 'password'}
               id='password'
               placeholder='Enter your password'
-              required
               onChange={(e) => setPassword(e.target.value)}
+              value={password}
             />
             <button
               type='button'
@@ -99,7 +127,11 @@ export default function LandingLoginPage() {
             >
               {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
             </button>
+            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
           </div>
+
+          {/* Credential error */}
+          {credentialError && <p className="text-red-500 text-sm mb-4">{credentialError}</p>}
 
           {/* Login Button */}
           <button

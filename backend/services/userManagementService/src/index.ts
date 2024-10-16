@@ -24,5 +24,5 @@ app.use('/api/super-admin', superAdminRoutes);
 
 
 app.listen(PORT, () => {
-  console.log(`adminManagement is running on http://localhost:${PORT}`.bgBlue.bold);
+  console.log(`userManagementService on http://localhost:${PORT}`.bgBlue.bold);
 });

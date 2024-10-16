@@ -1,7 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Elements } from '@stripe/react-stripe-js'; // Import Elements
-import { loadStripe } from '@stripe/stripe-js'; // Import loadStripe
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
 import AdminLayout from './Pages/AdminDashBoard/AdminDashBoard';
 import LandingPage from './Pages/LandingPage/LandingPage';
@@ -17,18 +17,26 @@ import ServiceRequests from './Components/AdminDashboard/AdminPages/ServiceReque
 import AdminLoginPage from './Pages/AdminDashBoard/AdminLoginPage';
 import LandingOtp from './Pages/LandingPage/LandingOtpPage';
 import PlansPage from './Pages/LandingPage/PlansPage';
-import CompanyLayout from './Pages/OwnerDashboard/CompanyLayout'; // Change to CompanyLayout
+import CompanyLayout from './Pages/OwnerDashboard/CompanyLayout';
 import Workers from './Components/BusinessOwner/BusinessOwnerPages/Workers';
+import { useSelector } from 'react-redux';
 import Dashboard from './Components/BusinessOwner/BusinessOwnerPages/Dashboard';
 import AddWorkersForm from './Components/BusinessOwner/BusinessOwnerPages/AddWorkersForm';
 
 // Load your Stripe public key
 const stripePromise = loadStripe('your-publishable-key-here'); // Replace with your actual Stripe public key
 
+// Mock function to get user role (You can replace this with actual logic)
+const getUserRole = () => {
+  // Assume you fetch this from an API or context provider
+  return localStorage.getItem("userRole") || "superAdmin"; // or "businessOwner"
+};
+
 function App() {
-  
+  const userRole = useSelector((state: { menu: { userRole: string} }) => state.menu.userRole);
+
   return (
-    <Elements stripe={stripePromise}> {/* Wrap everything with Elements */}
+    
       <Router>
         <Routes>
           {/* Landing Page Routes */}
@@ -38,33 +46,37 @@ function App() {
           <Route path="/otp" element={<LandingOtp />} />
           <Route path="/plans" element={<PlansPage />} />
 
-          {/* Admin Routes (with AdminLayout) */}
-          <Route element={<AdminLayout />}>
-            <Route path="/super-admin/dashboard" element={<AdminDashBoard />} />
-            <Route path="/super-admin/companies" element={<CompaniesList />} />
-            <Route path="/super-admin/plans" element={<AllPlans />} />
-            <Route path="/super-admin/services" element={<ServiceRequests />} />
-            <Route path="/super-admin/users" element={<Users />} />
-            <Route path="/super-admin/inventory" element={<Inventorys />} />
-            <Route path="/super-admin/finance" element={<Finance />} />
-          </Route>
-          <Route path='/super-admin/login' element={<AdminLoginPage />} />
+          {/* Admin or BusinessOwner Routes */}
+          {userRole === "super-admin" ? (
+            <Route element={<AdminLayout />}>
+              <Route path="/super-admin/dashboard" element={<AdminDashBoard />} />
+              <Route path="/super-admin/companies" element={<CompaniesList />} />
+              <Route path="/super-admin/plans" element={<AllPlans />} />
+              <Route path="/super-admin/services" element={<ServiceRequests />} />
+              <Route path="/super-admin/users" element={<Workers />} />
+              <Route path="/super-admin/inventory" element={<Inventorys />} />
+              <Route path="/super-admin/finance" element={<Finance />} />
+            </Route>
+          ) : userRole === "businessOwner" ? (
+            <Route element={<CompanyLayout />}>
+              <Route path="/businessOwner/dashboard" element={<Dashboard />} />
+              <Route path="/businessOwner/companies" element={<CompaniesList />} />
+              <Route path="/businessOwner/plans" element={<AllPlans />} />
+              <Route path="/businessOwner/services" element={<ServiceRequests />} />
+              <Route path="/businessOwner/workers" element={<Workers />} />
+              <Route path="/businessOwner/inventory" element={<Inventorys />} />
+              <Route path="/businessOwner/finance" element={<Finance />} />
+              <Route path="/businessOwner/addworkers" element={<AddWorkersForm />} />
+            </Route>
+          ) : (
+            <Route path="*" element={<Navigate to="/" />} />
+          )}
 
-          {/* Company Routes */}
-          <Route element={<CompanyLayout />}>
-            <Route path="/businessOwner/dashboard" element={<Dashboard />} />
-            <Route path="/businessOwner/companies" element={<CompaniesList />} />
-            <Route path="/businessOwner/plans" element={<AllPlans />} />
-            <Route path="/businessOwner/services" element={<ServiceRequests />} />
-            <Route path="/businessOwner/users" element={<Workers />} />
-            <Route path="/businessOwner/inventory" element={<Inventorys />} />
-            <Route path="/businessOwner/finance" element={<Finance />} />
-            <Route path="/businessOwner/addworkers" element={<AddWorkersForm />} />
-          </Route>
-
+          {/* Admin Login Page */}
+          <Route path="/super-admin/login" element={<AdminLoginPage />} />
         </Routes>
       </Router>
-    </Elements>
+   
   );
 }
 

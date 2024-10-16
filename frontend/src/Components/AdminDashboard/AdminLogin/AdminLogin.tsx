@@ -45,7 +45,7 @@ export default function AdminLogin() {
           setRole(responseData.admin._doc.role);
           // Store the token in localStorage
           localStorage.setItem('adminToken', responseData.accessToken);
-          dispatch(setUserRole(role)); 
+          dispatch(setUserRole("super-admin")); 
           navigate('/super-admin/dashboard');
         }
 
