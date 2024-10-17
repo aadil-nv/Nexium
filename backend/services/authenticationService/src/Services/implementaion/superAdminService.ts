@@ -1,19 +1,19 @@
-// src/Services/implementaion/adminService.ts
-import AdminRepository from "../../Repositery/implementaion/adminRepository";
+
+import superAdminRepository from "../../Repositery/implementaion/superAdminRepository";
 import bcrypt from "bcryptjs";
-import { IAdmin, IExtendedLoginResponse } from "../../entities/adminEntity";
+import { ISuperAdmin, IExtendedLoginResponse } from "../interfaces/ISuperAdminService";
 import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
 } from "../../Utils/jwt";
 
-class AdminService {
+class SuperAdminService {
   async login(
     email: string,
     password: string
   ): Promise<IExtendedLoginResponse> {
-    const admin: IAdmin | null = await AdminRepository.findByEmail(email);
+    const admin: ISuperAdmin | null = await superAdminRepository.findByEmail(email);
     if (!admin) {
       throw new Error("Invalid credentials");
     }
@@ -31,7 +31,7 @@ class AdminService {
     return {
       token,
       refreshToken,
-      admin: adminWithoutPassword as Omit<IAdmin, "password">,
+      admin: adminWithoutPassword as Omit<ISuperAdmin, "password">,
     };
   }
 
@@ -39,26 +39,26 @@ class AdminService {
     username: string,
     email: string,
     password: string
-  ): Promise<Omit<IAdmin, "password">> {
-    const existingAdmin = await AdminRepository.findByEmail(email);
+  ): Promise<Omit<ISuperAdmin, "password">> {
+    const existingAdmin = await superAdminRepository.findByEmail(email);
     if (existingAdmin) {
       throw new Error("Email already in use");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newAdmin = await AdminRepository.create({
+    const newAdmin = await superAdminRepository.create({
       username,
       email,
       password: hashedPassword,
     });
 
     const { password: _, ...adminWithoutPassword } = newAdmin;
-    return adminWithoutPassword as Omit<IAdmin, "password">;
+    return adminWithoutPassword as Omit<ISuperAdmin, "password">;
   }
 
   async verifyRefreshToken(
     token: string
-  ): Promise<Omit<IAdmin, "password"> | null> {
+  ): Promise<Omit<ISuperAdmin, "password"> | null> {
     const decoded = verifyRefreshToken(token);
 
     if (!decoded) {
@@ -71,12 +71,12 @@ class AdminService {
     }
 
     const { password: _, ...adminWithoutPassword } = admin;
-    return adminWithoutPassword as Omit<IAdmin, "password">;
+    return adminWithoutPassword as Omit<ISuperAdmin, "password">;
   }
 
-  async findById(id: string): Promise<IAdmin | null> {
-    return await AdminRepository.findById(id);
+  async findById(id: string): Promise<ISuperAdmin | null> {
+    return await superAdminRepository.findById(id);
   }
 }
 
-export default new AdminService();
+export default new SuperAdminService();

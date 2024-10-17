@@ -4,21 +4,17 @@ import {
     ITokenResponse,
     IPaymentIntentResponse,
     ISubscription
-} from "../../entities/ICompany";
-import CompanyRepository from "../../Repositery/implementaion/companyRepositery";
+} from "../interfaces/IBusinessOwnerService";
+import businessOwnerRepository from "../../Repositery/implementaion/businessOwnerRepositery";
 import bcrypt from "bcryptjs";
-import {
-    generateCompanyAccessToken,
-    generateCompanyRefreshToken,
-} from "../../Utils/companyJwt";
+import {generateCompanyAccessToken,generateCompanyRefreshToken,} from "../../Utils/businessOwnerJWT";
 import mongoose from "mongoose";
-import CompanyModel from "../../Schemas/companyRecordsSchema";
+import businessOwnerSchema from "../../Schemas/businessOwnerSchema";
 import generateOtp from "../../Utils/otp";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import otpModel from "../../Schemas/otpScheema";
 dotenv.config();
-import  {loadStripe}  from "@stripe/stripe-js";
 import Stripe from "stripe"
 
 const stripe = new Stripe(process.env.STRIP_SECRET_KEY as string);
@@ -32,11 +28,11 @@ const transporter = nodemailer.createTransport({
 });
 
 
-export class CompanyService {
-    private companyRepository: CompanyRepository;
+export class BusinessOwnerService {
+    private companyRepository: businessOwnerRepository;
 
     constructor() {
-        this.companyRepository = new CompanyRepository();
+        this.companyRepository = new businessOwnerRepository();
     }
 
     async login(
@@ -65,7 +61,7 @@ export class CompanyService {
             throw new Error("Registration number is required");
         }
 
-        const existingCompany = await CompanyModel.findOne({
+        const existingCompany = await businessOwnerSchema.findOne({
             $or: [
                 { email: companyData.email },
                 { phone: companyData.phone },
@@ -89,7 +85,7 @@ export class CompanyService {
 
         await companyDb.createCollection("users");
 
-        const newCompanyData: ICompanyDocument = new CompanyModel({
+        const newCompanyData: ICompanyDocument = new businessOwnerSchema({
             _id: new mongoose.Types.ObjectId(),
             name: companyData.name || "",
             email: companyData.email || "",
@@ -157,7 +153,8 @@ export class CompanyService {
         return { accessToken, refreshToken };
     }
 
-    async validateOtp(email: string, otp: string): Promise<{ success: boolean; email?: string }> {
+    async validateOtp(
+        email: string, otp: string): Promise<{ success: boolean; email?: string }> {
         try {
             const recordedCompany = await this.companyRepository.findOtpByEmail(email);
     
@@ -187,39 +184,9 @@ export class CompanyService {
             return { success: false }; // Error occurred
         }
     }
-    
-
-        // async createCheckoutSession(plan: any, amount: number, currency: string): Promise<any> {
-        //     console.log("Hitting Stripe Checkout Session Service", plan, amount, currency);
-            
-        //     try {
-        //     const session = await stripe.checkout.sessions.create({
-        //         payment_method_types: ['card'],
-        //         line_items: [
-        //         {
-        //             price_data: {
-        //             currency: currency,
-        //             product_data: {
-        //                 name: plan.name,
-        //                 description: `Payment for ${plan.name} Plan`,
-        //             },
-        //             unit_amount: amount,
-        //             },
-        //             quantity: 1,
-        //         },
-        //         ],
-        //         mode: 'payment', // One-time payment
-        //         success_url: 'http://localhost:5173/company/dashboard', // Change to your actual success URL
-        //         cancel_url: 'http://localhost:5173/plan', // Change to your actual cancel URL
-        //     });
         
-        //     return session; // Return session ID to the controller
-        //     } catch (error) {
-        //     console.error('Error creating Checkout Session:', error);
-        //     throw new Error('Failed to create Checkout Session');
-        //     }
-        // }
-        async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<any> {
+     async createCheckoutSession(
+        plan: any, amount: number, currency: string, email: string): Promise<any> {
             console.log("Hitting Stripe Checkout Session Service", plan, amount, currency);
     
             try {
@@ -269,6 +236,6 @@ export class CompanyService {
                 console.error('Error in createCheckoutSession:', error);
                 throw new Error('Failed to process the request: ' + error); // Include error message for clarity
             }
-        }
+    }
       
 }

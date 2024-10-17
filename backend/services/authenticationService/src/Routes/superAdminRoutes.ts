@@ -1,11 +1,10 @@
 import { Router, Request, Response } from "express";
-import AdminController from "../Controllers/adminController";
+import AdminController from "../Controllers/implementation/superAdminController";
 import authMiddleware from "../MIddlewares/authMiddleware";
 
-const router = Router();
+const superAdminRouter = Router();
 
-router.post("/login", async (req: Request, res: Response) => {
-   
+superAdminRouter.post("/login", async (req: Request, res: Response) => { 
   try {
     await AdminController.adminLogin(req, res);
   } catch (error) {
@@ -13,7 +12,7 @@ router.post("/login", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/register", async (req: Request, res: Response) => {
+superAdminRouter.post("/register", async (req: Request, res: Response) => {
   try {
     await AdminController.adminRegister(req, res);
   } catch (error) {
@@ -21,7 +20,7 @@ router.post("/register", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/refresh-token", async (req: Request, res: Response) => {
+superAdminRouter.post("/refresh-token", async (req: Request, res: Response) => {
   try {
     await AdminController.refreshAccessToken(req, res);
   } catch (error) {
@@ -29,7 +28,7 @@ router.post("/refresh-token", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/logout", async (req: Request, res: Response) => {
+superAdminRouter.post("/logout", async (req: Request, res: Response) => {
   try {
     await AdminController.logout(req, res);
   } catch (error) {
@@ -37,4 +36,4 @@ router.post("/logout", async (req: Request, res: Response) => {
   }
 });
 
-export default router;
+export default superAdminRouter;

@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { ICompanyDocument } from "../Controllers/interface/ICompany"; // Adjust the import path as needed
+import { ICompanyDocument } from "../Controllers/interface/ISuperAdmin"; // Adjust the import path as needed
 
 // Create the Company schema
 const companySchema: Schema<ICompanyDocument> = new Schema(

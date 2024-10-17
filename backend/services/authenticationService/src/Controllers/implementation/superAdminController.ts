@@ -1,16 +1,16 @@
 
 import { Request, Response } from 'express';
-import AdminService from '../Services/implementaion/adminService';
-import { generateAccessToken, generateRefreshToken } from '../Utils/jwt';
-import { IExtendedLoginResponse, IAdmin } from '../entities/adminEntity';
+import superAdminService from '../../Services/implementaion/superAdminService';
+import { generateAccessToken, generateRefreshToken } from '../../Utils/jwt';
+import { IExtendedLoginResponse, ISuperAdmin } from '../interface/ISuperAdmin';
 
-class AdminController {
+class SuperAdminController {
    
     async adminLogin(req: Request, res: Response): Promise<Response> {
         
         try {
             const { email, password } = req.body; 
-            const response: IExtendedLoginResponse = await AdminService.login(email, password);
+            const response: IExtendedLoginResponse = await superAdminService.login(email, password);
             const { token, refreshToken, admin } = response;
 
             res.cookie('refreshToken', refreshToken, {
@@ -35,7 +35,7 @@ class AdminController {
             console.log("adminController is touched.......");
             
         try {
-            const newAdmin: Omit<IAdmin, 'password'> = await AdminService.register(username, email, password);
+            const newAdmin: Omit<ISuperAdmin, 'password'> = await superAdminService.register(username, email, password);
             console.log("adminController - newAdmin data",newAdmin);
             
             const accessToken = generateAccessToken(newAdmin); 
@@ -73,7 +73,7 @@ class AdminController {
         }
 
         try {
-            const admin = await AdminService.verifyRefreshToken(refreshToken); 
+            const admin = await superAdminService.verifyRefreshToken(refreshToken); 
 
             if (!admin) {
                 return res.status(403).json({ message: 'Invalid refresh token.' });
@@ -97,4 +97,4 @@ class AdminController {
     }
 }
 
-export default new AdminController();
+export default new SuperAdminController();

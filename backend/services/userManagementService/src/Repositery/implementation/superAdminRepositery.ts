@@ -1,5 +1,5 @@
 import ISuperAdminRepository from "../interface/ISuperAdminRepositery";
-import Company from "../../Schemas/companyRecordSchema"; 
+import Company from "../../Schemas/businessOwnerSchema"; 
 import { ICompany } from "../interface/ISuperAdminRepositery";
 
 class SuperAdminRepository implements ISuperAdminRepository {

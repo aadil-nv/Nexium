@@ -1,8 +1,8 @@
 
 import { Schema, model, Document } from 'mongoose';
-import { IAdmin } from '../entities/adminEntity'; 
+import { ISuperAdmin } from '../Controllers/interface/ISuperAdmin'; 
 
-const adminSchema = new Schema<IAdmin & Document>({
+const adminSchema = new Schema<ISuperAdmin & Document>({
     username: { type: String, required: true, unique: true }, 
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -10,5 +10,5 @@ const adminSchema = new Schema<IAdmin & Document>({
 });
 
 
-const Admin = model<IAdmin>('Admin', adminSchema);
+const Admin = model<ISuperAdmin>('Admin', adminSchema);
 export default Admin;

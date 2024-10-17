@@ -1,8 +1,8 @@
 import mongoose, { Schema } from "mongoose";
-import { ICompanyDocument } from "../entities/ICompany"; // Adjust the import path as needed
+import { IBusinessOwnerDocument } from "../Controllers/interface/IBusinessOwner"; // Adjust the import path as needed
 
 // Create the Company schema
-const companySchema: Schema<ICompanyDocument> = new Schema(
+const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
   {
     name: {
       type: String,
@@ -98,6 +98,6 @@ const companySchema: Schema<ICompanyDocument> = new Schema(
 );
 
 // Create the Company model
-const CompanyModel = mongoose.model<ICompanyDocument>("Company", companySchema);
+const CompanyModel = mongoose.model<IBusinessOwnerDocument>("Company", companySchema);
 
 export default CompanyModel;

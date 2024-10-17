@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
-import { CompanyService } from "../Services/implementaion/companyService";
+import { BusinessOwnerService } from "../../Services/implementaion/businessOwnerService";
 import { ObjectId } from "mongodb"; // Ensure you import ObjectId for MongoDB document ID
 import { loadStripe, Stripe } from '@stripe/stripe-js';
 
 // Initialize Stripe (ensure your secret key is used)
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
-const companyService = new CompanyService();
+const businessOwnerService = new BusinessOwnerService();
 
-export class CompanyController {
+export class BusinessOwnerController {
  async register(req: Request, res: Response): Promise<Response> {
     console.log("Hitting company controller...");
 
@@ -38,7 +38,7 @@ export class CompanyController {
           },
         };
 
-        const { tokens, message, email: registeredEmail } = await companyService.register(registrationData);
+        const { tokens, message, email: registeredEmail } = await businessOwnerService.register(registrationData);
 
         return res.status(201).json({
             message: message || "Registration successful",
@@ -64,7 +64,7 @@ export class CompanyController {
     }
 
     try {
-      const tokens = await companyService.login(email, password);
+      const tokens = await businessOwnerService.login(email, password);
       return res.status(200).json({
         message: "Login successful",
         ...tokens,
@@ -85,7 +85,7 @@ export class CompanyController {
     const { email, otp } = req.body;
 
     try {
-        const response = await companyService.validateOtp(email, otp);
+        const response = await businessOwnerService.validateOtp(email, otp);
         console.log("Response from validateOtp:", response);
 
         if (response.success) {
@@ -114,7 +114,7 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
       const { plan, amount, currency, email } = req.body;
 
       
-      const result = await companyService.createCheckoutSession(plan, amount, currency, email);
+      const result = await businessOwnerService.createCheckoutSession(plan, amount, currency, email);
 
       if (plan.id === 1) {
           
