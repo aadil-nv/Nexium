@@ -14,7 +14,7 @@ export const generateCompanyAccessToken = (company: ICompanyDocument): string =>
     );
 };
 
-// Function to generate refresh token for a company
+
 export const generateCompanyRefreshToken = (company: ICompanyDocument): string => {
     return jwt.sign(
         { id: company._id.toString(), email: company.email }, // Convert _id to string
@@ -23,7 +23,7 @@ export const generateCompanyRefreshToken = (company: ICompanyDocument): string =
     );
 };
 
-// Verify access token
+
 export const verifyCompanyAccessToken = (token: string): JwtPayload | null => {
     try {
         return jwt.verify(token, JWT_SECRET) as JwtPayload;
@@ -33,7 +33,6 @@ export const verifyCompanyAccessToken = (token: string): JwtPayload | null => {
     }
 };
 
-// Verify refresh token
 export const verifyCompanyRefreshToken = (token: string): JwtPayload | null => {
     try {
         return jwt.verify(token, REFRESH_TOKEN_SECRET) as JwtPayload;

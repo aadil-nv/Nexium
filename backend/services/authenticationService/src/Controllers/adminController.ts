@@ -7,9 +7,9 @@ import { IExtendedLoginResponse, IAdmin } from '../entities/adminEntity';
 class AdminController {
    
     async adminLogin(req: Request, res: Response): Promise<Response> {
-        const { email, password } = req.body;
-
+        
         try {
+            const { email, password } = req.body; 
             const response: IExtendedLoginResponse = await AdminService.login(email, password);
             const { token, refreshToken, admin } = response;
 

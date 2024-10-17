@@ -113,14 +113,14 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
   try {
       const { plan, amount, currency, email } = req.body;
 
-      // Call service to handle business logic
+      
       const result = await companyService.createCheckoutSession(plan, amount, currency, email);
 
       if (plan.id === 1) {
-          // If plan is Trial (ID = 1), return success message directly
+          
           return res.status(200).json({ message: result.message, success: result.success });
       } else {
-          // For other plans, return Stripe session ID for payment
+          
           return res.status(200).json({ sessionId: result.id });
       }
   } catch (error) {

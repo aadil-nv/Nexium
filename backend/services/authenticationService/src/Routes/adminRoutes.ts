@@ -1,9 +1,11 @@
 import { Router, Request, Response } from "express";
 import AdminController from "../Controllers/adminController";
+import authMiddleware from "../MIddlewares/authMiddleware";
 
 const router = Router();
 
 router.post("/login", async (req: Request, res: Response) => {
+   
   try {
     await AdminController.adminLogin(req, res);
   } catch (error) {
