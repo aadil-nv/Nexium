@@ -5,7 +5,7 @@ import connectDB from './Config/connectDB';
 import superAdminRoutes from './Routes/superAdminRoutes';
 import businessOwnerRouter from './Routes/businessOwnerRoutes';
 import 'colors' ;
-//jdhvsdjhfsfjdsfhvsjdfs
+//jdhvsdjhfsfjdsfhvsjdfsjdshfjsfsfhjf
 dotenv.config(); 
 
 const app = express(); 
