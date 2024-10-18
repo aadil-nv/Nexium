@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
-import Logo from '../../../assets/landingPageAssets/adhil_logo_PNG[1].png'; 
-import { useTheme } from '../landingPage/theme-provider'; 
+import Logo from '../../../assets/landingPageAssets/NavbarLogo.png'; 
+import { useTheme } from './theme-provider'; 
 const Footer: React.FC = () => {
   const { theme } = useTheme();  
 
