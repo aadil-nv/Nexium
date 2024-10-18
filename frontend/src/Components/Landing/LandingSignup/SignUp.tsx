@@ -52,7 +52,7 @@ const SignUp: React.FC = () => {
   
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:7000/api/company/register', {
+      const response = await axios.post('http://localhost:7000/api/business-owner/register', {
         companyName,
         registrationNumber,
         email,

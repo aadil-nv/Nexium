@@ -30,9 +30,13 @@ export interface ICompanyDocument extends Document {
 export interface ICompany extends Omit<ICompanyDocument, "_id"> {}
 
 export interface ITokenResponse {
-  accessToken: string;
-  refreshToken: string;
+  email?: string;
+  success?: boolean;
+  message?: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
+
 
 export interface IPaymentIntentResponse {
     clientSecret: string;

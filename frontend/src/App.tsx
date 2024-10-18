@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { Toaster } from 'react-hot-toast'; 
 
 import AdminLayout from './pages/superAdminPages/AdminDashBoard';
 import LandingPage from './pages/landingPages/LandingPage';
@@ -38,6 +39,7 @@ function App() {
   return (
     
       <Router>
+         <Toaster />
         <Routes>
           {/* Landing Page Routes */}
           <Route path="/" element={<LandingPage />} />

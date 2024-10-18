@@ -33,4 +33,35 @@ export default class BusinessOwnerRepository {
       { new: true } // Return the updated document
     ).exec();
   }
+
+  async getOtpByEmail(email: string): Promise<any | null> {
+    console.log("getOtpEmail is --",email);
+    return await OtpModel.findOne({ email }).exec();
+  }
+
+
+  async updateOtp(email: string, otp: string): Promise<void> {
+    const result = await OtpModel.updateOne(
+        { email }, // Filter by email
+        { 
+            otp, // Update the OTP
+            createdAt: new Date(), // Update the timestamp (consider if you want this)
+            updatedAt: new Date(), // Update the updatedAt field
+        }
+    );
+
+    // Optional: Check if any document was modified
+    if (result.modifiedCount === 0) {
+        throw new Error('Failed to update OTP. No document found or OTP was not changed.');
+    }
+  }
+  
+
+  async updatePassword(email: string, hashedPassword: string): Promise<void> {
+    await businessOwnerSchema.updateOne({ email }, { password: hashedPassword }).exec();
+  }
+  
+  
+  
+
 }

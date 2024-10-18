@@ -35,20 +35,53 @@ export class BusinessOwnerService {
         this.companyRepository = new businessOwnerRepository();
     }
 
-    async login(
-        email: string, password: string): Promise<ITokenResponse> {
+    async login(email: string, password: string): Promise<ITokenResponse> {
+    try {
+ 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+
+        if (!emailRegex.test(email) || !passwordRegex.test(password)) {
+            return { success: false, message: "Invalid credentials", accessToken: "", refreshToken: "" };
+        }
+
         const company = await this.companyRepository.findByEmail(email);
-        if (!company) {
-            throw new Error("Company not found");
+        if (!company ) {
+            return { message: "Invalid credentials", accessToken: "", refreshToken: "" };
+        }
+        if (!await bcrypt.compare(password, company.password)) {
+            return {  message: "Invalid credentials", accessToken: "", refreshToken: "" };
+        }
+        if ( !company.isVerified ) {
+            const otp = generateOtp();
+            await this.sendOtp(company.email, otp);
+            return { email:company.email, success: false, message: "Account not verified. Please verify your email", accessToken: "", refreshToken: "" };
         }
 
-        const isMatch = await bcrypt.compare(password, company.password);
-        if (!isMatch) {
-            throw new Error("Invalid password");
-        }
+        const { accessToken, refreshToken } = this.generateTokens(company);
 
-        return this.generateTokens(company);
+      
+        return { 
+            success: true, 
+            message: "Login successful", 
+            accessToken, 
+            refreshToken 
+        };
+
+    } catch (error) {
+        // Catch any error and return the failure response
+        return { 
+            success: false, 
+            message: "An error occurred during login", 
+            accessToken: "", 
+            refreshToken: "" 
+        };
     }
+}
+
+    
+    
+    
 
     async register(
         companyData: Partial<ICompany>
@@ -73,8 +106,8 @@ export class BusinessOwnerService {
             if (existingCompany.isVerified) {
                 throw new Error("Credentials already used. Please check the details.");
             }
-
-            await this.sendOtp(existingCompany.email);
+            const otp = generateOtp()
+            await this.sendOtp(existingCompany.email,otp);
             console.log("COMPANYDATA EMAIL", existingCompany.email);
 
             return { message: "true", email: existingCompany.email };
@@ -106,8 +139,9 @@ export class BusinessOwnerService {
         });
 
         const savedCompany = await this.companyRepository.create(newCompanyData);
+        const otp = generateOtp()
 
-        await this.sendOtp(savedCompany.email);
+        await this.sendOtp(savedCompany.email,otp);
 
         const tokens = this.generateTokens(savedCompany);
 
@@ -118,9 +152,11 @@ export class BusinessOwnerService {
         };
     }
 
+    
+
     async sendOtp(
-        email: string): Promise<void> {
-        const otp = generateOtp();
+        email: string,otp:string): Promise<void> {
+       
         const otpRecord = new otpModel({
             email: email,
             otp: otp,
@@ -155,6 +191,8 @@ export class BusinessOwnerService {
 
     async validateOtp(
         email: string, otp: string): Promise<{ success: boolean; email?: string }> {
+            console.log("hitting validateOtp service", email, otp);
+            
         try {
             const recordedCompany = await this.companyRepository.findOtpByEmail(email);
     
@@ -237,5 +275,81 @@ export class BusinessOwnerService {
                 throw new Error('Failed to process the request: ' + error); // Include error message for clarity
             }
     }
+
+   
       
+    async resendOtp(
+        email: string): Promise<{ success: boolean; message: string }> {
+        console.log("resendOtp mail", email);
+        
+        const otp = generateOtp();
+        const existingOtp = await this.companyRepository.getOtpByEmail(email);
+        
+        if (existingOtp) {
+            console.log("Updating existing OTP:", existingOtp);
+            await this.companyRepository.updateOtp(email, otp); // Update existing OTP
+            return { success: true, message: 'OTP updated successfully.' }; // Indicate successful update
+        } else {
+            console.log("No existing OTP, creating a new one");
+            // Ensure you save a new OTP here
+        }
+        
+        // Send the OTP via email
+        await this.sendOtp(email, otp);
+        
+        return { success: true, message: 'OTP has been sent successfully.' };
+    }
+    
+    
+    async forgottPassword(email: string): Promise<{ success: boolean; message: string }> {
+        console.log("hitting forgotPassword service", email);
+        
+       try {
+        
+        const otp = generateOtp();
+        const existingBusinessOwner = await this.companyRepository.findByEmail(email);
+        
+        if (existingBusinessOwner) {
+            console.log("Updating existing OTP:", existingBusinessOwner);
+            await this.sendOtp(existingBusinessOwner.email, otp);
+            return { success: true, message: 'OTP sent successfully.' }; 
+        } else {
+            console.log("No existing OTP, creating a new one");
+            return { success: false, message: 'No existing OTP found for this email.' };
+        }
+        
+        }catch (error) {
+        console.error("Error sending OTP:", error);
+        return { success: false, message: 'Failed to send OTP. Please try again later.' };
+        
+        }
+        
+        
+    
+    }
+
+    async addNewPassword(email: string, password: string): Promise<{ success: boolean; message: string }> {
+        console.log("hitting addNewPassword service", email, password);
+        
+        try {
+            const existingBusinessOwner = await this.companyRepository.findByEmail(email);
+            if (!existingBusinessOwner) {
+                console.log("No existing OTP, creating a new one");
+                return { success: false, message: 'No existing OTP found for this email.' };
+            }
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await this.companyRepository.updatePassword(email, hashedPassword);
+            return { success: true, message: 'Password updated successfully.' };
+        } catch (error) {
+            console.error("Error updating password:", error);
+            return { success: false, message: 'Failed to update password. Please try again later.' };
+        }
+    }
+      
+
 }
+
+
+
+
+

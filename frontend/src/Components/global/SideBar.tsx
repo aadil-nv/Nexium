@@ -20,7 +20,7 @@ const Sidebar = () => {
 
   // Dynamically update routes based on the user role
   const getRoutePrefix = (role: string) => {
-    if (role === 'businessOwner') return '/businessOwner';
+    if (role === 'businessOwner') return '/business-owner';
     if (role === 'super-admin') return '/super-admin';
     return '/';
   };

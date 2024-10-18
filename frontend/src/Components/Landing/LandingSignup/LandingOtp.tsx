@@ -1,8 +1,9 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../landing/landingPage/theme-provider';
+import { useTheme } from '../../../components/landing/landingPage/theme-provider';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import toast from 'react-hot-toast'; // Import React Hot Toast
 
 // Define the type for the location state
 type LocationState = {
@@ -18,13 +19,12 @@ const LoadingSpinner = () => (
 const LandingOtp: React.FC = () => {
   const { theme } = useTheme();
   const [otp, setOtp] = useState(Array(6).fill(''));
-  const [timeLeft, setTimeLeft] = useState(90); 
+  const [timeLeft, setTimeLeft] = useState(90);
   const [isTimerActive, setIsTimerActive] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
   const location = useLocation();
   const email = (location.state as LocationState)?.email;
   const navigate = useNavigate();
- 
-  
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -59,7 +59,6 @@ const LandingOtp: React.FC = () => {
     if (/^[0-9]$/.test(value) || value === '') {
       const newOtp = [...otp];
       newOtp[index] = value;
-
       setOtp(newOtp);
 
       if (value && index < otp.length - 1) {
@@ -80,10 +79,29 @@ const LandingOtp: React.FC = () => {
     }
   };
 
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     setTimeLeft(90); // Reset timer to 90 seconds
     setIsTimerActive(true);
     setOtp(Array(6).fill('')); // Reset OTP input
+    setErrorMessage(''); // Clear any previous error message
+
+    try {
+      // Call the backend to resend the OTP
+      const response = await axios.post('http://localhost:7000/api/business-owner/resend-otp', {
+        email,
+      });
+
+      const data = response.data;
+
+      if (data.success) {
+        toast.success('OTP has been resent successfully!'); // Show success message
+      } else {
+        toast.error(data.message || 'Failed to resend OTP.'); // Show error message
+      }
+    } catch (error) {
+      console.error('Error resending OTP:', error);
+      toast.error('Error resending OTP. Please try again.'); // Show generic error message
+    }
   };
 
   const formatTimeLeft = () => {
@@ -97,25 +115,27 @@ const LandingOtp: React.FC = () => {
     
     const otpString = otp.join('');
     try {
-        const response = await axios.post('http://localhost:7000/api/company/otp-validation', {
-            email, 
-            otp: otpString, 
-        });
+      const response = await axios.post('http://localhost:7000/api/business-owner/otp-validation', {
+        email, 
+        otp: otpString, 
+      });
 
-        const data = response.data; 
-        console.log("Data from OTP validation:", data.success, data.message, data.email);
-        
-       
-        if (data.success === true) {
-            navigate('/plans',{ state: { email: data.email }}); 
-        } else {
-            console.error(data.message || 'Invalid OTP'); 
-        }
+      const data = response.data; 
+      console.log("Data from OTP validation:", data.success, data.message, data.email);
+      
+      if (data.success) {
+        navigate('/plans', { state: { email: data.email } }); 
+        setErrorMessage(''); // Clear error message on success
+      } else {
+        setErrorMessage(data.message || 'Invalid OTP'); // Set error message
+        toast.error(data.message || 'Invalid OTP'); // Show error toast
+      }
     } catch (error) {
-        console.error('Error verifying OTP:', error);
+      console.error('Error verifying OTP:', error);
+      setErrorMessage('Error verifying OTP. Please try again.'); // Set a generic error message
+      toast.error('Error verifying OTP. Please try again.'); // Show generic error toast
     }
-};
-
+  };
 
   return (
     <div
@@ -153,6 +173,10 @@ const LandingOtp: React.FC = () => {
               ))}
             </div>
 
+            {errorMessage && (
+              <p className="text-red-500 text-center mb-4">{errorMessage}</p> // Error message display
+            )}
+
             <button
               type="submit"
               className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition-colors shadow-md hover:shadow-lg mb-4"
@@ -166,6 +190,7 @@ const LandingOtp: React.FC = () => {
               </p>
             ) : (
               <button
+                type="button" // Change to type="button" to prevent form submission
                 onClick={handleResendOtp}
                 className='w-full text-blue-500 hover:underline text-center text-sm'
               >

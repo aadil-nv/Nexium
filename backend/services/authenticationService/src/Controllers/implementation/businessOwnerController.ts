@@ -52,32 +52,37 @@ export class BusinessOwnerController {
 }
 
 
-  async login(req: Request, res: Response): Promise<Response> {
-    console.log("compnayController login touched...");
+async login(req: Request, res: Response): Promise<Response> {
+  console.log("companyController login touched...");
 
-    const { email, password } = req.body;
+  try {
+      const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
-    }
-
-    try {
-      const tokens = await businessOwnerService.login(email, password);
-      return res.status(200).json({
-        message: "Login successful",
-        ...tokens,
-      });
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        return res.status(401).json({ message: error.message });
+      // Check if email or password is missing
+      if (!email || !password) {
+          return res.status(400).json({ message: "Email and password are required" });
       }
-      return res
-        .status(401)
-        .json({ message: "Login failed", error: "Unknown error occurred" });
-    }
+
+      // Attempt login
+      const tokens = await businessOwnerService.login(email, password);
+
+      // If login failed, return the failure message
+      if (!tokens.success) {
+          return res.status(401).json({ message: tokens.message });
+      }
+
+      // If login is successful, return tokens
+      return res.status(200).json(tokens);
+
+  } catch (error) {
+      // Handle specific error messages or send a generic one
+      return res.status(500).json({
+          message: error instanceof Error ? error.message : "Login failed due to an unknown error",
+      });
   }
+}
+
+
 
   async validateOtp(req: Request, res: Response): Promise<Response> {
     console.log("Hitting validateOtp...");
@@ -107,6 +112,20 @@ export class BusinessOwnerController {
     }
 }
 
+
+async resendOtp(req: Request, res: Response): Promise<Response> {
+  const { email } = req.body;
+
+  try {
+    const result = await businessOwnerService.resendOtp(email);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error('Error resending OTP:', error);
+    return res.status(500).json({ message: error || 'Internal Server Error' });
+  }
+}
+
+
 async createCheckoutSession(req: Request, res: Response): Promise<Response> {
   console.log("Hitting Stripe Checkout Session controller...");
 
@@ -127,5 +146,25 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
       console.error('Error creating checkout session:', error);
       return res.status(500).json({ message: 'Failed to create checkout session' });
   }
+}
+
+async forgottPassword(req: Request, res: Response): Promise<Response> {
+     console.log("Hitting forgotPassword controller...");
+     
+  try { 
+    const { email } = req.body;
+    const result = await businessOwnerService.forgottPassword(email);
+    return res.status(200).json(result);
+  } catch (error) { 
+    console.error('Error resending OTP:', error);
+    return res.status(500).json({ message: error || 'Internal Server Error' });
+  }
+
+}
+
+async addNewPassword(req: Request, res: Response): Promise<Response> {
+    const { email, password } = req.body;
+    const result = await businessOwnerService.addNewPassword(email, password);
+    return res.status(200).json(result);
 }
 }

@@ -8,11 +8,17 @@ import {Provider} from "react-redux";
 import store from "./store/store.ts";
 
 
+// Inside your main app component
+
+
+
+
 
 createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
   <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
     <StrictMode>
+    
       <App />
     </StrictMode>
     </ThemeProvider>

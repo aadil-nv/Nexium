@@ -91,7 +91,7 @@ const PlanSelection: React.FC = () => {
       }
 
       // Post to backend to create checkout session
-      const response = await axios.post('http://localhost:7000/api/company/create-checkout-session', {
+      const response = await axios.post('http://localhost:7000/api/business-owner/create-checkout-session', {
         email,
         plan: selectedPlan,
         amount: selectedPlan.id === 2 ? 2000 : 3000, 
