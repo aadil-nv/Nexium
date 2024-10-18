@@ -19,8 +19,8 @@ app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
-app.use('/api/admin', superAdminRoutes); 
-app.use('/api/company', businessOwnerRouter); 
+app.use('/api/super-admin', superAdminRoutes); 
+app.use('/api/business-owner', businessOwnerRouter); 
 
 app.listen(PORT, () => {
   console.log(`authService is running on http://localhost:${PORT}`.bgGreen.bold);

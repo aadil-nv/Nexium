@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom'; // This will render the child routes
-import Sidebar from '../../Components/global/SideBar';
-import Navbar from '../../Components/global/Navbar';
+import Sidebar from '../../components/global/SideBar';
+import Navbar from '../../components/global/Navbar';
 import { useSelector } from 'react-redux';
 import { FiSettings } from 'react-icons/fi';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
-import ThemeSettings from '../../Components/global/ThemeSettings'; // Assuming you have this component
+import ThemeSettings from '../../components/global/ThemeSettings'; // Assuming you have this component
 
 const AdminLayout = () => {
   const activeMenu = useSelector((state: { menu: { activeMenu: boolean } }) => state.menu.activeMenu);

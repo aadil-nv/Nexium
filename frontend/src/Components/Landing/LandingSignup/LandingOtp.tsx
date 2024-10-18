@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '../landingPage/theme-provider';
+import { useTheme } from '../../landing/landingPage/theme-provider';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 

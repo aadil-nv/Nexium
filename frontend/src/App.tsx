@@ -3,25 +3,25 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
-import AdminLayout from './Pages/AdminDashBoard/AdminDashBoard';
-import LandingPage from './Pages/LandingPage/LandingPage';
-import LandingLoginPage from './Pages/LandingPage/LandingLoginPage';
-import SignUp from './Pages/LandingPage/LandingSignUpPage';
-import AdminDashBoard from './Components/AdminDashboard/AdminPages/AdminDashborad';
-import CompaniesList from './Components/AdminDashboard/AdminPages/CompaniesList';
-import AllPlans from './Components/AdminDashboard/AdminPages/AllPlans';
-import Finance from './Components/AdminDashboard/AdminPages/Finance';
-import Users from './Components/AdminDashboard/AdminPages/Users';
-import Inventorys from './Components/AdminDashboard/AdminPages/Inventorys';
-import ServiceRequests from './Components/AdminDashboard/AdminPages/ServiceRequests';
-import AdminLoginPage from './Pages/AdminDashBoard/AdminLoginPage';
-import LandingOtp from './Pages/LandingPage/LandingOtpPage';
-import PlansPage from './Pages/LandingPage/PlansPage';
-import CompanyLayout from './Pages/OwnerDashboard/CompanyLayout';
-import Workers from './Components/BusinessOwner/BusinessOwnerPages/Workers';
+import AdminLayout from './Pages/superAdminPages/AdminDashBoard';
+import LandingPage from './Pages/landingPages/LandingPage';
+import LandingLoginPage from './Pages/landingPages/LandingLoginPage';
+import SignUp from './Pages/landingPages/LandingSignUpPage';
+import AdminDashBoard from './components/superAdmin/AdminPages/AdminDashborad';
+import CompaniesList from './components/superAdmin/AdminPages/CompaniesList';
+import AllPlans from './components/superAdmin/AdminPages/AllPlans';
+import Finance from './components/superAdmin/AdminPages/Finance';
+import Users from './components/superAdmin/AdminPages/Users';
+import Inventorys from './components/superAdmin/AdminPages/Inventorys';
+import ServiceRequests from './components/superAdmin/AdminPages/ServiceRequests';
+import AdminLoginPage from './Pages/superAdminPages/AdminLoginPage';
+import LandingOtp from './Pages/landingPages/LandingOtpPage';
+import PlansPage from './Pages/landingPages/PlansPage';
+import CompanyLayout from './Pages/businessOwnerPages/CompanyLayout';
+import Workers from './components/BusinessOwner/BusinessOwnerPages/Workers';
 import { useSelector } from 'react-redux';
-import Dashboard from './Components/BusinessOwner/BusinessOwnerPages/Dashboard';
-import AddWorkersForm from './Components/BusinessOwner/BusinessOwnerPages/AddWorkersForm';
+import Dashboard from './components/BusinessOwner/BusinessOwnerPages/Dashboard';
+import AddWorkersForm from './components/BusinessOwner/BusinessOwnerPages/AddWorkersForm';
 
 // Load your Stripe public key
 const stripePromise = loadStripe('your-publishable-key-here'); // Replace with your actual Stripe public key

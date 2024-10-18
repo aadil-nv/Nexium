@@ -1,5 +1,5 @@
 import React from 'react'
-import AdminLogin from '../../Components/AdminDashboard/AdminLogin/AdminLogin'
+import AdminLogin from '../../components/superAdmin/AdminLogin/AdminLogin'
 
 export default function AdminLoginPage() {
   return (

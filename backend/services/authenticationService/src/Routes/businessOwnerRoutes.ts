@@ -28,5 +28,9 @@ businessOwnerRouter.post(
     express.raw({ type: 'application/json' }), 
     StripeWebhookController.handleStripeWebhook.bind(StripeWebhookController)
   );
+
+  businessOwnerRouter.post('/forgott-password', async (req: Request, res: Response) => {
+    await businessOwnerController.validateOtp(req, res);
+});  
   
   export default businessOwnerRouter;

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import logo from "../../../assets/landingPageAssets/nnn logo 1000[1].png";
+import logo from "../../../assets/landingPageAssets/NavbarLogo.png";
 import { IoMenu } from "react-icons/io5";
 import { FaXmark } from "react-icons/fa6";
 import { ModeToggle } from "../../ui/mode-toggle";
-import { useTheme } from "../landingPage/theme-provider";
+import { useTheme } from "../../landing/landingPage/theme-provider";
 import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
