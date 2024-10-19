@@ -4,36 +4,12 @@ import authMiddleware from "../MIddlewares/authMiddleware";
 
 const superAdminRouter = Router();
 
-superAdminRouter.post("/login", async (req: Request, res: Response) => { 
-  try {
-    await AdminController.adminLogin(req, res);
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
+superAdminRouter.post("/login",AdminController.adminLogin);
 
-superAdminRouter.post("/register", async (req: Request, res: Response) => {
-  try {
-    await AdminController.adminRegister(req, res);
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
+superAdminRouter.post("/register",AdminController.adminRegister);
 
-superAdminRouter.post("/refresh-token", async (req: Request, res: Response) => {
-  try {
-    await AdminController.refreshAccessToken(req, res);
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
+superAdminRouter.post("/refresh-token",AdminController.refreshAccessToken);
 
-superAdminRouter.post("/logout", async (req: Request, res: Response) => {
-  try {
-    await AdminController.logout(req, res);
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
+superAdminRouter.post("/logout",AdminController.logout);
 
 export default superAdminRouter;

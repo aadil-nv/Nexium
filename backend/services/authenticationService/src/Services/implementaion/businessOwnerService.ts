@@ -17,6 +17,7 @@ import otpModel from "../../Schemas/otpScheema";
 dotenv.config();
 import Stripe from "stripe"
 
+
 const stripe = new Stripe(process.env.STRIP_SECRET_KEY as string);
 
 const transporter = nodemailer.createTransport({
@@ -77,11 +78,7 @@ export class BusinessOwnerService {
             refreshToken: "" 
         };
     }
-}
-
-    
-    
-    
+    }
 
     async register(
         companyData: Partial<ICompany>
@@ -154,25 +151,48 @@ export class BusinessOwnerService {
 
     
 
-    async sendOtp(
-        email: string,otp:string): Promise<void> {
-       
+    async sendOtp(email: string, otp: string): Promise<void> {
         const otpRecord = new otpModel({
             email: email,
             otp: otp,
             createdAt: new Date(),
         });
-
+    
         await otpRecord.save();
-
+    
+        const currentDate = new Date().toLocaleString(); // Format current date
+        const expirationTime = "10 minutes"; // OTP expiration time
+    
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
             subject: "Your OTP for Verification",
-            text: `Your OTP for verification is ${otp}. It is valid for 10 minutes.`,
-            html: `<p>Your OTP for verification is <strong>${otp}</strong>. It is valid for 10 minutes.</p>`,
+            text: `Your OTP for verification is ${otp}. It is valid for ${expirationTime}.`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;">
+                    <div style="text-align: center;">
+                        <img src="Nexium" alt="Company Logo" style="width: 150px; height: auto; margin-bottom: 20px;" />
+                    </div>
+                    <h2 style="color: #333; text-align: center;">Your OTP for Verification</h2>
+                    <p style="font-size: 16px; color: #555; text-align: center;">
+                        Your OTP for verification is <strong style="font-size: 24px; color: #4CAF50;">${otp}</strong>.
+                    </p>
+                    <p style="font-size: 14px; color: #555; text-align: center;">
+                        This OTP is valid for <strong style="color: #FF5722;">${expirationTime}</strong> from the time of request.
+                    </p>
+                    <p style="font-size: 14px; color: #888; text-align: center;">
+                        Date: <strong>${currentDate}</strong>
+                    </p>
+                    <p style="font-size: 14px; color: #888; text-align: center;">
+                        Please do not share this OTP with anyone.
+                    </p>
+                    <footer style="margin-top: 20px; text-align: center; font-size: 12px; color: #aaa;">
+                        &copy; ${new Date().getFullYear()} Nexium All rights reserved.
+                    </footer>
+                </div>
+            `,
         };
-
+    
         try {
             const info = await transporter.sendMail(mailOptions);
             console.log("OTP email sent: %s", info.messageId);
@@ -181,6 +201,8 @@ export class BusinessOwnerService {
             throw new Error("Failed to send OTP. Please try again later.");
         }
     }
+    
+   
 
     generateTokens(
         company: ICompanyDocument): ITokenResponse {
@@ -301,32 +323,57 @@ export class BusinessOwnerService {
     }
     
     
-    async forgottPassword(email: string): Promise<{ success: boolean; message: string }> {
-        console.log("hitting forgotPassword service", email);
+    // async forgottPassword(email: string): Promise<{ success: boolean; message: string; email?: string; }> {
+    //     console.log("hitting forgotPassword service", email);
         
-       try {
+    //    try {
         
-        const otp = generateOtp();
-        const existingBusinessOwner = await this.companyRepository.findByEmail(email);
+    //     const otp = generateOtp();
+    //     const existingBusinessOwner = await this.companyRepository.findByEmail(email);
         
-        if (existingBusinessOwner) {
-            console.log("Updating existing OTP:", existingBusinessOwner);
-            await this.sendOtp(existingBusinessOwner.email, otp);
-            return { success: true, message: 'OTP sent successfully.' }; 
-        } else {
-            console.log("No existing OTP, creating a new one");
-            return { success: false, message: 'No existing OTP found for this email.' };
-        }
+    //     if (existingBusinessOwner) {
+    //         console.log("Updating existing OTP:", existingBusinessOwner);
+    //         await this.sendOtp(existingBusinessOwner.email, otp);
+    //         return { success: true, message: 'OTP sent successfully.', email: existingBusinessOwner.email }; 
+    //     } else {
+    //         console.log("No existing OTP, creating a new one");
+    //         return { success: false, message: 'No existing OTP found for this email.' };
+    //     }
         
-        }catch (error) {
-        console.error("Error sending OTP:", error);
-        return { success: false, message: 'Failed to send OTP. Please try again later.' };
+    //     }catch (error) {
+    //     console.error("Error sending OTP:", error);
+    //     return { success: false, message: 'Failed to send OTP. Please try again later.' };
         
-        }
-        
-        
+    //     } 
     
+    // }
+    async forgotPassword(email: string): Promise<{ success: boolean; message: string; email?: string }> {
+        console.log("Hitting forgotPassword service for email:", email);
+        
+        try {
+            const otp = generateOtp();
+            
+            // Using Promise.all to handle both operations concurrently
+            const [existingBusinessOwner] = await Promise.all([
+                this.companyRepository.findByEmail(email), // Database call
+                // Optional: Cache the OTP or email sending service to reduce delays
+            ]);
+    
+            if (existingBusinessOwner) {
+                console.log("Updating existing OTP:", existingBusinessOwner);
+                await this.sendOtp(existingBusinessOwner.email, otp); // This can be optimized further
+                return { success: true, message: 'OTP sent successfully.', email: existingBusinessOwner.email }; 
+            } else {
+                console.log("No existing OTP, creating a new one");
+                return { success: false, message: 'No existing account found for this email.' };
+            }
+            
+        } catch (error) {
+            console.error("Error sending OTP:", error);
+            return { success: false, message: 'Failed to send OTP. Please try again later.' };
+        }
     }
+    
 
     async addNewPassword(email: string, password: string): Promise<{ success: boolean; message: string }> {
         console.log("hitting addNewPassword service", email, password);

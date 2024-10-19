@@ -1,15 +1,14 @@
 import React from 'react'
 import Navbar from '../../components/landing/landingPage/Navbar'
-import Plan from '../../components/landing/Plans/Plan'
+import VerifyEmail from '../../components/landing/LandingLogin/VerifyEmail'
 import Footer from '../../components/landing/landingPage/Footer'
 
-export default function PlansPage() {
+export default function LandingForgottEmail() {
   return (
     <>
     <Navbar />
-    <Plan />
+    <VerifyEmail />
     <Footer />
     </>
-
   )
 }

@@ -5,6 +5,7 @@ import { FiMenu } from "react-icons/fi";
 import { FaChartPie, FaBuilding, FaClipboardList, FaServicestack, FaUsers, FaCog, FaBoxOpen, FaMoneyBillWave, FaComments, FaBell, FaQuestionCircle } from "react-icons/fa";
 import { useSelector, useDispatch } from 'react-redux';
 import { setActiveMenu } from '../../features/menuSlice';
+import { RxDashboard } from "react-icons/rx";
 
 interface LinkItem {
   title: string;
@@ -29,7 +30,7 @@ const Sidebar = () => {
 
   // Dynamically define the links array based on the user role
   const links: LinkItem[] = [
-    { title: 'Dashboard', route: `${routePrefix}/dashboard`, icon: <FaChartPie /> },
+    { title: 'Dashboard', route: `${routePrefix}/dashboard`, icon: <RxDashboard /> },
     { title: 'Companies', route: `${routePrefix}/companies`, icon: <FaBuilding /> },
     { title: 'Plans', route: `${routePrefix}/plans`, icon: <FaClipboardList /> },
     { title: 'Services', route: `${routePrefix}/services`, icon: <FaServicestack /> },
@@ -95,7 +96,7 @@ const Sidebar = () => {
                     }
                   }}
                 >
-                  <span className="text-2xl">{item.icon}</span>
+                  <span className="text-2xl text-black">{item.icon}</span>
                   <span className={`text-base ${activeMenuState ? 'block' : 'hidden md:block'}`}>{item.title}</span>
                 </NavLink>
               ))}

@@ -79,7 +79,7 @@ const PlanSelection: React.FC = () => {
     if (selectedPlan.id === 1) {
       // For trial plan, save role and navigate directly to dashboard without Stripe
       dispatch(setUserRole('businessOwner')); // Set role in Redux store
-      navigate('/company/dashboard');
+      navigate('/business-owner/dashboard');
       return;
     }
 

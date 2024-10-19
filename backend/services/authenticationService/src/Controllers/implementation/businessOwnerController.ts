@@ -53,34 +53,30 @@ export class BusinessOwnerController {
 
 
 async login(req: Request, res: Response): Promise<Response> {
-  console.log("companyController login touched...");
-
   try {
-      const { email, password } = req.body;
+    const { email, password } = req.body;
 
-      // Check if email or password is missing
-      if (!email || !password) {
-          return res.status(400).json({ message: "Email and password are required" });
-      }
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
 
-      // Attempt login
-      const tokens = await businessOwnerService.login(email, password);
+    // Check email/password quickly before querying the database
+    const tokens = await businessOwnerService.login(email, password);
 
-      // If login failed, return the failure message
-      if (!tokens.success) {
-          return res.status(401).json({ message: tokens.message });
-      }
+    if (!tokens.success) {
+      return res.status(401).json({ message: tokens.message });
+    }
 
-      // If login is successful, return tokens
-      return res.status(200).json(tokens);
-
+    // Return tokens immediately if successful
+    return res.status(200).json(tokens);
   } catch (error) {
-      // Handle specific error messages or send a generic one
-      return res.status(500).json({
-          message: error instanceof Error ? error.message : "Login failed due to an unknown error",
-      });
+    // Generic error message to avoid exposing internal details
+    return res.status(500).json({
+      message: "Login failed due to an unknown error",
+    });
   }
 }
+
 
 
 
@@ -148,12 +144,12 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
   }
 }
 
-async forgottPassword(req: Request, res: Response): Promise<Response> {
+async forgotPassword(req: Request, res: Response): Promise<Response> {
      console.log("Hitting forgotPassword controller...");
      
   try { 
     const { email } = req.body;
-    const result = await businessOwnerService.forgottPassword(email);
+    const result = await businessOwnerService.forgotPassword(email);
     return res.status(200).json(result);
   } catch (error) { 
     console.error('Error resending OTP:', error);

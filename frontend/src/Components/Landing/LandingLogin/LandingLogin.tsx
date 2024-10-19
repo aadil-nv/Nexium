@@ -22,55 +22,11 @@ export default function LandingLoginPage() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [credentialError, setCredentialError] = useState('');
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  // const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-
-  //   // Validate form data using Zod
-  //   const result = loginSchema.safeParse({ email, password });
-  //   if (!result.success) {
-  //     const validationErrors = result.error.format();
-  //     setErrors({
-  //       email: validationErrors.email?._errors[0],
-  //       password: validationErrors.password?._errors[0]
-  //     });
-  //     return;
-  //   } else {
-  //     setErrors({});
-  //   }
-
-  //   try {
-  //     const response = await fetch('http://localhost:7000/api/business-owner/login', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({
-  //         email,
-  //         password,
-  //       }),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error('Login failed');
-  //     }
-
-  //     const data = await response.json();
-  //     console.log(data);
-  //     dispatch(setUserRole('businessOwner'));
-  //     navigate('/businessOwner/dashboard');
-      
-  //   } catch (error) {
-  //     console.error('Error during login:', error);
-  //     setCredentialError('Invalid email or password');
-  //   }
-  // };
+ 
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Validate form data using Zod
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
         const validationErrors = result.error.format();
@@ -98,15 +54,10 @@ export default function LandingLoginPage() {
         const data = await response.json();
 
         console.log("Response from login:", data.email);
-        // Check if the response indicates a failure
         if (!data.success) {
-            // Navigate to the OTP page if login is unsuccessful
-            navigate('/otp',{ state: { userEmail: data.email } });
-            return; // Early exit from the function
+            navigate('/otp',{ state: { email } });
+            return; 
         }
-
-        // Proceed with successful login
-        dispatch(setUserRole('businessOwner'));
         navigate('/businessOwner/dashboard');
 
     } catch (error) {
@@ -215,7 +166,7 @@ export default function LandingLoginPage() {
 
         {/* Forgot Password and Sign Up Links */}
         <div className='mt-4 text-center'>
-          <a href='#' className={`text-sm hover:underline ${theme === 'dark' ? 'text-blue-400' : 'text-blue-500'}`}>
+          <a href='/verify-email' className={`text-sm hover:underline ${theme === 'dark' ? 'text-blue-400' : 'text-blue-500'}`}>
             Forgot Password?
           </a>
         </div>
