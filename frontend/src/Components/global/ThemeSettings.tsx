@@ -21,7 +21,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose }) => {
   const [themeColor, setThemeColorState] = useState<string>(savedThemeColor);
 
   // Available theme colors
-  const colors = ['#5a27e5', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6'];
+  const colors = ['#3B82F6', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6'];
 
   // Effect to dispatch theme changes
   useEffect(() => {

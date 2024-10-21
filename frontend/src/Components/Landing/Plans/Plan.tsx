@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux'; // Import useDispatch
 import { setUserRole } from '../../../features/menuSlice'; // Import the action
+import {login} from '../../../features/businessOwnerSlice';
 
 type Plan = {
   id: number;
@@ -76,13 +77,6 @@ const PlanSelection: React.FC = () => {
       return alert('Please select a plan first.');
     }
 
-    if (selectedPlan.id === 1) {
-      // For trial plan, save role and navigate directly to dashboard without Stripe
-      dispatch(setUserRole('businessOwner')); // Set role in Redux store
-      navigate('/business-owner/dashboard');
-      return;
-    }
-
     try {
       const stripe = await stripePromise;
 
@@ -90,13 +84,25 @@ const PlanSelection: React.FC = () => {
         throw new Error('Stripe failed to load.');
       }
 
-      // Post to backend to create checkout session
       const response = await axios.post('http://localhost:7000/api/business-owner/create-checkout-session', {
         email,
         plan: selectedPlan,
         amount: selectedPlan.id === 2 ? 2000 : 3000, 
         currency: 'usd',
       });
+
+      console.log("PLAN RES",response);
+      const data = await response.data
+      if(data.planId === 1){
+        dispatch(login({
+          role: 'business-owner', 
+          token: data.accessToken, 
+          isAuthenticated: true,
+      }));
+       
+        navigate('/business-owner/dashboard');
+      }
+      
 
       const { sessionId } = response.data;
 

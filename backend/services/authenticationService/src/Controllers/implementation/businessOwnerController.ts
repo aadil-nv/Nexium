@@ -52,31 +52,65 @@ export class BusinessOwnerController {
 }
 
 
-async login(req: Request, res: Response): Promise<Response> {
-  try {
+// async login(req: Request, res: Response): Promise<Response> {
+//   try {
+//     const { email, password } = req.body;
+
+//     if (!email || !password) {
+//       return res.status(400).json({ message: "Email and password are required" });
+//     }
+
+//     // Check email/password quickly before querying the database
+//     const response = await businessOwnerService.login(email, password);
+
+//     if (!response.success) {
+//       return res.status(401).json({ message: response.message ,success: response.success ,isVerifed :response.isVerified  });
+//     }
+
+//     // Return tokens immediately if successful
+//     return res.status(200).json(response);
+//   } catch (error) {
+//     // Generic error message to avoid exposing internal details
+//     return res.status(500).json({
+//       message: "Login failed due to an unknown error",
+//     });
+//   }
+// }
+
+async  login(req: Request, res: Response): Promise<Response> {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+        return res.status(400).json({ message: "Email and password are required" });
     }
 
-    // Check email/password quickly before querying the database
-    const tokens = await businessOwnerService.login(email, password);
+    try {
+        // Call the login function from the service
+        const { success, message, accessToken, refreshToken, isVerified, email: companyEmail } = await businessOwnerService.login(email, password);
 
-    if (!tokens.success) {
-      return res.status(401).json({ message: tokens.message });
+        if (!success) {
+            if (isVerified === false) {
+                return res.status(403).json({
+                    message: "Account not verified. OTP sent to email.",
+                    email: companyEmail,
+                    isVerified: false
+                });
+            }
+            return res.status(400).json({ message });
+        }
+
+        return res.status(200).json({
+            message,
+            accessToken,
+            refreshToken,
+            email: companyEmail,
+            isVerified: true
+        });
+
+    } catch (error: unknown) {
+        return res.status(500).json({ message: "An error occurred during login" });
     }
-
-    // Return tokens immediately if successful
-    return res.status(200).json(tokens);
-  } catch (error) {
-    // Generic error message to avoid exposing internal details
-    return res.status(500).json({
-      message: "Login failed due to an unknown error",
-    });
-  }
 }
-
 
 
 
@@ -128,21 +162,35 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
   try {
       const { plan, amount, currency, email } = req.body;
 
-      
+      // Call the businessOwnerService to create the checkout session or handle the trial plan
       const result = await businessOwnerService.createCheckoutSession(plan, amount, currency, email);
 
+      // If the plan is a Trial plan (id === 1), return success message directly
       if (plan.id === 1) {
-          
-          return res.status(200).json({ message: result.message, success: result.success });
+          return res.status(200).json({
+              message: result.message,  // Pass the subscription message
+              success: result.success,  // Pass the success status
+              role: result.role,        // Include the user's role if needed
+              planId: plan.id,          // Send the plan ID
+              accessToken: result.accessToken,  // Include access token for the trial
+              refreshToken: result.refreshToken // Include refresh token for the trial
+          });
       } else {
-          
-          return res.status(200).json({ sessionId: result.id });
+          // For paid plans, return the Stripe session ID to redirect the user to Stripe Checkout
+          return res.status(200).json({
+              sessionId: result.id,  // Stripe session ID for redirection
+              success: true,         // Success status
+              planId: plan.id,       // Send the plan ID
+              accessToken: result.accessToken,  // Include access token for the plan
+              refreshToken: result.refreshToken // Include refresh token for the plan
+          });
       }
   } catch (error) {
       console.error('Error creating checkout session:', error);
-      return res.status(500).json({ message: 'Failed to create checkout session' });
+      return res.status(500).json({ message: 'Failed to create checkout session', error: error });
   }
 }
+
 
 async forgotPassword(req: Request, res: Response): Promise<Response> {
      console.log("Hitting forgotPassword controller...");

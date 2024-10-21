@@ -35,9 +35,17 @@ export interface ITokenResponse {
   message?: string;
   accessToken?: string;
   refreshToken?: string;
+  isVerified?: boolean;
 }
 
 
 export interface IPaymentIntentResponse {
     clientSecret: string;
   }
+
+  export interface IOtpValidationResult {
+    success: boolean;
+    email?: string;
+    accessToken?: string;
+    refreshToken?: string;
+}

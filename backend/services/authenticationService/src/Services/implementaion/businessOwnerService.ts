@@ -3,7 +3,8 @@ import {
     ICompanyDocument,
     ITokenResponse,
     IPaymentIntentResponse,
-    ISubscription
+    ISubscription,
+    IOtpValidationResult
 } from "../interfaces/IBusinessOwnerService";
 import businessOwnerRepository from "../../Repositery/implementaion/businessOwnerRepositery";
 import bcrypt from "bcryptjs";
@@ -36,49 +37,97 @@ export class BusinessOwnerService {
         this.companyRepository = new businessOwnerRepository();
     }
 
-    async login(email: string, password: string): Promise<ITokenResponse> {
-    try {
+    // async login(email: string, password: string): Promise<ITokenResponse> {
+    // try {
  
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+    //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
 
-        if (!emailRegex.test(email) || !passwordRegex.test(password)) {
-            return { success: false, message: "Invalid credentials", accessToken: "", refreshToken: "" };
-        }
+    //     if (!emailRegex.test(email) || !passwordRegex.test(password)) {
+    //         return { success: false, message: "Invalid credentials"};
+    //     }
 
-        const company = await this.companyRepository.findByEmail(email);
-        if (!company ) {
-            return { message: "Invalid credentials", accessToken: "", refreshToken: "" };
-        }
-        if (!await bcrypt.compare(password, company.password)) {
-            return {  message: "Invalid credentials", accessToken: "", refreshToken: "" };
-        }
-        if ( !company.isVerified ) {
-            const otp = generateOtp();
-            await this.sendOtp(company.email, otp);
-            return { email:company.email, success: false, message: "Account not verified. Please verify your email", accessToken: "", refreshToken: "" };
-        }
+    //     const company = await this.companyRepository.findByEmail(email);
+    //     if (!company ) {
+    //         return {success: false, message: "Invalid credentials"};
+    //     }
+    //     if (!await bcrypt.compare(password, company.password)) {
+    //         return { success: false,  message: "Invalid credentials" };
+    //     }
+    //     if ( !company.isVerified ) {
+    //         const otp = generateOtp();
+    //         await this.sendOtp(company.email, otp);
+    //         return { email:company.email, success: false, message: "Account not verified. Please verify your email", isVerified:false };
+    //     }
 
-        const { accessToken, refreshToken } = this.generateTokens(company);
+    //     const { accessToken, refreshToken } = this.generateTokens(company);
 
       
-        return { 
-            success: true, 
-            message: "Login successful", 
-            accessToken, 
-            refreshToken 
-        };
+    //     return { 
+    //         success: true, 
+    //         message: "Login successful", 
+    //         accessToken, 
+    //         refreshToken 
+    //     };
 
-    } catch (error) {
-        // Catch any error and return the failure response
-        return { 
-            success: false, 
-            message: "An error occurred during login", 
-            accessToken: "", 
-            refreshToken: "" 
-        };
+    // } catch (error) {
+    //     // Catch any error and return the failure response
+    //     return { 
+    //         success: false, 
+    //         message: "An error occurred during login", 
+    //         accessToken: "", 
+    //         refreshToken: "" 
+    //     };
+    // }
+    // }
+    async login(email: string, password: string): Promise<ITokenResponse> {
+        try {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+    
+            // Validate email and password format
+            if (!emailRegex.test(email)) {
+                return { success: false, message: "Invalid email format" };
+            }
+            if (!passwordRegex.test(password)) {
+                return { success: false, message: "Password must have at least 6 characters, 1 uppercase letter, 1 number, and 1 special character" };
+            }
+    
+            const company = await this.companyRepository.findByEmail(email);
+            if (!company) {
+                return { success: false, message: "Invalid email or password" };
+            }
+    
+            const passwordMatch = await bcrypt.compare(password, company.password);
+            if (!passwordMatch) {
+                return { success: false, message: "Invalid email or password" };
+            }
+    
+            if (!company.isVerified) {
+                const otp = generateOtp();
+                await this.sendOtp(company.email, otp);
+                return { success: false, message: "Account not verified. Check your email for OTP", isVerified: false, email: company.email };
+            }
+    
+            const { accessToken, refreshToken } = this.generateTokens(company);
+    
+            return {
+                success: true,
+                message: "Login successful",
+                accessToken,
+                refreshToken,
+            };
+    
+        } catch (error) {
+            return {
+                success: false,
+                message: "An error occurred during login",
+                accessToken: "",
+                refreshToken: ""
+            };
+        }
     }
-    }
+    
 
     async register(
         companyData: Partial<ICompany>
@@ -149,8 +198,6 @@ export class BusinessOwnerService {
         };
     }
 
-    
-
     async sendOtp(email: string, otp: string): Promise<void> {
         const otpRecord = new otpModel({
             email: email,
@@ -203,7 +250,6 @@ export class BusinessOwnerService {
     }
     
    
-
     generateTokens(
         company: ICompanyDocument): ITokenResponse {
         const accessToken = generateCompanyAccessToken(company);
@@ -212,7 +258,7 @@ export class BusinessOwnerService {
     }
 
     async validateOtp(
-        email: string, otp: string): Promise<{ success: boolean; email?: string }> {
+        email: string, otp: string): Promise<IOtpValidationResult> {
             console.log("hitting validateOtp service", email, otp);
             
         try {
@@ -232,9 +278,10 @@ export class BusinessOwnerService {
                 if (!verification) {
                     return { success: false }; // Verification failed
                 }
+                
     
                 console.log("OTP validated and company verified successfully.");
-                return { success: true, email }; // Return success and email
+                return { success: true, email  }; // Return success and email
             } else {
                 console.log("Invalid OTP provided.");
                 return { success: false }; // Invalid OTP
@@ -245,61 +292,145 @@ export class BusinessOwnerService {
         }
     }
         
-     async createCheckoutSession(
-        plan: any, amount: number, currency: string, email: string): Promise<any> {
-            console.log("Hitting Stripe Checkout Session Service", plan, amount, currency);
+    //  async createCheckoutSession(
+    //     plan: any, amount: number, currency: string, email: string): Promise<any> {
+    //         console.log("Hitting Stripe Checkout Session Service", plan, amount, currency);
     
-            try {
-                if (plan.id === 1) {
-                    // For Trial plan, update the subscription directly without Stripe
-                    const subscription: ISubscription = {
-                        planName: plan.name,
-                        planType: 'Trial',
-                        startDate: new Date(),
-                        endDate: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000), // Trial for 7 days
-                        status: 'Active',
-                    };
+    //         try {
+    //             if (plan.id === 1) {
+    //                 // For Trial plan, update the subscription directly without Stripe
+    //                 const subscription: ISubscription = {
+    //                     planName: plan.name,
+    //                     planType: 'Trial',
+    //                     startDate: new Date(),
+    //                     endDate: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000), // Trial for 7 days
+    //                     status: 'Active',
+    //                 };
     
-                    // Update the company's subscription in the database
-                    const updatedCompany = await this.companyRepository.updateSubscriptionByEmail(email, subscription);
+    //                 // Update the company's subscription in the database
+    //                 const updatedCompany = await this.companyRepository.updateSubscriptionByEmail(email, subscription);
     
-                    if (updatedCompany) {
-                        return { message: 'Subscription updated successfully', success: true ,role:updatedCompany.role  };
-                    } else {
-                        throw new Error('Company not found');
-                    }
-                } else {
-                    // For other plans, proceed with Stripe Checkout
-                    const session = await stripe.checkout.sessions.create({
-                        payment_method_types: ['card'],
-                        line_items: [
-                            {
-                                price_data: {
-                                    currency: currency,
-                                    product_data: {
-                                        name: plan.name,
-                                        description: `Payment for ${plan.name} Plan`,
-                                    },
-                                    unit_amount: amount,
-                                },
-                                quantity: 1,
-                            },
-                        ],
-                        mode: 'payment',
-                        success_url: 'http://localhost:5173/company/dashboard',
-                        cancel_url: 'http://localhost:5173/plan',
-                    });
+    //                 if (updatedCompany) {
+    //                     return { message: 'Subscription updated successfully', success: true  };
+    //                 } else {
+    //                     throw new Error('Company not found');
+    //                 }
+    //             } else {
+    //                 // For other plans, proceed with Stripe Checkout
+    //                 const session = await stripe.checkout.sessions.create({
+    //                     payment_method_types: ['card'],
+    //                     line_items: [
+    //                         {
+    //                             price_data: {
+    //                                 currency: currency,
+    //                                 product_data: {
+    //                                     name: plan.name,
+    //                                     description: `Payment for ${plan.name} Plan`,
+    //                                 },
+    //                                 unit_amount: amount,
+    //                             },
+    //                             quantity: 1,
+    //                         },
+    //                     ],
+    //                     mode: 'payment',
+    //                     success_url: 'http://localhost:5173/business-owner/dashboard',
+    //                     cancel_url: 'http://localhost:5173/plan',
+    //                 });
     
-                    return session;
-                }
-            } catch (error) {
-                console.error('Error in createCheckoutSession:', error);
-                throw new Error('Failed to process the request: ' + error); // Include error message for clarity
-            }
-    }
-
-   
+    //                 return session;
+    //             }
+    //         } catch (error) {
+    //             console.error('Error in createCheckoutSession:', error);
+    //             throw new Error('Failed to process the request: ' + error); // Include error message for clarity
+    //         }
+    // }
+    async createCheckoutSession(
+        plan: any, 
+        amount: number, 
+        currency: string, 
+        email: string
+      ): Promise<any> {
+        console.log("Hitting Stripe Checkout Session Service", plan, amount, currency);
       
+        try {
+          if (plan.id === 1) {
+            // For Trial plan, update the subscription directly without Stripe
+            const subscription: ISubscription = {
+              planName: plan.name,
+              planType: 'Trial',
+              startDate: new Date(),
+              endDate: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000), // Trial for 7 days
+              status: 'Active',
+            };
+      
+            // Update the company's subscription in the database
+            const updatedCompany = await this.companyRepository.updateSubscriptionByEmail(email, subscription);
+      
+            if (updatedCompany) {
+                console.log("Updated Company",updatedCompany);
+                
+                const { accessToken, refreshToken } = this.generateTokens(updatedCompany);
+              console.log("accesstoken is ",accessToken);
+              console.log("refreshstoken is ",refreshToken);
+              
+      
+              return { 
+                message: 'Subscription updated successfully', 
+                success: true, 
+                role: updatedCompany.role,
+                planId: plan.id,  // Send planId for trial plan
+                accessToken,      // Include generated accessToken
+                refreshToken      // Include generated refreshToken
+              };
+            } else {
+              throw new Error('Company not found');
+            }
+          } else {
+            // For other plans, proceed with Stripe Checkout
+            const session = await stripe.checkout.sessions.create({
+              payment_method_types: ['card'],
+              line_items: [
+                {
+                  price_data: {
+                    currency: currency,
+                    product_data: {
+                      name: plan.name,
+                      description: `Payment for ${plan.name} Plan`,
+                    },
+                    unit_amount: amount,
+                  },
+                  quantity: 1,
+                },
+              ],
+              mode: 'payment',
+              success_url: 'http://localhost:5173/business-owner/dashboard',
+              cancel_url: 'http://localhost:5173/plan',
+            });
+      
+            // Generate access and refresh tokens for non-trial plans
+            const updatedCompany = await this.companyRepository.findByEmail(email);
+            if (!updatedCompany) {
+              throw new Error('Company not found');
+            }
+            
+            const { accessToken, refreshToken } = this.generateTokens(updatedCompany);
+      
+            // Return session, accessToken, refreshToken, and planId to the frontend
+            return { 
+              session, 
+              success: true, 
+              planId: plan.id,  // Send the planId
+              accessToken,      // Include generated accessToken
+              refreshToken      // Include generated refreshToken
+            };
+          }
+        } catch (error) {
+          console.error('Error in createCheckoutSession:', error);
+          throw new Error('Failed to process the request: ' + error);  // Use error.message for better clarity
+        }
+      }
+      
+  
     async resendOtp(
         email: string): Promise<{ success: boolean; message: string }> {
         console.log("resendOtp mail", email);
@@ -323,30 +454,6 @@ export class BusinessOwnerService {
     }
     
     
-    // async forgottPassword(email: string): Promise<{ success: boolean; message: string; email?: string; }> {
-    //     console.log("hitting forgotPassword service", email);
-        
-    //    try {
-        
-    //     const otp = generateOtp();
-    //     const existingBusinessOwner = await this.companyRepository.findByEmail(email);
-        
-    //     if (existingBusinessOwner) {
-    //         console.log("Updating existing OTP:", existingBusinessOwner);
-    //         await this.sendOtp(existingBusinessOwner.email, otp);
-    //         return { success: true, message: 'OTP sent successfully.', email: existingBusinessOwner.email }; 
-    //     } else {
-    //         console.log("No existing OTP, creating a new one");
-    //         return { success: false, message: 'No existing OTP found for this email.' };
-    //     }
-        
-    //     }catch (error) {
-    //     console.error("Error sending OTP:", error);
-    //     return { success: false, message: 'Failed to send OTP. Please try again later.' };
-        
-    //     } 
-    
-    // }
     async forgotPassword(email: string): Promise<{ success: boolean; message: string; email?: string }> {
         console.log("Hitting forgotPassword service for email:", email);
         

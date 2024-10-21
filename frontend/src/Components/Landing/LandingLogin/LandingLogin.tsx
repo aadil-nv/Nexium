@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUserRole } from '../../../features/menuSlice';
 import { z } from 'zod';
+import { login } from '../../../features/businessOwnerSlice';
 
 // Zod schema for validation
 const loginSchema = z.object({
@@ -18,53 +19,59 @@ export default function LandingLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userEmail, setUserEmail] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [credentialError, setCredentialError] = useState('');
   const navigate = useNavigate();
+  const dispatch = useDispatch();
  
-
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // Validation with Zod
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
-        const validationErrors = result.error.format();
-        setErrors({
-            email: validationErrors.email?._errors[0],
-            password: validationErrors.password?._errors[0]
-        });
-        return;
-    } else {
-        setErrors({});
-    }
+      const validationErrors = result.error.format();
+      setErrors({
+        email: validationErrors.email?._errors[0],
+        password: validationErrors.password?._errors[0]
+      });
+      return;
+    } 
+    setErrors({}); // Clear errors if valid
 
+    // Attempt login
     try {
-        const response = await fetch('http://localhost:7000/api/business-owner/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                email,
-                password,
-            }),
-        });
+      const response = await fetch('http://localhost:7000/api/business-owner/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
-        const data = await response.json();
+      const data = await response.json();
+      console.log("Login response:", data);
+      
 
-        console.log("Response from login:", data.email);
-        if (!data.success) {
-            navigate('/otp',{ state: { email } });
-            return; 
+      if (!data.success) {
+        if (data.isVerified === false) {
+          navigate('/otp', { state: { email: data.email } });
+        } else {
+          setCredentialError(data.message || 'Invalid email or password');
         }
-        navigate('/businessOwner/dashboard');
+      }
 
+    
+      dispatch(login({
+        role: 'business-owner',
+        token: data.accessToken,
+        isAuthenticated: true
+      }));
+
+      navigate('/business-owner/dashboard');
     } catch (error) {
-        console.error('Error during login:', error);
-        setCredentialError('Invalid email or password');
+      console.error('Error during login:', error);
+      setCredentialError('Invalid email or password');
     }
-};
+  };
 
   const inputBorderStyle = (field: string) => {
     if (errors[field]) return 'border-red-500';
@@ -135,7 +142,7 @@ export default function LandingLoginPage() {
 
           {/* Login Button */}
           <button
-            className={`w-full bg-blue-500 text-white p-3 rounded mb-4 hover:bg-blue-600 transition-colors shadow-md hover:shadow-lg`}
+            className="w-full bg-blue-500 text-white p-3 rounded mb-4 hover:bg-blue-600 transition-colors shadow-md hover:shadow-lg"
             type='submit'
           >
             Login

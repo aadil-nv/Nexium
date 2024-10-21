@@ -80,10 +80,10 @@ const LandingOtp: React.FC = () => {
   };
 
   const handleResendOtp = async () => {
-    setTimeLeft(90); // Reset timer to 90 seconds
+    setTimeLeft(90); 
     setIsTimerActive(true);
-    setOtp(Array(6).fill('')); // Reset OTP input
-    setErrorMessage(''); // Clear any previous error message
+    setOtp(Array(6).fill(''));
+    setErrorMessage('');
 
     try {
       // Call the backend to resend the OTP
