@@ -56,7 +56,6 @@ export default class BusinessOwnerRepository {
     }
   }
   
-
   async updatePassword(email: string, hashedPassword: string): Promise<void> {
     await businessOwnerSchema.updateOne({ email }, { password: hashedPassword }).exec();
   }

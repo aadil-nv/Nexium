@@ -50,7 +50,7 @@ export default function Navbar() {
     dispatch(login({
       role: '', // Assuming role is fixed
       token: "", // Assuming the access token is in 'data.accessToken'
-      isAuthenticated: true,
+      isAuthenticated: false,
   }));
     navigate("/login"); 
   };
@@ -87,8 +87,7 @@ export default function Navbar() {
           <button
             type="button"
             className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-300 rounded-lg transition-colors duration-300"
-            onClick={() => setShowProfileMenu(!showProfileMenu)} // Toggle profile menu
-            style={{ color: currentColor }} // Apply current theme color
+            onClick={() => setShowProfileMenu(!showProfileMenu)} 
           >
             <img
               src="https://cdn-icons-png.flaticon.com/512/149/149071.png"

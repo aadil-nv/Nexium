@@ -105,7 +105,7 @@ const CompaniesList: React.FC = () => {
 
   // Function to handle adding workers
   const handleAddWorkers = () => {
-    navigate("/businessOwner/addworkers");
+    navigate("/business-owner/addworkers");
   };
 
   return (

@@ -52,30 +52,6 @@ export class BusinessOwnerController {
 }
 
 
-// async login(req: Request, res: Response): Promise<Response> {
-//   try {
-//     const { email, password } = req.body;
-
-//     if (!email || !password) {
-//       return res.status(400).json({ message: "Email and password are required" });
-//     }
-
-//     // Check email/password quickly before querying the database
-//     const response = await businessOwnerService.login(email, password);
-
-//     if (!response.success) {
-//       return res.status(401).json({ message: response.message ,success: response.success ,isVerifed :response.isVerified  });
-//     }
-
-//     // Return tokens immediately if successful
-//     return res.status(200).json(response);
-//   } catch (error) {
-//     // Generic error message to avoid exposing internal details
-//     return res.status(500).json({
-//       message: "Login failed due to an unknown error",
-//     });
-//   }
-// }
 
 async  login(req: Request, res: Response): Promise<Response> {
     const { email, password } = req.body;
