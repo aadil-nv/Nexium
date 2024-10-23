@@ -1,17 +1,14 @@
-import { TooltipComponent } from '@syncfusion/ej2-react-popups';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { FiMenu } from "react-icons/fi";
-import { FaChartPie, FaBuilding, FaClipboardList, FaServicestack, FaUsers, FaCog, FaBoxOpen, FaMoneyBillWave, FaComments, FaBell, FaQuestionCircle } from "react-icons/fa";
 import { useSelector, useDispatch } from 'react-redux';
 import { setActiveMenu } from '../../features/menuSlice';
-import nexiumLogo from '../../assets/landingPageAssets/NavbarLogo.png'; // Adjust the path according to your structure
 import { RootState } from '../../store/store';
 
 interface LinkItem {
   title: string;
   route: string;
-  icon: React.ReactNode;
+  icon: string; // Use the class name of the custom icon
 }
 
 const Sidebar = () => {
@@ -20,19 +17,24 @@ const Sidebar = () => {
   const currentColor = useSelector((state: { menu: { themeColor: string } }) => state.menu.themeColor);
   const userRole = useSelector((state: RootState) => state.businessOwner.role);
 
-  // Create a route prefix based on user role
-  const routePrefix = userRole 
-  console.log("routePrefix:->", routePrefix);
+  // Handle body scroll when sidebar is open
+  useEffect(() => {
+    document.body.style.overflow = activeMenuState ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [activeMenuState]);
 
+  const routePrefix = userRole;
+
+  // Define links with custom icons (class names for icons)
   const links: LinkItem[] = [
-    { title: 'Dashboard', route: `/${routePrefix}/dashboard`, icon: <FaChartPie /> },
-    { title: 'Plans', route: `/${routePrefix}/plans`, icon: <FaClipboardList /> },
-    { title: 'Services', route: `/${routePrefix}/services`, icon: <FaServicestack /> },
-    { title: 'Users', route: userRole === 'workers' ? `/${routePrefix}/workers` : `/${routePrefix}/workers`, icon: <FaUsers /> },
-    { title: 'Finance', route: `/${routePrefix}/finance`, icon: <FaMoneyBillWave /> },
-    { title: 'Feedback', route: `/${routePrefix}/feedback`, icon: <FaComments /> },
-    { title: 'Notifications', route: `/${routePrefix}/notifications`, icon: <FaBell /> },
-    
+    { title: 'Dashboard', route: `/${routePrefix}/dashboard`, icon: 'fi fi-tr-dashboard-monitor' },
+    { title: 'Subscriptions', route: `/${routePrefix}/subscriptions`, icon: 'fi fi-tr-benefit' },
+    { title: 'Services Requests', route: `/${routePrefix}/service-requests`, icon: 'fi fi-tr-user-headset' },
+    { title: 'Users', route: `/${routePrefix}/workers`, icon: 'fi fi-tr-employees' },
+    { title: 'Notifications', route: `/${routePrefix}/notifications`, icon: 'fi fi-tr-bells' },
+    { title: 'Announcements', route: `/${routePrefix}/notifications`, icon: 'fi fi-tr-megaphone-announcement-leader' },
   ];
 
   const handleMenuToggle = () => {
@@ -41,68 +43,63 @@ const Sidebar = () => {
 
   return (
     <div>
-    <button
-      onClick={handleMenuToggle}
-      className="p-4 text-gray-800 md:hidden"
-      style={{ backgroundColor: currentColor }} 
-    >
-      <FiMenu size={24} />
-    </button>
-  
-    {/* Sidebar */}
-    <div className={`fixed top-0 left-0 h-screen transition-all duration-300 z-40 
-      ${activeMenuState ? 'w-64 bg-gray-100 shadow-lg' : 'w-0'} overflow-auto`}
-    >
-      {activeMenuState && (
-        <div className="h-full flex flex-col">
-          
-          {/* Logo Section */}
-          <div className="flex justify-between items-center p-4">
-            <NavLink
-              to={`/${routePrefix}/dashboard`}
-              className="items-center gap-3 flex text-xl font-extrabold tracking-tight text-gray-800"
-            >
-              {userRole}
-            </NavLink>
-          </div>
-  
-          {/* Menu Links */}
-          <div className="flex-grow overflow-y-auto">
-            {links.map((item, index) => (
+      {/* Menu Toggle Button */}
+      <button
+        onClick={handleMenuToggle}
+        className="p-4 text-gray-800 md:hidden"
+        style={{ backgroundColor: currentColor }}
+      >
+        <FiMenu size={24} />
+      </button>
+
+      {/* Sidebar */}
+      <div className={`fixed top-0 left-0 h-full transition-all duration-300 z-40 ${activeMenuState ? 'w-64 bg-gray-100 shadow-lg' : 'w-0'} overflow-hidden`}>
+        {activeMenuState && (
+          <div className="h-full flex flex-col">
+            {/* Logo Section */}
+            <div className="flex justify-between items-center p-4">
               <NavLink
-                key={index}
-                to={item.route}
-                className={({ isActive }) =>
-                  `flex items-center gap-4 p-3 rounded-lg transform transition-all duration-300 ease-in-out
-                   ${isActive ? 'text-white font-bold shadow-lg' : 'text-gray-800'} 
-                   hover:scale-105 hover:bg-opacity-90 hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-300 hover:text-white`
-                }
-                style={({ isActive }) => ({
-                  backgroundColor: isActive ? currentColor : 'transparent',
-                  color: isActive ? 'white' : currentColor,
-                })}
+                to={`/${routePrefix}/dashboard`}
+                className="flex items-center gap-3 text-xl font-extrabold tracking-tight text-gray-800"
               >
-                <span className="text-xl">{item.icon}</span>
-                <span className={`text-lg ${activeMenuState ? 'block' : 'hidden md:block'}`}>
-                  {item.title}
-                </span>
+                {userRole}
               </NavLink>
-            ))}
+            </div>
+
+            {/* Menu Links */}
+            <div className="flex-grow overflow-y-auto">
+              {links.map((item, index) => (
+                <NavLink
+                  key={index}
+                  to={item.route}
+                  className={({ isActive }) =>
+                    `flex items-center gap-4 p-3 rounded-lg transition-all duration-300 ease-in-out
+                    ${isActive ? 'font-bold shadow-lg' : 'text-gray-800'}
+                    ${isActive ? 'bg-opacity-100' : 'bg-transparent'}` // Keep background transparent when not active
+                  }
+                  style={({ isActive }) => ({
+                    backgroundColor: isActive ? currentColor : 'transparent', // Use current color for active background
+                    color: isActive ? 'white' : currentColor, // Text color for active state
+                  })}
+                >
+                  {/* Custom Icon with class name, centered vertically */}
+                  <i className={`${item.icon} text-xl`} style={{ lineHeight: '1.5' }}></i>
+                  <span className="text-lg align-middle" style={{ lineHeight: '1.5' }}>{item.title}</span>
+                </NavLink>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Backdrop for small devices */}
+      {activeMenuState && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          onClick={handleMenuToggle}
+        />
       )}
     </div>
-  
-    {/* Overlay for closing the menu on small devices */}
-    {activeMenuState && (
-      <div
-        className="fixed inset-0 opacity-50 z-30 md:hidden"
-        style={{ backgroundColor: currentColor }}
-        onClick={handleMenuToggle}
-      ></div>
-    )}
-  </div>
-  
   );
 };
 

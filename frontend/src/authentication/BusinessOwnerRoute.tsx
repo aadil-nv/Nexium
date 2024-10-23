@@ -1,9 +1,12 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Dashboard from "../components/BusinessOwner/BusinessOwnerPages/Dashboard";
-import Workers from "../components/BusinessOwner/BusinessOwnerPages/Workers";
-import AddWorkersForm from "../components/BusinessOwner/BusinessOwnerPages/AddWorkersForm";
-import BusinessOwnerDashBoardLayout from "../pages/businessOwnerPages/CompanyDashBoard";
+import EmployeesList from "../components/businessOwner/BusinessOwnerPages/EmployeesList";
+import AddEmployeesForm from "../components/businessOwner/BusinessOwnerPages/AddEmployeesForm";
+import BusinessOwnerDashBoardLayout from "../pages/businessOwnerPages/DashboardLayout";
+import Subscriptions from "../components/businessOwner/BusinessOwnerPages/Subscriptions";
+import ServiceRequests from "../components/businessOwner/BusinessOwnerPages/ServiceRequests";
+
 
 
 const BusinessOwnerRoutes = () => {
@@ -11,8 +14,10 @@ const BusinessOwnerRoutes = () => {
     <Routes>
       <Route element={<BusinessOwnerDashBoardLayout />}>
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="workers" element={<Workers />} />
-        <Route path="addworkers" element={<AddWorkersForm />} />
+        <Route path="workers" element={<EmployeesList />} />
+        <Route path="addworkers" element={<AddEmployeesForm />} />
+        <Route path="subscriptions" element={<Subscriptions />} />
+        <Route path="service-requests" element={<ServiceRequests />} />
       </Route>
     </Routes>
   );

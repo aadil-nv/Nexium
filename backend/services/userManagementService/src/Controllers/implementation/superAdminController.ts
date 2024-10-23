@@ -3,8 +3,6 @@ import superAdminService from '../../Service/implementation/superAdminService';
 
 class SuperAdminController {
   async getAllCompanies(req: Request, res: Response) {
-    console.log('Fetching companies...');
-    
     try {
       // Call the service to get all companies and pass the response object
       const companies = await superAdminService.getAllCompanies(); // This should return the data directly

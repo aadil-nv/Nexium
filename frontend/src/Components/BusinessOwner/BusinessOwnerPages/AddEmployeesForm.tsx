@@ -15,7 +15,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export default function AddWorkersForm() {
+export default function AddEmployeesForm() {
   const { register, handleSubmit, formState: { errors, isSubmitSuccessful }, reset } = useForm<FormData>({
     resolver: zodResolver(formSchema)
   });

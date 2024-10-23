@@ -21,7 +21,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose }) => {
   const [themeColor, setThemeColorState] = useState<string>(savedThemeColor);
 
   // Available theme colors
-  const colors = ['#3B82F6', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6'];
+  const colors = ['#2563eb', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6'];
 
   // Effect to dispatch theme changes
   useEffect(() => {
@@ -57,7 +57,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose }) => {
                 className="mr-2"
               />
               Light
-              {themeMode === 'light' && <BsCheck className="text-blue-500 ml-2" />}
+              {themeMode === 'light' && <BsCheck className="text-blue-600 ml-2" />}
             </label>
             <label className="flex items-center mt-2">
               <input
@@ -69,7 +69,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose }) => {
                 className="mr-2"
               />
               Dark
-              {themeMode === 'dark' && <BsCheck className="text-blue-500 ml-2" />}
+              {themeMode === 'dark' && <BsCheck className="text-blue-600 ml-2" />}
             </label>
           </div>
         </div>
@@ -84,7 +84,7 @@ const ThemeSettings: React.FC<ThemeSettingsProps> = ({ onClose }) => {
                   <button
                     type="button"
                     className={`w-10 h-10 rounded-full relative cursor-pointer border-2 ${
-                      themeColor === color ? 'border-blue-500' : 'border-transparent'
+                      themeColor === color ? 'border-blue-600' : 'border-transparent'
                     }`}
                     style={{ backgroundColor: color }}
                     onClick={() => setThemeColorState(color)}

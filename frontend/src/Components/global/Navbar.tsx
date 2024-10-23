@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setActiveMenu } from "../../features/menuSlice";
 import { AiOutlineMenu } from "react-icons/ai";
-import { RiNotification3Line } from "react-icons/ri";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { TooltipComponent } from "@syncfusion/ej2-react-popups";
 import { useNavigate } from "react-router-dom"; // Import for navigation
 import { IoNotificationsOutline } from "react-icons/io5";
 import { FcSpeaker } from "react-icons/fc";
-import {login} from "../../features/businessOwnerSlice";
-
+import { login } from "../../features/businessOwnerSlice";
+import { RootState } from "../../store/store";
 
 export default function Navbar() {
   const dispatch = useDispatch();
@@ -17,10 +16,11 @@ export default function Navbar() {
   const activeMenuState = useSelector(
     (state: { menu: { activeMenu: boolean } }) => state.menu.activeMenu
   );
-  const currentColor = useSelector((state: { menu: { themeColor: string } }) => state.menu.themeColor); // Get the current color from Redux
+  const currentColor = useSelector((state: { menu: { themeColor: string } }) => state.menu.themeColor); 
 
   const [showProfileMenu, setShowProfileMenu] = useState(false); // State for profile menu visibility
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // State for logout confirmation modal
+  const user= useSelector((state: RootState) => state.businessOwner.role)
 
   const NavButton = ({
     title,
@@ -44,15 +44,14 @@ export default function Navbar() {
   );
 
   const handleLogout = () => {
- 
     console.log("User logged out");
-    setShowLogoutConfirm(false); 
+    setShowLogoutConfirm(false);
     dispatch(login({
       role: '', // Assuming role is fixed
       token: "", // Assuming the access token is in 'data.accessToken'
       isAuthenticated: false,
-  }));
-    navigate("/login"); 
+    }));
+    navigate("/login");
   };
 
   return (
@@ -65,7 +64,7 @@ export default function Navbar() {
       <NavButton
         title="Menu"
         customFunc={() => dispatch(setActiveMenu(!activeMenuState))}
-        icon={<AiOutlineMenu size={24} />} // Increased icon size
+        icon={<i className="fi fi-tr-bars-staggered"></i>} 
       />
 
       {/* Right: Icons */}
@@ -74,32 +73,32 @@ export default function Navbar() {
         <NavButton
           title="Announcements"
           customFunc={() => console.log("Announcements clicked")}
-          icon={<FcSpeaker size={28} />} // Increased icon size
+          icon={<i className="fi fi-tr-bell"></i>} // Responsive icon size
         />
         {/* Notification Icon */}
         <NavButton
           title="Notifications"
           customFunc={() => console.log("Notifications clicked")}
-          icon={<IoNotificationsOutline size={24} />}
+          icon={<i className="fi fi-tr-light-emergency-on"></i>}
         />
         {/* Profile Icon */}
         <div className="relative">
           <button
             type="button"
             className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-300 rounded-lg transition-colors duration-300"
-            onClick={() => setShowProfileMenu(!showProfileMenu)} 
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
             <img
               src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
               alt="User Profile"
-              className="rounded-full w-9 h-9"
+              className="rounded-full w-8 h-8 md:w-9 md:h-9" // Responsive image size
             />
             <p className="flex flex-col">
-              <span className="font-bold text-xs md:text-sm" style={{ color: currentColor }}>
-                Admin
+              <span className="from-neutral-100 text-xs md:text-sm" style={{ color: currentColor }}>
+                {user}
               </span>
             </p>
-            <MdKeyboardArrowDown className="text-xl" style={{ color: currentColor }} />
+            <MdKeyboardArrowDown className="text-lg md:text-xl" style={{ color: currentColor }} />
           </button>
 
           {/* Profile Menu */}
@@ -110,23 +109,26 @@ export default function Navbar() {
             >
               <ul>
                 <li
-                  className="p-2 hover:bg-gray-100 cursor-pointer"
+                  className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
                   onClick={() => navigate("/profile")} // Navigate to profile page
                   style={{ color: currentColor }} // Apply current theme color
                 >
+                  <i className="fi fi-tr-user-gear text-xl"></i> {/* Profile icon */}
                   Profile
                 </li>
                 <li
-                  className="p-2 hover:bg-gray-100 cursor-pointer"
+                  className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
                   onClick={() => navigate("/settings")} // Navigate to settings page
                   style={{ color: currentColor }} // Apply current theme color
                 >
+                  <i className="fi fi-tr-process text-xl"></i> {/* Settings icon */}
                   Settings
                 </li>
                 <li
-                  className="p-2 hover:bg-red-100 cursor-pointer text-red-500"
+                  className="flex items-center gap-2 p-2 hover:bg-red-100 cursor-pointer text-red-500"
                   onClick={() => setShowLogoutConfirm(true)} // Show logout confirmation
                 >
+                  <i className="fi fi-tr-arrow-left-from-arc"></i> {/* Logout icon */}
                   Logout
                 </li>
               </ul>
