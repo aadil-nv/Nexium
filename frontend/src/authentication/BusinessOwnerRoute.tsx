@@ -1,7 +1,6 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import BusinessOwnerDashboard from "../components/businessOwner/BusinessOwnerPages/Dashboard";
-import EmployeesList from "../components/businessOwner/BusinessOwnerPages/EmployeesList";
 import AddEmployeesForm from "../components/businessOwner/BusinessOwnerPages/AddEmployeesForm";
 import BusinessOwnerDashBoardLayout from "../pages/businessOwnerPages/DashboardLayout";
 import Subscriptions from "../components/businessOwner/BusinessOwnerPages/Subscriptions";

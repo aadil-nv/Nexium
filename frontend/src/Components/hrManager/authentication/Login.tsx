@@ -1,9 +1,9 @@
 import React from 'react'
 
-export default function BusinessOwnerDashboard() {
+export default function Login() {
   return (
     <div>
-      sidebar
+      <h1>Login</h1>
     </div>
   )
 }

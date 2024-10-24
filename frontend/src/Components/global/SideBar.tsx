@@ -1,41 +1,18 @@
+// Sidebar.tsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { FiMenu } from "react-icons/fi";
 import { useSelector, useDispatch } from 'react-redux';
 import { setActiveMenu } from '../../features/menuSlice';
 import { RootState } from '../../store/store';
-
-interface LinkItem {
-  title: string;
-  route: string;
-  icon: string; // Use the class name of the custom icon
-}
+import { businessOwnerLinks, superAdminLinks } from '../../data/Links'; // Import the links
 
 const Sidebar = () => {
   const dispatch = useDispatch();
   const activeMenuState = useSelector((state: { menu: { activeMenu: boolean } }) => state.menu.activeMenu);
   const currentColor = useSelector((state: { menu: { themeColor: string } }) => state.menu.themeColor);
-  const isBusinessOwner = useSelector((state: RootState) => state.businessOwner.role);
-  const isSuperAdmin = useSelector((state: RootState) => state.superAdmin.role );
-
-  // Define links with custom icons (class names for icons)
-  const businessOwnerLinks: LinkItem[] = [
-    { title: 'Dashboard', route: '/business-owner/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
-    { title: 'Subscriptions', route: '/business-owner/subscriptions', icon: 'fi fi-tr-benefit' },
-    { title: 'Service Requests', route: '/business-owner/service-requests', icon: 'fi fi-tr-user-headset' },
-    { title: 'Users', route: '/business-owner/workers', icon: 'fi fi-tr-employees' },
-    { title: 'Notifications', route: '/business-owner/notifications', icon: 'fi fi-tr-bells' },
-    { title: 'Announcements', route: '/business-owner/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
-  ];
-
-  const superAdminLinks: LinkItem[] = [
-    { title: 'Dashboard', route: '/super-admin/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
-    { title: 'Plans', route: '/super-admin/plans', icon: 'fi fi-tr-features' },
-    { title: 'Service Requests', route: '/super-admin/service-requests', icon: 'fi fi-tr-user-headset' },
-    { title: 'Companies', route: '/super-admin/companies', icon: 'fi fi-tr-corporate-alt' },
-    { title: 'Notifications', route: '/super-admin/notifications', icon: 'fi fi-tr-bells' },
-    { title: 'Announcements', route: '/super-admin/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
-  ];
+  const isBusinessOwner = useSelector((state: RootState) => state.businessOwner.role === 'business-owner');
+  const isSuperAdmin = useSelector((state: RootState) => state.superAdmin.role === 'super-admin');
 
   // Determine which links to use based on user role
   const links = isBusinessOwner ? businessOwnerLinks : isSuperAdmin ? superAdminLinks : [];

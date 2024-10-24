@@ -6,6 +6,7 @@ import BusinessOwnerRoutes from './authentication/BusinessOwnerRoute';
 import LocalRoute from './authentication/LocalRoute';
 import { useSelector } from 'react-redux';
 import { RootState } from './store/store';
+import HrMangerRoutes from './authentication/HrManegerRoute';
 
 
 
@@ -14,8 +15,6 @@ export default function App() {
   const isBusinessOwnerAuthenticated = useSelector((state: RootState) => state.businessOwner.isAuthenticated);
   const isSuperAdminAuthenticated = useSelector((state: RootState) => state.superAdmin.isAuthenticated);
 
-  console.log("isAuthenticated -byusinessOwner :->", isBusinessOwnerAuthenticated);
-  console.log("isAuthenticated -superAdmin:->", isSuperAdminAuthenticated);
   return (
     <Router>
       <Toaster />
@@ -23,6 +22,8 @@ export default function App() {
       <Route path='/*'  element={ isSuperAdminAuthenticated ? <Navigate to='/super-admin/dashboard' /> : isBusinessOwnerAuthenticated  ? <Navigate to='/business-owner/dashboard' />  : <LocalRoute />} />
         <Route path="/business-owner/*" element={isBusinessOwnerAuthenticated ? <BusinessOwnerRoutes /> : <Navigate to={"/login"} />} />
         <Route path="/super-admin/*" element={ isSuperAdminAuthenticated ? <SuperAdminRoutes /> :  <Navigate to={"/superadmin-login"} />} />
+        <Route path="/hr-manager/*" element={ <HrMangerRoutes />} />
+
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

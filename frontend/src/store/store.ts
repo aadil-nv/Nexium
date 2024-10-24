@@ -6,16 +6,16 @@ import menuReducer from '../features/menuSlice';
 import businessOwnerReducer from '../features/businessOwnerSlice';
 import superAdminReducer from '../features/superAdminSlice';
 
-// Persist configuration
+
 const persistConfig = {
   key: 'root',
   storage,
 };
 
-// Create a persisted reducer for the businessOwner
+
 const persistedBusinessOwnerReducer = persistReducer(persistConfig, businessOwnerReducer);
 const persistedsuperAdminReducer = persistReducer(persistConfig, superAdminReducer);
-// Configure the Redux store
+
 const store = configureStore({
   reducer: {
     menu: menuReducer,
@@ -24,11 +24,10 @@ const store = configureStore({
   },
 });
 
-// Create a persistor for the store
+
 const persistor = persistStore(store);
 
-// Define RootState type for TypeScript
 export type RootState = ReturnType<typeof store.getState>;
 
-// Export the store and persistor
+
 export { store, persistor };
