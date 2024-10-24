@@ -3,11 +3,12 @@ import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
-import logo from "/nnnlogo1000[1].png";
 import { loginSchema } from "../../../config/validationSchema"; // Import Zod schema
 import { useDispatch } from "react-redux";
 import { setUserRole } from "../../../features/menuSlice";
 import axios from "axios";
+import images from "../../../images/images"
+import { superadminLogin   } from "../../../features/superAdminSlice";
 
 // Define Form Inputs based on the Zod schema
 interface FormInputs {
@@ -15,19 +16,13 @@ interface FormInputs {
   password: string;
 }
 
-export default function AdminLogin() {
+export default function superAdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const [role, setRole] = useState("");
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<FormInputs>({
-    resolver: zodResolver(loginSchema),
-  });
+  const {register, handleSubmit,formState: { errors, isValid },} = useForm<FormInputs>({resolver: zodResolver(loginSchema),});
+  const dispatch = useDispatch();
 
   const handleLogin = async (data: FormInputs) => {
     setLoading(true);
@@ -45,7 +40,13 @@ export default function AdminLogin() {
       );
 
       const responseData = response.data;
-      setRole(responseData.admin._doc.role);
+      console.log("responseData", responseData);
+      
+      dispatch(superadminLogin({
+        role:"super-admin",
+        token: responseData.accessToken,
+        isAuthenticated: true
+      }));
       localStorage.setItem("adminToken", responseData.accessToken);
       navigate("/super-admin/dashboard");
     } catch (err: any) {
@@ -62,7 +63,7 @@ export default function AdminLogin() {
         {/* Left section (Form) */}
         <div className="w-full md:w-3/5 p-5">
           <div className="text-left font-bold">
-            <img src={logo} alt="Logo" className="w-20 h-auto" />
+            <img src={images.nexuimLogoWithName} alt="Logo" className="w-20 h-auto" />
           </div>
           <div className="py-10">
             <div className="text-center">
@@ -166,7 +167,7 @@ export default function AdminLogin() {
           </p>
 
           <a
-            href="#"
+            href="/"
             className="border-2 border-white rounded-full px-12 py-2 inline-block font-semibold hover:bg-white hover:text-blue-500 transition-colors"
           >
             Home

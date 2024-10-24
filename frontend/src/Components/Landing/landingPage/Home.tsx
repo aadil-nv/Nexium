@@ -1,5 +1,5 @@
 import React from 'react';
-import mainPic from '../../../assets/landingPageAssets/Human-Resources-square-ezgif.com-webp-to-png-converter.png';
+import images from '../../../images/images';
 import { useTheme } from './theme-provider'; // Ensure this is the correct path to your theme provider
 
 export default function Home() {
@@ -18,7 +18,7 @@ export default function Home() {
         </p>
         <div className='flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4'>
           <button className='bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 text-sm md:text-base'>
-            <a href="/super-admin/login">Get started</a>
+            <a href="/superadmin-login">Get started</a>
           </button>
           <button className='border border-blue-600 text-blue-600 font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 hover:text-white transition duration-300 text-sm md:text-base'>
             Learn More
@@ -29,7 +29,7 @@ export default function Home() {
       {/* Right Side - Image */}
       <div className='md:w-1/2 mt-6 md:mt-0 flex justify-center items-center'> {/* Centered image vertically */}
         <img
-          src={mainPic}
+          src={images.homePicture}
           alt="HR Management"
           className={`max-w-full h-auto rounded-md shadow-lg transition-all duration-300 max-h-[500px]`} // Adjusted max-height
         />

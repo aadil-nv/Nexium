@@ -3,25 +3,21 @@ import { Route, Routes } from "react-router-dom";
 import AdminDashBoard from "../components/superAdmin/AdminPages/AdminDashborad";
 import CompaniesList from "../components/superAdmin/AdminPages/CompaniesList";
 import AllPlans from "../components/superAdmin/AdminPages/AllPlans";
-import Finance from "../components/superAdmin/AdminPages/Finance";
-import Users from "../components/superAdmin/AdminPages/Users";
-import Inventorys from "../components/superAdmin/AdminPages/Inventorys";
-
-import AdminLoginPage from "../pages/superAdminPages/AdminLoginPage";
-import AdminDashBoardLayout from "../pages/superAdminPages/AdminDashBoard";
+import DashBoardLayout from "../pages/superAdminPages/superAdminDashBoardLayout";
+import CustomerCare from "../components/superAdmin/AdminPages/CustomerCare";
+import Announcements from "../components/global/Announcements";
+import Notifications from "../components/global/Notifications";
 
 const SuperAdminRoutes = () => {
   return (
     <Routes>
-      <Route path="login" element={<AdminLoginPage />} />
-      <Route element={<AdminDashBoardLayout />}>
+      <Route element={<DashBoardLayout />}>
         <Route path="dashboard" element={<AdminDashBoard />} />
         <Route path="companies" element={<CompaniesList />} />
         <Route path="plans" element={<AllPlans />} />
-        {/* <Route path="services" element={<ServiceRequests />} /> */}
-        <Route path="users" element={<Users />} />
-        <Route path="inventory" element={<Inventorys />} />
-        <Route path="finance" element={<Finance />} />
+        <Route path="service-requests" element={<CustomerCare />} />
+        <Route path="announcements" element={<Announcements />} />
+        <Route path="notifications" element={<Notifications />} />
       </Route>
     </Routes>
   );

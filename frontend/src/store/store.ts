@@ -4,6 +4,7 @@ import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // default storage for web
 import menuReducer from '../features/menuSlice';
 import businessOwnerReducer from '../features/businessOwnerSlice';
+import superAdminReducer from '../features/superAdminSlice';
 
 // Persist configuration
 const persistConfig = {
@@ -13,12 +14,13 @@ const persistConfig = {
 
 // Create a persisted reducer for the businessOwner
 const persistedBusinessOwnerReducer = persistReducer(persistConfig, businessOwnerReducer);
-
+const persistedsuperAdminReducer = persistReducer(persistConfig, superAdminReducer);
 // Configure the Redux store
 const store = configureStore({
   reducer: {
     menu: menuReducer,
     businessOwner: persistedBusinessOwnerReducer,
+    superAdmin: persistedsuperAdminReducer,
   },
 });
 

@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setActiveMenu } from "../../features/menuSlice";
-import { AiOutlineMenu } from "react-icons/ai";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { TooltipComponent } from "@syncfusion/ej2-react-popups";
 import { useNavigate } from "react-router-dom"; // Import for navigation
-import { IoNotificationsOutline } from "react-icons/io5";
-import { FcSpeaker } from "react-icons/fc";
 import { login } from "../../features/businessOwnerSlice";
 import { RootState } from "../../store/store";
+import { superadminLogin } from "../../features/superAdminSlice";
 
 export default function Navbar() {
   const dispatch = useDispatch();
@@ -20,7 +18,8 @@ export default function Navbar() {
 
   const [showProfileMenu, setShowProfileMenu] = useState(false); // State for profile menu visibility
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // State for logout confirmation modal
-  const user= useSelector((state: RootState) => state.businessOwner.role)
+  const isBusinessOwner= useSelector((state: RootState) => state.businessOwner.role)
+  const isSuperAdmin= useSelector((state: RootState) => state.superAdmin.role)
 
   const NavButton = ({
     title,
@@ -46,13 +45,23 @@ export default function Navbar() {
   const handleLogout = () => {
     console.log("User logged out");
     setShowLogoutConfirm(false);
-    dispatch(login({
-      role: '', // Assuming role is fixed
-      token: "", // Assuming the access token is in 'data.accessToken'
-      isAuthenticated: false,
-    }));
-    navigate("/login");
+    if (isBusinessOwner) {
+      dispatch(login({
+        role: '', 
+        token: "", 
+        isAuthenticated: false,
+      }));
+      navigate("/login");
+    } else if(isSuperAdmin) {
+      dispatch(superadminLogin({
+        role: '', 
+        token: "", 
+        isAuthenticated: false,
+      }));
+      navigate("/superadmin-login");
+    }
   };
+  
 
   return (
     <div
@@ -95,7 +104,7 @@ export default function Navbar() {
             />
             <p className="flex flex-col">
               <span className="from-neutral-100 text-xs md:text-sm" style={{ color: currentColor }}>
-                {user}
+                {isBusinessOwner ? "Business Owner" : isSuperAdmin ? "Super Admin" : "User"}
               </span>
             </p>
             <MdKeyboardArrowDown className="text-lg md:text-xl" style={{ color: currentColor }} />

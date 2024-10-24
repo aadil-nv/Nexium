@@ -7,6 +7,7 @@ import 'chart.js/auto'; // Required for react-chartjs-2
 const AdminDashboard: React.FC = () => {
   const themeMode = useSelector((state: { menu: { themeMode: 'light' | 'dark' } }) => state.menu.themeMode);
   const themeColor = useSelector((state: { menu: { themeColor: string } }) => state.menu.themeColor);
+  const currentColor = useSelector((state: { menu: { themeColor: string } }) => state.menu.themeColor);
 
   // Data for charts
   const chartData = {

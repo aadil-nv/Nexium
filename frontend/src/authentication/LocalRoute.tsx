@@ -9,11 +9,13 @@ import LandingNewPasswordPage from "../pages/landingPages/LandingNewPasswordPage
 import LandingForgottOtp from "../pages/landingPages/LandingForgottOtp";
 import LandingLoginPage from "../pages/landingPages/LandingLoginPage";
 import LandingPage from "../pages/landingPages/LandingPage";
+import SuperAdminLOgin from "../components/superAdmin/superAdminLogin/superAdminLogin";
 
 const BusinessOwnerRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/superadmin-login" element={<SuperAdminLOgin />} />
       <Route path="/login" element={<LandingLoginPage />} />
       <Route path="/signup" element={<LandingSignUpPage />} />
       <Route path="/otp" element={<LandingOtp />} />
