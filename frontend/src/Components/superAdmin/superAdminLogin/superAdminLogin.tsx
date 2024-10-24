@@ -60,7 +60,7 @@ export default function superAdminLogin() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-gray-200">
       <div className="bg-white shadow-md rounded-2xl flex flex-col md:flex-row w-full max-w-4xl">
-        {/* Left section (Form) */}
+        
         <div className="w-full md:w-3/5 p-5">
           <div className="text-left font-bold">
             <img src={images.nexuimLogoWithName} alt="Logo" className="w-20 h-auto" />

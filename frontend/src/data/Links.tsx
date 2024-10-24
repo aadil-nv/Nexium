@@ -8,9 +8,9 @@ interface LinkItem {
 
   export const businessOwnerLinks: LinkItem[] = [
     { title: 'Dashboard', route: '/business-owner/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
+    { title: 'Employees', route: '/business-owner/workers', icon: 'fi fi-tr-employees' },
     { title: 'Subscriptions', route: '/business-owner/subscriptions', icon: 'fi fi-tr-benefit' },
     { title: 'Service Requests', route: '/business-owner/service-requests', icon: 'fi fi-tr-user-headset' },
-    { title: 'Users', route: '/business-owner/workers', icon: 'fi fi-tr-employees' },
     { title: 'Notifications', route: '/business-owner/notifications', icon: 'fi fi-tr-bells' },
     { title: 'Announcements', route: '/business-owner/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   ];
