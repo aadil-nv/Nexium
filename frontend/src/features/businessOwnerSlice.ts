@@ -1,4 +1,4 @@
-// features/businessOwnerSlice.ts
+
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 

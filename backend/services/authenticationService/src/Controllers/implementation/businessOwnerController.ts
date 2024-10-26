@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
 import { BusinessOwnerService } from "../../Services/implementaion/businessOwnerService";
-import { ObjectId } from "mongodb"; // Ensure you import ObjectId for MongoDB document ID
+
 import { loadStripe, Stripe } from '@stripe/stripe-js';
 
-// Initialize Stripe (ensure your secret key is used)
+
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
 const businessOwnerService = new BusinessOwnerService();
 
-export class BusinessOwnerController {
+export class BusinessOwnerController  {
  async register(req: Request, res: Response): Promise<Response> {
     console.log("Hitting company controller...");
 
@@ -52,7 +52,6 @@ export class BusinessOwnerController {
 }
 
 
-
 async  login(req: Request, res: Response): Promise<Response> {
     const { email, password } = req.body;
 
@@ -69,7 +68,8 @@ async  login(req: Request, res: Response): Promise<Response> {
                 return res.status(403).json({
                     message: "Account not verified. OTP sent to email.",
                     email: companyEmail,
-                    isVerified: false
+                    isVerified: false,
+                    success:success
                 });
             }
             return res.status(400).json({ message });
@@ -87,7 +87,6 @@ async  login(req: Request, res: Response): Promise<Response> {
         return res.status(500).json({ message: "An error occurred during login" });
     }
 }
-
 
 
   async validateOtp(req: Request, res: Response): Promise<Response> {
@@ -118,7 +117,6 @@ async  login(req: Request, res: Response): Promise<Response> {
     }
 }
 
-
 async resendOtp(req: Request, res: Response): Promise<Response> {
   const { email } = req.body;
 
@@ -138,27 +136,29 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
   try {
       const { plan, amount, currency, email } = req.body;
 
-      // Call the businessOwnerService to create the checkout session or handle the trial plan
       const result = await businessOwnerService.createCheckoutSession(plan, amount, currency, email);
 
-      // If the plan is a Trial plan (id === 1), return success message directly
-      if (plan.id === 1) {
+      console.log("Result from create checkout seesion ",result);
+      
+
+      if (result.planId === 1) {
           return res.status(200).json({
-              message: result.message,  // Pass the subscription message
-              success: result.success,  // Pass the success status
-              role: result.role,        // Include the user's role if needed
-              planId: plan.id,          // Send the plan ID
-              accessToken: result.accessToken,  // Include access token for the trial
-              refreshToken: result.refreshToken // Include refresh token for the trial
+              message: result.message,  
+              success: result.success,  
+              role: result.role,       
+              planId: result.planId,        
+              accessToken: result.accessToken,  
+              refreshToken: result.refreshToken,
+              
           });
       } else {
-          // For paid plans, return the Stripe session ID to redirect the user to Stripe Checkout
+          
           return res.status(200).json({
-              sessionId: result.id,  // Stripe session ID for redirection
-              success: true,         // Success status
-              planId: plan.id,       // Send the plan ID
-              accessToken: result.accessToken,  // Include access token for the plan
-              refreshToken: result.refreshToken // Include refresh token for the plan
+              sessionId: result.session.id, 
+              success: result.success,     
+              planId: result.planId,    
+              accessToken: result.accessToken,  
+              refreshToken: result.refreshToken 
           });
       }
   } catch (error) {

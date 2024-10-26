@@ -1,15 +1,16 @@
-import { Router, Request, Response } from "express";
-import AdminController from "../Controllers/implementation/superAdminController";
-import authMiddleware from "../MIddlewares/authMiddleware";
+import { Router } from 'express';
+import container from "../Config/inversify";
+import ISuperAdminController from '../Controllers/interface/ISuperAdminController'; // Use interface
 
 const superAdminRouter = Router();
 
-superAdminRouter.post("/login",AdminController.adminLogin);
+const superAdminController = container.get<ISuperAdminController>("ISuperAdminController");
 
-superAdminRouter.post("/register",AdminController.adminRegister);
+superAdminRouter.post('/login', (req, res, next) => superAdminController.adminLogin(req, res, next));
 
-superAdminRouter.post("/refresh-token",AdminController.refreshAccessToken);
+superAdminRouter.post('/register', (req, res) => superAdminController.adminRegister(req, res));
 
-superAdminRouter.post("/logout",AdminController.logout);
+// Uncomment this if you need the refresh access token route
+// superAdminRouter.post('/refresh', (req, res) => superAdminController.refreshAccessToken(req, res));
 
 export default superAdminRouter;

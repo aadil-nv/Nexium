@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Button, ConfigProvider, Modal, Form, Input, Space } from 'antd';
 import { createStyles, useTheme } from 'antd-style';
 import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
+
 
 const useStyle = createStyles(({ token }) => ({
   'my-modal-body': {
@@ -25,7 +27,7 @@ const useStyle = createStyles(({ token }) => ({
 const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = ({ isVisible, onClose }) => {
   const { styles } = useStyle();
   const token = useTheme();
-  const themeColor = useSelector((state: { menu: { themeColor: RootState} }) => state.menu.themeColor);
+  const themeColor = useSelector((state: RootState) => state.menu.themeColor);
 
 
   const classNames = {

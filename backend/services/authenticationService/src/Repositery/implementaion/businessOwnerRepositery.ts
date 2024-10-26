@@ -2,6 +2,9 @@ import mongoose from "mongoose";
 import { IBusinessOwnerDocument,ISubscription } from "../interfaces/IBusinessOwnerRepositery";
 import businessOwnerSchema from "../../Schemas/businessOwnerSchema";
 import OtpModel from "../../Schemas/otpScheema";
+import { injectable } from "inversify";
+
+
 
 export default class BusinessOwnerRepository {
   private useCompanyDb(registrationNumber: string) {

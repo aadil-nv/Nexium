@@ -1,26 +1,31 @@
-
-import { Request, Response } from 'express';
-import superAdminService from '../../Services/implementaion/superAdminService';
+import { Request, Response, NextFunction } from 'express';
 import { generateAccessToken, generateRefreshToken } from '../../Utils/jwt';
-import { IExtendedLoginResponse, ISuperAdmin } from '../interface/ISuperAdmin';
+import { IExtendedLoginResponse, ISuperAdmin } from '../interface/ISuperAdminController';
+import ISuperAdminController from '../interface/ISuperAdminController';
+import ISuperAdminService from '../../Services/interfaces/ISuperAdminService'; // Adjust path as necessary
+import { inject, injectable } from "inversify";
 
-class SuperAdminController {
-   
-    async adminLogin(req: Request, res: Response): Promise<Response> {
-        
+@injectable()
+export default class SuperAdminController implements ISuperAdminController {
+    
+    private adminService: ISuperAdminService;
+    constructor(@inject("ISuperAdminService") adminService: ISuperAdminService) {
+        this.adminService = adminService;
+    }
+  async adminLogin(req: Request, res: Response, next: NextFunction) {
         try {
-            const { email, password } = req.body; 
-            const response: IExtendedLoginResponse = await superAdminService.login(email, password);
-            const { token, refreshToken, admin } = response;
+            const { email, password } = req.body;            
+            const response= await this.adminService.login(email, password);
+            const { token, refreshToken } = response;
 
+            // Set refresh token as a cookie
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
-
-            return res.status(200).json({ accessToken: token, admin });
+            return res.status(200).json({ accessToken: token });
         } catch (error: unknown) {
             if (error instanceof Error) {
                 return res.status(400).json({ message: error.message });
@@ -30,30 +35,29 @@ class SuperAdminController {
         }
     }
 
+    
+
     async adminRegister(req: Request, res: Response): Promise<Response> {
         const { username, email, password } = req.body;
-            console.log("adminController is touched.......");
-            
+        console.log("adminController is touched.......");
+
         try {
-            const newAdmin: Omit<ISuperAdmin, 'password'> = await superAdminService.register(username, email, password);
-            console.log("adminController - newAdmin data",newAdmin);
+            const newAdmin: Omit<ISuperAdmin, 'password'> = await this.adminService.register(username, email, password);
+            console.log("adminController - newAdmin data", newAdmin);
             
-            const accessToken = generateAccessToken(newAdmin); 
+            const accessToken = generateAccessToken(newAdmin);
             const refreshToken = generateRefreshToken(newAdmin);
 
-
-            console.log("Refresh token" ,refreshToken,);
-            console.log("Access token" ,accessToken,);
+            console.log("Refresh token", refreshToken);
+            console.log("Access token", accessToken);
             
+            // Set refresh token as a cookie
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
-
-           
-            
 
             return res.status(201).json({ accessToken, admin: newAdmin });
         } catch (error: unknown) {
@@ -65,36 +69,29 @@ class SuperAdminController {
         }
     }
 
-    async refreshAccessToken(req: Request, res: Response): Promise<Response> {
-        const { refreshToken } = req.cookies;
+    // Uncomment this if you need the refresh token route
+    // async refreshAccessToken(req: Request, res: Response): Promise<Response> {
+    //     const { refreshToken } = req.cookies;
 
-        if (!refreshToken) {
-            return res.status(401).json({ message: 'No refresh token provided.' });
-        }
+    //     if (!refreshToken) {
+    //         return res.status(401).json({ message: 'No refresh token provided.' });
+    //     }
 
-        try {
-            const admin = await superAdminService.verifyRefreshToken(refreshToken); 
+    //     try {
+    //         const admin = await this.adminService.verifyRefreshToken(refreshToken);
 
-            if (!admin) {
-                return res.status(403).json({ message: 'Invalid refresh token.' });
-            }
+    //         if (!admin) {
+    //             return res.status(403).json({ message: 'Invalid refresh token.' });
+    //         }
 
-            const newAccessToken = generateAccessToken(admin); 
-
-            return res.status(200).json({ accessToken: newAccessToken });
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                return res.status(403).json({ message: error.message });
-            } else {
-                return res.status(500).json({ message: 'An unexpected error occurred.' });
-            }
-        }
-    }
-
-    async logout(req: Request, res: Response): Promise<Response> {
-        res.clearCookie('refreshToken'); 
-        return res.status(200).json({ message: 'Logged out successfully.' });
-    }
+    //         const newAccessToken = generateAccessToken(admin);
+    //         return res.status(200).json({ accessToken: newAccessToken });
+    //     } catch (error: unknown) {
+    //         if (error instanceof Error) {
+    //             return res.status(403).json({ message: error.message });
+    //         } else {
+    //             return res.status(500).json({ message: 'An unexpected error occurred.' });
+    //         }
+    //     }
+    // }
 }
-
-export default new SuperAdminController();

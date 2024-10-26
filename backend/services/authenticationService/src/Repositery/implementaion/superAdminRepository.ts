@@ -1,8 +1,11 @@
 // src/Repositery/implementaion/adminRepository.ts
 import Admin from "../../Schemas/superAdminSchema";
 import { ISuperAdmin } from "../interfaces/ISuperAdminRepository";
+import { injectable } from "inversify";
+import ISuperAdminRepository from "../interfaces/ISuperAdminRepository";
 
-class SuperAdminRepository {
+@injectable()
+export default class SuperAdminRepository implements ISuperAdminRepository  {
   async findByEmail(email: string): Promise<ISuperAdmin | null> {
     return await Admin.findOne({ email }).exec();
   }
@@ -19,4 +22,4 @@ class SuperAdminRepository {
   }
 }
 
-export default new SuperAdminRepository();
+

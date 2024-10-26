@@ -1,12 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import SuperAdminRoutes from './authentication/SuperAdminRoute';
-import BusinessOwnerRoutes from './authentication/BusinessOwnerRoute';
-import LocalRoute from './authentication/LocalRoute';
+import SuperAdminRoutes from './routes/SuperAdminRoute';
+import BusinessOwnerRoutes from './routes/BusinessOwnerRoute';
+import LocalRoute from './routes/LocalRoute';
 import { useSelector } from 'react-redux';
 import { RootState } from './store/store';
-import HrMangerRoutes from './authentication/HrManegerRoute';
+import HrMangerRoutes from './routes/HrManegerRoute';
 
 
 

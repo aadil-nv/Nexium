@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './Config/connectDB';
 import superAdminRoutes from './Routes/superAdminRoute';
+import businessOwnerRoutes from './Routes/businessOwnerRoute';
 // import companyRouter from './Routes/companyRoutes';
 import 'colors' ;
 
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/super-admin', superAdminRoutes); 
+app.use('/api/business-owner', businessOwnerRoutes); 
 
 
 app.listen(PORT, () => {

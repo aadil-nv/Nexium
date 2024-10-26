@@ -1,52 +1,59 @@
-
-import superAdminRepository from "../../Repositery/implementaion/superAdminRepository";
+import superAdminRepository from "../../Repositery/implementaion/superAdminRepository"; // Ensure this path is correct
 import bcrypt from "bcryptjs";
-import { ISuperAdmin, IExtendedLoginResponse } from "../interfaces/ISuperAdminService";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-} from "../../Utils/jwt";
+import {ISuperAdmin,IExtendedLoginResponse,} from "../interfaces/ISuperAdminService";
+import {generateAccessToken,generateRefreshToken,} from "../../Utils/jwt";
+import ISuperAdminService from "../interfaces/ISuperAdminService";
+import ISuperAdminRepository from "../../Repositery/interfaces/ISuperAdminRepository";
+import { inject, injectable } from "inversify";
 
-class SuperAdminService {
-  async login(
-    email: string,
-    password: string
-  ): Promise<IExtendedLoginResponse> {
-    const admin: ISuperAdmin | null = await superAdminRepository.findByEmail(email);
+@injectable()
+export default class SuperAdminService implements ISuperAdminService {
+  private superAdminRepository: ISuperAdminRepository;
+
+  constructor(
+    @inject("ISuperAdminRepository") superAdminRepository: ISuperAdminRepository
+  ) {
+    this.superAdminRepository = superAdminRepository;
+  }
+
+  async login(email: string, password: string): Promise<{ token: string; refreshToken: string }> {
+    console.log("Touching login service");
+    console.log("email", email, "password", password);
+
+    const admin = await this.superAdminRepository.findByEmail(email);
+    console.log("admin", admin);
+
     if (!admin) {
       throw new Error("Invalid credentials");
     }
 
     const isMatch = await bcrypt.compare(password, admin.password as string);
+    console.log("isMatch", isMatch);
+
     if (!isMatch) {
       throw new Error("Invalid credentials");
     }
 
-    const token = generateAccessToken(admin);
-    const refreshToken = generateRefreshToken(admin);
+    const token = generateAccessToken(admin as ISuperAdmin);
+    console.log("token", token);
 
-    const { password: _, ...adminWithoutPassword } = admin;
+    const refreshToken = generateRefreshToken(admin as ISuperAdmin);
+    console.log("refreshToken", refreshToken);
 
     return {
       token,
       refreshToken,
-      admin: adminWithoutPassword as Omit<ISuperAdmin, "password">,
     };
   }
 
-  async register(
-    username: string,
-    email: string,
-    password: string
-  ): Promise<Omit<ISuperAdmin, "password">> {
-    const existingAdmin = await superAdminRepository.findByEmail(email);
+  async register(username: string, email: string, password: string): Promise<Omit<ISuperAdmin, "password">> {
+    const existingAdmin = await this.superAdminRepository.findByEmail(email);
     if (existingAdmin) {
       throw new Error("Email already in use");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newAdmin = await superAdminRepository.create({
+    const newAdmin = await this.superAdminRepository.create({
       username,
       email,
       password: hashedPassword,
@@ -56,27 +63,28 @@ class SuperAdminService {
     return adminWithoutPassword as Omit<ISuperAdmin, "password">;
   }
 
-  async verifyRefreshToken(
-    token: string
-  ): Promise<Omit<ISuperAdmin, "password"> | null> {
+  // Keep this function if you need it later
+  /*
+  async verifyRefreshToken(token: string): Promise<Omit<ISuperAdmin, "password"> | null> {
     const decoded = verifyRefreshToken(token);
-
     if (!decoded) {
       throw new Error("Invalid refresh token.");
     }
-
     const admin = await this.findById(decoded.id);
     if (!admin) {
       throw new Error("Admin not found");
     }
-
     const { password: _, ...adminWithoutPassword } = admin;
     return adminWithoutPassword as Omit<ISuperAdmin, "password">;
   }
+  */
 
+  // Uncomment if needed later
+  /*
   async findById(id: string): Promise<ISuperAdmin | null> {
-    return await superAdminRepository.findById(id);
+    return await this.superAdminRepository.findById(id);
   }
+  */
 }
 
-export default new SuperAdminService();
+// Create and export an instance of SuperAdminService

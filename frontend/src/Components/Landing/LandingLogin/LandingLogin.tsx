@@ -48,7 +48,8 @@ export default function LandingLoginPage() {
       });
 
       const data = await response.json();
-      console.log("Login response:", data);
+      console.log("Login response:", data.success);
+      console.log("Login response: isVerfied", data.isVerfied);
       
 
       if (!data.success) {
@@ -66,6 +67,7 @@ export default function LandingLoginPage() {
         isAuthenticated: true
       }));
 
+      localStorage.setItem('businessOwnerToken', data.accessToken);
       navigate('/business-owner/dashboard');
     } catch (error) {
       console.error('Error during login:', error);

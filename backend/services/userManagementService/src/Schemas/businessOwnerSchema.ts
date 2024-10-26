@@ -7,12 +7,12 @@ const companySchema: Schema<ICompanyDocument> = new Schema(
     name: {
       type: String,
       required: true,
-      // unique: true, // Ensure company names are unique
+     
     },
     email: {
       type: String,
       required: true,
-      // unique: true, // Ensure email addresses are unique
+      
     
     },
     password: {

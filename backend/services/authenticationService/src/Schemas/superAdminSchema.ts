@@ -1,6 +1,6 @@
 
 import { Schema, model, Document } from 'mongoose';
-import { ISuperAdmin } from '../Controllers/interface/ISuperAdmin'; 
+import { ISuperAdmin } from '../Controllers/interface/ISuperAdminController'; 
 
 const adminSchema = new Schema<ISuperAdmin & Document>({
     username: { type: String, required: true, unique: true }, 

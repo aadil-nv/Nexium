@@ -1,20 +1,23 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { ISuperAdmin } from '../Controllers/interface/ISuperAdmin'; 
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your_refresh_token_secret';
+import { ISuperAdmin } from '../Controllers/interface/ISuperAdminController'; 
 
 
-export const generateAccessToken = (admin: ISuperAdmin): string => {
-    return jwt.sign({ id: admin._id, email: admin.email }, JWT_SECRET, {
-        expiresIn: '15m', // Access token expires in 15 minutes
-    });
+const JWT_SECRET = process.env.ACCESS_TOKEN_SECRET as string;
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET  as string;
+
+
+
+
+export const generateAccessToken = (admin :ISuperAdmin ): string => {
+    
+    return jwt.sign({admin}, JWT_SECRET, {expiresIn: '15m',});
 };
 
 
-export const generateRefreshToken = (admin: ISuperAdmin): string => {
-    return jwt.sign({ id: admin._id, email: admin.email }, REFRESH_TOKEN_SECRET, {
-        expiresIn: '7d', // Refresh token expires in 7 days
+export const generateRefreshToken = (admin :Object)=> {
+    
+    return jwt.sign({admin}, REFRESH_TOKEN_SECRET, {
+        expiresIn: '7d', 
     });
 };
 

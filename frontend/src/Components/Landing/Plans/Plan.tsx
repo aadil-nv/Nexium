@@ -91,7 +91,7 @@ const PlanSelection: React.FC = () => {
         currency: 'usd',
       });
 
-      console.log("PLAN RES",response);
+      
       const data = await response.data
       if(data.planId === 1){
         dispatch(login({
@@ -99,16 +99,19 @@ const PlanSelection: React.FC = () => {
           token: data.accessToken, 
           isAuthenticated: true,
       }));
-       
+        localStorage.setItem("businessOwnerToken",data.accessToken)
         navigate('/business-owner/dashboard');
       }
       
-
-      const { sessionId } = response.data;
-
+     console.log("Data from paln page",data);
+     
+     const { sessionId } = response.data;
+     
+     console.log("session paln page",sessionId);
       if (sessionId) {
-        // Redirect to Stripe Checkout for paid plans
+        
         const { error } = await stripe.redirectToCheckout({ sessionId });
+        localStorage.setItem("businessOwnerToken",data.accessToken)
         if (error) {
           console.error('Error in payment redirection:', error.message);
         }
