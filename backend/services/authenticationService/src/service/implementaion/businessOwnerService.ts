@@ -1,20 +1,13 @@
-import {
-    ICompany,
-    ICompanyDocument,
-    ITokenResponse,
-    IPaymentIntentResponse,
-    ISubscription,
-    IOtpValidationResult
-} from "../interfaces/IBusinessOwnerService";
-import businessOwnerRepository from "../../Repositery/implementaion/businessOwnerRepositery";
+import {ICompany,ICompanyDocument,ITokenResponse,IPaymentIntentResponse,ISubscription,IOtpValidationResult} from "../interfaces/IBusinessOwnerService";
+import businessOwnerRepository from "../../repositery/implementaion/businessOwnerRepository";
 import bcrypt from "bcryptjs";
-import {generateCompanyAccessToken,generateCompanyRefreshToken,} from "../../Utils/businessOwnerJWT";
+import {generateCompanyAccessToken,generateCompanyRefreshToken,} from "../../utils/businessOwnerJWT";
 import mongoose from "mongoose";
-import businessOwnerSchema from "../../Schemas/businessOwnerSchema";
-import generateOtp from "../../Utils/otp";
+import businessOwnerSchema from "../../model/businessOwnerSchema";
+import generateOtp from "../../utils/otp";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import otpModel from "../../Schemas/otpScheema";
+import otpModel from "../../model/otpScheema";
 dotenv.config();
 import Stripe from "stripe"
 
@@ -37,49 +30,7 @@ export class BusinessOwnerService {
         this.companyRepository = new businessOwnerRepository();
     }
 
-    // async login(email: string, password: string): Promise<ITokenResponse> {
-    // try {
- 
-    //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    //     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
 
-    //     if (!emailRegex.test(email) || !passwordRegex.test(password)) {
-    //         return { success: false, message: "Invalid credentials"};
-    //     }
-
-    //     const company = await this.companyRepository.findByEmail(email);
-    //     if (!company ) {
-    //         return {success: false, message: "Invalid credentials"};
-    //     }
-    //     if (!await bcrypt.compare(password, company.password)) {
-    //         return { success: false,  message: "Invalid credentials" };
-    //     }
-    //     if ( !company.isVerified ) {
-    //         const otp = generateOtp();
-    //         await this.sendOtp(company.email, otp);
-    //         return { email:company.email, success: false, message: "Account not verified. Please verify your email", isVerified:false };
-    //     }
-
-    //     const { accessToken, refreshToken } = this.generateTokens(company);
-
-      
-    //     return { 
-    //         success: true, 
-    //         message: "Login successful", 
-    //         accessToken, 
-    //         refreshToken 
-    //     };
-
-    // } catch (error) {
-    //     // Catch any error and return the failure response
-    //     return { 
-    //         success: false, 
-    //         message: "An error occurred during login", 
-    //         accessToken: "", 
-    //         refreshToken: "" 
-    //     };
-    // }
-    // }
     async login(email: string, password: string): Promise<ITokenResponse> {
         try {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

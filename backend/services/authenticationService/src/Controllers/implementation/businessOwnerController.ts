@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { BusinessOwnerService } from "../../Services/implementaion/businessOwnerService";
+import { BusinessOwnerService } from "../../service/implementaion/businessOwnerService";
 
 import { loadStripe, Stripe } from '@stripe/stripe-js';
 

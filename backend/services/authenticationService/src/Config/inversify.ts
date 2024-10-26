@@ -1,11 +1,11 @@
 import {Container } from "inversify";
 
-import ISuperAdminController from "../Controllers/interface/ISuperAdminController"
-import SuperAdminController from "../Controllers/implementation/superAdminController"
-import ISuperAdminService from "../Services/interfaces/ISuperAdminService"
-import SuperAdminService from "../Services/implementaion/superAdminService"
-import ISuperAdminRepository from "../Repositery/interfaces/ISuperAdminRepository";
-import SuperAdminRepository from "../Repositery/implementaion/superAdminRepository";
+import ISuperAdminController from "../controllers/interface/ISuperAdminController"
+import SuperAdminController from "../controllers/implementation/superAdminController"
+import ISuperAdminService from "../service/interfaces/ISuperAdminService"
+import SuperAdminService from "../service/implementaion/superAdminService"
+import ISuperAdminRepository from "../repositery/interfaces/ISuperAdminRepository";
+import SuperAdminRepository from "../repositery/implementaion/superAdminRepository";
 
 
 

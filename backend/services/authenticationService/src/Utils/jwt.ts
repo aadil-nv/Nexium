@@ -1,5 +1,5 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { ISuperAdmin } from '../Controllers/interface/ISuperAdminController'; 
+import { ISuperAdmin } from '../controllers/interface/ISuperAdminController'; 
 
 
 const JWT_SECRET = process.env.ACCESS_TOKEN_SECRET as string;

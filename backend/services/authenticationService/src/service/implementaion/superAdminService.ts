@@ -1,7 +1,7 @@
-import superAdminRepository from "../../Repositery/implementaion/superAdminRepository"; // Ensure this path is correct
+import superAdminRepository from "../../repositery/implementaion/superAdminRepository"; // Ensure this path is correct
 import bcrypt from "bcryptjs";
 import {ISuperAdmin,IExtendedLoginResponse,} from "../interfaces/ISuperAdminService";
-import {generateAccessToken,generateRefreshToken,} from "../../Utils/jwt";
+import {generateAccessToken,generateRefreshToken,} from "../../utils/jwt";
 import ISuperAdminService from "../interfaces/ISuperAdminService";
 import ISuperAdminRepository from "../../Repositery/interfaces/ISuperAdminRepository";
 import { inject, injectable } from "inversify";

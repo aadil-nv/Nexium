@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import container from "../Config/inversify";
-import ISuperAdminController from '../Controllers/interface/ISuperAdminController'; // Use interface
+import container from "../config/inversify";
+import ISuperAdminController from '../controllers/interface/ISuperAdminController'; // Use interface
 
 const superAdminRouter = Router();
 

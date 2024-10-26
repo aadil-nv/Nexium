@@ -1,5 +1,5 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { IBusinessOwnerDocument } from '../Controllers/interface/IBusinessOwner'; // Import IBusinessOwnerDocument instead of ICompany
+import { IBusinessOwnerDocument } from '../controllers/interface/IBusinessOwner'; // Import IBusinessOwnerDocument instead of ICompany
 import { ObjectId } from 'mongoose'; // Import ObjectId if needed
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';

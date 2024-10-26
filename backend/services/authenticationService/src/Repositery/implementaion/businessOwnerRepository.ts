@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import { IBusinessOwnerDocument,ISubscription } from "../interfaces/IBusinessOwnerRepositery";
-import businessOwnerSchema from "../../Schemas/businessOwnerSchema";
-import OtpModel from "../../Schemas/otpScheema";
+import { IBusinessOwnerDocument,ISubscription } from "../interfaces/IBusinessOwnerRepository";
+import businessOwnerSchema from "../../model/businessOwnerSchema";
+import OtpModel from "../../model/otpScheema";
 import { injectable } from "inversify";
 
 

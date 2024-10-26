@@ -1,5 +1,5 @@
 import express, { Router, Request, Response } from "express";
-import { BusinessOwnerController } from "../Controllers/implementation/businessOwnerController";
+import { BusinessOwnerController } from "../controllers/implementation/businessOwnerController";
 import StripeWebhookController from "../hooks/StripeWebhook";
 
 const businessOwnerRouter = Router();
