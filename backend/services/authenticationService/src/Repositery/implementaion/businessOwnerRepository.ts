@@ -1,17 +1,14 @@
-import mongoose from "mongoose";
-import { IBusinessOwnerDocument,ISubscription } from "../interfaces/IBusinessOwnerRepository";
-import businessOwnerSchema from "../../model/businessOwnerSchema";
-import OtpModel from "../../model/otpScheema";
 import { injectable } from "inversify";
+import businessOwnerSchema from "../../model/businessOwnerModel";
+import OtpModel from "../../model/otpModel";
+import IBusinessOwnerRepository from "../interfaces/IBusinessOwnerRepository";
+import { IBusinessOwnerDocument, ISubscription } from "../interfaces/IBusinessOwnerRepository";
 
 
-
-export default class BusinessOwnerRepository {
-  private useCompanyDb(registrationNumber: string) {
-    const dbName = `company_${registrationNumber}`;
-    return mongoose.connection.useDb(dbName);
-  }
-
+@injectable()
+export default class BusinessOwnerRepository  implements IBusinessOwnerRepository {
+    
+   
   async findByEmail(email: string): Promise<IBusinessOwnerDocument | null> {
     return await businessOwnerSchema.findOne({ email }).exec();
   }
@@ -33,23 +30,22 @@ export default class BusinessOwnerRepository {
     return await businessOwnerSchema.findOneAndUpdate(
       { email },
       { subscription },
-      { new: true } // Return the updated document
+      { new: true } 
     ).exec();
   }
 
   async getOtpByEmail(email: string): Promise<any | null> {
-    console.log("getOtpEmail is --",email);
     return await OtpModel.findOne({ email }).exec();
   }
 
 
   async updateOtp(email: string, otp: string): Promise<void> {
     const result = await OtpModel.updateOne(
-        { email }, // Filter by email
+        { email }, 
         { 
-            otp, // Update the OTP
-            createdAt: new Date(), // Update the timestamp (consider if you want this)
-            updatedAt: new Date(), // Update the updatedAt field
+            otp, 
+            createdAt: new Date(), 
+            updatedAt: new Date(), 
         }
     );
 
@@ -62,8 +58,6 @@ export default class BusinessOwnerRepository {
   async updatePassword(email: string, hashedPassword: string): Promise<void> {
     await businessOwnerSchema.updateOne({ email }, { password: hashedPassword }).exec();
   }
-  
-  
   
 
 }

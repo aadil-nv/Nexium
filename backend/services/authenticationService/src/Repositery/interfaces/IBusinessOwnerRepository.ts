@@ -37,3 +37,19 @@ export interface ITokenResponse {
 export interface IPaymentIntentResponse {
     clientSecret: string;
   }
+
+
+
+
+
+  export default interface IBusinessOwnerRepository {
+    findByEmail(email: string): Promise<IBusinessOwnerDocument | null>;
+    create(companyData: IBusinessOwnerDocument): Promise<IBusinessOwnerDocument>;
+    findOtpByEmail(email: string): Promise<any | null>;
+    updateVerificationStatus(email: string): Promise<any>;
+    updateSubscriptionByEmail(email: string, subscription: ISubscription): Promise<IBusinessOwnerDocument | null>;
+    getOtpByEmail(email: string): Promise<any | null>;
+    updateOtp(email: string, otp: string): Promise<void>;
+    updatePassword(email: string, hashedPassword: string): Promise<void>;
+  }
+  

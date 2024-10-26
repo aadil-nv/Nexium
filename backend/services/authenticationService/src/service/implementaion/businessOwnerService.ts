@@ -1,15 +1,15 @@
 import {ICompany,ICompanyDocument,ITokenResponse,IPaymentIntentResponse,ISubscription,IOtpValidationResult} from "../interfaces/IBusinessOwnerService";
-import businessOwnerRepository from "../../repositery/implementaion/businessOwnerRepository";
 import bcrypt from "bcryptjs";
 import {generateCompanyAccessToken,generateCompanyRefreshToken,} from "../../utils/businessOwnerJWT";
 import mongoose from "mongoose";
-import businessOwnerSchema from "../../model/businessOwnerSchema";
+import businessOwnerSchema from "../../model/businessOwnerModel";
 import generateOtp from "../../utils/otp";
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-import otpModel from "../../model/otpScheema";
-dotenv.config();
+import otpModel from "../../model/otpModel";
 import Stripe from "stripe"
+import IBusinessOwnerService from "../interfaces/IBusinessOwnerService";
+import IBusinessOwnerRepository from "repositery/interfaces/IBusinessOwnerRepository";
+import { inject, injectable } from "inversify";
 
 
 const stripe = new Stripe(process.env.STRIP_SECRET_KEY as string);
@@ -22,12 +22,12 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+@injectable()
+export default class BusinessOwnerService implements IBusinessOwnerService {
+    private businessOwnerRepository: IBusinessOwnerRepository;
 
-export class BusinessOwnerService {
-    private companyRepository: businessOwnerRepository;
-
-    constructor() {
-        this.companyRepository = new businessOwnerRepository();
+    constructor(@inject("IBusinessOwnerRepository") businessOwnerRepository: IBusinessOwnerRepository) {
+        this.businessOwnerRepository = businessOwnerRepository;
     }
 
 
@@ -36,7 +36,6 @@ export class BusinessOwnerService {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
     
-            // Validate email and password format
             if (!emailRegex.test(email)) {
                 return { success: false, message: "Invalid email format" };
             }
@@ -44,7 +43,7 @@ export class BusinessOwnerService {
                 return { success: false, message: "Password must have at least 6 characters, 1 uppercase letter, 1 number, and 1 special character" };
             }
     
-            const company = await this.companyRepository.findByEmail(email);
+            const company = await this.businessOwnerRepository.findByEmail(email);
             if (!company) {
                 return { success: false, message: "Invalid email or password" };
             }
@@ -62,20 +61,10 @@ export class BusinessOwnerService {
     
             const { accessToken, refreshToken } = this.generateTokens(company);
     
-            return {
-                success: true,
-                message: "Login successful",
-                accessToken,
-                refreshToken,
-            };
+            return {success: true,message: "Login successful",accessToken,refreshToken,};
     
         } catch (error) {
-            return {
-                success: false,
-                message: "An error occurred during login",
-                accessToken: "",
-                refreshToken: ""
-            };
+            return { success: false, message: "An error occurred during login"};
         }
     }
     
@@ -135,7 +124,7 @@ export class BusinessOwnerService {
             isVerified: false,
         });
 
-        const savedCompany = await this.companyRepository.create(newCompanyData);
+        const savedCompany = await this.businessOwnerRepository.create(newCompanyData);
         const otp = generateOtp()
 
         await this.sendOtp(savedCompany.email,otp);
@@ -213,7 +202,7 @@ export class BusinessOwnerService {
             console.log("hitting validateOtp service", email, otp);
             
         try {
-            const recordedCompany = await this.companyRepository.findOtpByEmail(email);
+            const recordedCompany = await this.businessOwnerRepository.findOtpByEmail(email);
     
             if (!recordedCompany) {
                 console.error("Company not found for email:", email);
@@ -224,88 +213,29 @@ export class BusinessOwnerService {
                
                
             if (recordedCompany.otp == otp) {
-                const verification = await this.companyRepository.updateVerificationStatus(email);
+                const verification = await this.businessOwnerRepository.updateVerificationStatus(email);
     
                 if (!verification) {
-                    return { success: false }; // Verification failed
+                    return { success: false }; 
                 }
                 
     
                 console.log("OTP validated and company verified successfully.");
-                return { success: true, email  }; // Return success and email
+                return { success: true, email  };
             } else {
                 console.log("Invalid OTP provided.");
-                return { success: false }; // Invalid OTP
+                return { success: false };
             }
         } catch (error) {
             console.error("Error validating OTP:", error);
-            return { success: false }; // Error occurred
+            return { success: false }; 
         }
     }
         
-    //  async createCheckoutSession(
-    //     plan: any, amount: number, currency: string, email: string): Promise<any> {
-    //         console.log("Hitting Stripe Checkout Session Service", plan, amount, currency);
-    
-    //         try {
-    //             if (plan.id === 1) {
-    //                 // For Trial plan, update the subscription directly without Stripe
-    //                 const subscription: ISubscription = {
-    //                     planName: plan.name,
-    //                     planType: 'Trial',
-    //                     startDate: new Date(),
-    //                     endDate: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000), // Trial for 7 days
-    //                     status: 'Active',
-    //                 };
-    
-    //                 // Update the company's subscription in the database
-    //                 const updatedCompany = await this.companyRepository.updateSubscriptionByEmail(email, subscription);
-    
-    //                 if (updatedCompany) {
-    //                     return { message: 'Subscription updated successfully', success: true  };
-    //                 } else {
-    //                     throw new Error('Company not found');
-    //                 }
-    //             } else {
-    //                 // For other plans, proceed with Stripe Checkout
-    //                 const session = await stripe.checkout.sessions.create({
-    //                     payment_method_types: ['card'],
-    //                     line_items: [
-    //                         {
-    //                             price_data: {
-    //                                 currency: currency,
-    //                                 product_data: {
-    //                                     name: plan.name,
-    //                                     description: `Payment for ${plan.name} Plan`,
-    //                                 },
-    //                                 unit_amount: amount,
-    //                             },
-    //                             quantity: 1,
-    //                         },
-    //                     ],
-    //                     mode: 'payment',
-    //                     success_url: 'http://localhost:5173/business-owner/dashboard',
-    //                     cancel_url: 'http://localhost:5173/plan',
-    //                 });
-    
-    //                 return session;
-    //             }
-    //         } catch (error) {
-    //             console.error('Error in createCheckoutSession:', error);
-    //             throw new Error('Failed to process the request: ' + error); // Include error message for clarity
-    //         }
-    // }
-    async createCheckoutSession(
-        plan: any, 
-        amount: number, 
-        currency: string, 
-        email: string
-      ): Promise<any> {
-        console.log("Hitting Stripe Checkout Session Service", plan, amount, currency);
+    async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponse> {
       
         try {
           if (plan.id === 1) {
-            // For Trial plan, update the subscription directly without Stripe
             const subscription: ISubscription = {
               planName: plan.name,
               planType: 'Trial',
@@ -313,40 +243,29 @@ export class BusinessOwnerService {
               endDate: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000), // Trial for 7 days
               status: 'Active',
             };
-      
-            // Update the company's subscription in the database
-            const updatedCompany = await this.companyRepository.updateSubscriptionByEmail(email, subscription);
+    
+            const updatedCompany = await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
       
             if (updatedCompany) {
                 console.log("Updated Company",updatedCompany);
                 
                 const { accessToken, refreshToken } = this.generateTokens(updatedCompany);
-              console.log("accesstoken is ",accessToken);
-              console.log("refreshstoken is ",refreshToken);
-              
-      
               return { 
                 message: 'Subscription updated successfully', 
                 success: true, 
                 role: updatedCompany.role,
-                planId: plan.id,  // Send planId for trial plan
-                accessToken,      // Include generated accessToken
-                refreshToken      // Include generated refreshToken
+                planId: plan.id, 
+                accessToken,     
+                refreshToken    
               };
             } else {
               throw new Error('Company not found');
             }
           } else {
-            // For other plans, proceed with Stripe Checkout
             const session = await stripe.checkout.sessions.create({
               payment_method_types: ['card'],
-              line_items: [
-                {
-                  price_data: {
-                    currency: currency,
-                    product_data: {
-                      name: plan.name,
-                      description: `Payment for ${plan.name} Plan`,
+              line_items: [{price_data: {currency: currency,product_data: { 
+                name: plan.name,description: `Payment for ${plan.name} Plan`,
                     },
                     unit_amount: amount,
                   },
@@ -358,47 +277,36 @@ export class BusinessOwnerService {
               cancel_url: 'http://localhost:5173/plan',
             });
       
-            // Generate access and refresh tokens for non-trial plans
-            const updatedCompany = await this.companyRepository.findByEmail(email);
+            const updatedCompany = await this.businessOwnerRepository.findByEmail(email);
             if (!updatedCompany) {
               throw new Error('Company not found');
             }
             
             const { accessToken, refreshToken } = this.generateTokens(updatedCompany);
       
-            // Return session, accessToken, refreshToken, and planId to the frontend
-            return { 
-              session, 
-              success: true, 
-              planId: plan.id,  // Send the planId
-              accessToken,      // Include generated accessToken
-              refreshToken      // Include generated refreshToken
-            };
+            return { session, success: true, planId: plan.id,accessToken,refreshToken };
           }
         } catch (error) {
           console.error('Error in createCheckoutSession:', error);
-          throw new Error('Failed to process the request: ' + error);  // Use error.message for better clarity
+          throw new Error('Failed to process the request: ' + error);  
         }
       }
       
   
-    async resendOtp(
-        email: string): Promise<{ success: boolean; message: string }> {
+    async resendOtp(email: string): Promise<{ success: boolean; message: string }> {
         console.log("resendOtp mail", email);
         
         const otp = generateOtp();
-        const existingOtp = await this.companyRepository.getOtpByEmail(email);
+        const existingOtp = await this.businessOwnerRepository.getOtpByEmail(email);
         
         if (existingOtp) {
             console.log("Updating existing OTP:", existingOtp);
-            await this.companyRepository.updateOtp(email, otp); // Update existing OTP
-            return { success: true, message: 'OTP updated successfully.' }; // Indicate successful update
+            await this.businessOwnerRepository.updateOtp(email, otp);
+            return { success: true, message: 'OTP updated successfully.' }; 
         } else {
             console.log("No existing OTP, creating a new one");
-            // Ensure you save a new OTP here
         }
         
-        // Send the OTP via email
         await this.sendOtp(email, otp);
         
         return { success: true, message: 'OTP has been sent successfully.' };
@@ -413,7 +321,7 @@ export class BusinessOwnerService {
             
             // Using Promise.all to handle both operations concurrently
             const [existingBusinessOwner] = await Promise.all([
-                this.companyRepository.findByEmail(email), // Database call
+                this.businessOwnerRepository.findByEmail(email), // Database call
                 // Optional: Cache the OTP or email sending service to reduce delays
             ]);
     
@@ -437,13 +345,13 @@ export class BusinessOwnerService {
         console.log("hitting addNewPassword service", email, password);
         
         try {
-            const existingBusinessOwner = await this.companyRepository.findByEmail(email);
+            const existingBusinessOwner = await this.businessOwnerRepository.findByEmail(email);
             if (!existingBusinessOwner) {
                 console.log("No existing OTP, creating a new one");
                 return { success: false, message: 'No existing OTP found for this email.' };
             }
             const hashedPassword = await bcrypt.hash(password, 10);
-            await this.companyRepository.updatePassword(email, hashedPassword);
+            await this.businessOwnerRepository.updatePassword(email, hashedPassword);
             return { success: true, message: 'Password updated successfully.' };
         } catch (error) {
             console.error("Error updating password:", error);

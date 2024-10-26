@@ -3,9 +3,9 @@ import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config(); 
 import cors from 'cors';
-import connectDB from './Config/connectDB';
-import superAdminRoutes from './Routes/superAdminRoutes';
-import businessOwnerRouter from './Routes/businessOwnerRoutes';
+import connectDB from './config/connectDB';
+import superAdminRoutes from './routes/superAdminRoutes';
+import businessOwnerRouter from './routes/businessOwnerRoutes';
 import 'colors' ;
 
 

@@ -35,7 +35,7 @@ export default function VerifyEmail() {
 
     setLoading(true); 
     try {
-      const response = await axios.post('http://localhost:7000/api/business-owner/forgott-password', {
+      const response = await axios.post('http://localhost:7000/api/business-owner/forgot-password', {
         email,
       });
    

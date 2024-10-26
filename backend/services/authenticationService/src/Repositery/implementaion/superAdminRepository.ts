@@ -1,5 +1,5 @@
-// src/Repositery/implementaion/adminRepository.ts
-import Admin from "../../model/superAdminSchema";
+
+import Admin from "../../model/superAdminModel";
 import { ISuperAdmin } from "../interfaces/ISuperAdminRepository";
 import { injectable } from "inversify";
 import ISuperAdminRepository from "../interfaces/ISuperAdminRepository";

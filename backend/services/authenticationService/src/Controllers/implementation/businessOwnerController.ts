@@ -1,14 +1,22 @@
 import { Request, Response } from "express";
-import { BusinessOwnerService } from "../../service/implementaion/businessOwnerService";
-
-import { loadStripe, Stripe } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import IBusinessOwnerController from "../interface/IBusinessOwnerController";
+import IBusinessOwnerService from "../../service/interfaces/IBusinessOwnerService";
+import { inject, injectable } from "inversify";
 
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
-const businessOwnerService = new BusinessOwnerService();
+// const businessOwnerService = new BusinessOwnerService();
+@injectable()
+export default class BusinessOwnerController implements IBusinessOwnerController   {
+  
+    private  businessOwnerService: IBusinessOwnerService;
 
-export class BusinessOwnerController  {
+    constructor( @inject("IBusinessOwnerService") businessOwnerService: IBusinessOwnerService) {
+        this.businessOwnerService = businessOwnerService;
+    }
+
  async register(req: Request, res: Response): Promise<Response> {
     console.log("Hitting company controller...");
 
@@ -38,7 +46,7 @@ export class BusinessOwnerController  {
           },
         };
 
-        const { tokens, message, email: registeredEmail } = await businessOwnerService.register(registrationData);
+        const { tokens, message, email: registeredEmail } = await this.businessOwnerService.register(registrationData);
 
         return res.status(201).json({
             message: message || "Registration successful",
@@ -61,7 +69,7 @@ async  login(req: Request, res: Response): Promise<Response> {
 
     try {
         // Call the login function from the service
-        const { success, message, accessToken, refreshToken, isVerified, email: companyEmail } = await businessOwnerService.login(email, password);
+        const { success, message, accessToken, refreshToken, isVerified, email: companyEmail } = await this.businessOwnerService.login(email, password);
 
         if (!success) {
             if (isVerified === false) {
@@ -95,7 +103,7 @@ async  login(req: Request, res: Response): Promise<Response> {
     const { email, otp } = req.body;
 
     try {
-        const response = await businessOwnerService.validateOtp(email, otp);
+        const response = await this.businessOwnerService.validateOtp(email, otp);
         console.log("Response from validateOtp:", response);
 
         if (response.success) {
@@ -121,7 +129,7 @@ async resendOtp(req: Request, res: Response): Promise<Response> {
   const { email } = req.body;
 
   try {
-    const result = await businessOwnerService.resendOtp(email);
+    const result = await this.businessOwnerService.resendOtp(email);
     return res.status(200).json(result);
   } catch (error) {
     console.error('Error resending OTP:', error);
@@ -136,7 +144,7 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
   try {
       const { plan, amount, currency, email } = req.body;
 
-      const result = await businessOwnerService.createCheckoutSession(plan, amount, currency, email);
+      const result = await this.businessOwnerService.createCheckoutSession(plan, amount, currency, email);
 
       console.log("Result from create checkout seesion ",result);
       
@@ -173,7 +181,7 @@ async forgotPassword(req: Request, res: Response): Promise<Response> {
      
   try { 
     const { email } = req.body;
-    const result = await businessOwnerService.forgotPassword(email);
+    const result = await this.businessOwnerService.forgotPassword(email);
     return res.status(200).json(result);
   } catch (error) { 
     console.error('Error resending OTP:', error);
@@ -184,7 +192,7 @@ async forgotPassword(req: Request, res: Response): Promise<Response> {
 
 async addNewPassword(req: Request, res: Response): Promise<Response> {
     const { email, password } = req.body;
-    const result = await businessOwnerService.addNewPassword(email, password);
+    const result = await this.businessOwnerService.addNewPassword(email, password);
     return res.status(200).json(result);
 }
 }

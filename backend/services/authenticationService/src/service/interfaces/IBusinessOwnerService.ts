@@ -40,7 +40,14 @@ export interface ITokenResponse {
 
 
 export interface IPaymentIntentResponse {
-    clientSecret: string;
+  success: boolean;
+  message?: string;
+  role?: string;
+  planId: number;
+  session?: any;
+  accessToken?: string;
+  refreshToken?: string;
+  
   }
 
   export interface IOtpValidationResult {
@@ -48,4 +55,17 @@ export interface IPaymentIntentResponse {
     email?: string;
     accessToken?: string;
     refreshToken?: string;
+}
+
+export default interface IBusinessOwnerService {
+
+  login(email: string, password: string): Promise<ITokenResponse>;
+  register(companyData: Partial<ICompany>): Promise<{ tokens?: ITokenResponse; message?: string; email?: string }>;
+  sendOtp(email: string, otp: string): Promise<void>;
+  generateTokens(company: ICompanyDocument): ITokenResponse;
+  validateOtp(email: string, otp: string): Promise<IOtpValidationResult>;
+  createCheckoutSession(plan: any,amount: number,currency: string, email: string): Promise<IPaymentIntentResponse>;
+  resendOtp(email: string): Promise<{ success: boolean; message: string }>;
+  forgotPassword(email: string): Promise<{ success: boolean; message: string; email?: string }>;
+  addNewPassword(email: string, password: string): Promise<{ success: boolean; message: string }>;
 }

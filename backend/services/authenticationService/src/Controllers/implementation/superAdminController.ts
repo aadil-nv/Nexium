@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { generateAccessToken, generateRefreshToken } from '../../utils/jwt';
-import { IExtendedLoginResponse, ISuperAdmin } from '../interface/ISuperAdminController';
+import { ISuperAdmin } from '../../entities/superAdminEntities';
 import ISuperAdminController from '../interface/ISuperAdminController';
 import ISuperAdminService from '../../service/interfaces/ISuperAdminService'; // Adjust path as necessary
 import { inject, injectable } from "inversify";
@@ -9,16 +9,18 @@ import { inject, injectable } from "inversify";
 export default class SuperAdminController implements ISuperAdminController {
     
     private adminService: ISuperAdminService;
+
     constructor(@inject("ISuperAdminService") adminService: ISuperAdminService) {
         this.adminService = adminService;
     }
+
+
   async adminLogin(req: Request, res: Response, next: NextFunction) {
         try {
             const { email, password } = req.body;            
             const response= await this.adminService.login(email, password);
             const { token, refreshToken } = response;
 
-            // Set refresh token as a cookie
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
@@ -38,25 +40,19 @@ export default class SuperAdminController implements ISuperAdminController {
     
 
     async adminRegister(req: Request, res: Response): Promise<Response> {
-        const { username, email, password } = req.body;
-        console.log("adminController is touched.......");
 
         try {
-            const newAdmin: Omit<ISuperAdmin, 'password'> = await this.adminService.register(username, email, password);
-            console.log("adminController - newAdmin data", newAdmin);
+            const { username, email, password } = req.body;
+            const newAdmin = await this.adminService.register(username, email, password);
             
             const accessToken = generateAccessToken(newAdmin);
             const refreshToken = generateRefreshToken(newAdmin);
 
-            console.log("Refresh token", refreshToken);
-            console.log("Access token", accessToken);
-            
-            // Set refresh token as a cookie
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+                maxAge: 7 * 24 * 60 * 60 * 1000 
             });
 
             return res.status(201).json({ accessToken, admin: newAdmin });

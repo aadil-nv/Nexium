@@ -1,19 +1,16 @@
 import mongoose, { Schema } from "mongoose";
-import { IBusinessOwnerDocument } from "../Controllers/interface/IBusinessOwner"; // Adjust the import path as needed
+import { IBusinessOwnerDocument } from "../controllers/interface/IBusinessOwnerController"; // Adjust the import path as needed
 
-// Create the Company schema
+
 const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
   {
     name: {
       type: String,
       required: true,
-      // unique: true, // Ensure company names are unique
     },
     email: {
       type: String,
       required: true,
-      // unique: true, // Ensure email addresses are unique
-    
     },
     password: {
       type: String,
@@ -25,27 +22,24 @@ const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
     },
     phone: {
       type: String,
-      // match: /^[0-9]{10,15}$/, // Basic phone number validation
     },
     website: {
       type: String,
       required: false,
-      // match: /^(http|https):\/\/[^ "]+$/, // Basic URL validation
     },
     registrationNumber: {
       type: String,
       required: true,
-      // unique: true, // Ensure registration numbers are unique
+
     },
     isVerified: {
       type: Boolean,
       required: true,
-      default: false, // Ensure registration numbers are unique
+      default: false, 
     },
     role: {
       type: String,
       default: "BusinessOwner",
-      
     },
     documents: [
       {
@@ -56,7 +50,7 @@ const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
         documentUrl: {
           type: String,
           default: "http://localhost:3000",
-          match: /^(http|https):\/\/[^ "]+$/, // Basic URL validation for documents
+          match: /^(http|https):\/\/[^ "]+$/, 
         },
         uploadedAt: {
           type: Date,
@@ -72,12 +66,12 @@ const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
       planType: {
         type: String,
         required: true,
-        enum: ["Trial", "Monthly", "Yearly"], // Allowable subscription types
+        enum: ["Trial", "Monthly", "Yearly"], 
       },
       startDate: {
         type: Date,
         required: true,
-        default: Date.now, // Defaults to the current date
+        default: Date.now,
       },
       endDate: {
         type: Date,
@@ -86,18 +80,20 @@ const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
       status: {
         type: String,
         required: true,
-        enum: ["Active", "Expired"], // Allowable subscription statuses
+        enum: ["Active", "Expired"],
       },
     },
-    
   },
-  
+
   {
-    timestamps: true, // Automatically create createdAt and updatedAt fields
+    timestamps: true, 
   }
 );
 
-// Create the Company model
-const CompanyModel = mongoose.model<IBusinessOwnerDocument>("Company", companySchema);
+
+const CompanyModel = mongoose.model<IBusinessOwnerDocument>(
+  "Company",
+  companySchema
+);
 
 export default CompanyModel;

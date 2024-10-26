@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
-import { ISubscription } from "../controllers/interface/IBusinessOwner";
+import { ISubscription } from "../controllers/interface/IBusinessOwnerController";
 import CompanyRepository from "../repositery/implementaion/businessOwnerRepository";
 
 class StripeWebhookController {

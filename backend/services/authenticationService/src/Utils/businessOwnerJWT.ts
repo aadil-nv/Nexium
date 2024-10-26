@@ -1,28 +1,26 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { IBusinessOwnerDocument } from '../controllers/interface/IBusinessOwner'; // Import IBusinessOwnerDocument instead of ICompany
-import { ObjectId } from 'mongoose'; // Import ObjectId if needed
+import  {IBusinessOwnerDocument}  from '../controllers/interface/IBusinessOwnerController'; 
+
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your_refresh_token_secret';
 
-// Function to generate access token for a company
+
 export const generateCompanyAccessToken = (company: IBusinessOwnerDocument): string => {
     return jwt.sign(
-        { id: company._id.toString(), email: company.email }, // Convert _id to string
+        { id: company._id.toString(), email: company.email }, 
         JWT_SECRET,
         { expiresIn: '15m' }
     );
 };
 
-
 export const generateCompanyRefreshToken = (company: IBusinessOwnerDocument): string => {
     return jwt.sign(
-        { id: company._id.toString(), email: company.email }, // Convert _id to string
+        { id: company._id.toString(), email: company.email }, 
         REFRESH_TOKEN_SECRET,
         { expiresIn: '7d' }
     );
 };
-
 
 export const verifyCompanyAccessToken = (token: string): JwtPayload | null => {
     try {

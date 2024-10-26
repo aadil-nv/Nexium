@@ -1,4 +1,4 @@
-// src/entities/adminEntity.ts
+
 import { ObjectId } from "mongoose";
 
 export interface ISuperAdmin {

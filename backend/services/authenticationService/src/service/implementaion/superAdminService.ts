@@ -1,9 +1,8 @@
-import superAdminRepository from "../../repositery/implementaion/superAdminRepository"; // Ensure this path is correct
 import bcrypt from "bcryptjs";
-import {ISuperAdmin,IExtendedLoginResponse,} from "../interfaces/ISuperAdminService";
+import {ISuperAdmin} from "../../entities/superAdminEntities";
 import {generateAccessToken,generateRefreshToken,} from "../../utils/jwt";
 import ISuperAdminService from "../interfaces/ISuperAdminService";
-import ISuperAdminRepository from "../../Repositery/interfaces/ISuperAdminRepository";
+import ISuperAdminRepository from "../../repositery/interfaces/ISuperAdminRepository";
 import { inject, injectable } from "inversify";
 
 @injectable()
