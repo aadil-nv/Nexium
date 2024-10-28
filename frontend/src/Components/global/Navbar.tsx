@@ -1,25 +1,23 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setActiveMenu } from "../../features/menuSlice";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { TooltipComponent } from "@syncfusion/ej2-react-popups";
-import { useNavigate } from "react-router-dom"; // Import for navigation
+import { useNavigate } from "react-router-dom"; 
 import { login } from "../../features/businessOwnerSlice";
-import { RootState } from "../../store/store";
 import { superadminLogin } from "../../features/superAdminSlice";
+import useAuth from "../../hooks/useAuth";
+import useTheme from "../../hooks/useTheme";
 
 export default function Navbar() {
+  const [showProfileMenu, setShowProfileMenu] = useState(false); 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); 
+  const { businessOwner, superAdmin } = useAuth();
+  const { isActiveMenu, themeColor } = useTheme();
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Initialize navigation
-  const activeMenuState = useSelector(
-    (state: { menu: { activeMenu: boolean } }) => state.menu.activeMenu
-  );
-  const currentColor = useSelector((state: { menu: { themeColor: string } }) => state.menu.themeColor); 
-
-  const [showProfileMenu, setShowProfileMenu] = useState(false); // State for profile menu visibility
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // State for logout confirmation modal
-  const isBusinessOwner= useSelector((state: RootState) => state.businessOwner.role)
-  const isSuperAdmin= useSelector((state: RootState) => state.superAdmin.role)
+  const navigate = useNavigate(); 
+  const isBusinessOwner= businessOwner.role
+  const isSuperAdmin= superAdmin.role
 
   const NavButton = ({
     title,
@@ -35,7 +33,7 @@ export default function Navbar() {
         type="button"
         onClick={customFunc}
         className="relative text-xl rounded-full p-1 transition-all duration-300 ease-in-out transform hover:scale-110"
-        style={{ color: currentColor }} // Apply current theme color
+        style={{ color: themeColor }} 
       >
         {icon}
       </button>
@@ -66,13 +64,13 @@ export default function Navbar() {
   return (
     <div
       className={`flex items-center justify-between p-2 h-16 bg-gray-100 text-gray-800 shadow-sm fixed top-0 z-50 transition-all duration-300 ease-in-out ${
-        activeMenuState ? "w-[calc(100%-250px)]" : "w-full"
+        isActiveMenu ? "w-[calc(100%-250px)]" : "w-full"
       }`}
     >
       {/* Left: Menu button */}
       <NavButton
         title="Menu"
-        customFunc={() => dispatch(setActiveMenu(!activeMenuState))}
+        customFunc={() => dispatch(setActiveMenu(!isActiveMenu))}
         icon={<i className="fi fi-tr-bars-staggered"></i>} 
       />
 
@@ -103,24 +101,24 @@ export default function Navbar() {
               className="rounded-full w-8 h-8 md:w-9 md:h-9" // Responsive image size
             />
             <p className="flex flex-col">
-              <span className="from-neutral-100 text-xs md:text-sm" style={{ color: currentColor }}>
+              <span className="from-neutral-100 text-xs md:text-sm" style={{ color: themeColor }}>
                 {isBusinessOwner ? "Business Owner" : isSuperAdmin ? "Super Admin" : "User"}
               </span>
             </p>
-            <MdKeyboardArrowDown className="text-lg md:text-xl" style={{ color: currentColor }} />
+            <MdKeyboardArrowDown className="text-lg md:text-xl" style={{ color: themeColor }} />
           </button>
 
           {/* Profile Menu */}
           {showProfileMenu && (
             <div
               className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg z-50"
-              style={{ borderColor: currentColor }} // Set menu border to current color
+              style={{ borderColor: themeColor }} // Set menu border to current color
             >
               <ul>
                 <li
                   className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
                   onClick={() => navigate("/profile")} // Navigate to profile page
-                  style={{ color: currentColor }} // Apply current theme color
+                  style={{ color: themeColor }} // Apply current theme color
                 >
                   <i className="fi fi-tr-user-gear text-xl"></i> {/* Profile icon */}
                   Profile
@@ -128,7 +126,7 @@ export default function Navbar() {
                 <li
                   className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
                   onClick={() => navigate("/settings")} // Navigate to settings page
-                  style={{ color: currentColor }} // Apply current theme color
+                  style={{ color: themeColor }} // Apply current theme color
                 >
                   <i className="fi fi-tr-process text-xl"></i> {/* Settings icon */}
                   Settings
@@ -148,11 +146,11 @@ export default function Navbar() {
         {/* Logout Confirmation Modal */}
         {showLogoutConfirm && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center" style={{ borderColor: currentColor }}>
-              <p className="text-lg mb-4" style={{ color: currentColor }}>Are you sure you want to logout?</p>
+            <div className="bg-white p-6 rounded-lg shadow-lg text-center" style={{ borderColor: themeColor }}>
+              <p className="text-lg mb-4" style={{ color: themeColor }}>Are you sure you want to logout?</p>
               <button
                 className="px-4 py-2 rounded mr-2"
-                style={{ backgroundColor: currentColor, color: "white" }}
+                style={{ backgroundColor: themeColor, color: "white" }}
                 onClick={handleLogout}
               >
                 Yes, Logout

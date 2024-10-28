@@ -12,10 +12,9 @@ import { CSVLink } from "react-csv";
 import * as XLSX from "xlsx";
 import { FaSearch, FaFileCsv, FaFileExcel, FaPlus } from "react-icons/fa";
 import DebouncedInput from "../../ui/DebouncedInput";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../store/store";
 import { motion } from "framer-motion"; 
 import AddEmployeeModal from "../../ui/AddEmployeeModal";
+import  useTheme  from "../../../hooks/useTheme"
 
 interface Subscription {
   planName: string;
@@ -35,12 +34,12 @@ interface Company {
 }
 
 const Employees: React.FC = () => {
+  const {themeColor} = useTheme()
   const columnHelper = createColumnHelper<Company>();
   const [globalFilter, setGlobalFilter] = useState("");
   const [data, setData] = useState<Company[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const currentColor = useSelector((state: RootState) => state.menu.themeColor);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleOpenModal = () => {
@@ -97,7 +96,7 @@ const Employees: React.FC = () => {
     const fetchCompanies = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("http://localhost:7001/api/super-admin/fetch-companies");
+        const response = await axios.get("http://localhost:7001/api/business-owner/find-all-companies");
         const companies = response.data.map((company: any) => ({
           id: company._id,
           name: company.name,
@@ -115,8 +114,10 @@ const Employees: React.FC = () => {
     };
 
     fetchCompanies();
+    
   }, []);
 
+  
   const table = useReactTable({
     data,
     columns,
@@ -156,7 +157,7 @@ const Employees: React.FC = () => {
         {/* Add Employee Button */}
         <motion.button
           onClick={handleOpenModal}
-          style={{ backgroundColor: currentColor }}
+          style={{ backgroundColor: themeColor }}
           className="flex items-center text-white px-4 py-2 rounded-md transition duration-300"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -194,7 +195,7 @@ const Employees: React.FC = () => {
           <div className="text-red-500">{error}</div>
         ) : (
           <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
-            <thead className="bg-indigo-600 text-white" style={{ backgroundColor: currentColor }}>
+            <thead className="bg-indigo-600 text-white" style={{ backgroundColor: themeColor }}>
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (

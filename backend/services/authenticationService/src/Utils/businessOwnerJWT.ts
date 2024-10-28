@@ -6,36 +6,20 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your_refresh_token_secret';
 
 
-export const generateCompanyAccessToken = (company: IBusinessOwnerDocument): string => {
+export const generateCompanyAccessToken = (data: object): string => {
     return jwt.sign(
-        { id: company._id.toString(), email: company.email }, 
+        data, 
         JWT_SECRET,
         { expiresIn: '15m' }
     );
 };
 
-export const generateCompanyRefreshToken = (company: IBusinessOwnerDocument): string => {
+export const generateCompanyRefreshToken = (data: object): string => {
     return jwt.sign(
-        { id: company._id.toString(), email: company.email }, 
+        data, 
         REFRESH_TOKEN_SECRET,
         { expiresIn: '7d' }
     );
 };
 
-export const verifyCompanyAccessToken = (token: string): JwtPayload | null => {
-    try {
-        return jwt.verify(token, JWT_SECRET) as JwtPayload;
-    } catch (error) {
-        console.error('Invalid company access token:', error);
-        return null;
-    }
-};
 
-export const verifyCompanyRefreshToken = (token: string): JwtPayload | null => {
-    try {
-        return jwt.verify(token, REFRESH_TOKEN_SECRET) as JwtPayload;
-    } catch (error) {
-        console.error('Invalid company refresh token:', error);
-        return null;
-    }
-};

@@ -1,9 +1,8 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
-
+import useTheme from '../../../hooks/useTheme';
 const Employees = () => {
-  const currentColor = useSelector((state: { menu: { themeColor: string } }) => state.menu.themeColor);
+  const {themeColor} = useTheme()
 
   // Sample employee data
   const employees = [
@@ -17,7 +16,7 @@ const Employees = () => {
     <div className="p-4">
       <motion.h1
         className="text-2xl font-bold mb-6"
-        style={{ color: currentColor }}
+        style={{ color: themeColor }}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}

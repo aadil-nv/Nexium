@@ -4,7 +4,8 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux'; // Import useDispatch
 import { setUserRole } from '../../../features/menuSlice'; // Import the action
-import {login} from '../../../features/businessOwnerSlice';
+import { login } from '../../../features/businessOwnerSlice';
+import { log } from 'console';
 
 type Plan = {
   id: number;
@@ -84,34 +85,41 @@ const PlanSelection: React.FC = () => {
         throw new Error('Stripe failed to load.');
       }
 
+      console.log("log from plat.tsx email", email);
+
+
       const response = await axios.post('http://localhost:7000/api/business-owner/create-checkout-session', {
         email,
         plan: selectedPlan,
-        amount: selectedPlan.id === 2 ? 2000 : 3000, 
+        amount: selectedPlan.id === 2 ? 2000 : 3000,
         currency: 'usd',
+      }, {
+        withCredentials: true
       });
 
-      
+
       const data = await response.data
-      if(data.planId === 1){
+      console.log("data from p,lan", data);
+
+      if (data.planId === 1) {
         dispatch(login({
-          role: 'business-owner', 
-          token: data.accessToken, 
+          role: 'business-owner',
+          token: data.accessToken,
           isAuthenticated: true,
-      }));
-        localStorage.setItem("businessOwnerToken",data.accessToken)
+        }));
+        // localStorage.setItem("businessOwnerToken",data.accessToken)
         navigate('/business-owner/dashboard');
       }
-      
-     console.log("Data from paln page",data);
-     
-     const { sessionId } = response.data;
-     
-     console.log("session paln page",sessionId);
+
+      console.log("Data from paln page", data);
+
+      const { sessionId } = response.data;
+
+      console.log("session paln page", sessionId);
       if (sessionId) {
-        
+
         const { error } = await stripe.redirectToCheckout({ sessionId });
-        localStorage.setItem("businessOwnerToken",data.accessToken)
+        localStorage.setItem("businessOwnerToken", data.accessToken)
         if (error) {
           console.error('Error in payment redirection:', error.message);
         }

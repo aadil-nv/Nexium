@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store/store';
+
 
 interface SubscriptionPlan {
   id: number;
@@ -10,7 +9,6 @@ interface SubscriptionPlan {
 }
 
 const SubscriptionPage = () => {
-  const currentColor = useSelector((state: { menu: { themeColor: string } }) => state.menu.themeColor);
 
   // Sample subscription plans (replace with actual data as needed)
   const subscriptionPlans: SubscriptionPlan[] = [

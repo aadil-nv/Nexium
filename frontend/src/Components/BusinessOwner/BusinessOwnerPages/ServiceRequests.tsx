@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store/store';
 import AddEmployeeModal from '../../ui/AddEmployeeModal';
+import useTheme from '../../../hooks/useTheme';
 
 const serviceRequestsData = [
   { id: 1, title: 'Request for IT Support', date: '2024-10-21', status: 'Pending' },
@@ -13,8 +12,7 @@ const serviceRequestsData = [
 ];
 
 const ServiceRequests = () => {
-  const currentColor = useSelector((state: RootState) => state.menu.themeColor);
-
+  const {themeColor} = useTheme()
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleOpenModal = () => {
@@ -27,7 +25,7 @@ const ServiceRequests = () => {
 
   return (
     <div className="container mx-auto p-4 bg-gray-200">
-      <h1 className="text-2xl font-bold mb-4" style={{ color: currentColor }}>
+      <h1 className="text-2xl font-bold mb-4" style={{ color: themeColor }}>
         Service Requests
       </h1>
 
@@ -50,13 +48,13 @@ const ServiceRequests = () => {
             exit={{ opacity: 0, scale: 0.8 }}
             transition={{ duration: 0.3 }}
           >
-            <h2 className="font-semibold" style={{ color: currentColor }}>
+            <h2 className="font-semibold" style={{ color: themeColor }}>
               {request.title}
             </h2>
             <p className="text-gray-500">{request.date}</p>
             <p
               className={`text-sm ${request.status === 'Completed' ? 'text-green-500' : 'text-red-500'}`}
-              style={{ color: currentColor }}
+              style={{ color: themeColor}}
             >
               Status: {request.status}
             </p>

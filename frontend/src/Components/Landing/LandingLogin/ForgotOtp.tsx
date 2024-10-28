@@ -86,7 +86,6 @@ const ForgotOtp: React.FC = () => {
     setErrorMessage(''); // Clear any previous error message
 
     try {
-      // Call the backend to resend the OTP
       const response = await axios.post('http://localhost:7000/api/business-owner/resend-otp', {
         email,
       });

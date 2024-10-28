@@ -10,6 +10,9 @@ import Stripe from "stripe"
 import IBusinessOwnerService from "../interfaces/IBusinessOwnerService";
 import IBusinessOwnerRepository from "repositery/interfaces/IBusinessOwnerRepository";
 import { inject, injectable } from "inversify";
+import cookie from "cookie"; 
+import {response} from "express";
+
 
 
 const stripe = new Stripe(process.env.STRIP_SECRET_KEY as string);
@@ -99,10 +102,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             return { message: "true", email: existingCompany.email };
         }
 
-        const companyDbName = `company_${companyData.registrationNumber}`;
-        const companyDb = mongoose.connection.useDb(companyDbName);
-
-        await companyDb.createCollection("users");
 
         const newCompanyData: ICompanyDocument = new businessOwnerSchema({
             _id: new mongoose.Types.ObjectId(),
@@ -125,14 +124,24 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         });
 
         const savedCompany = await this.businessOwnerRepository.create(newCompanyData);
+        const companyDbName = `${savedCompany._id}`;
+        const companyDb = mongoose.connection.useDb(companyDbName);
+
+        await companyDb.createCollection("users").catch((err) => {
+            if (err.codeName !== 'NamespaceExists') {
+                throw err;
+            }
+        });
+
+
         const otp = generateOtp()
 
         await this.sendOtp(savedCompany.email,otp);
 
-        const tokens = this.generateTokens(savedCompany);
+        // const tokens = this.generateTokens(savedCompany);
 
         return {
-            tokens,
+            // tokens,
             message: "true",
             email: savedCompany.email,
         };
@@ -197,40 +206,42 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         return { accessToken, refreshToken };
     }
 
-    async validateOtp(
-        email: string, otp: string): Promise<IOtpValidationResult> {
-            console.log("hitting validateOtp service", email, otp);
-            
-        try {
-            const recordedCompany = await this.businessOwnerRepository.findOtpByEmail(email);
+async validateOtp(email: string, otp: string): Promise<any> {
+    console.log("hitting validateOtp service", email, otp);
     
-            if (!recordedCompany) {
-                console.error("Company not found for email:", email);
-                throw new Error("Company not found");
-            }
-               console.log("Recorded company:", recordedCompany);
-               console.log("OTP:", otp);
-               
-               
-            if (recordedCompany.otp == otp) {
-                const verification = await this.businessOwnerRepository.updateVerificationStatus(email);
-    
-                if (!verification) {
-                    return { success: false }; 
-                }
-                
-    
-                console.log("OTP validated and company verified successfully.");
-                return { success: true, email  };
-            } else {
-                console.log("Invalid OTP provided.");
-                return { success: false };
-            }
-        } catch (error) {
-            console.error("Error validating OTP:", error);
-            return { success: false }; 
+    try {
+        const recordedCompany = await this.businessOwnerRepository.findOtpByEmail(email);
+
+        if (!recordedCompany) {
+            console.error("Company not found for email:", email);
+            throw new Error("Company not found");
         }
+        console.log("Recorded company:", recordedCompany);
+        console.log("OTP:", otp);
+        
+        if (recordedCompany.otp == otp) {
+            const verification = await this.businessOwnerRepository.updateVerificationStatus(email);
+
+            if (!verification) {
+                return { success: false }; 
+            }
+            
+            ;
+
+            console.log("OTP validated and company verified successfully.");
+            
+            
+
+            return { success: true, email }; // Return the tokens if needed
+        } else {
+            console.log("Invalid OTP provided.");
+            return { success: false };
+        }
+    } catch (error) {
+        console.error("Error validating OTP:", error);
+        return { success: false }; 
     }
+}
         
     async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponse> {
       
@@ -249,7 +260,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             if (updatedCompany) {
                 console.log("Updated Company",updatedCompany);
                 
-                const { accessToken, refreshToken } = this.generateTokens(updatedCompany);
+                const accessToken = generateCompanyAccessToken({ updatedCompany });
+                const refreshToken = generateCompanyRefreshToken({ updatedCompany })
               return { 
                 message: 'Subscription updated successfully', 
                 success: true, 
@@ -282,9 +294,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
               throw new Error('Company not found');
             }
             
-            const { accessToken, refreshToken } = this.generateTokens(updatedCompany);
       
-            return { session, success: true, planId: plan.id,accessToken,refreshToken };
+            return { session, success: true, planId: plan.id };
           }
         } catch (error) {
           console.error('Error in createCheckoutSession:', error);

@@ -4,6 +4,9 @@ import { useTheme } from '../../../components/landing/landingPage/theme-provider
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast'; // Import React Hot Toast
+import { useDispatch } from 'react-redux';
+import { login } from '../../../features/businessOwnerSlice';
+
 
 // Define the type for the location state
 type LocationState = {
@@ -25,6 +28,7 @@ const LandingOtp: React.FC = () => {
   const location = useLocation();
   const email = (location.state as LocationState)?.email;
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -80,7 +84,7 @@ const LandingOtp: React.FC = () => {
   };
 
   const handleResendOtp = async () => {
-    setTimeLeft(90); 
+    setTimeLeft(90);
     setIsTimerActive(true);
     setOtp(Array(6).fill(''));
     setErrorMessage('');
@@ -112,19 +116,21 @@ const LandingOtp: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     const otpString = otp.join('');
     try {
-      const response = await axios.post('http://localhost:7000/api/business-owner/otp-validation', {
-        email, 
-        otp: otpString, 
-      });
+      const response = await axios.post('http://localhost:7000/api/business-owner/otp-validation',
+        { email, otp: otpString },
+        { withCredentials: true }
 
-      const data = response.data; 
-      console.log("Data from OTP validation:", data.success, data.message, data.email);
-      
+      );
+
+      const data = response.data;
+      console.log("Data from OTP validation:", data);
+
       if (data.success) {
-        navigate('/plans', { state: { email: data.email } }); 
+        
+        navigate('/plans', { state: { email: data.email } });
         setErrorMessage(''); // Clear error message on success
       } else {
         setErrorMessage(data.message || 'Invalid OTP'); // Set error message
@@ -135,7 +141,7 @@ const LandingOtp: React.FC = () => {
       setErrorMessage('Error verifying OTP. Please try again.'); // Set a generic error message
       toast.error('Error verifying OTP. Please try again.'); // Show generic error toast
     }
-  };
+  };;
 
   return (
     <div
@@ -143,9 +149,8 @@ const LandingOtp: React.FC = () => {
     >
       <Suspense fallback={<LoadingSpinner />}>
         <motion.div
-          className={`p-8 rounded-lg w-[90%] max-w-2xl transition-shadow duration-300 ${
-            theme === 'dark' ? 'bg-black-800 shadow-md shadow-blue-500' : 'bg-white shadow-lg shadow-blue-500'
-          }`}
+          className={`p-8 rounded-lg w-[90%] max-w-2xl transition-shadow duration-300 ${theme === 'dark' ? 'bg-black-800 shadow-md shadow-blue-500' : 'bg-white shadow-lg shadow-blue-500'
+            }`}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -164,9 +169,8 @@ const LandingOtp: React.FC = () => {
                   value={digit}
                   onChange={(e) => handleChange(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
-                  className={`w-12 h-12 mx-1 text-center text-2xl border rounded ${
-                    theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-                  }`}
+                  className={`w-12 h-12 mx-1 text-center text-2xl border rounded ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
+                    }`}
                   maxLength={1}
                   autoFocus={index === 0}
                 />

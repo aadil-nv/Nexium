@@ -44,7 +44,7 @@ export interface IPaymentIntentResponse {
   export default interface IBusinessOwnerController {
     register(req: Request, res: Response): Promise<Response>;
     login(req: Request, res: Response): Promise<Response>;
-    validateOtp(req: Request, res: Response): Promise<Response>;
+    validateOtp(req: Request, res: Response): Promise<any>;
     resendOtp(req: Request, res: Response): Promise<Response>;
     createCheckoutSession(req: Request, res: Response): Promise<Response>;
     forgotPassword(req: Request, res: Response): Promise<Response>;

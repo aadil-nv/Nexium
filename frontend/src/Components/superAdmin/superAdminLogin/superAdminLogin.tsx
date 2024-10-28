@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { loginSchema } from "../../../config/validationSchema"; // Import Zod schema
 import { useDispatch } from "react-redux";
-import { setUserRole } from "../../../features/menuSlice";
 import axios from "axios";
 import images from "../../../images/images"
 import { superadminLogin   } from "../../../features/superAdminSlice";

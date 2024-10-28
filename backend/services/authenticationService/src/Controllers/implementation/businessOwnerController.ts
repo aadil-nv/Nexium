@@ -1,9 +1,9 @@
+import cookie from 'cookie';
 import { Request, Response } from "express";
 import { loadStripe } from '@stripe/stripe-js';
 import IBusinessOwnerController from "../interface/IBusinessOwnerController";
 import IBusinessOwnerService from "../../service/interfaces/IBusinessOwnerService";
 import { inject, injectable } from "inversify";
-
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
@@ -46,13 +46,14 @@ export default class BusinessOwnerController implements IBusinessOwnerController
           },
         };
 
-        const { tokens, message, email: registeredEmail } = await this.businessOwnerService.register(registrationData);
+        const { message, email: registeredEmail } = await this.businessOwnerService.register(registrationData);
 
+     
         return res.status(201).json({
             message: message || "Registration successful",
-            tokens,
             email: registeredEmail,
         });
+
     } catch (error: unknown) {
         const errorMessage = (error instanceof Error) ? error.message : "Unknown error occurred";
         return res.status(400).json({ message: errorMessage });
@@ -97,19 +98,30 @@ async  login(req: Request, res: Response): Promise<Response> {
 }
 
 
-  async validateOtp(req: Request, res: Response): Promise<Response> {
+async validateOtp(req: Request, res: Response): Promise<Response> {
     console.log("Hitting validateOtp...");
 
     const { email, otp } = req.body;
 
     try {
         const response = await this.businessOwnerService.validateOtp(email, otp);
-        console.log("Response from validateOtp:", response);
-
+        
         if (response.success) {
+            // console.log("Response:", response.accessToken);
+            
+
+            // res.cookie('refreshToken', response.refreshToken, {
+            //     httpOnly: true,
+            //     secure: process.env.NODE_ENV === 'production',
+            //     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+            //     sameSite: 'none', // Necessary for cross-origin cookies
+            // });
+
             return res.status(200).json({
                 success: response.success,
                 email: response.email,
+                // accessToken:response.accessToken,
+                
             });
         }
 
@@ -150,13 +162,20 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
       
 
       if (result.planId === 1) {
+  console.log("token is ", result.accessToken);
+  
+        res.cookie('accessToken', result.accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 7*24*6*60*1000, // 1 day
+            sameSite: 'lax', // Necessary for cross-origin cookies
+        });
           return res.status(200).json({
               message: result.message,  
               success: result.success,  
               role: result.role,       
               planId: result.planId,        
-              accessToken: result.accessToken,  
-              refreshToken: result.refreshToken,
+         
               
           });
       } else {
@@ -165,8 +184,8 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
               sessionId: result.session.id, 
               success: result.success,     
               planId: result.planId,    
-              accessToken: result.accessToken,  
-              refreshToken: result.refreshToken 
+            //   accessToken: result.accessToken,  
+            //   refreshToken: result.refreshToken 
           });
       }
   } catch (error) {

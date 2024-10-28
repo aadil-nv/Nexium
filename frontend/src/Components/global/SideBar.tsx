@@ -2,24 +2,29 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { FiMenu } from "react-icons/fi";
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setActiveMenu } from '../../features/menuSlice';
-import { RootState } from '../../store/store';
-import { businessOwnerLinks, superAdminLinks } from '../../data/Links'; // Import the links
+import { businessOwnerLinks, superAdminLinks } from '../../data/Links';
+import useAuth from '../../hooks/useAuth';
+import useTheme from '../../hooks/useTheme';
+// import { persistor, resetStore, store } from '../../store/store';
+
+// // Dispatch reset action and purge persisted data
+// store.dispatch(resetStore());
+// persistor.purge();
+
 
 const Sidebar = () => {
+  const { businessOwner, superAdmin } = useAuth();
+  const { isActiveMenu, themeColor } = useTheme();
   const dispatch = useDispatch();
-  const activeMenuState = useSelector((state: { menu: { activeMenu: boolean } }) => state.menu.activeMenu);
-  const currentColor = useSelector((state: { menu: { themeColor: string } }) => state.menu.themeColor);
-  const isBusinessOwner = useSelector((state: RootState) => state.businessOwner.role === 'business-owner');
-  const isSuperAdmin = useSelector((state: RootState) => state.superAdmin.role === 'super-admin');
-
-  // Determine which links to use based on user role
+  const isBusinessOwner = businessOwner.role
+  const isSuperAdmin = superAdmin.role
   const links = isBusinessOwner ? businessOwnerLinks : isSuperAdmin ? superAdminLinks : [];
 
-  const handleMenuToggle = () => {
-    dispatch(setActiveMenu(!activeMenuState));
-  };
+
+
+  const handleMenuToggle = () => { dispatch(setActiveMenu(!isActiveMenu)); };
 
   return (
     <div>
@@ -27,14 +32,14 @@ const Sidebar = () => {
       <button
         onClick={handleMenuToggle}
         className="p-4 text-gray-800 md:hidden"
-        style={{ backgroundColor: currentColor }}
+        style={{ backgroundColor: themeColor }}
       >
         <FiMenu size={24} />
       </button>
 
       {/* Sidebar */}
-      <div className={`fixed top-0 left-0 h-full transition-all duration-300 z-40 ${activeMenuState ? 'w-64 bg-gray-100 shadow-lg' : 'w-0'} overflow-hidden`}>
-        {activeMenuState && (
+      <div className={`fixed top-0 left-0 h-full transition-all duration-300 z-40 ${isActiveMenu ? 'w-64 bg-gray-100 shadow-lg' : 'w-0'} overflow-hidden`}>
+        {isActiveMenu && (
           <div className="h-full flex flex-col">
             {/* Logo Section */}
             <div className="flex justify-between items-center p-4">
@@ -55,14 +60,13 @@ const Sidebar = () => {
                   className={({ isActive }) =>
                     `flex items-center gap-4 p-3 rounded-lg transition-all duration-300 ease-in-out
                     ${isActive ? 'font-bold shadow-lg' : 'text-gray-800'}
-                    ${isActive ? 'bg-opacity-100' : 'bg-transparent'}` // Keep background transparent when not active
+                    ${isActive ? 'bg-opacity-100' : 'bg-transparent'}`
                   }
                   style={({ isActive }) => ({
-                    backgroundColor: isActive ? currentColor : 'transparent', // Use current color for active background
-                    color: isActive ? 'white' : currentColor, // Text color for active state
+                    backgroundColor: isActive ? themeColor : 'transparent',
+                    color: isActive ? 'white' : themeColor,
                   })}
                 >
-                  {/* Custom Icon with class name, centered vertically */}
                   <i className={`${item.icon} text-xl`} style={{ lineHeight: '1.5' }}></i>
                   <span className="text-lg align-middle" style={{ lineHeight: '1.5' }}>{item.title}</span>
                 </NavLink>
@@ -72,8 +76,7 @@ const Sidebar = () => {
         )}
       </div>
 
-      {/* Backdrop for small devices */}
-      {activeMenuState && (
+      {isActiveMenu && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
           onClick={handleMenuToggle}

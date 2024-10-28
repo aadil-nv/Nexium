@@ -1,15 +1,13 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
 import { Bar, Line, Pie } from 'react-chartjs-2';
 import { Table } from 'antd';
 import { motion } from 'framer-motion';
 import 'chart.js/auto';
+import useMenu from '../../../hooks/useTheme';
 
 const BusinessOwnerAdminDashboard: React.FC = () => {
-  const themeMode = useSelector((state: { menu: { themeMode: 'light' | 'dark' } }) => state.menu.themeMode);
-  const themeColor = useSelector((state: { menu: { themeColor: string } }) => state.menu.themeColor);
+  const {themeColor ,themeMode } = useMenu()
   
-  // Sample data for the Ant Design table
   const dataSource = [
     { key: '1', name: 'Employee Count', value: 50 },
     { key: '2', name: 'Profit', value: '$20,000' },

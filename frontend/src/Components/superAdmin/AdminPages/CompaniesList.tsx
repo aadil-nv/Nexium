@@ -84,7 +84,7 @@ const CompaniesList: React.FC = () => {
     const fetchCompanies = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("http://localhost:7001/api/super-admin/fetch-companies");
+        const response = await axios.get("http://localhost:7001/api/super-admin/find-all-companies");
         console.log("Response from backend:", response.data);
         
         // Map response data to match the Company interface
