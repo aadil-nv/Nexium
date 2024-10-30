@@ -5,12 +5,27 @@ import BusinessOwnerRepository from "../repository/implementation/businessOwnerR
 import IBusinessOwnerRepository from "../repository/interface/IBusinessOwnerRepository";
 import  BusinessOwnerService  from "../service/implementation/businessOwnerService";
 import IBusinessOwnerService from "../service/interface/IBusinessOwnerService";
+
 import SuperAdminController from "../controllers/implementation/superAdminController";
 import ISuperAdminController from "../controllers/interface/ISuperAdminController";
 import ISuperAdminService from "../service/interface/ISuperAdminService";
 import SuperAdminService from "../service/implementation/superAdminService";
 import SuperAdminRepositery from "../repository/implementation/superAdminRepository";
 import ISuperAdminRepository from "../repository/interface/ISuperAdminRepository";
+
+import ManagerController from "../controllers/implementation/managerController";
+import IManagerController from "../controllers/interface/IManagerController";
+import ManagerService from "../service/implementation/managerService";
+import IManagerService from "../service/interface/IManagerService";
+import IManagerRepository from "../repository/interface/IManagerReopsitory";
+import ManagerRepository from "../repository/implementation/managerRepository";
+
+import IEmployeeService from "../service/interface/IEmployeeService";
+import IEmployeeRepository from "../repository/interface/IEmployeeRepository";
+import EmployeeService from "../service/implementation/employeeService";
+import EmployeeRepository from "../repository/implementation/employeeRepository";
+import IEmployeeController from "../controllers/interface/IEmployeeController";
+import EmployeeController from "../controllers/implementation/employeeController";
 
 
 const container =new Container()
@@ -22,6 +37,14 @@ container.bind<IBusinessOwnerRepository>("IBusinessOwnerRepository").to(Business
 container.bind<ISuperAdminController>("ISuperAdminController").to(SuperAdminController);
 container.bind<ISuperAdminService>("ISuperAdminService").to(SuperAdminService);
 container.bind<ISuperAdminRepository>("ISuperAdminRepository").to(SuperAdminRepositery)
+
+container.bind<IManagerController>("IManagerController").to(ManagerController);
+container.bind<IManagerService>("IManagerService").to(ManagerService);
+container.bind<IManagerRepository>("IManagerRepoitory").to(ManagerRepository)
+
+container.bind<IEmployeeController>("IEmployeeController").to(EmployeeController);
+container.bind<IEmployeeService>("IEmployeeService").to(EmployeeService);
+container.bind<IEmployeeRepository>("IEmployeeRepository").to(EmployeeRepository);
 
 
 

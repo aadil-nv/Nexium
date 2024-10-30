@@ -2,7 +2,6 @@ import IBusinessOwnerRepository from "../interface/IBusinessOwnerRepository";
 import  IManager  from "../../entities/managerEntity";
 import ManagerModel from "../../models/managerSchema"; 
 import { injectable } from "inversify";
-import companyModel  from "../../models/businessOwnerSchema";
 import mongoose from "mongoose";
 
 @injectable()

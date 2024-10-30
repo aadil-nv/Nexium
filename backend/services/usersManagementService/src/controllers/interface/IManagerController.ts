@@ -30,3 +30,8 @@ export interface IManagerDocument extends Document {
     password: string;
   };
 }
+
+
+export default interface IManagerController {
+  getProfile(req: any, res: any): Promise<any>;
+}

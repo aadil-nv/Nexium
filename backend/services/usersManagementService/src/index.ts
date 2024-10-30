@@ -6,7 +6,8 @@ import cors from 'cors';
 import connectDB from './config/connectDB';
 import superAdminRoutes from './routes/superAdminRoute';
 import businessOwnerRoutes from './routes/businessOwnerRoute';
-// import companyRouter from './Routes/companyRoutes';
+import managerRoutes from './routes/managerRoute';
+import employeeRoutes from './routes/employeeRoute';
 import 'colors' ;
 
 
@@ -24,6 +25,8 @@ app.get('/', (req, res) => {
 
 app.use('/api/super-admin', superAdminRoutes); 
 app.use('/api/business-owner', businessOwnerRoutes); 
+app.use('/api/manager', managerRoutes); 
+app.use('/api/employee', employeeRoutes);
 
 
 app.listen(PORT, () => {
