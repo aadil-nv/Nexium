@@ -8,7 +8,7 @@ const businessOwnerController = container.get<IBusinessOwnerController>("IBusine
 
 businessOwnerRouter.post("/add-managers",authenticateToken,(req,res,next)=>businessOwnerController.addManagers(req,res));
 
-businessOwnerRouter.get("/find-all-companies",(req,res,next)=>businessOwnerController.findAllCompanies(req,res));
+businessOwnerRouter.get("/find-all-managers",authenticateToken,(req,res,next)=>businessOwnerController.findAllManagers(req,res));
 
 
 export default businessOwnerRouter;

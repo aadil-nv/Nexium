@@ -96,7 +96,9 @@ const Employees: React.FC = () => {
     const fetchCompanies = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("http://localhost:7001/api/business-owner/find-all-companies");
+        const response = await axios.get("http://localhost:7001/api/business-owner/find-all-managers");
+        console.log("Response from backend:", response.data);
+        
         const companies = response.data.map((company: any) => ({
           id: company._id,
           name: company.name,

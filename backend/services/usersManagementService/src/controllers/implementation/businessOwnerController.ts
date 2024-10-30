@@ -14,11 +14,15 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
 
     // Method to fetch all registered companies
-    async findAllCompanies(req: Request, res: Response): Promise<Response> {
+    async findAllManagers(req: Request, res: Response): Promise<Response> {
+        console.log("hittimg the findAllManagers Schema 1==============");
+        
         try {
-            const companies = await this.businessOwnerService.findAllCompanies();
-            // console.log("Registered Companies:", companies);
-            return res.status(200).json(companies); // Return the companies in the response
+            const comapanyId = (req as any).user?.updatedCompany._id;
+            const managers = await this.businessOwnerService.findAllManagers(comapanyId);
+            console.log("managers:", managers);
+            
+            return res.status(200).json(managers); 
         } catch (error) {
             console.error("Error fetching registered companies:", error);
             return res.status(500).json({ error: "Internal Server Error" });

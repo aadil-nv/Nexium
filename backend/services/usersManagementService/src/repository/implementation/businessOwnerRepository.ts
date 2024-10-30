@@ -9,24 +9,21 @@ import mongoose from "mongoose";
 export default class BusinessOwnerRepository implements IBusinessOwnerRepository {
 
   async addManagers(companyId:string,hrManagerData: IManager): Promise<IManager> {
-    console.log("companyId from repo -->",companyId);
-
-    const dbConnection =await mongoose.connection.useDb(companyId, { useCache: true });
-    console.log("db connection from -->",dbConnection);
-    const Manager =await dbConnection.model('HRManager', ManagerModel.schema);
-
-    
-    const newManager = new Manager(hrManagerData);
+    const switchDb =mongoose.connection.useDb(companyId, { useCache: true })
+    const Manager = switchDb.model('Managers', ManagerModel.schema);
+    const newManager = new Manager(hrManagerData)
     return await newManager.save();
   }
 
-  async findAllCompanies(): Promise<any[]> {
+  async findAllManagers(companyId: string): Promise<any[]> {
     try {
-        const companies = await companyModel.find(); // Fetch all companies from the database
-        return companies; // Return the list of companies
-    } catch (error) {
-        console.error("Error fetching companies:", error);
-        throw new Error("Could not fetch companies."); // Handle the error appropriately
-    }
+      const switchDb = mongoose.connection.useDb(companyId, { useCache: true });
+      const Manager = switchDb.model('Managers', ManagerModel.schema);
+      const managers = await Manager.find(); 
+      return managers; 
+  } catch (error) {
+      console.error("Error fetching managers:", error);
+      throw new Error("Could not fetch managers.");
+  }
 }
 }

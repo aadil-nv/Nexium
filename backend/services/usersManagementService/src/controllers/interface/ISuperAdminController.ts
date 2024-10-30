@@ -1,4 +1,5 @@
 import { Document, Types } from "mongoose";
+import { Request, Response } from "express";
 
 export interface ISubscription {
   planName: string;
@@ -36,4 +37,9 @@ export interface ITokenResponse {
 
 export interface IPaymentIntentResponse {
     clientSecret: string;
+  }
+
+
+  export default interface ISuperAdminController {
+    getAllCompanies(req: Request, res: Response): Promise<any>;
   }

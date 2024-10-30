@@ -13,9 +13,9 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
 
     // Implementing the findAllCompanies method
-    async findAllCompanies(): Promise<any[]> {
+    async findAllManagers(comapanyId: string): Promise<any[]> {
         console.log("BusinessOwnerService - Fetching all registered companies");
-        return await this.businessOwnerRepository.findAllCompanies(); // Ensure this method is implemented in your repository
+        return await this.businessOwnerRepository.findAllManagers(comapanyId ); // Ensure this method is implemented in your repository
     }
 
     async addManagers(companyId: string, hrManagerData: IManager): Promise<IManager> {

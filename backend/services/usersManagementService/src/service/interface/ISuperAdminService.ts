@@ -26,3 +26,7 @@ export interface ICompanyDocument extends Document {
     }[];
     subscription: ISubscription; 
   }
+
+  export default interface ISuperAdminService {
+    getAllCompanies(): Promise<any>;
+  }

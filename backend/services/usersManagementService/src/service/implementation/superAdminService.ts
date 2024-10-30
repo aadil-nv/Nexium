@@ -1,17 +1,26 @@
+import { inject, injectable } from "inversify";
 import superAdminRepositery from "../../repository/implementation/superAdminRepository";
-import bcrypt from "bcryptjs";
+import ISuperAdminService from "../interface/ISuperAdminService";
+import ISuperAdminRepository from "../../repository/interface/ISuperAdminRepository";
 
 
-class SuperAdminService {
-    async getAllCompanies() {
+@injectable()
+export default class SuperAdminService implements ISuperAdminService {
+
+  private superAdminRepositery: ISuperAdminRepository;
+
+  constructor(@inject("ISuperAdminRepository") superAdminRepositery: ISuperAdminRepository) {
+    this.superAdminRepositery = superAdminRepositery;
+  }
+    async getAllCompanies(): Promise<any> {
       try {
-        const companies = await superAdminRepositery.getAllCompanies();
-        return companies; // Return the companies data
+        const companies = await this.superAdminRepositery.getAllCompanies();
+        return companies; 
       } catch (error) {
         console.error('Error fetching companies in service:', error);
-        throw new Error('Unable to fetch companies.'); // Throw an error for the controller to handle
+        throw new Error('Unable to fetch companies.'); 
       }
     }   
   }
   
-  export default new SuperAdminService();
+ 

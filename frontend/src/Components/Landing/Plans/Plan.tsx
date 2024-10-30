@@ -74,10 +74,14 @@ const PlanSelection: React.FC = () => {
   };
 
   const handlePayment = async () => {
+    
     if (!selectedPlan) {
       return alert('Please select a plan first.');
     }
-
+     console.log("email is --", email);
+     console.log("selected plan is --", selectedPlan);
+     
+     
     try {
       const stripe = await stripePromise;
 
@@ -85,9 +89,7 @@ const PlanSelection: React.FC = () => {
         throw new Error('Stripe failed to load.');
       }
 
-      console.log("log from plat.tsx email", email);
-
-
+     
       const response = await axios.post('http://localhost:7000/api/business-owner/create-checkout-session', {
         email,
         plan: selectedPlan,
@@ -99,7 +101,7 @@ const PlanSelection: React.FC = () => {
 
 
       const data = await response.data
-      console.log("data from p,lan", data);
+      console.log("data from plan", data);
 
       if (data.planId === 1) {
         dispatch(login({

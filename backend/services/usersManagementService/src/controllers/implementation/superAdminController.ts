@@ -1,12 +1,23 @@
 import { Request, Response } from 'express';
-import superAdminService from '../../service/implementation/superAdminService';
+import ISuperAdminController from '../interface/ISuperAdminController';
+import { inject, injectable } from 'inversify';
+import ISuperAdminService from '../../service/interface/ISuperAdminService';
 
-class SuperAdminController {
-  async getAllCompanies(req: Request, res: Response) {
+
+@injectable()
+export default class SuperAdminController implements ISuperAdminController {
+
+  private superAdminService: ISuperAdminService;
+  constructor(@inject("ISuperAdminService") superAdminService: ISuperAdminService) {
+    this.superAdminService = superAdminService;
+  }
+
+
+  async getAllCompanies(req: Request, res: Response) :Promise<Response> {
+  
     try {
-      // Call the service to get all companies and pass the response object
-      const companies = await superAdminService.getAllCompanies(); // This should return the data directly
-      return res.status(200).json(companies); // Send the companies in the response
+      const companies = await this.superAdminService.getAllCompanies();
+      return res.status(200).json(companies); 
     } catch (error) {
       console.error('Error fetching companies in controller:', error);
       return res.status(500).json({ message: 'Server error. Unable to fetch companies.' });
@@ -14,4 +25,4 @@ class SuperAdminController {
   }
 }
 
-export default new SuperAdminController();
+
