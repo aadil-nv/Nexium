@@ -1,5 +1,5 @@
 import { Document, Types } from "mongoose";
-import { NextFunction, Request, Response } from "express";
+import {  Request, Response } from "express";
 
 export interface ISubscription {
   planName: string;

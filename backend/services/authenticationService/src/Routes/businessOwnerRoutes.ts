@@ -2,7 +2,6 @@ import express, { Router } from "express";
 import container from "../config/inversify";
 import IBusinessOwnerController from "../controllers/interface/IBusinessOwnerController";
 import StripeWebhookController from "../hooks/StripeWebhook";
-import authenticateJWT from "../middlewares/authMiddleware";
 
 const businessOwnerRouter = Router();
 
