@@ -1,5 +1,4 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import  {IBusinessOwnerDocument}  from '../controllers/interface/IBusinessOwnerController'; 
 
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';

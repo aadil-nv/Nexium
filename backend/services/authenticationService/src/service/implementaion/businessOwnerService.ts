@@ -8,10 +8,8 @@ import nodemailer from "nodemailer";
 import otpModel from "../../model/otpModel";
 import Stripe from "stripe"
 import IBusinessOwnerService from "../interfaces/IBusinessOwnerService";
-import IBusinessOwnerRepository from "repositery/interfaces/IBusinessOwnerRepository";
+import IBusinessOwnerRepository from "repository/interfaces/IBusinessOwnerRepository";
 import { inject, injectable } from "inversify";
-import cookie from "cookie"; 
-import {response} from "express";
 
 
 

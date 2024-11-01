@@ -1,4 +1,3 @@
-import cookie from 'cookie';
 import { Request, Response } from "express";
 import { loadStripe } from '@stripe/stripe-js';
 import IBusinessOwnerController from "../interface/IBusinessOwnerController";
@@ -7,7 +6,6 @@ import { inject, injectable } from "inversify";
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
-// const businessOwnerService = new BusinessOwnerService();
 @injectable()
 export default class BusinessOwnerController implements IBusinessOwnerController   {
   
@@ -107,21 +105,9 @@ async validateOtp(req: Request, res: Response): Promise<Response> {
         const response = await this.businessOwnerService.validateOtp(email, otp);
         
         if (response.success) {
-            // console.log("Response:", response.accessToken);
-            
-
-            // res.cookie('refreshToken', response.refreshToken, {
-            //     httpOnly: true,
-            //     secure: process.env.NODE_ENV === 'production',
-            //     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-            //     sameSite: 'none', // Necessary for cross-origin cookies
-            // });
-
             return res.status(200).json({
                 success: response.success,
-                email: response.email,
-                // accessToken:response.accessToken,
-                
+                email: response.email,    
             });
         }
 

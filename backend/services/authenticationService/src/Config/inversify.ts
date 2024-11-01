@@ -4,15 +4,15 @@ import ISuperAdminController from "../controllers/interface/ISuperAdminControlle
 import SuperAdminController from "../controllers/implementation/superAdminController"
 import ISuperAdminService from "../service/interfaces/ISuperAdminService"
 import SuperAdminService from "../service/implementaion/superAdminService"
-import ISuperAdminRepository from "../repositery/interfaces/ISuperAdminRepository";
-import SuperAdminRepository from "../repositery/implementaion/superAdminRepository";
+import ISuperAdminRepository from "../repository/interfaces/ISuperAdminRepository";
+import SuperAdminRepository from "../repository/implementaion/superAdminRepository";
 
 import IBusinessOwnerController from "../controllers/interface/IBusinessOwnerController";
 import BusinessOwnerController from "../controllers/implementation/businessOwnerController";
 import IBusinessOwnerService from "../service/interfaces/IBusinessOwnerService";
 import BusinessOwnerService from "../service/implementaion/businessOwnerService";
-import IBusinessOwnerRepository from "../repositery/interfaces/IBusinessOwnerRepository";
-import BusinessOwnerRepository from "../repositery/implementaion/businessOwnerRepository";
+import IBusinessOwnerRepository from "../repository/interfaces/IBusinessOwnerRepository";
+import BusinessOwnerRepository from "../repository/implementaion/businessOwnerRepository";
 
 
 

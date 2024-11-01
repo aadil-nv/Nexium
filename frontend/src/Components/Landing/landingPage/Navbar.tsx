@@ -5,11 +5,7 @@ import { FaXmark } from "react-icons/fa6";
 import { ModeToggle } from "../../ui/mode-toggle";
 import { useTheme } from "../../landing/landingPage/theme-provider";
 import { Link, useLocation } from "react-router-dom";
-// import { persistor, resetStore, store } from '../../../store/store';
 
-// // Dispatch reset action and purge persisted data
-// store.dispatch(resetStore());
-// persistor.purge();
 
 
 const Navbar = () => {
