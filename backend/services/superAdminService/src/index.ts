@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
-app.use('/api/business-owner', businessOwnerRoutes); 
+app.use('/api/businessowner', businessOwnerRoutes); 
 
 app.listen(PORT, () => {
   console.log(`superAdminService on http://localhost:${PORT}`.bgRed.bold);
