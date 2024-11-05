@@ -1,7 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 import { IBusinessOwnerDocument } from "../entities/businessOwnerEntities"; // Adjust the import path as needed
 
-const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
+
+const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
   {
     name: {
       type: String,
@@ -35,6 +36,11 @@ const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
       required: true,
       default: false,
     },
+    isBlocked: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
     role: {
       type: String,
       default: "BusinessOwner",
@@ -59,25 +65,25 @@ const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
     subscription: {
       planName: {
         type: String,
-        required: true,
+        // required: true,
       },
       planType: {
         type: String,
-        required: true,
+        // required: true,
         enum: ["Trial", "Monthly", "Yearly"],
       },
       startDate: {
         type: Date,
-        required: true,
+        // required: true,
         default: Date.now,
       },
       endDate: {
         type: Date,
-        required: true,
+        // required: true,
       },
       status: {
         type: String,
-        required: true,
+        // required: true,
         enum: ["Active", "Expired"],
       },
     },
@@ -97,9 +103,9 @@ const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
   }
 );
 
-const CompanyModel = mongoose.model<IBusinessOwnerDocument>(
+const businessOwnerModel = mongoose.model<IBusinessOwnerDocument>(
   "BusinessOwner",
-  companySchema
+  businessOwnerSchema
 );
 
-export default CompanyModel;
+export default businessOwnerModel;

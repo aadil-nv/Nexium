@@ -19,6 +19,7 @@ export interface IBusinessOwnerDocument extends Document {
   website?: string;
   registrationNumber: string;
   isVerified: boolean;
+  isBlocked: boolean;
   role: string;
   documents: {
     documentName: string;

@@ -35,6 +35,11 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       required: true,
       default: false,
     },
+    isBlocked: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
     role: {
       type: String,
       default: "BusinessOwner",

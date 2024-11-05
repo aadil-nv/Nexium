@@ -20,6 +20,7 @@ export interface IBusinessOwnerDocument extends Document {
     subscription: ISubscription; 
     companyLogo: string;
     profileImage: string;
+    isBlocked: boolean;
   }
   export interface ISubscription {
     planName: string;

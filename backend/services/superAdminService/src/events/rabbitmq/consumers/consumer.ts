@@ -4,25 +4,33 @@ import IConsumer from 'entities/consumerEntities';
 import IBusinessOwnerService from 'service/interface/IBusinessOwnerService';
 
 @injectable()
-export default  class BusinessOwnerConsumer implements IConsumer  {
-    private businessOwnerService:IBusinessOwnerService;
-    constructor(@inject("IBusinessOwnerService") businessOwnerService:IBusinessOwnerService) {
-        this.businessOwnerService = businessOwnerService;
-    }
+export default class BusinessOwnerConsumer implements IConsumer {
+  private businessOwnerService: IBusinessOwnerService;
+
+  constructor(@inject("IBusinessOwnerService") businessOwnerService: IBusinessOwnerService) {
+    this.businessOwnerService = businessOwnerService;
+  }
 
   async receiveFromQueue() {
-    const queue = 'superadminQueue';
+    console.log("touched consumer from ------------------");
+
+    const queue = 'superAdminQueue';
     try {
       const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
       const channel = await connection.createChannel();
 
-      await channel.assertQueue(queue, { durable: true });
-      console.log('Waiting for messages in superadminQueue...');
+      await channel.assertQueue(queue, { exclusive: true });
+      console.log('Waiting for messages in queue...');
+
+      await channel.bindQueue(queue, 'fanout_exchange', '');
 
       channel.consume(queue, async (msg) => {
         if (msg !== null) {
           const businessOwnerData = JSON.parse(msg.content.toString());
+          console.log('Received businessOwner data:', businessOwnerData);
+
           await this.businessOwnerService.registerBusinessOwner(businessOwnerData);
+
           channel.ack(msg);
         }
       });
