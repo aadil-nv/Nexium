@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 import { FiMenu } from "react-icons/fi";
 import { useDispatch } from 'react-redux';
 import { setActiveMenu } from '../../features/menuSlice';
-import { businessOwnerLinks, superAdminLinks } from '../../data/Links';
+import { businessOwnerLinks, superAdminLinks ,managerLinks } from '../../data/Links';
 import useAuth from '../../hooks/useAuth';
 import useTheme from '../../hooks/useTheme';
 // import { persistor, resetStore, store } from '../../store/store';
@@ -20,7 +20,7 @@ const Sidebar = () => {
   const dispatch = useDispatch();
   const isBusinessOwner = businessOwner.role
   const isSuperAdmin = superAdmin.role
-  const links = isBusinessOwner ? businessOwnerLinks : isSuperAdmin ? superAdminLinks : [];
+  const links = isBusinessOwner ? businessOwnerLinks : isSuperAdmin ? superAdminLinks :  [];
 
 
 

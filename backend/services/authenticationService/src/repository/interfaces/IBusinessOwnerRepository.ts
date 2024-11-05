@@ -44,7 +44,7 @@ export interface IPaymentIntentResponse {
 
   export default interface IBusinessOwnerRepository {
     findByEmail(email: string): Promise<IBusinessOwnerDocument | null>;
-    create(companyData: IBusinessOwnerDocument): Promise<IBusinessOwnerDocument>;
+    create(businessOwnerData: IBusinessOwnerDocument): Promise<IBusinessOwnerDocument>;
     findOtpByEmail(email: string): Promise<any | null>;
     updateVerificationStatus(email: string): Promise<any>;
     updateSubscriptionByEmail(email: string, subscription: ISubscription): Promise<IBusinessOwnerDocument | null>;

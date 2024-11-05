@@ -4,11 +4,12 @@ import dotenv from 'dotenv';
 dotenv.config(); 
 import cors from 'cors';
 import connectDB from './config/connectDB';
-import superAdminRoutes from './routes/superAdminRoute';
+
 import businessOwnerRoutes from './routes/businessOwnerRoute';
 import managerRoutes from './routes/managerRoute';
 import employeeRoutes from './routes/employeeRoute';
 import 'colors' ;
+import {connectConsumer} from "./events/rabbitmq/connectConsumer"
 
 
 
@@ -23,12 +24,13 @@ app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
-app.use('/api/super-admin', superAdminRoutes); 
+
 app.use('/api/business-owner', businessOwnerRoutes); 
 app.use('/api/manager', managerRoutes); 
 app.use('/api/employee', employeeRoutes);
 
+connectConsumer();
 
 app.listen(PORT, () => {
-  console.log(`userManagementService on http://localhost:${PORT}`.bgBlue.bold);
+  console.log(`businessOwnerService on http://localhost:${PORT}`.bgBlue.bold);
 });

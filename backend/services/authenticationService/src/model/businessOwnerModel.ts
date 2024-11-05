@@ -1,8 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { IBusinessOwnerDocument } from "../controllers/interface/IBusinessOwnerController"; // Adjust the import path as needed
 
-
-const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
+const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
   {
     name: {
       type: String,
@@ -30,12 +29,11 @@ const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
     registrationNumber: {
       type: String,
       required: true,
-
     },
     isVerified: {
       type: Boolean,
       required: true,
-      default: false, 
+      default: false,
     },
     role: {
       type: String,
@@ -50,7 +48,7 @@ const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
         documentUrl: {
           type: String,
           default: "http://localhost:3000",
-          match: /^(http|https):\/\/[^ "]+$/, 
+          match: /^(http|https):\/\/[^ "]+$/,
         },
         uploadedAt: {
           type: Date,
@@ -61,39 +59,47 @@ const companySchema: Schema<IBusinessOwnerDocument> = new Schema(
     subscription: {
       planName: {
         type: String,
-        required: true,
+        // required: true,
       },
       planType: {
         type: String,
-        required: true,
-        enum: ["Trial", "Monthly", "Yearly"], 
+        // required: true,
+        enum: ["Trial", "Monthly", "Yearly"],
       },
       startDate: {
         type: Date,
-        required: true,
+        // required: true,
         default: Date.now,
       },
       endDate: {
         type: Date,
-        required: true,
+        // required: true,
       },
       status: {
         type: String,
-        required: true,
+        // required: true,
         enum: ["Active", "Expired"],
       },
     },
+    companyLogo: {
+      type: String,
+      required: false,
+      default: "https://example.com/default-logo.png",
+    },
+    profileImage: {
+      type: String,
+      required: false,
+      default: "https://example.com/default-profile-image.png",
+    },
   },
-
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 
-
-const CompanyModel = mongoose.model<IBusinessOwnerDocument>(
-  "Company",
-  companySchema
+const businessOwnerModel = mongoose.model<IBusinessOwnerDocument>(
+  "BusinessOwner",
+  businessOwnerSchema
 );
 
-export default CompanyModel;
+export default businessOwnerModel;

@@ -16,4 +16,16 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
             
         }
     }
+
+    async registerBusinessOwner(businessOwnerData: string): Promise<any> {
+        try {
+            const newBusinessOwner = new businessOwnerModel(businessOwnerData);
+            await newBusinessOwner.save();
+            // return newBusinessOwner;
+        } catch (error) {
+            console.log(error);
+            throw new Error("Error while registering manager");
+            
+        }
+    }
 }

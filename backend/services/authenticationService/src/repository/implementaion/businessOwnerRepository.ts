@@ -13,9 +13,9 @@ export default class BusinessOwnerRepository  implements IBusinessOwnerRepositor
     return await businessOwnerSchema.findOne({ email }).exec();
   }
 
-  async create(companyData: IBusinessOwnerDocument): Promise<IBusinessOwnerDocument> {
-    const company = new businessOwnerSchema(companyData);
-    return await company.save();
+  async create(businessOwnerData: IBusinessOwnerDocument): Promise<IBusinessOwnerDocument> {
+    const businessOwner = new businessOwnerSchema(businessOwnerData);
+    return await businessOwner.save();
   }
 
   async findOtpByEmail(email: string): Promise<any | null> {

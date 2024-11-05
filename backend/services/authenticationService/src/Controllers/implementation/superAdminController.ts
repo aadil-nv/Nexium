@@ -15,6 +15,8 @@ export default class SuperAdminController implements ISuperAdminController {
 
 
   async adminLogin(req: Request, res: Response, next: NextFunction) {
+    console.log("super adminnnnnnnnnnnnnnnnnnnnn");
+    
         try {
             const { email, password } = req.body;            
             const response= await this.adminService.login(email, password);

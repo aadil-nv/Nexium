@@ -1,5 +1,5 @@
 import { Document, Types } from "mongoose";
-import { Request, Response } from "express";
+import {  Request, Response } from "express";
 
 export interface ISubscription {
   planName: string;
@@ -25,21 +25,7 @@ export interface IBusinessOwnerDocument extends Document {
     documentUrl: string;
     uploadedAt: Date;
   }[];
-  subscription: ISubscription; 
+  subscription: ISubscription;
+  companyLogo: string;
+  profileImage: string; 
 }
-
-export interface IBusinessOwner extends Omit<IBusinessOwnerDocument, "_id"> {}
-
-export interface ITokenResponse {
-  accessToken: string;
-  refreshToken: string;
-}
-
-export interface IPaymentIntentResponse {
-    clientSecret: string;
-  }
-
-
-  export default interface ISuperAdminController {
-    getAllCompanies(req: Request, res: Response): Promise<any>;
-  }

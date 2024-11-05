@@ -1,6 +1,6 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import DashBoardLayout from "../pages/hrMangerPages/DashboardLayout";
+import DashBoardLayout from "../pages/mangerPages/DashboardLayout";
 import Dashboard from "../components/manager/dashboard/Dashboard";
 import Employees from "../components/manager/dashboard/Employees";
 import Departments from "../components/manager/dashboard/Departments";

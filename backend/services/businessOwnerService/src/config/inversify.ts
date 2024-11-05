@@ -6,12 +6,7 @@ import IBusinessOwnerRepository from "../repository/interface/IBusinessOwnerRepo
 import  BusinessOwnerService  from "../service/implementation/businessOwnerService";
 import IBusinessOwnerService from "../service/interface/IBusinessOwnerService";
 
-import SuperAdminController from "../controllers/implementation/superAdminController";
-import ISuperAdminController from "../controllers/interface/ISuperAdminController";
-import ISuperAdminService from "../service/interface/ISuperAdminService";
-import SuperAdminService from "../service/implementation/superAdminService";
-import SuperAdminRepositery from "../repository/implementation/superAdminRepository";
-import ISuperAdminRepository from "../repository/interface/ISuperAdminRepository";
+
 
 import ManagerController from "../controllers/implementation/managerController";
 import IManagerController from "../controllers/interface/IManagerController";
@@ -27,6 +22,9 @@ import EmployeeRepository from "../repository/implementation/employeeRepository"
 import IEmployeeController from "../controllers/interface/IEmployeeController";
 import EmployeeController from "../controllers/implementation/employeeController";
 
+import IConsumer from "../events/rabbitmq/interface/IConsumer";
+import BusinessOwnerConsumer from "../events/rabbitmq/implementation/consumer";
+
 
 const container =new Container()
 
@@ -34,9 +32,7 @@ container.bind<IBusinessOwnerController>("IBusinessOwnerController").to(Business
 container.bind<IBusinessOwnerService>("IBusinessOwnerService").to(BusinessOwnerService)
 container.bind<IBusinessOwnerRepository>("IBusinessOwnerRepository").to(BusinessOwnerRepository)
 
-container.bind<ISuperAdminController>("ISuperAdminController").to(SuperAdminController);
-container.bind<ISuperAdminService>("ISuperAdminService").to(SuperAdminService);
-container.bind<ISuperAdminRepository>("ISuperAdminRepository").to(SuperAdminRepositery)
+
 
 container.bind<IManagerController>("IManagerController").to(ManagerController);
 container.bind<IManagerService>("IManagerService").to(ManagerService);
@@ -45,6 +41,8 @@ container.bind<IManagerRepository>("IManagerRepoitory").to(ManagerRepository)
 container.bind<IEmployeeController>("IEmployeeController").to(EmployeeController);
 container.bind<IEmployeeService>("IEmployeeService").to(EmployeeService);
 container.bind<IEmployeeRepository>("IEmployeeRepository").to(EmployeeRepository);
+
+container.bind<BusinessOwnerConsumer>("IConsumer").to(BusinessOwnerConsumer);
 
 
 

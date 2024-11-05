@@ -25,7 +25,9 @@ export interface IBusinessOwnerDocument extends Document {
     documentUrl: string;
     uploadedAt: Date;
   }[];
-  subscription: ISubscription; 
+  subscription: ISubscription;
+  companyLogo: string;
+  profileImage: string; 
 }
 
 export interface IBusinessOwner extends Omit<IBusinessOwnerDocument, "_id"> {}

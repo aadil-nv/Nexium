@@ -60,6 +60,8 @@ export default class BusinessOwnerController implements IBusinessOwnerController
 
 
 async  login(req: Request, res: Response): Promise<Response> {
+    console.log("hitiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
+    
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -144,7 +146,6 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
 
       const result = await this.businessOwnerService.createCheckoutSession(plan, amount, currency, email);
 
-      console.log("Result from create checkout seesion ",result);
       
 
       if (result.planId === 1) {

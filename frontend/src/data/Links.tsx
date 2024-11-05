@@ -26,7 +26,7 @@ interface LinkItem {
   ];
 
 
-  export const hrManagerLinks: LinkItem[] = [
+  export const managerLinks: LinkItem[] = [
     { title: 'Dashboard', route: '/hr-manager/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
     { title: 'Employees', route: '/hr-manager/employees', icon: 'fi fi-tr-employees' },
     { title: 'Attendance', route: '/hr-manager/attendance', icon: 'fi fi-tr-calendar-attendance' },

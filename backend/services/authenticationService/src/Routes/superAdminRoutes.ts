@@ -6,7 +6,7 @@ const superAdminRouter = Router();
 
 const superAdminController = container.get<ISuperAdminController>("ISuperAdminController");
 
-superAdminRouter.post('/login', (req, res, next) => superAdminController.adminLogin(req, res, next));
+superAdminRouter.post('/superadmin-login', (req, res, next) => superAdminController.adminLogin(req, res, next));
 
 superAdminRouter.post('/register', (req, res) => superAdminController.adminRegister(req, res));
 

@@ -10,6 +10,8 @@ import Stripe from "stripe"
 import IBusinessOwnerService from "../interfaces/IBusinessOwnerService";
 import IBusinessOwnerRepository from "repository/interfaces/IBusinessOwnerRepository";
 import { inject, injectable } from "inversify";
+import sendToSuperAdmin from "../../events/rabbitmq/producers/producer";
+import RabbitMQMessager from "../../events/rabbitmq/producers/producer";
 
 
 
@@ -26,6 +28,7 @@ const transporter = nodemailer.createTransport({
 @injectable()
 export default class BusinessOwnerService implements IBusinessOwnerService {
     private businessOwnerRepository: IBusinessOwnerRepository;
+
 
     constructor(@inject("IBusinessOwnerRepository") businessOwnerRepository: IBusinessOwnerRepository) {
         this.businessOwnerRepository = businessOwnerRepository;
@@ -70,48 +73,40 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
     
 
-    async register(
-        companyData: Partial<ICompany>
-    ): Promise<{ tokens?: ITokenResponse; message?: string; email?: string }> {
-        if (companyData.password) {
-            companyData.password = await bcrypt.hash(companyData.password, 10);
+    async register(businessOwnerData: Partial<ICompany>): Promise<{ tokens?: ITokenResponse; message?: string; email?: string }> {
+        if (businessOwnerData.password) {
+            businessOwnerData.password = await bcrypt.hash(businessOwnerData.password, 10);
         }
 
-        if (!companyData.registrationNumber) {
+        if (!businessOwnerData.registrationNumber) {
             throw new Error("Registration number is required");
         }
 
-        const existingCompany = await businessOwnerSchema.findOne({
-            $or: [
-                { email: companyData.email },
-                { phone: companyData.phone },
-                { registrationNumber: companyData.registrationNumber },
-            ],
-        });
+        const existingBusinessOwner = await this.businessOwnerRepository.findByEmail(businessOwnerData.email ?? "");         
 
-        if (existingCompany) {
-            if (existingCompany.isVerified) {
+        if (existingBusinessOwner) {
+            if (existingBusinessOwner.isVerified) {
                 throw new Error("Credentials already used. Please check the details.");
             }
             const otp = generateOtp()
-            await this.sendOtp(existingCompany.email,otp);
-            console.log("COMPANYDATA EMAIL", existingCompany.email);
+            await this.sendOtp(existingBusinessOwner.email,otp);
+            console.log("businessOwnerData EMAIL", existingBusinessOwner.email);
 
-            return { message: "true", email: existingCompany.email };
+            return { message: "true", email: existingBusinessOwner.email };
         }
-
-
+            
+        
         const newCompanyData: ICompanyDocument = new businessOwnerSchema({
             _id: new mongoose.Types.ObjectId(),
-            name: companyData.name || "",
-            email: companyData.email || "",
-            address: companyData.address || "",
-            password: companyData.password || "",
-            phone: companyData.phone || "",
-            website: companyData.website,
-            registrationNumber: companyData.registrationNumber,
-            documents: companyData.documents || [],
-            subscription: companyData.subscription || {
+            name: businessOwnerData.name || "",
+            email: businessOwnerData.email || "",
+            address: businessOwnerData.address || "",
+            password: businessOwnerData.password || "",
+            phone: businessOwnerData.phone || "",
+            website: businessOwnerData.website,
+            registrationNumber: businessOwnerData.registrationNumber,
+            documents: businessOwnerData.documents || [],
+            subscription: businessOwnerData.subscription || {
                 planName: "Trial",
                 planType: "Trial",
                 startDate: new Date(),
@@ -119,8 +114,10 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
                 status: "Active",
             },
             isVerified: false,
+            companyLogo: "https://example.com/default-logo.png",
+            profileImage: "https://example.com/default-profile.png",
         });
-
+        
         const savedCompany = await this.businessOwnerRepository.create(newCompanyData);
         const companyDbName = `${savedCompany._id}`;
         const companyDb = mongoose.connection.useDb(companyDbName);
@@ -241,65 +238,73 @@ async validateOtp(email: string, otp: string): Promise<any> {
     }
 }
         
-    async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponse> {
-      
-        try {
-          if (plan.id === 1) {
-            const subscription: ISubscription = {
-              planName: plan.name,
-              planType: 'Trial',
-              startDate: new Date(),
-              endDate: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000), // Trial for 7 days
-              status: 'Active',
-            };
-    
-            const updatedCompany = await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
-      
-            if (updatedCompany) {
-                console.log("Updated Company",updatedCompany);
-                
-                const accessToken = generateCompanyAccessToken({ updatedCompany });
-                const refreshToken = generateCompanyRefreshToken({ updatedCompany })
-              return { 
-                message: 'Subscription updated successfully', 
-                success: true, 
-                role: updatedCompany.role,
-                planId: plan.id, 
-                accessToken,     
-                refreshToken    
-              };
-            } else {
-              throw new Error('Company not found');
-            }
-          } else {
-            const session = await stripe.checkout.sessions.create({
-              payment_method_types: ['card'],
-              line_items: [{price_data: {currency: currency,product_data: { 
-                name: plan.name,description: `Payment for ${plan.name} Plan`,
-                    },
-                    unit_amount: amount,
-                  },
-                  quantity: 1,
-                },
-              ],
-              mode: 'payment',
-              success_url: 'http://localhost:5173/business-owner/dashboard',
-              cancel_url: 'http://localhost:5173/plan',
-            });
-      
-            const updatedCompany = await this.businessOwnerRepository.findByEmail(email);
-            if (!updatedCompany) {
-              throw new Error('Company not found');
-            }
-            
-      
-            return { session, success: true, planId: plan.id };
-          }
-        } catch (error) {
-          console.error('Error in createCheckoutSession:', error);
-          throw new Error('Failed to process the request: ' + error);  
+async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponse> {
+    console.log("touching checkout session controller ---------------");
+  
+    try {
+      const rabbitMQMessager = new RabbitMQMessager();
+      await rabbitMQMessager.init();
+  
+      if (plan.id === 1) {
+        const subscription: ISubscription = {
+          planName: plan.name,
+          planType: 'Trial',
+          startDate: new Date(),
+          endDate: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000),
+          status: 'Active',
+        };
+  
+        const updatedCompany = await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
+  
+        if (updatedCompany) {
+          console.log("Updated Company", updatedCompany);
+  
+          const accessToken = generateCompanyAccessToken({ updatedCompany });
+          const refreshToken = generateCompanyRefreshToken({ updatedCompany });
+          await rabbitMQMessager.sendToMultipleQueues(updatedCompany);
+  
+          return {
+            message: 'Subscription updated successfully',
+            success: true,
+            role: updatedCompany.role,
+            planId: plan.id,
+            accessToken,
+            refreshToken
+          };
+        } else {
+          throw new Error('Company not found');
         }
+      } else {
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ['card'],
+          line_items: [{
+            price_data: {
+              currency: currency,
+              product_data: {
+                name: plan.name,
+                description: `Payment for ${plan.name} Plan`,
+              },
+              unit_amount: amount,
+            },
+            quantity: 1,
+          }],
+          mode: 'payment',
+          success_url: 'http://localhost:5173/business-owner/dashboard',
+          cancel_url: 'http://localhost:5173/plan',
+        });
+  
+        const updatedCompany = await this.businessOwnerRepository.findByEmail(email);
+        if (!updatedCompany) {
+          throw new Error('Company not found');
+        }
+  
+        return { session, success: true, planId: plan.id };
       }
+    } catch (error) {
+      console.error('Error in createCheckoutSession:', error);
+      throw new Error('Failed to process the request: ' + error);
+    }
+  }
       
   
     async resendOtp(email: string): Promise<{ success: boolean; message: string }> {

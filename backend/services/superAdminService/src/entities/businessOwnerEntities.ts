@@ -18,6 +18,8 @@ export interface IBusinessOwnerDocument extends Document {
       uploadedAt: Date;
     }[];
     subscription: ISubscription; 
+    companyLogo: string;
+    profileImage: string;
   }
   export interface ISubscription {
     planName: string;

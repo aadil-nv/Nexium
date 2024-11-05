@@ -20,4 +20,20 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             throw new Error("Error while fetching managers");  
         }
     }
+
+    async registerBusinessOwner(businessOwnerData:string):Promise<any> {
+
+        console.log("businessOwnerData from service -------------",businessOwnerData);
+        
+        try {
+            const newBusinessOwner = await this.businessOwnerRepository.registerBusinessOwner(businessOwnerData);
+            return newBusinessOwner
+            
+        } catch (error) {
+            console.log(error);
+            throw new Error("Error while registering manager");
+        }
+    }
+
+
 }

@@ -48,4 +48,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
             return res.status(500).json({ error: "Internal Server Error" });
         }
     }
+
+    
+
 }
