@@ -9,6 +9,7 @@ const businessOwnerController = container.get<IBusinessOwnerController>("IBusine
 
 
 businessOwnerRouter.get("/fetch-all-businessowners",(req,res,next)=>businessOwnerController.fetchAllBusinessOwners(req,res));
+businessOwnerRouter.patch('/update-isblocked/:id', (req, res, next) => businessOwnerController.updateIsBlocked(req, res,));
 
 
 export default businessOwnerRouter;

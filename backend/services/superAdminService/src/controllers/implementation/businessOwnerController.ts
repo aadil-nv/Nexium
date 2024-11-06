@@ -26,5 +26,19 @@ export default class BusinessOwnerController implements IBusinessOwnerController
         }
     }
 
+    async updateIsBlocked(req:Request,res:Response):Promise<Response>{
+        console.log("hiting update is blocked..");
+        const {id} = req.params;
+        try {
+            const updatedBusinessOwner = await this.businessOwnerService.updateIsBlocked(id);   
+            return res.status(200).json({updatedBusinessOwner});
+
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({"message":"Error while updating isBlocked"});
+            
+        }
+    }
+
 
 }

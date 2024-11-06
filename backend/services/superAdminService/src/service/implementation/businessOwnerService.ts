@@ -34,6 +34,15 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             throw new Error("Error while registering manager");
         }
     }
-
+    
+    async updateIsBlocked(id:string):Promise<any> {
+        try {
+            const updatedBusinessOwner = await this.businessOwnerRepository.updateIsBlocked(id);
+            return updatedBusinessOwner
+        } catch (error) {
+            console.log(error);
+            throw new Error("Error while updating isBlocked");
+        }
+    }
 
 }

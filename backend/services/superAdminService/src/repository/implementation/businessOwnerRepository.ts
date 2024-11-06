@@ -26,4 +26,19 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
             throw new Error("Could not register business owner.");
         } 
       }
+
+      async updateIsBlocked(id: string): Promise<any> {
+        try {
+          const businessOwner = await businessOwnerModel.findById(id);
+          if (!businessOwner) {
+            throw new Error("Business owner not found");
+          }
+          businessOwner.isBlocked = !businessOwner.isBlocked;
+          const updatedBusinessOwner = await businessOwner.save();
+          return updatedBusinessOwner;
+        } catch (error) {
+          console.error("Error updating business owner:", error);
+          throw new Error("Could not update business owner.");
+        }
+      }
 }
