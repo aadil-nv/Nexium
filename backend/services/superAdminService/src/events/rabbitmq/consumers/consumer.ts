@@ -6,14 +6,18 @@ import IBusinessOwnerService from 'service/interface/IBusinessOwnerService';
 @injectable()
 export default class BusinessOwnerConsumer implements IConsumer {
   private businessOwnerService: IBusinessOwnerService;
+<<<<<<< HEAD
   private connection: amqp.Connection | null = null;
   private channel: amqp.Channel | null = null;
+=======
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
 
   constructor(@inject("IBusinessOwnerService") businessOwnerService: IBusinessOwnerService) {
     this.businessOwnerService = businessOwnerService;
   }
 
   async receiveFromQueue() {
+<<<<<<< HEAD
     console.log("Consumer is starting...");
 
     const queue = 'superAdminQueue';
@@ -61,10 +65,35 @@ export default class BusinessOwnerConsumer implements IConsumer {
         console.error('Channel error:', err);
       });
 
+=======
+    console.log("touched consumer from ------------------");
+
+    const queue = 'superAdminQueue';
+    try {
+      const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
+      const channel = await connection.createChannel();
+
+      await channel.assertQueue(queue, { exclusive: true });
+      console.log('Waiting for messages in queue...');
+
+      await channel.bindQueue(queue, 'fanout_exchange', '');
+
+      channel.consume(queue, async (msg) => {
+        if (msg !== null) {
+          const businessOwnerData = JSON.parse(msg.content.toString());
+          console.log('Received businessOwner data:', businessOwnerData);
+
+          await this.businessOwnerService.registerBusinessOwner(businessOwnerData);
+
+          channel.ack(msg);
+        }
+      });
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
     } catch (error) {
       console.error('Error in RabbitMQ consumer:', error);
     }
   }
+<<<<<<< HEAD
 
   // Graceful shutdown: Close connection and channel
   async shutdown() {
@@ -82,3 +111,6 @@ export default class BusinessOwnerConsumer implements IConsumer {
     }
   }
 }
+=======
+}
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0

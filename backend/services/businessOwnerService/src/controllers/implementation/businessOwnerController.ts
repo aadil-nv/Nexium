@@ -13,7 +13,11 @@ export default class BusinessOwnerController implements IBusinessOwnerController
         this.businessOwnerService = businessOwnerService;
     }
 
+<<<<<<< HEAD
    
+=======
+    // Method to fetch all registered companies
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
     async findAllManagers(req: Request, res: Response): Promise<Response> {
         console.log("hittimg the findAllManagers Schema 1==============");
         
@@ -31,8 +35,17 @@ export default class BusinessOwnerController implements IBusinessOwnerController
 
     async addManagers(req: Request, res: Response): Promise<Response> {
         console.log("Hitting the addManager Schema 1");
+<<<<<<< HEAD
         try {
             const hrManagerData = req.body as IManager; 
+=======
+
+        
+        try {
+            const hrManagerData = req.body as IManager; 
+
+
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
             const companyId = (req as any).user?.updatedCompany._id;
             console.log("companyId:", companyId);
             

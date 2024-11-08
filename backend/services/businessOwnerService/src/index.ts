@@ -4,6 +4,10 @@ import dotenv from 'dotenv';
 dotenv.config(); 
 import cors from 'cors';
 import connectDB from './config/connectDB';
+<<<<<<< HEAD
+=======
+
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
 import businessOwnerRoutes from './routes/businessOwnerRoute';
 import managerRoutes from './routes/managerRoute';
 import employeeRoutes from './routes/employeeRoute';

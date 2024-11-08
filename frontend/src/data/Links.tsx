@@ -8,12 +8,19 @@ interface LinkItem {
 
   export const businessOwnerLinks: LinkItem[] = [
     { title: 'Dashboard', route: '/business-owner/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
+<<<<<<< HEAD
     { title: 'Employees', route: '/business-owner/employees', icon: 'fi fi-tr-employees' },
+=======
+    { title: 'Employees', route: '/business-owner/workers', icon: 'fi fi-tr-employees' },
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
     { title: 'Subscriptions', route: '/business-owner/subscriptions', icon: 'fi fi-tr-benefit' },
     { title: 'Service Requests', route: '/business-owner/service-requests', icon: 'fi fi-tr-user-headset' },
     { title: 'Notifications', route: '/business-owner/notifications', icon: 'fi fi-tr-bells' },
     { title: 'Announcements', route: '/business-owner/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+<<<<<<< HEAD
     { title: 'demo', route: '/business-owner/demo', icon: 'fi fi-tr-megaphone-announcement-leader' },
+=======
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
   ];
   
 

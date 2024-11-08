@@ -12,6 +12,7 @@ export default class BusinessOwnerConsumer implements IConsumer {
   }
 
   async receiveFromQueue() {
+<<<<<<< HEAD
     console.log("Consumer initialized...");
 
     const queue = 'businessOwnerQueue';
@@ -48,11 +49,40 @@ export default class BusinessOwnerConsumer implements IConsumer {
             // Optionally, nack the message if there's an error processing it
             channel.nack(msg);
           }
+=======
+    console.log("touched consumer from ------------------");
+
+    const queue = 'businessOwnerQueue';
+    try {
+      const connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
+      const channel = await connection.createChannel();
+
+      await channel.assertQueue(queue, { exclusive: true });
+      console.log('Waiting for messages in queue...');
+
+      await channel.bindQueue(queue, 'fanout_exchange', '');
+
+      channel.consume(queue, async (msg) => {
+        if (msg !== null) {
+          const businessOwnerData = JSON.parse(msg.content.toString());
+          console.log('Received businessOwner data:', businessOwnerData);
+
+          // Call the businessOwnerRegister function from the service layer
+          await this.businessOwnerService.registerBusinessOwner(businessOwnerData);
+
+          channel.ack(msg);
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
         }
       });
     } catch (error) {
       console.error('Error in RabbitMQ consumer:', error);
+<<<<<<< HEAD
       // Handle connection/channel errors gracefully
     }
   }
 }
+=======
+    }
+  }
+}
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0

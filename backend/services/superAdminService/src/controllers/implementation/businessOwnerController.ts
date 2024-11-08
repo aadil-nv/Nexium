@@ -13,7 +13,12 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
 
     async fetchAllBusinessOwners(req:Request,res:Response):Promise<Response >{
+<<<<<<< HEAD
      
+=======
+        console.log("hiting fetch all companies..");
+        
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
         try {
             const businessOwners = await this.businessOwnerService.fetchAllBusinessOwners();
             return res.status(200).json({businessOwners});    

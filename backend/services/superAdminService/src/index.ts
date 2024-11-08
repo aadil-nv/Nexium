@@ -5,7 +5,10 @@ dotenv.config();
 import cors from 'cors';
 import connectDB from './config/connectDB';
 import businessOwnerRoutes from './routes/businessOwnerRoute';
+<<<<<<< HEAD
 import subscriptionRoutes from './routes/subscriptionRoute';
+=======
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
 import 'colors';
 import { connectConsumer } from './events/connectCosumer';
 
@@ -21,7 +24,10 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/businessowner', businessOwnerRoutes);
+<<<<<<< HEAD
 app.use('/api/subscription', subscriptionRoutes);
+=======
+>>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
 
 connectConsumer()
 
