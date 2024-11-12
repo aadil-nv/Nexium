@@ -6,16 +6,8 @@ interface CustomRequest extends Request {
   user?: string | JwtPayload;
 }
 
-const authenticateToken = (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-    console.log("Hitting authentication middleware");
-    
-    
-    
-  const token = req.cookies.accessToken; 
+const authenticateToken = (req: CustomRequest,res: Response,next: NextFunction) => {
+  const token = req.cookies.accessToken;
 
   if (!token) {
     return res
@@ -29,7 +21,7 @@ const authenticateToken = (
     return res.status(401).json({ message: "Invalid token" });
   }
 
-  req.user = decoded; 
+  req.user = decoded;
   next();
 };
 

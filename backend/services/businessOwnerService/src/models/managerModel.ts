@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
-import { IManagerDocument } from "../controllers/interface/IManagerController"; 
+import  IManager  from "../entities/managerEntity"; 
 
-const managerSchema: Schema<IManagerDocument> = new Schema(
+const managerSchema: Schema<IManager> = new Schema(
   {
     name: {
       type: String,
@@ -12,9 +12,10 @@ const managerSchema: Schema<IManagerDocument> = new Schema(
       // required: true,
       // unique: true,
     },
-    position: {
+    managerType: {
       type: String,
-      // required: true,
+      enum: ["HumanResourceManager" ,"GeneralManager" ,"ProjectManager" , "SalesManager"],
+      required: true, // Assuming managerType is mandatory
     },
     phone: {
       type: String,
@@ -30,12 +31,22 @@ const managerSchema: Schema<IManagerDocument> = new Schema(
     },
     workTime: {
       type: String,
-      // required: true,
+      enum: ["Full-Time", "Part-Time", "Contract", "Temporary"], // Specify allowed values here
+      required: true, // You can adjust whether this is mandatory or not
     },
     joiningDate: {
       type: Date,
       // required: true,
       default: Date.now,
+    },
+    profilePicture: {
+      type: String,
+      // required: true,
+      default: "https://avatar.iran.liara.run/public/boy?username=Ash",
+    },
+    subscriptionId :{
+      type: mongoose.Schema.Types.ObjectId,
+      ref : "Subscription"
     },
     address: {
       street: { type: String },
@@ -53,7 +64,7 @@ const managerSchema: Schema<IManagerDocument> = new Schema(
         documentUrl: {
           type: String,
           match: /^(http|https):\/\/[^ "]+$/, // URL validation
-          required: true,
+          // required: true,
         },
         uploadedAt: {
           type: Date,
@@ -66,6 +77,10 @@ const managerSchema: Schema<IManagerDocument> = new Schema(
       default: true,
     },
     isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    isBlocked: {
       type: Boolean,
       default: false,
     },
@@ -87,12 +102,17 @@ const managerSchema: Schema<IManagerDocument> = new Schema(
         // required: true,
       },
     },
+    businessOwnerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'BusinessOwner', // Assuming you have a BusinessOwner model
+      // required: true, // Assuming this is a required field
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const managerModel = mongoose.model<IManagerDocument>("manager", managerSchema);
+const managerModel = mongoose.model<IManager>("manager", managerSchema);
 
 export default managerModel;

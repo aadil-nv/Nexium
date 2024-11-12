@@ -7,14 +7,14 @@ const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET  as string;
 
 export const generateAccessToken = (admin :ISuperAdmin ): string => {
     
-    return jwt.sign({admin}, JWT_SECRET, {expiresIn: '15m',});
+    return jwt.sign({admin}, JWT_SECRET, {expiresIn: '1m',});
 };
 
 
 export const generateRefreshToken = (admin :Object)=> {
     
     return jwt.sign({admin}, REFRESH_TOKEN_SECRET, {
-        expiresIn: '7d', 
+        expiresIn: '5m', 
     });
 };
 

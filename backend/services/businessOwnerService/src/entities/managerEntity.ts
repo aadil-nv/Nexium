@@ -4,12 +4,14 @@ import { Document } from "mongoose";
 export default interface IManager extends Document {
   name: string;
   email: string;
-  position: string;
+  managerType:"HumanResourceManager" |"GeneralManager" |"ProjectManager" | "SalesManager";
   phone: string;
   employeeId: string;
   salary: number;
-  workTime: string;
+  workTime: "Full-Time" | "Part-Time" | "Contract" | "Temporary";  // Enum for workTime
   joiningDate: Date;
+  subscriptionId?:string;
+  profilePicture: string;
   address: {
     street: string;
     city: string;
@@ -17,12 +19,19 @@ export default interface IManager extends Document {
     zip: string;
     country: string;
   };
+  documents: {
+    documentName: string;
+    documentUrl: string;
+    uploadedAt: Date;
+  }[];
   isActive: boolean;
   isVerified: boolean;
+  isBlocked: boolean;
   companyCredentials: {
     companyName: string;
     companyRegistrationNumber: string;
     email: string;
     password: string;
   };
+  businessOwnerId?: string;  
 }

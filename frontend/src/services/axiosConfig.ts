@@ -5,7 +5,7 @@ import { store } from "../store/store";
 
 // Axios instance with base URL and credentials
 export const privateApi = axios.create({
-  baseURL: 'http://localhost:7001/api',
+  baseURL: 'http://localhost:7002/api',
   withCredentials: true,  // Ensure cookies are included in requests
 });
 
@@ -22,7 +22,7 @@ privateApi.interceptors.response.use(
 
       try {
         // Request new access token
-        const refreshResponse = await privateApi.post('/business-owner/refresh-token');
+        const refreshResponse = await axios.post('http://localhost:7002/api/businessowner/refresh-token');
         console.log(refreshResponse.status, '   xxxxxxxxxxxxxxxxxxxxx Response in axios interceptor');
 
         if (refreshResponse.status === 200) {

@@ -7,12 +7,11 @@ const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your_refresh_t
 
 
 export const generateCompanyAccessToken = (data: object): string => {
-    console.log("Generating access token..." ,data);
     
     return jwt.sign(
         data, 
         JWT_SECRET,
-        { expiresIn: '15' }
+        { expiresIn: '1m' }
     );
 };
 
@@ -20,10 +19,10 @@ export const generateCompanyRefreshToken = (data: object): string => {
     return jwt.sign(
         data, 
         REFRESH_TOKEN_SECRET,
-        { expiresIn: '1d' }
+        { expiresIn: '5m' }
     );
 };
-// Verify the refresh token
+
 export const verifyRefreshToken = (token: string): JwtPayload | null => {
     try {
         return jwt.verify(token, REFRESH_TOKEN_SECRET) as JwtPayload;
@@ -32,7 +31,7 @@ export const verifyRefreshToken = (token: string): JwtPayload | null => {
     }
 };
 
-// Verify the access token
+
 export const verifyAccessToken = (token: string): JwtPayload | null => {
     try {
         return jwt.verify(token, secret) as JwtPayload;

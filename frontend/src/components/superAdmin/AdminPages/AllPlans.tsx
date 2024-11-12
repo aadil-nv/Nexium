@@ -38,7 +38,7 @@ const AllPlans: React.FC = () => {
 
     // Optionally, make an API call to persist the status change to the backend
     privateApi
-      .patch(`/subscription/update-status/${planId}`, { isActive: newStatus })
+      .patch(`/super-admin/subscription/update-status/${planId}`, { isActive: newStatus })
       .catch((error) => {
         console.error('Error updating plan status:', error);
       });

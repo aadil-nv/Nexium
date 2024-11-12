@@ -13,24 +13,7 @@ export default class ManagerService implements IManagerService {
         this.managerRepository = managerRepository;
     }
 
-    async getProfile(companyId: string, managerId: string): Promise<any> {    
-       try {
-        return await this.managerRepository.getProfile(companyId,managerId)
-       } catch (error) {
-        console.error("Error fetching manager profile:", error);
-        throw error
-       }
-    }
-
-    async getAllManagers(businessOwnerId: string): Promise<any[]> {
-        try {
-            return await this.managerRepository.getAllManagers(businessOwnerId)
-        } catch (error) {
-            console.error("Error fetching managers:", error);
-            throw error
-        }
-    }
-
+    
     async addManagers(businessOwnerId: string, managerData: any): Promise<any> {
         
         try {
@@ -40,8 +23,15 @@ export default class ManagerService implements IManagerService {
             throw error
         }
     }
-
-
-
+    async getAllManagers(businessOwnerId: string): Promise<any[]> {
+        console.log("hitting the service for fetching get all managers=========");
+        
+        try {
+            return await this.managerRepository.getAllManagers(businessOwnerId)
+        } catch (error) {
+            console.error("Error fetching managers:", error);
+            throw error
+        }
+    }
     
 }
