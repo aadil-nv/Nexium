@@ -43,20 +43,20 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             if (!emailRegex.test(email)) return { success: false, message: "Invalid email format" };
             if (!passwordRegex.test(password)) return { success: false, message: "Password must be at least 6 characters, 1 uppercase letter, 1 number, and 1 special character" };
     
-            const company = await this.businessOwnerRepository.findByEmail(email);
-            if (!company || !(await bcrypt.compare(password, company.password))) 
+            const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+            if (!businessOwnerData || !(await bcrypt.compare(password, businessOwnerData.password))) 
                 return { success: false, message: "Invalid email or password" };
     
-            if (!company.isVerified) {
+            if (!businessOwnerData.isVerified) {
                 const otp = generateOtp();
-                await this.sendOtp(company.email, otp);
-                return { success: false, message: "Account not verified. Check your email for OTP", isVerified: false, email: company.email };
+                await this.sendOtp(businessOwnerData.email, otp);
+                return { success: false, message: "Account not verified. Check your email for OTP", isVerified: false, email: businessOwnerData.email };
             }
     
-            const accessToken = generateCompanyAccessToken({ company });
-            const refreshToken = generateCompanyRefreshToken({ company });
+            const accessToken = generateCompanyAccessToken({ businessOwnerData });
+            const refreshToken = generateCompanyRefreshToken({ businessOwnerData });
     
-            return { success: true, message: "Login successful", accessToken, refreshToken, isVerified: true, email: company.email };
+            return { success: true, message: "Login successful", accessToken, refreshToken, isVerified: true, email: businessOwnerData.email };
     
         } catch (error) {
             console.error("Login error:", error);
@@ -98,7 +98,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     //     console.log("*************************************************");
         
         
-    //     console.log("new company data", businessOwnerData);
+    //     console.log("new businessOwnerData data", businessOwnerData);
     //     console.log("*************************************************");
         
         

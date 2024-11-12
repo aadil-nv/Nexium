@@ -39,7 +39,6 @@ export default class SubscriptionController {
   }
 
   async updateSubscriptionDetails(req: Request, res: Response): Promise<Response> { 
-    console.log("touching update sub--------%%%%%%%%%%%%%%%%%%---------");
     
     try {
       const updateData = req.body;

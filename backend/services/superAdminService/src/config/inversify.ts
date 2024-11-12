@@ -21,6 +21,13 @@ import SubscriptionRepository from "../repository/implementation/subscriptionRep
 import IBaseRepository from "../repository/interface/IBaseRepository";
 import BaseRepository from "../repository/implementation/baseRepository";
 
+import SuperAdminController from "../controllers/implementation/superAdminController";
+import ISuperAdminController from "controllers/interface/ISuperAdminController";
+import SuperAdminService from "../service/implementation/superAdminService";
+import ISuperAdminService from "../service/interface/ISuperAdminService";
+import ISuperAdminRepository from "../repository/interface/ISuperAdminRepository";
+import SuperAdminRepository from "../repository/implementation/superAdminRepository";
+
 
 
 
@@ -38,6 +45,10 @@ container.bind<ISubscriptionService>("ISubscriptionService").to(SubscriptionServ
 container.bind<ISubscriptionRepository>("ISubscriptionRepository").to(SubscriptionRepository);
 
 container.bind<IBaseRepository>("IBaseRepository").to(BaseRepository);  
+
+container.bind<ISuperAdminController>("ISuperAdminController").to(SuperAdminController);
+container.bind<ISuperAdminService>("ISuperAdminService").to(SuperAdminService);
+container.bind<ISuperAdminRepository>("ISuperAdminRepository").to(SuperAdminRepository);
 
 
 

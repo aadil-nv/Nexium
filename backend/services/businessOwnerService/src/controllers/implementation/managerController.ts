@@ -31,10 +31,7 @@ export default class ManagerController implements IManagerController {
     async getAllManagers(req: Request, res: Response): Promise<Response> {
         console.log("Hitting the getAllManagers from manger controller");
         try {
-            console.log("###################################################");
-            console.log("(req as any).user.company._id", (req as any).user);
-            console.log("###################################################");
-            
+
             const businessOwnerId = (req as any).user.businessOwnerData._id;
             console.log("businessOwnerId from controller", businessOwnerId);
             
@@ -44,6 +41,17 @@ export default class ManagerController implements IManagerController {
         } catch (error) {
             console.error("Error fetching registered companies:", error);
             return res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
+
+    async logout(req: Request, res: Response): Promise<Response> {
+        try {
+            res.clearCookie('accessToken');
+            res.clearCookie('refreshToken');
+            return res.status(200).json({ message: 'Logout successful' });
+        } catch (error) {
+            console.error('Logout error:', error);
+            return res.status(500).json({ error: 'Logout failed' });
         }
     }
 

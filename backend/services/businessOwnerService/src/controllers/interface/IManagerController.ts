@@ -39,4 +39,5 @@ export interface IManagerDocument extends Document {
 export default interface IManagerController {
   getAllManagers(req: Request, res: Response): Promise<any>;
   addManagers(req: any, res: any): Promise<any>;
+  logout(req: Request, res: Response): Promise<any>;
 }
