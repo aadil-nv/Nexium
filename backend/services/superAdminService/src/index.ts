@@ -5,18 +5,22 @@ dotenv.config();
 import cors from 'cors';
 import connectDB from './config/connectDB';
 import businessOwnerRoutes from './routes/businessOwnerRoute';
-<<<<<<< HEAD
 import subscriptionRoutes from './routes/subscriptionRoute';
-=======
->>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
 import 'colors';
 import { connectConsumer } from './events/connectCosumer';
+import cookieParser from 'cookie-parser';
 
 const app = express();
+app.use(cookieParser());
 const PORT = process.env.PORT || 3000;
 connectDB();
 
-app.use(cors());
+const corsOptions = {
+  origin: 'http://localhost:5173',  // Replace with the actual origin of your frontend
+  credentials: true,  // Allow credentials (cookies, HTTP authentication)
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get('/', (req, res) => {
@@ -24,10 +28,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/businessowner', businessOwnerRoutes);
-<<<<<<< HEAD
 app.use('/api/subscription', subscriptionRoutes);
-=======
->>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
 
 connectConsumer()
 

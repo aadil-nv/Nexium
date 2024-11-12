@@ -11,21 +11,32 @@ import useAuth from './hooks/useAuth';
 
 
 export default function App() {
-  const { businessOwner, superAdmin } = useAuth();
-  const isBusinessOwnerAuthenticated = businessOwner.isAuthenticated;
-  const isSuperAdminAuthenticated = superAdmin.isAuthenticated;
+  // const { businessOwner, superAdmin } = useAuth();
+  // const isBusinessOwnerAuthenticated = businessOwner.isAuthenticated;
+  // const isSuperAdminAuthenticated = superAdmin.isAuthenticated;
 
   return (
     <Router>
       <Toaster />
       <Routes>
-      <Route path='/*'  element={ isSuperAdminAuthenticated ? <Navigate to='/super-admin/dashboard' /> : isBusinessOwnerAuthenticated  ? <Navigate to='/business-owner/dashboard' />  : <LocalRoute />} />
-        <Route path="/business-owner/*" element={isBusinessOwnerAuthenticated ? <BusinessOwnerRoutes /> : <Navigate to={"/login"} />} />
-        <Route path="/super-admin/*" element={ isSuperAdminAuthenticated ? <SuperAdminRoutes /> :  <Navigate to={"/superadmin-login"} />} />
+      <Route path='/*'  element={  <LocalRoute />} />
+        <Route path="/business-owner/*" element={ <BusinessOwnerRoutes /> } />
+        <Route path="/super-admin/*" element={<SuperAdminRoutes /> } />
+        
         <Route path="/manager/*" element={ <HrMangerRoutes />} />
-
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
+    // <Router>
+    //   <Toaster />
+    //   <Routes>
+    //   <Route path='/*'  element={ isSuperAdminAuthenticated ? <Navigate to='/super-admin/dashboard' /> : isBusinessOwnerAuthenticated  ? <Navigate to='/business-owner/dashboard' />  : <LocalRoute />} />
+    //     <Route path="/business-owner/*" element={isBusinessOwnerAuthenticated ? <BusinessOwnerRoutes /> : <Navigate to={"/login"} />} />
+    //     <Route path="/super-admin/*" element={ isSuperAdminAuthenticated ? <SuperAdminRoutes /> :  <Navigate to={"/superadmin-login"} />} />
+    //     <Route path="/manager/*" element={ <HrMangerRoutes />} />
+
+    //     <Route path="*" element={<Navigate to="/" />} />
+    //   </Routes>
+    // </Router>
   );
 }

@@ -7,7 +7,10 @@ import { loginSchema } from "../../../config/validationSchema"; // Import Zod sc
 import { useDispatch } from "react-redux";
 import axios from "axios";
 import images from "../../../images/images"
-import { superadminLogin   } from "../../../features/superAdminSlice";
+import { login   } from "../../../features/superAdminSlice";
+import {privateApi} from "../../../services/axiosConfig"
+import useAuth from "../../../hooks/useAuth";
+
 
 // Define Form Inputs based on the Zod schema
 interface FormInputs {
@@ -22,6 +25,12 @@ export default function superAdminLogin() {
   const navigate = useNavigate();
   const {register, handleSubmit,formState: { errors, isValid },} = useForm<FormInputs>({resolver: zodResolver(loginSchema),});
   const dispatch = useDispatch();
+  const {businessOwner,superAdmin}=useAuth()
+
+  console.log("businessOwner",businessOwner.isAuthenticated);
+  console.log("superAdmin",superAdmin.isAuthenticated);
+  
+  
 
   const handleLogin = async (data: FormInputs) => {
     setLoading(true);
@@ -29,24 +38,25 @@ export default function superAdminLogin() {
 
     try {
       const response = await axios.post(
-        "http://localhost:7000/api/super-admin/login",
+        "http://localhost:7000/api/super-admin/superadmin-login",
         data,
         {
           headers: {
             "Content-Type": "application/json",
           },
+          withCredentials: true
+          
         }
       );
 
       const responseData = response.data;
       console.log("responseData", responseData);
       
-      dispatch(superadminLogin({
-        role:"super-admin",
+      dispatch(login({
+        role:"superAdmin",
         token: responseData.accessToken,
-        isAuthenticated: true
       }));
-      localStorage.setItem("adminToken", responseData.accessToken);
+      // localStorage.setItem("adminToken", responseData.accessToken);
       navigate("/super-admin/dashboard");
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || "Login failed";
@@ -59,7 +69,7 @@ export default function superAdminLogin() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-gray-200">
       <div className="bg-white shadow-md rounded-2xl flex flex-col md:flex-row w-full max-w-4xl">
-        
+       
         <div className="w-full md:w-3/5 p-5">
           <div className="text-left font-bold">
             <img src={images.nexuimLogoWithName} alt="Logo" className="w-20 h-auto" />

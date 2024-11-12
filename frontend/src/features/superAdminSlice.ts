@@ -14,15 +14,15 @@ const initialState: SuperAdminState = {
 };
 
 const superAdminSlice = createSlice({
-  name: 'super-admin',
+  name: 'superAdmin',
   initialState,
   reducers: {
-    superadminLogin: (state, action: PayloadAction<{ role: string; token: string; isAuthenticated: boolean }>) => {
+    login: (state, action: PayloadAction<{ role: string; token: string;}>) => {
       state.role = action.payload.role;
       state.token = action.payload.token;
-      state.isAuthenticated = action.payload.isAuthenticated; 
+      state.isAuthenticated = true; 
     },
-    superadminLogout: (state) => {
+    logout: (state) => {
       state.role = null;
       state.token = null;
       state.isAuthenticated = false; // Add this line
@@ -30,6 +30,6 @@ const superAdminSlice = createSlice({
   },
 });
 
-export const { superadminLogin,superadminLogout } = superAdminSlice.actions;
+export const {login,logout } = superAdminSlice.actions;
 
 export default superAdminSlice.reducer;

@@ -18,10 +18,10 @@ const businessOwnerSlice = createSlice({
   name: 'businessOwner',
   initialState,
   reducers: {
-    login: (state, action: PayloadAction<{ role: string; token: string; isAuthenticated: boolean }>) => {
+    login: (state, action: PayloadAction<{ role: string; token: string;  }>) => {
       state.role = action.payload.role;
       state.token = action.payload.token;
-      state.isAuthenticated = action.payload.isAuthenticated; // Add this line
+      state.isAuthenticated = true; // Add this line
     },
     logout: (state) => {
       state.role = null;

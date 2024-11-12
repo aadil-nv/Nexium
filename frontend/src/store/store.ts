@@ -1,53 +1,26 @@
-// src/store/store.ts
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import menuReducer from '../features/menuSlice';
-import businessOwnerReducer from '../features/businessOwnerSlice';
-import superAdminReducer from '../features/superAdminSlice';
-
-// Define a reset action type
-const RESET_STORE = 'RESET_STORE';
+import rootReducer from './rootReducer'; // Make sure this file exists or define the reducers directly
 
 // Persist configurations
-const businessOwnerPersistConfig = { key: 'businessOwner', storage };
-const superAdminPersistConfig = { key: 'superAdmin', storage };
-const menuPersistConfig = { key: 'menu', storage };
-
-// Persist reducers
-const persistedMenuReducer = persistReducer(menuPersistConfig, menuReducer);
-const persistedBusinessOwnerReducer = persistReducer(businessOwnerPersistConfig, businessOwnerReducer);
-const persistedSuperAdminReducer = persistReducer(superAdminPersistConfig, superAdminReducer);
-
-// Combine reducers
-const appReducer = combineReducers({
-  menu: persistedMenuReducer,
-  businessOwner: persistedBusinessOwnerReducer,
-  superAdmin: persistedSuperAdminReducer,
-});
-
-// Root reducer with reset logic
-const rootReducer = (state: any, action: any) => {
-  if (action.type === RESET_STORE) {
-    state = undefined; // Clear all states
-  }
-  return appReducer(state, action);
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: ['menu', 'businessOwner', 'superAdmin'], // Only persist these slices
 };
 
-const store = configureStore({
-  reducer: rootReducer,
+// Apply persistence to root reducer
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+export const store = configureStore({
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
-      },
+      serializableCheck: false, // Disabling serializable check for persist
     }),
 });
 
-const persistor = persistStore(store);
-
-// Export a reset action to be dispatched where needed
-export const resetStore = () => ({ type: RESET_STORE });
-
-export type RootState = ReturnType<typeof store.getState>;
-export { store, persistor };
+export const persistor = persistStore(store)
+export type RootState = ReturnType<typeof store.getState>
+export type AppDispatch = typeof store.dispatch

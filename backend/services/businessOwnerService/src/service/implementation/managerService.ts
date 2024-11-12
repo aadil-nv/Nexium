@@ -21,4 +21,27 @@ export default class ManagerService implements IManagerService {
         throw error
        }
     }
+
+    async getAllManagers(businessOwnerId: string): Promise<any[]> {
+        try {
+            return await this.managerRepository.getAllManagers(businessOwnerId)
+        } catch (error) {
+            console.error("Error fetching managers:", error);
+            throw error
+        }
+    }
+
+    async addManagers(businessOwnerId: string, managerData: any): Promise<any> {
+        
+        try {
+            return await this.managerRepository.addManagers(businessOwnerId, managerData)
+        } catch (error) {
+            console.error("Error adding HR Manager:", error);
+            throw error
+        }
+    }
+
+
+
+    
 }

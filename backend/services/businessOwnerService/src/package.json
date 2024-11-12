@@ -21,10 +21,12 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "@types/cookie-parser": "^1.4.7",
     "@types/jsonwebtoken": "^9.0.7",
     "amqplib": "^0.10.4",
     "bcryptjs": "^2.4.3",
     "colors": "^1.4.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",

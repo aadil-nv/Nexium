@@ -10,7 +10,7 @@ export interface ISuperAdmin {
 }
 
 export interface IExtendedLoginResponse {
-  token: string;
+  accessToken: string;
   refreshToken: string;
 
 }
@@ -18,7 +18,6 @@ export interface IExtendedLoginResponse {
 export default interface ISuperAdminService {
   login(email: string, password: string): Promise<IExtendedLoginResponse>;
     register(username: string, email: string, password: string): Promise<Omit<ISuperAdmin, "password">>;
-    // verifyRefreshToken(token: string): Promise<Omit<ISuperAdmin, "password"> | null>;
-    // findById(id: string): Promise<ISuperAdmin | null>;
+    setNewAccessToken(refreshToken: string): Promise<string>;
   
 }

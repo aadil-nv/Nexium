@@ -15,38 +15,63 @@ export default class BusinessOwnerController implements IBusinessOwnerController
         this.businessOwnerService = businessOwnerService;
     }
 
- async register(req: Request, res: Response): Promise<Response> {
+
+   
+async login(req: Request, res: Response): Promise<Response> {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
+  
+      const { success, message, accessToken, refreshToken, isVerified, email: companyEmail } =
+        await this.businessOwnerService.login(email, password);
+  
+      if (!success) {
+        if (!isVerified) {
+          return res.status(403).json({ message: "Account not verified. OTP sent to email.", email: companyEmail, isVerified: false });
+        }
+        return res.status(400).json({ message });
+      }
+  
+      res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', 
+        sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+      res.cookie('accessToken', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', 
+        sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+  
+      return res.status(200).json({ accessToken, success, message });
+    } catch (error) {
+      console.error("Error during login", error);
+      return res.status(500).json({ message: "An error occurred during login" });
+    }
+  } 
+
+  async register(req: Request, res: Response): Promise<Response> {
     console.log("Hitting company controller...");
 
-    const { companyName, registrationNumber, email, password, address, phone, website, documents } = req.body;
+    const { companyName, registrationNumber, email, password,address } = req.body;
 
     if (!companyName || !registrationNumber || !email || !password) {
-      return res.status(400).json({ message: "All fields are required" });
+        return res.status(400).json({ message: "All fields are required" });
     }
 
     try {
         const registrationData = {
-          name: companyName,
-          registrationNumber,
-          email,
-          password,
-          address,
-          phone,
-          website,
-          documents: documents || [],
-          role: "BusinessOwner",
-          subscription: {
-              planName: "Trial",
-              planType: "Trial",
-              startDate: new Date(),
-              endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-              status: "Active",
-          },
+            name: companyName,
+            registrationNumber,
+            email,
+            password,
+            address:address ||"No address provided",
+            role: "BusinessOwner",
+            subscription: {
+                planName: "Trial",
+                planType: "Trial",
+                startDate: new Date(),
+                endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                status: "Active",
+            },
         };
 
         const { message, email: registeredEmail } = await this.businessOwnerService.register(registrationData);
 
-     
         return res.status(201).json({
             message: message || "Registration successful",
             email: registeredEmail,
@@ -59,43 +84,6 @@ export default class BusinessOwnerController implements IBusinessOwnerController
 }
 
 
-async  login(req: Request, res: Response): Promise<Response> {
-    console.log("hitiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
-    
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ message: "Email and password are required" });
-    }
-
-    try {
-        // Call the login function from the service
-        const { success, message, accessToken, refreshToken, isVerified, email: companyEmail } = await this.businessOwnerService.login(email, password);
-
-        if (!success) {
-            if (isVerified === false) {
-                return res.status(403).json({
-                    message: "Account not verified. OTP sent to email.",
-                    email: companyEmail,
-                    isVerified: false,
-                    success:success
-                });
-            }
-            return res.status(400).json({ message });
-        }
-
-        return res.status(200).json({
-            message,
-            accessToken,
-            refreshToken,
-            email: companyEmail,
-            isVerified: true
-        });
-
-    } catch (error: unknown) {
-        return res.status(500).json({ message: "An error occurred during login" });
-    }
-}
 
 
 async validateOtp(req: Request, res: Response): Promise<Response> {
@@ -154,9 +142,16 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
         res.cookie('accessToken', result.accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 7*24*6*60*1000, // 1 day
-            sameSite: 'lax', // Necessary for cross-origin cookies
+            maxAge:7 * 24 * 60 * 60 * 1000,
+            sameSite: 'lax', 
         });
+
+        res.cookie('refreshToken', result.refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge:7 * 24 * 60 * 60 * 1000, 
+            sameSite: 'lax',
+        })
           return res.status(200).json({
               message: result.message,  
               success: result.success,  
@@ -171,8 +166,7 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
               sessionId: result.session.id, 
               success: result.success,     
               planId: result.planId,    
-            //   accessToken: result.accessToken,  
-            //   refreshToken: result.refreshToken 
+
           });
       }
   } catch (error) {

@@ -18,7 +18,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
     },
     address: {
       type: String,
-      required: true,
+      // required: true,
     },
     phone: {
       type: String,

@@ -105,9 +105,9 @@ const PlanSelection: React.FC = () => {
 
       if (data.planId === 1) {
         dispatch(login({
-          role: 'business-owner',
+          role: 'businessOwner',
           token: data.accessToken,
-          isAuthenticated: true,
+          
         }));
         // localStorage.setItem("businessOwnerToken",data.accessToken)
         navigate('/business-owner/dashboard');

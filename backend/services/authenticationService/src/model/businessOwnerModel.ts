@@ -5,19 +5,19 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
   {
     name: {
       type: String,
-      required: true,
+      // required: true,
     },
     email: {
       type: String,
-      required: true,
+      // required: true,
     },
     password: {
       type: String,
-      required: true,
+      // required: true,
     },
     address: {
       type: String,
-      required: true,
+      // required: true,
     },
     phone: {
       type: String,
@@ -28,16 +28,16 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
     },
     registrationNumber: {
       type: String,
-      required: true,
+      // required: true,
     },
     isVerified: {
       type: Boolean,
-      required: true,
+      // required: true,
       default: false,
     },
     isBlocked: {
       type: Boolean,
-      required: true,
+      // required: true,
       default: false,
     },
     role: {

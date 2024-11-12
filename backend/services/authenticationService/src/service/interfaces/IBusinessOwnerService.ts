@@ -62,7 +62,7 @@ export default interface IBusinessOwnerService {
   login(email: string, password: string): Promise<ITokenResponse>;
   register(companyData: Partial<ICompany>): Promise<{ tokens?: ITokenResponse; message?: string; email?: string }>;
   sendOtp(email: string, otp: string): Promise<void>;
-  generateTokens(company: ICompanyDocument): ITokenResponse;
+
   validateOtp(email: string, otp: string): Promise<any>;
   createCheckoutSession(plan: any,amount: number,currency: string, email: string): Promise<IPaymentIntentResponse>;
   resendOtp(email: string): Promise<{ success: boolean; message: string }>;

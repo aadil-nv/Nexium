@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import logo from "../../../assets/landingPageAssets/NavbarLogo.png";
+
 import { IoMenu } from "react-icons/io5";
 import { FaXmark } from "react-icons/fa6";
 import { ModeToggle } from "../../ui/mode-toggle";
 import { useTheme } from "../../landing/landingPage/theme-provider";
 import { Link, useLocation } from "react-router-dom";
+import IMAGES from "../../../images/images";
 
 
 
@@ -38,7 +39,7 @@ const Navbar = () => {
         <div className="flex items-center">
           <a href="/">
             <img
-              src={logo}
+              src={IMAGES.navBarLogo}
               alt="Nexium_logo"
               className="w-24 h-auto max-w-full max-h-16 object-contain"
             />

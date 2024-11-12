@@ -4,15 +4,12 @@ import dotenv from 'dotenv';
 dotenv.config(); 
 import cors from 'cors';
 import connectDB from './config/connectDB';
-<<<<<<< HEAD
-=======
-
->>>>>>> cc3e19bf05b3d09f1064503815fc8de7f3466ed0
 import businessOwnerRoutes from './routes/businessOwnerRoute';
 import managerRoutes from './routes/managerRoute';
 import employeeRoutes from './routes/employeeRoute';
 import 'colors' ;
 import {connectConsumer} from "./events/rabbitmq/connectConsumer"
+import cookieParser from 'cookie-parser';
 
 
 
@@ -20,8 +17,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 connectDB(); 
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // replace with your frontend domain
+  credentials: true, // Allow cookies to be sent with requests
+}));
 app.use(express.json()); 
+app.use(cookieParser()); 
 
 app.get('/', (req, res) => {
   res.send('Hello, World!');

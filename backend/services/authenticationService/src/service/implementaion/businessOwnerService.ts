@@ -40,22 +40,12 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
     
-            if (!emailRegex.test(email)) {
-                return { success: false, message: "Invalid email format" };
-            }
-            if (!passwordRegex.test(password)) {
-                return { success: false, message: "Password must have at least 6 characters, 1 uppercase letter, 1 number, and 1 special character" };
-            }
+            if (!emailRegex.test(email)) return { success: false, message: "Invalid email format" };
+            if (!passwordRegex.test(password)) return { success: false, message: "Password must be at least 6 characters, 1 uppercase letter, 1 number, and 1 special character" };
     
             const company = await this.businessOwnerRepository.findByEmail(email);
-            if (!company) {
+            if (!company || !(await bcrypt.compare(password, company.password))) 
                 return { success: false, message: "Invalid email or password" };
-            }
-    
-            const passwordMatch = await bcrypt.compare(password, company.password);
-            if (!passwordMatch) {
-                return { success: false, message: "Invalid email or password" };
-            }
     
             if (!company.isVerified) {
                 const otp = generateOtp();
@@ -63,47 +53,137 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
                 return { success: false, message: "Account not verified. Check your email for OTP", isVerified: false, email: company.email };
             }
     
-            const { accessToken, refreshToken } = this.generateTokens(company);
+            const accessToken = generateCompanyAccessToken({ company });
+            const refreshToken = generateCompanyRefreshToken({ company });
     
-            return {success: true,message: "Login successful",accessToken,refreshToken,};
+            return { success: true, message: "Login successful", accessToken, refreshToken, isVerified: true, email: company.email };
     
         } catch (error) {
-            return { success: false, message: "An error occurred during login"};
+            console.error("Login error:", error);
+            return { success: false, message: "An error occurred during login" };
         }
     }
     
 
+    // async register(businessOwnerData: Partial<ICompany>): Promise<{ tokens?: ITokenResponse; message?: string; email?: string }> {
+    //     console.log("hitting register service", businessOwnerData);
+        
+    //     if (businessOwnerData.password) {
+    //         businessOwnerData.password = await bcrypt.hash(businessOwnerData.password, 10);
+    //     }
+    //    console.log("222222222222222222222222222222222222");
+       
+       
+       
+    //    if (!businessOwnerData.registrationNumber) {
+    //        throw new Error("Registration number is required");
+    //     }
+        
+    //     const existingBusinessOwner = await this.businessOwnerRepository.findByEmail(businessOwnerData.email ?? "");         
+        
+    //     console.log("33333333333333333333333333333333333333333");
+    //     if (existingBusinessOwner) {
+    //         if (existingBusinessOwner.isVerified) {
+    //             throw new Error("Credentials already used. Please check the details.");
+    //         }
+    //         const otp = generateOtp()
+    //         await this.sendOtp(existingBusinessOwner.email,otp);
+    //         console.log("businessOwnerData EMAIL", existingBusinessOwner.email);
+            
+    //         return { message: "true", email: existingBusinessOwner.email };
+    //     }
+        
+    //     console.log("444444444444444444444444444444444444");
+
+    //     console.log("*************************************************");
+        
+        
+    //     console.log("new company data", businessOwnerData);
+    //     console.log("*************************************************");
+        
+        
+    //     const newCompanyData: ICompanyDocument = new businessOwnerSchema({
+    //         _id: new mongoose.Types.ObjectId(),
+    //         name: businessOwnerData.name || "",
+    //         email: businessOwnerData.email || "",
+    //         address: businessOwnerData.address || "",
+    //         password: businessOwnerData.password || "",
+    //         phone: businessOwnerData.phone || "",
+    //         website: businessOwnerData.website || "",
+    //         registrationNumber: businessOwnerData.registrationNumber,
+    //         documents: businessOwnerData.documents || [],
+    //         subscription: businessOwnerData.subscription || "",
+    //         isVerified: false,
+    //         companyLogo: "https://example.com/default-logo.png",
+    //         profileImage: "https://example.com/default-profile.png",
+    //     });
+        
+    //     console.log("555555555555555555555555555555555555555555");
+        
+        
+    //     const savedCompany = await this.businessOwnerRepository.create(newCompanyData);
+    //     console.log("saved company data ##############################", savedCompany);
+    //     const companyDbName = `${savedCompany._id}`;
+    //     console.log("companyDbName data ##############################", companyDbName);
+    //     const companyDb = mongoose.connection.useDb(companyDbName);
+        
+    //     console.log("6666666666666666666666666666666666666666666666666666");
+    //     await companyDb.createCollection("users").catch((err) => {
+    //         if (err.codeName !== 'NamespaceExists') {
+    //             throw err;
+    //         }
+    //     });
+        
+        
+    //     const otp = generateOtp()
+        
+    //     await this.sendOtp(savedCompany.email,otp);
+    //     console.log("77777777777777777777777777777777777777777777");
+            
+    //     return {
+
+    //         message: "true",
+    //         email: savedCompany.email,
+    //     };
+    // }
+
     async register(businessOwnerData: Partial<ICompany>): Promise<{ tokens?: ITokenResponse; message?: string; email?: string }> {
+        console.log("hitting register service", businessOwnerData);
+        
+        // Hash the password
         if (businessOwnerData.password) {
             businessOwnerData.password = await bcrypt.hash(businessOwnerData.password, 10);
         }
-
+        
+        // Ensure all required fields are present
         if (!businessOwnerData.registrationNumber) {
             throw new Error("Registration number is required");
         }
-
-        const existingBusinessOwner = await this.businessOwnerRepository.findByEmail(businessOwnerData.email ?? "");         
-
+    
+        if (!businessOwnerData.name || !businessOwnerData.email) {
+            throw new Error("Name and email are required");
+        }
+    
+        const existingBusinessOwner = await this.businessOwnerRepository.findByEmail(businessOwnerData.email ?? ""); 
+            
         if (existingBusinessOwner) {
             if (existingBusinessOwner.isVerified) {
                 throw new Error("Credentials already used. Please check the details.");
             }
-            const otp = generateOtp()
-            await this.sendOtp(existingBusinessOwner.email,otp);
-            console.log("businessOwnerData EMAIL", existingBusinessOwner.email);
-
+            const otp = generateOtp();
+            await this.sendOtp(existingBusinessOwner.email, otp);
             return { message: "true", email: existingBusinessOwner.email };
         }
-            
-        
+    
+        // Construct the company data before saving it
         const newCompanyData: ICompanyDocument = new businessOwnerSchema({
             _id: new mongoose.Types.ObjectId(),
             name: businessOwnerData.name || "",
             email: businessOwnerData.email || "",
-            address: businessOwnerData.address || "",
+            address: businessOwnerData.address || "", // Ensure address is not empty or handle accordingly
             password: businessOwnerData.password || "",
             phone: businessOwnerData.phone || "",
-            website: businessOwnerData.website,
+            website: businessOwnerData.website || "",
             registrationNumber: businessOwnerData.registrationNumber,
             documents: businessOwnerData.documents || [],
             subscription: businessOwnerData.subscription || {
@@ -118,29 +198,26 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             profileImage: "https://example.com/default-profile.png",
         });
         
+        // Save the new company data
         const savedCompany = await this.businessOwnerRepository.create(newCompanyData);
         const companyDbName = `${savedCompany._id}`;
         const companyDb = mongoose.connection.useDb(companyDbName);
-
+    
         await companyDb.createCollection("users").catch((err) => {
             if (err.codeName !== 'NamespaceExists') {
                 throw err;
             }
         });
-
-
-        const otp = generateOtp()
-
-        await this.sendOtp(savedCompany.email,otp);
-
-        // const tokens = this.generateTokens(savedCompany);
-
+        
+        const otp = generateOtp();
+        await this.sendOtp(savedCompany.email, otp);
+        
         return {
-            // tokens,
             message: "true",
             email: savedCompany.email,
         };
     }
+    
 
     async sendOtp(email: string, otp: string): Promise<void> {
         const otpRecord = new otpModel({
@@ -194,12 +271,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
     
    
-    generateTokens(
-        company: ICompanyDocument): ITokenResponse {
-        const accessToken = generateCompanyAccessToken(company);
-        const refreshToken = generateCompanyRefreshToken(company);
-        return { accessToken, refreshToken };
-    }
+ 
 
 async validateOtp(email: string, otp: string): Promise<any> {
     console.log("hitting validateOtp service", email, otp);
@@ -238,7 +310,7 @@ async validateOtp(email: string, otp: string): Promise<any> {
     }
 }
         
-async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponse> {
+     async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponse> {
     console.log("touching checkout session controller ---------------");
   
     try {
@@ -261,6 +333,9 @@ async createCheckoutSession(plan: any, amount: number, currency: string, email: 
   
           const accessToken = generateCompanyAccessToken({ updatedCompany });
           const refreshToken = generateCompanyRefreshToken({ updatedCompany });
+
+          console.log("accessToken and refreshToken from register service ---------------", accessToken, refreshToken);
+          
           await rabbitMQMessager.sendToMultipleQueues(updatedCompany);
   
           return {
@@ -304,7 +379,7 @@ async createCheckoutSession(plan: any, amount: number, currency: string, email: 
       console.error('Error in createCheckoutSession:', error);
       throw new Error('Failed to process the request: ' + error);
     }
-  }
+     }
       
   
     async resendOtp(email: string): Promise<{ success: boolean; message: string }> {

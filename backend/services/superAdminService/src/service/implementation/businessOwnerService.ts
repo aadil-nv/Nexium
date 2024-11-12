@@ -2,7 +2,7 @@ import IBusinessOwnerService from "../interface/IBusinessOwnerService";
 import businessOwnerRepository from "../../repository/implementation/businessOwnerRepository";
 import IBusinessOwnerRepository from "../../repository/interface/IBusinessOwnerRepository";
 import { injectable,inject } from "inversify";
-
+import {generateCompanyAccessToken,verifyAccessToken,verifyRefreshToken,generateCompanyRefreshToken} from "../../utils/jwt"
 
 @injectable()
 export default class BusinessOwnerService implements IBusinessOwnerService {
@@ -44,5 +44,27 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             throw new Error("Error while updating isBlocked");
         }
     }
+
+    async setNewAccessToken(refreshToken: string): Promise<string> {
+    
+        try {
+          const decoded = verifyRefreshToken(refreshToken);
+    
+          if (!decoded) {
+            throw new Error("Invalid or expired refresh token");
+          }
+
+          const newAccessToken = generateCompanyAccessToken({ decoded });
+    
+          if (!newAccessToken) {
+            throw new Error("Failed to generate a new access token");
+          }
+    
+          return newAccessToken;
+        } catch (error) {
+          console.log("Error generating new access token:", error);    
+          throw new Error("Invalid or expired refresh token");
+        }
+      }
 
 }

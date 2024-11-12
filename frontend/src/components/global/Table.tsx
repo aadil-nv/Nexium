@@ -15,6 +15,7 @@ import DebouncedInput from "../ui/DebouncedInput";
 import AddEmployeeModal from "../ui/AddEmployeeModal";
 import useTheme from "../../hooks/useTheme";
 import { Skeleton } from "../ui/skeleton";
+import useAuth from "../../hooks/useAuth";
 
 interface TableProps<T> {
   data: T[];
@@ -27,16 +28,12 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
   const { themeColor } = useTheme();
   const [globalFilter, setGlobalFilter] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
-
-  const handleOpenModal = () => setIsModalVisible(true);
-  const handleCloseModal = () => setIsModalVisible(false);
+  const { superAdmin, businessOwner } = useAuth();
 
   const table = useReactTable({
     data,
     columns,
-    state: {
-      globalFilter,
-    },
+    state: { globalFilter },
     getFilteredRowModel: getFilteredRowModel(),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -62,17 +59,19 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
           />
         </div>
 
-        <motion.button
-          onClick={handleOpenModal}
-          style={{ backgroundColor: themeColor }}
-          className="flex items-center text-white px-4 py-2 rounded-md transition duration-300"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <FaPlus className="mr-2" /> Add Employee
-        </motion.button>
+        {businessOwner.isAuthenticated && !superAdmin.isAuthenticated && (
+          <motion.button
+            onClick={() => setIsModalVisible(true)}
+            style={{ backgroundColor: themeColor }}
+            className="flex items-center text-white px-4 py-2 rounded-md transition duration-300"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <FaPlus className="mr-2" /> Add Employee
+          </motion.button>
+        )}
 
-        <div className="flex flex-wrap space-x-3 justify-center">
+        <div className="flex space-x-3">
           <CSVLink data={data} filename={"Data.csv"}>
             <motion.button
               className="flex items-center bg-green-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-green-700"
@@ -95,20 +94,18 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
 
       <div className="overflow-x-auto">
         {loading ? (
-          <div>
-            {[...Array(5)].map((_, index) => (
-              <div key={index} className="p-4">
-                <Skeleton className="w-full h-6 mb-4" />
-                <Skeleton className="w-3/4 h-6 mb-4" />
-                <Skeleton className="w-1/2 h-6 mb-4" />
-              </div>
-            ))}
-          </div>
+          Array.from({ length: 5 }).map((_, index) => (
+            <div key={index} className="p-4">
+              <Skeleton className="w-full h-6 mb-4" />
+              <Skeleton className="w-3/4 h-6 mb-4" />
+              <Skeleton className="w-1/2 h-6 mb-4" />
+            </div>
+          ))
         ) : error ? (
           <div className="text-red-500">{error}</div>
         ) : (
           <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
-            <thead style={{ backgroundColor: themeColor  }} className="text-white">
+            <thead style={{ backgroundColor: themeColor }} className="text-white">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
@@ -168,7 +165,7 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
         </button>
       </div>
 
-      <AddEmployeeModal isVisible={isModalVisible} onClose={handleCloseModal} />
+      <AddEmployeeModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
     </div>
   );
 }

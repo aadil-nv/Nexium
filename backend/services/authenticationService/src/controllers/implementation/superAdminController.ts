@@ -20,7 +20,11 @@ export default class SuperAdminController implements ISuperAdminController {
         try {
             const { email, password } = req.body;            
             const response= await this.adminService.login(email, password);
-            const { token, refreshToken } = response;
+            const { accessToken, refreshToken } = response;
+
+            console.log("accessToken fron superAdminController", accessToken.slice(0, 10));
+            console.log("accessToken fron superAdminController", refreshToken.slice(0, 10));
+            
 
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
@@ -28,7 +32,13 @@ export default class SuperAdminController implements ISuperAdminController {
                 sameSite: 'strict',
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
-            return res.status(200).json({ accessToken: token });
+            res.cookie('accessToken', accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            });
+            return res.status(200).json({ accessToken: accessToken });
         } catch (error: unknown) {
             if (error instanceof Error) {
                 return res.status(400).json({ message: error.message });
@@ -66,29 +76,19 @@ export default class SuperAdminController implements ISuperAdminController {
         }
     }
 
-    // Uncomment this if you need the refresh token route
-    // async refreshAccessToken(req: Request, res: Response): Promise<Response> {
-    //     const { refreshToken } = req.cookies;
-
-    //     if (!refreshToken) {
-    //         return res.status(401).json({ message: 'No refresh token provided.' });
-    //     }
-
-    //     try {
-    //         const admin = await this.adminService.verifyRefreshToken(refreshToken);
-
-    //         if (!admin) {
-    //             return res.status(403).json({ message: 'Invalid refresh token.' });
-    //         }
-
-    //         const newAccessToken = generateAccessToken(admin);
-    //         return res.status(200).json({ accessToken: newAccessToken });
-    //     } catch (error: unknown) {
-    //         if (error instanceof Error) {
-    //             return res.status(403).json({ message: error.message });
-    //         } else {
-    //             return res.status(500).json({ message: 'An unexpected error occurred.' });
-    //         }
-    //     }
-    // }
+   async setNewAccessToken (req: Request, res: Response): Promise<Response> {
+    console.log("setNewAccessToken calinn-------------------------------",);
+    
+        try {
+            const refreshToken = req.cookies.refreshToken;
+            const newAccessToken = await this.adminService.setNewAccessToken(refreshToken);
+            return res.status(200).json({ accessToken: newAccessToken });
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                return res.status(400).json({ message: error.message });
+            } else {
+                return res.status(500).json({ message: 'An unexpected error occurred.' });
+            }
+        }
+    }
 }

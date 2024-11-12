@@ -5,7 +5,8 @@ import { MdKeyboardArrowDown } from "react-icons/md";
 import { TooltipComponent } from "@syncfusion/ej2-react-popups";
 import { useNavigate } from "react-router-dom"; 
 import { login } from "../../features/businessOwnerSlice";
-import { superadminLogin } from "../../features/superAdminSlice";
+import { logout as superAdminLogout } from "../../features/superAdminSlice";
+import { logout as businessOwnerLogout } from "../../features/businessOwnerSlice";
 import useAuth from "../../hooks/useAuth";
 import useTheme from "../../hooks/useTheme";
 
@@ -16,8 +17,8 @@ export default function Navbar() {
   const { isActiveMenu, themeColor } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate(); 
-  const isBusinessOwner= businessOwner.role
-  const isSuperAdmin= superAdmin.role
+  const isBusinessOwner= businessOwner.isAuthenticated
+  const isSuperAdmin= superAdmin.isAuthenticated
 
   const NavButton = ({
     title,
@@ -44,18 +45,11 @@ export default function Navbar() {
     console.log("User logged out");
     setShowLogoutConfirm(false);
     if (isBusinessOwner) {
-      dispatch(login({
-        role: '', 
-        token: "", 
-        isAuthenticated: false,
-      }));
+      dispatch(businessOwnerLogout());
       navigate("/login");
+      
     } else if(isSuperAdmin) {
-      dispatch(superadminLogin({
-        role: '', 
-        token: "", 
-        isAuthenticated: false,
-      }));
+      dispatch(superAdminLogout());
       navigate("/superadmin-login");
     }
   };
@@ -117,7 +111,7 @@ export default function Navbar() {
               <ul>
                 <li
                   className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => navigate("/profile")} // Navigate to profile page
+                  onClick={() => navigate("/business-owner/profile")} // Navigate to profile page
                   style={{ color: themeColor }} // Apply current theme color
                 >
                   <i className="fi fi-tr-user-gear text-xl"></i> {/* Profile icon */}

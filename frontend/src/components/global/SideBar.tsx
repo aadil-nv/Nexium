@@ -7,20 +7,19 @@ import { setActiveMenu } from '../../features/menuSlice';
 import { businessOwnerLinks, superAdminLinks ,managerLinks } from '../../data/Links';
 import useAuth from '../../hooks/useAuth';
 import useTheme from '../../hooks/useTheme';
-// import { persistor, resetStore, store } from '../../store/store';
 
-// // Dispatch reset action and purge persisted data
-// store.dispatch(resetStore());
-// persistor.purge();
 
 
 const Sidebar = () => {
   const { businessOwner, superAdmin } = useAuth();
   const { isActiveMenu, themeColor } = useTheme();
   const dispatch = useDispatch();
-  const isBusinessOwner = businessOwner.role
-  const isSuperAdmin = superAdmin.role
-  const links = isBusinessOwner ? businessOwnerLinks : isSuperAdmin ? superAdminLinks :  [];
+  const isBusinessOwner = businessOwner.isAuthenticated
+  const isSuperAdmin = superAdmin.isAuthenticated
+  console.log("isBusinessOwner from sidebar ", isBusinessOwner);
+  console.log("isSuperAdmin from sidebar ", isSuperAdmin);
+  
+  const links = isSuperAdmin ? superAdminLinks :isBusinessOwner ? businessOwnerLinks :   [];
 
 
 
@@ -47,7 +46,7 @@ const Sidebar = () => {
                 to={`/${isBusinessOwner ? 'business-owner' : 'super-admin'}/dashboard`}
                 className="flex items-center gap-3 text-xl font-extrabold tracking-tight text-gray-800"
               >
-                {isBusinessOwner ? 'Business Owner' : 'Super Admin'}
+                {isBusinessOwner ? 'Business Owner' : isSuperAdmin ? 'Super Admin' : 'Manager'}
               </NavLink>
             </div>
 

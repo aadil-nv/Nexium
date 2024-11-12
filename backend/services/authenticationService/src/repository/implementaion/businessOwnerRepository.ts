@@ -14,9 +14,22 @@ export default class BusinessOwnerRepository  implements IBusinessOwnerRepositor
   }
 
   async create(businessOwnerData: IBusinessOwnerDocument): Promise<IBusinessOwnerDocument> {
+    console.log("businessOwnerData from rep===============================", businessOwnerData);
+
+    // Create the new business owner document
     const businessOwner = new businessOwnerSchema(businessOwnerData);
-    return await businessOwner.save();
-  }
+
+    try {
+        await businessOwner.save(); // Save the document to DB
+        return businessOwner; // Return the saved document
+    } catch (error) {
+        console.error("Error saving business owner:", error);
+        throw new Error("Error saving business owner data");
+    }
+}
+
+
+
 
   async findOtpByEmail(email: string): Promise<any | null> {
     return await OtpModel.findOne({ email }).exec();

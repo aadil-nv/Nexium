@@ -9,25 +9,29 @@ import LandingForgottOtp from "../pages/landingPages/LandingForgottOtp";
 import LandingLoginPage from "../pages/landingPages/LandingLoginPage";
 import LandingPage from "../pages/landingPages/LandingPage";
 import SuperAdminLogin from "../components/superAdmin/superAdminLogin/superAdminLogin";
-import Table from "../components/global/Table";
+import PrivateRoute from "./PrivateRoute";
 
-const BusinessOwnerRoutes = () => {
-
+const LocalRoutes = () => {
+  const routes = [
+    { path: "/", element: <LandingPage /> },
+    { path: "/superadmin-login", element: <SuperAdminLogin /> },
+    { path: "/login", element: <LandingLoginPage /> },
+    { path: "/signup", element: <LandingSignUpPage /> },
+    { path: "/otp", element: <LandingOtp /> },
+    { path: "/plans", element: <PlansPage /> },
+    { path: "/verify-email", element: <LandingForgottEmail /> },
+    { path: "/change-password", element: <LandingNewPasswordPage /> },
+    { path: "/forgot-otp", element: <LandingForgottOtp /> },
+  ];
 
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/superadmin-login" element={<SuperAdminLogin />} />
-      <Route path="/login" element={<LandingLoginPage />} />
-      <Route path="/signup" element={<LandingSignUpPage />} />
-      <Route path="/otp" element={<LandingOtp />} />
-      <Route path="/plans" element={<PlansPage />} />
-      <Route path="/verify-email" element={<LandingForgottEmail />} />
-      <Route path="/change-password" element={<LandingNewPasswordPage />} />
-      <Route path="/forgot-otp" element={<LandingForgottOtp />} />
-      
+      {routes.map(({ path, element }) => (
+        <Route key={path} path={path} element={<PrivateRoute>{element}</PrivateRoute>} />
+      ))}
     </Routes>
   );
 };
 
-export default BusinessOwnerRoutes;
+export default LocalRoutes;
+

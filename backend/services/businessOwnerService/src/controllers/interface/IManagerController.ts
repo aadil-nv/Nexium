@@ -1,4 +1,5 @@
 import { Document } from "mongoose";
+import { Request, Response } from "express";
 
 export interface IManagerDocument extends Document {
   name: string;
@@ -34,4 +35,6 @@ export interface IManagerDocument extends Document {
 
 export default interface IManagerController {
   getProfile(req: any, res: any): Promise<any>;
+  getAllManagers(req:  Request ,res:Response): Promise<any>;
+  addManagers(req: any, res: any): Promise<any>;
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 
-const PrivateRoute: React.FC = () => {
+const BusinessOwnerPrivateRoute: React.FC = () => {
   const { businessOwner } = useAuth();
   const isAuthenticated = businessOwner?.isAuthenticated;
   const token = businessOwner?.token;
@@ -15,4 +15,4 @@ const PrivateRoute: React.FC = () => {
   return <Outlet />;
 };
 
-export default PrivateRoute;
+export default BusinessOwnerPrivateRoute;

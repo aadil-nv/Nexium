@@ -5,24 +5,24 @@ const managerSchema: Schema<IManagerDocument> = new Schema(
   {
     name: {
       type: String,
-      required: true,
+      // required: true,
     },
     email: {
       type: String,
-      required: true,
-      unique: true,
+      // required: true,
+      // unique: true,
     },
     position: {
       type: String,
-      required: true,
+      // required: true,
     },
     phone: {
       type: String,
     },
     employeeId: {
       type: String,
-      required: true,
-      unique: true,
+      // required: true,
+      // unique: true,
     },
     salary: {
       type: Number,
@@ -30,11 +30,11 @@ const managerSchema: Schema<IManagerDocument> = new Schema(
     },
     workTime: {
       type: String,
-      required: true,
+      // required: true,
     },
     joiningDate: {
       type: Date,
-      required: true,
+      // required: true,
       default: Date.now,
     },
     address: {
@@ -72,19 +72,19 @@ const managerSchema: Schema<IManagerDocument> = new Schema(
     companyCredentials: {
       companyName: {
         type: String,
-        required: true,
+        // required: true,
       },
       companyRegistrationNumber: {
         type: String,
-        required: true,
+        // required: true,
       },
       email: {
         type: String,
-        required: true,
+        // required: true,
       },
       password: {
         type: String,
-        required: true,
+        // required: true,
       },
     },
   },

@@ -19,11 +19,11 @@ interface LinkItem {
 
   export const superAdminLinks: LinkItem[] = [
     { title: 'Dashboard', route: '/super-admin/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
-    { title: 'Plans', route: '/super-admin/plans', icon: 'fi fi-tr-features' },
-    { title: 'Customer Support', route: '/super-admin/service-requests', icon: 'fi fi-tr-user-headset' },
-    { title: 'Companies', route: '/super-admin/companies', icon: 'fi fi-tr-corporate-alt' },
+    { title: 'Business Owners', route: '/super-admin/businessowners', icon: 'fi fi-tr-corporate-alt' },
+    { title: 'Subscription Plans', route: '/super-admin/plans', icon: 'fi fi-tr-features' },
     { title: 'Notifications', route: '/super-admin/notifications', icon: 'fi fi-tr-bells' },
     { title: 'Announcements', route: '/super-admin/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+    { title: 'Customer Support', route: '/super-admin/service-requests', icon: 'fi fi-tr-user-headset' },
   ];
 
 
