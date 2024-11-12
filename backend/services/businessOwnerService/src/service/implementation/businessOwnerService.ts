@@ -4,6 +4,7 @@ import IManager from "../../entities/managerEntity";
 import IBusinessOwnerRepository from "../../repository/interface/IBusinessOwnerRepository";
 import { inject, injectable } from "inversify";
 import {verifyRefreshToken,generateCompanyAccessToken,generateCompanyRefreshToken,verifyAccessToken} from "../../utils/jwt"
+import { decode } from "punycode";
 
 @injectable()
 export default class BusinessOwnerService implements IBusinessOwnerService {
@@ -29,18 +30,28 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
 
     async setNewAccessToken(refreshToken: string): Promise<string> {
-       
         try {
-          const decoded =verifyRefreshToken(refreshToken);
-          if (!decoded) {
+          const decoded = verifyRefreshToken(refreshToken);
+          const businessOwnerData = decoded?.company; // Get the company data directly
+      
+          if (!decoded || !businessOwnerData) {
             throw new Error("Invalid or expired refresh token");
           }
-          const newAccessToken = generateCompanyAccessToken({decoded});
+      
+          // Log the company data (optional)
+          console.log("Decoded company data from service layer:", businessOwnerData);
+      
+          // Generate the new access token based on the company data
+          const newAccessToken = generateCompanyAccessToken({  businessOwnerData });
+      
+          // Log the new access token (optional)
+          console.log("Generated new access token:", newAccessToken);
+      
           return newAccessToken;
         } catch (error) {
-
-          console.log("Error generating new access token:", error);
+          console.error("Error generating new access token:", error);
           throw new Error("Error generating new access token: " + error);
         }
       }
+      
 }

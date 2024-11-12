@@ -326,22 +326,22 @@ async validateOtp(email: string, otp: string): Promise<any> {
           status: 'Active',
         };
   
-        const updatedCompany = await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
+        const businessOwnerData = await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
   
-        if (updatedCompany) {
-          console.log("Updated Company", updatedCompany);
+        if (businessOwnerData) {
+          console.log("Updated Company", businessOwnerData);
   
-          const accessToken = generateCompanyAccessToken({ updatedCompany });
-          const refreshToken = generateCompanyRefreshToken({ updatedCompany });
+          const accessToken = generateCompanyAccessToken({ businessOwnerData });
+          const refreshToken = generateCompanyRefreshToken({ businessOwnerData });
 
           console.log("accessToken and refreshToken from register service ---------------", accessToken, refreshToken);
           
-          await rabbitMQMessager.sendToMultipleQueues(updatedCompany);
+          await rabbitMQMessager.sendToMultipleQueues(businessOwnerData);
   
           return {
             message: 'Subscription updated successfully',
             success: true,
-            role: updatedCompany.role,
+            role: businessOwnerData.role,
             planId: plan.id,
             accessToken,
             refreshToken
@@ -368,8 +368,8 @@ async validateOtp(email: string, otp: string): Promise<any> {
           cancel_url: 'http://localhost:5173/plan',
         });
   
-        const updatedCompany = await this.businessOwnerRepository.findByEmail(email);
-        if (!updatedCompany) {
+        const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+        if (!businessOwnerData) {
           throw new Error('Company not found');
         }
   

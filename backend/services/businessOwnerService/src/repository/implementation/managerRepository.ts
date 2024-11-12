@@ -13,7 +13,7 @@ export default class ManagerRepository implements IManagerRepository {
             const switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
             const Manager = switchDb.model('Managers', ManagerModel.schema);
             const managers = await Manager.find(); 
-            console.log("managers from repository", managers);
+
             
             return managers; 
         } catch (error) {

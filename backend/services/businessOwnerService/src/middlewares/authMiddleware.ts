@@ -8,6 +8,8 @@ interface CustomRequest extends Request {
 
 const authenticateToken = (req: CustomRequest,res: Response,next: NextFunction) => {
   const token = req.cookies.accessToken;
+  console.log("accesstoken from middleware", token);
+  
 
   if (!token) {
     return res

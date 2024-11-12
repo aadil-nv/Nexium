@@ -14,20 +14,29 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
 
 
+  
+
     async setNewAccessToken(req: Request, res: Response): Promise<Response> {
-        console.log(`"Hitting the setNewAccessToken from businessOwner controller"`.bgMagenta);
-        
         try {
             const refreshToken = req.cookies.refreshToken;
+            if (!refreshToken) return res.status(400).json({ message: 'Refresh token missing.' });
+    
             const newAccessToken = await this.businessOwnerService.setNewAccessToken(refreshToken);
+            if (!newAccessToken) return res.status(401).json({ message: 'Failed to generate new access token.' });
+    
+            res.cookie('accessToken', newAccessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 3600000,
+                sameSite: 'strict',
+            });
+    
             return res.status(200).json({ accessToken: newAccessToken });
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                return res.status(400).json({ message: error.message });
-            } else {
-                return res.status(500).json({ message: 'An unexpected error occurred.' });
-            }
+    
+        } catch {
+            return res.status(500).json({ message: 'An unexpected error occurred.' });
         }
     }
+    
 
 }

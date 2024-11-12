@@ -24,7 +24,6 @@ export default class ManagerService implements IManagerService {
         }
     }
     async getAllManagers(businessOwnerId: string): Promise<any[]> {
-        console.log("hitting the service for fetching get all managers=========");
         
         try {
             return await this.managerRepository.getAllManagers(businessOwnerId)

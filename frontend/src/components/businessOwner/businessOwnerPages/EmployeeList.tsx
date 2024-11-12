@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ManagerCard from '../../global/ManagerCard';
 import useTheme from '../../../hooks/useTheme';
-import { privateApi } from '../../../services/axiosConfig';
+import {businessOwnerInstance} from '../../../services/businessOwnerInstance'
 import { Skeleton, Empty } from 'antd';
 import AddEmployeeModal from '../../ui/AddEmployeeModal';
 import { FaPlus } from 'react-icons/fa';
@@ -12,11 +12,11 @@ export default function EmployeeList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
   const [loading, setLoading] = useState(true);
-  const { themeColor, themeMode } = useTheme();
+  const { themeColor } = useTheme();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
-    privateApi.get('/manager/get-managers')
+    businessOwnerInstance.get('/businessOwner/api/manager/get-managers')
       .then((response) => {
         setManagers(response.data);
         setLoading(false);

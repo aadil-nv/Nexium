@@ -29,14 +29,17 @@ export default class ManagerController implements IManagerController {
     }
 
     async getAllManagers(req: Request, res: Response): Promise<Response> {
-        console.log("hitting the controller for fetching get all managers=========");
-        
+        console.log("Hitting the getAllManagers from manger controller");
         try {
-            const businessOwnerId = (req as any).user.company._id;
+            console.log("###################################################");
+            console.log("(req as any).user.company._id", (req as any).user);
+            console.log("###################################################");
+            
+            const businessOwnerId = (req as any).user.businessOwnerData._id;
             console.log("businessOwnerId from controller", businessOwnerId);
             
             const managers = await this.managerService.getAllManagers(businessOwnerId);
-            console.log(`managers from controller`.bgRed, managers);
+       
             return res.status(200).json(managers);
         } catch (error) {
             console.error("Error fetching registered companies:", error);
