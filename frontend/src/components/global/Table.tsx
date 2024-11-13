@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
-  ColumnDef,
-} from "@tanstack/react-table";
+import {flexRender,useReactTable,getCoreRowModel,getFilteredRowModel,getPaginationRowModel,} from "@tanstack/react-table";
 import { CSVLink } from "react-csv";
 import * as XLSX from "xlsx";
 import { FaSearch, FaFileCsv, FaFileExcel, FaPlus } from "react-icons/fa";
@@ -14,21 +7,16 @@ import { motion } from "framer-motion";
 import DebouncedInput from "../ui/DebouncedInput";
 import AddEmployeeModal from "../ui/AddEmployeeModal";
 import useTheme from "../../hooks/useTheme";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "antd";
 import useAuth from "../../hooks/useAuth";
+import {TableProps} from '../../utils/interfaces'
 
-interface TableProps<T> {
-  data: T[];
-  columns: ColumnDef<T>[];
-  loading: boolean;
-  error: string | null;
-}
 
 function Table<T>({ data, columns, loading, error }: TableProps<T>) {
   const { themeColor } = useTheme();
+  const { superAdmin, businessOwner } = useAuth();
   const [globalFilter, setGlobalFilter] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const { superAdmin, businessOwner } = useAuth();
 
   const table = useReactTable({
     data,
@@ -52,7 +40,7 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
         <div className="w-full lg:w-1/2 flex items-center space-x-2">
           <FaSearch className="text-gray-400" />
           <DebouncedInput
-            value={globalFilter ?? ""}
+            value={globalFilter}
             onChange={(value) => setGlobalFilter(String(value))}
             className="p-2 border-b-2 border-gray-600 focus:border-indigo-500 outline-none bg-gray-100 text-gray-800 w-full transition-all"
             placeholder="Search..."
@@ -94,11 +82,11 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
 
       <div className="overflow-x-auto">
         {loading ? (
-          Array.from({ length: 5 }).map((_, index) => (
-            <div key={index} className="p-4">
-              <Skeleton className="w-full h-6 mb-4" />
-              <Skeleton className="w-3/4 h-6 mb-4" />
-              <Skeleton className="w-1/2 h-6 mb-4" />
+          Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex space-x-4 p-4">
+              <Skeleton.Input active style={{ width: 80 }} />
+              <Skeleton.Input active style={{ width: 120 }} />
+              <Skeleton.Input active style={{ width: 100 }} />
             </div>
           ))
         ) : error ? (
@@ -117,23 +105,22 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
               ))}
             </thead>
             <tbody>
-              {table.getRowModel().rows.length ? (
-                table.getRowModel().rows.map((row, i) => (
-                  <motion.tr
-                    key={row.id}
-                    className={`bg-gray-${i % 2 === 0 ? "100" : "200"} hover:bg-gray-300 transition-all`}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-4 py-2 text-xs sm:text-sm text-gray-800">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                  </motion.tr>
-                ))
-              ) : (
+              {table.getRowModel().rows.map((row, i) => (
+                <motion.tr
+                  key={row.id}
+                  className={`bg-gray-${i % 2 === 0 ? "100" : "200"} hover:bg-gray-300 transition-all`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="px-4 py-2 text-xs sm:text-sm text-gray-800">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </motion.tr>
+              ))}
+              {!table.getRowModel().rows.length && (
                 <tr>
                   <td colSpan={columns.length} className="text-center py-4">
                     No data available

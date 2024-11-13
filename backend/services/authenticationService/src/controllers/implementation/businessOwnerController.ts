@@ -84,8 +84,6 @@ async login(req: Request, res: Response): Promise<Response> {
 }
 
 
-
-
 async validateOtp(req: Request, res: Response): Promise<Response> {
     console.log("Hitting validateOtp...");
 

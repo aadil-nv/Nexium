@@ -8,7 +8,7 @@ const managerController = container.get<IManagerController>('IManagerController'
 
 managerRouter.post('/add-managers', authenticateToken, (req, res, next) => managerController.addManagers(req, res));
 managerRouter.get('/get-managers',authenticateToken, (req, res, next) => managerController.getAllManagers(req, res));
-managerRouter.post('/logout',authenticateToken, (req, res, next) => managerController.logout(req, res));
+
 
 
 export default managerRouter

@@ -15,7 +15,7 @@ export default class ManagerController implements IManagerController {
         console.log("Hitting the addManager from manger controller",);
         try {
             const managerData= req.body 
-            const businessOwnerId = (req as any).user.company._id;
+            const businessOwnerId = (req as any).user.businessOwnerData._id;
  
             console.log("managerData", managerData);
             console.log("businessOwnerId", businessOwnerId);
@@ -44,15 +44,6 @@ export default class ManagerController implements IManagerController {
         }
     }
 
-    async logout(req: Request, res: Response): Promise<Response> {
-        try {
-            res.clearCookie('accessToken');
-            res.clearCookie('refreshToken');
-            return res.status(200).json({ message: 'Logout successful' });
-        } catch (error) {
-            console.error('Logout error:', error);
-            return res.status(500).json({ error: 'Logout failed' });
-        }
-    }
+   
 
 }

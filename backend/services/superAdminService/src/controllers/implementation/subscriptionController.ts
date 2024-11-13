@@ -29,6 +29,7 @@ export default class SubscriptionController {
   }
 
   async updateIsActive(req: Request, res: Response): Promise<Response> {
+    console.log(`"updating isactive..."`.bgMagenta);
     try {
       const result = await this.subscriptionService.updateIsActive(req.params.id);
       return res.status(result ? 200 : 400).json(result);

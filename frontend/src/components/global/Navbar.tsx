@@ -9,7 +9,9 @@ import { logout as businessOwnerLogout } from "../../features/businessOwnerSlice
 import useAuth from "../../hooks/useAuth";
 import useTheme from "../../hooks/useTheme";
 import DropdownMenu from "./DropDown";
-import { businessOwnerInstance } from "../../services/businessOwnerInstance";
+import { businessOwnerInstance  } from "../../services/businessOwnerInstance";
+import { superAdminInstance } from "../../services/superAdminInstance";
+
 
 export default function Navbar() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -23,10 +25,11 @@ export default function Navbar() {
     setShowLogoutConfirm(false);
     if (businessOwner.isAuthenticated) {
       dispatch(businessOwnerLogout());
-      businessOwnerInstance.post("businessOwner/api/manager/logout");
+      businessOwnerInstance.post("/businessOwner/api/business-owner/logout");
       navigate("/login");
     } else if (superAdmin.isAuthenticated) {
       dispatch(superAdminLogout());
+      superAdminInstance.post("/superAdmin/api/superadmin/logout");
       navigate("/superadmin-login");
     }
   };

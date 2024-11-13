@@ -18,9 +18,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
    
 
     async registerBusinessOwner(businessOwnerData:string):Promise<any> {
-
         try {
-            const newBusinessOwner = await this.businessOwnerRepository.registerBusinessOwner(businessOwnerData );
+            const newBusinessOwner = await this.businessOwnerRepository.registerBusinessOwner(businessOwnerData);
             return newBusinessOwner
             
         } catch (error) {
@@ -51,6 +50,20 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         } catch (error) {
           console.error("Error generating new access token:", error);
           throw new Error("Error generating new access token: " + error);
+        }
+      }
+
+      async addSubscription(subscriptionData: any): Promise<any> {
+        console.log(`"hitting the service layer add subscription ------------"`.bgWhite);
+        
+        try {
+            console.log(`"subscriptionData ------------"`.bgBlue, subscriptionData);
+            
+          const newSubscription = await this.businessOwnerRepository.addSubscription(subscriptionData);
+          return { success: true, message: "Subscription added successfully!", subscription: newSubscription };
+        } catch (error) {
+          console.error("Error adding subscription:", error);
+          return { success: false, message: "Could not add subscription due to an internal error." };
         }
       }
       

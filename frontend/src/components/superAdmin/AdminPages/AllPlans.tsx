@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import Card from '../../global/Card';
 import useTheme from '../../../hooks/useTheme';
-import { privateApi } from "../../../services/axiosConfig";
+import { superAdminInstance } from '../../../services/superAdminInstance';
 
 const AllPlans: React.FC = () => {
   const { themeColor, themeMode } = useTheme();
@@ -13,7 +12,7 @@ const AllPlans: React.FC = () => {
   useEffect(() => {
     const fetchPlansData = async () => {
       try {
-        const response = await privateApi.get(`/subscription/fetch-all-subscriptions`);
+        const response = await    superAdminInstance.get(`/superAdmin/api/subscription/fetch-all-subscriptions`);
         if (response.data.success) {
           setPlansData(response.data.subscriptions); // Set plans data from the API response
         }
@@ -37,8 +36,8 @@ const AllPlans: React.FC = () => {
     );
 
     // Optionally, make an API call to persist the status change to the backend
-    privateApi
-      .patch(`/super-admin/subscription/update-status/${planId}`, { isActive: newStatus })
+    superAdminInstance
+      .patch(`/superAdmin/api/subscription/update-status/${planId}`, { isActive: newStatus })
       .catch((error) => {
         console.error('Error updating plan status:', error);
       });

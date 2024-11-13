@@ -5,6 +5,8 @@ import BusinessOwnerRepository from "../repository/implementation/businessOwnerR
 import IBusinessOwnerRepository from "../repository/interface/IBusinessOwnerRepository";
 import  BusinessOwnerService  from "../service/implementation/businessOwnerService";
 import IBusinessOwnerService from "../service/interface/IBusinessOwnerService";
+import BaseRepository from "../repository/implementation/baseRepository";
+import IBaseRepository from "../repository/interface/IBaseRepository";
 
 
 
@@ -24,6 +26,8 @@ import EmployeeController from "../controllers/implementation/employeeController
 
 import IConsumer from "../events/rabbitmq/interface/IConsumer";
 import BusinessOwnerConsumer from "../events/rabbitmq/implementation/consumer";
+import businessOwnerModel from "../models/businessOwnerModel";
+import managerModel from "../models/managerModel";
 
 
 const container =new Container()
@@ -31,6 +35,10 @@ const container =new Container()
 container.bind<IBusinessOwnerController>("IBusinessOwnerController").to(BusinessOwnerController)
 container.bind<IBusinessOwnerService>("IBusinessOwnerService").to(BusinessOwnerService)
 container.bind<IBusinessOwnerRepository>("IBusinessOwnerRepository").to(BusinessOwnerRepository)
+container.bind<typeof businessOwnerModel>("BusinessOwnerModel").toConstantValue(businessOwnerModel);
+container.bind<typeof managerModel>("managerModel").toConstantValue(managerModel);
+
+
 
 
 

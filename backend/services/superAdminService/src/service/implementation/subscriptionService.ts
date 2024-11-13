@@ -2,6 +2,7 @@ import ISubscriptionService from "service/interface/ISubscriptionService";
 import IBaseRepository from "repository/interface/IBaseRepository";
 import ISubscriptionRepository from "../../repository/interface/ISubscriptionRepository"; 
 import { injectable, inject } from "inversify";
+import RabbitMQMessager from "../../events/rabbitmq/producers/producer";
 
 @injectable()
 export default class SubscriptionService implements ISubscriptionService {
@@ -13,6 +14,9 @@ export default class SubscriptionService implements ISubscriptionService {
   async addSubscription(subscriptionData: any): Promise<any> {
     try {
     const { planName, description, price, planType, durationInMonths, isActive } = subscriptionData;
+
+    const rabbitMQMessager = new RabbitMQMessager();
+    await rabbitMQMessager.init();
 
     if (!planName || !description || price === undefined || !planType || !durationInMonths)
       return { success: false, message: "Missing required fields." };
@@ -32,7 +36,8 @@ export default class SubscriptionService implements ISubscriptionService {
     if (await this.baseRepository.findByName(planName))
       return { success: false, message: `Subscription plan with name "${planName}" already exists.` };
 
- 
+      await rabbitMQMessager.sendToMultipleQueues({subscriptionData:subscriptionData});
+
       const newSubscription = await this.subscriptionRepository.addSubscription(subscriptionData);
       return { success: true, message: "Subscription added successfully!", subscription: newSubscription };
     } catch (error) {

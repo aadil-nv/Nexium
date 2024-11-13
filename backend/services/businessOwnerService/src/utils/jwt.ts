@@ -11,7 +11,7 @@ export const generateCompanyAccessToken = (data: object): string => {
     return jwt.sign(
         data, 
         JWT_SECRET,
-        { expiresIn: '1m' }
+        { expiresIn: '15' }
     );
 };
 
@@ -19,7 +19,7 @@ export const generateCompanyRefreshToken = (data: object): string => {
     return jwt.sign(
         data, 
         REFRESH_TOKEN_SECRET,
-        { expiresIn: '5m' }
+        { expiresIn: '1d' }
     );
 };
 

@@ -7,6 +7,7 @@ const businessOwnerRouter = Router();
 const businessOwnerController = container.get<IBusinessOwnerController>("IBusinessOwnerController")
 
 businessOwnerRouter.post('/refresh-token', (req, res, next) => businessOwnerController.setNewAccessToken(req, res));
+businessOwnerRouter.post('/logout', (req, res, next) => businessOwnerController.logout(req, res));
 
 
 export default businessOwnerRouter;

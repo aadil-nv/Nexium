@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
-import { privateApi } from '../../../services/axiosConfig';
 import { motion } from 'framer-motion';
+import { businessOwnerInstance } from '../../../services/businessOwnerInstance';
 
 const ManagerForm = () => {
   const [formData, setFormData] = useState({
@@ -55,7 +55,7 @@ const ManagerForm = () => {
     };
   
     try {
-      const response = await privateApi.post('/manager/add-managers', dataToSend);
+      const response = await businessOwnerInstance.post('/businessOwner/api/manager/add-managers', dataToSend);
       if (response.status === 200) {
         toast.success('Form submitted successfully!');
         setFormData({

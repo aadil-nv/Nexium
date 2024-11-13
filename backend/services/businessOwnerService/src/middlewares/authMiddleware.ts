@@ -8,8 +8,6 @@ interface CustomRequest extends Request {
 
 const authenticateToken = (req: CustomRequest,res: Response,next: NextFunction) => {
   const token = req.cookies.accessToken;
-  console.log("accesstoken from middleware", token);
-  
 
   if (!token) {
     return res
@@ -18,6 +16,7 @@ const authenticateToken = (req: CustomRequest,res: Response,next: NextFunction) 
   }
 
   const decoded = verifyAccessToken(token);
+  console.log(`"decoded from middleware ...............................",`.bgWhite);
 
   if (!decoded) {
     return res.status(401).json({ message: "Invalid token" });

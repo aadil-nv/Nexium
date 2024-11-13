@@ -10,7 +10,7 @@ const subscriptionController = container.get<ISubscriptionController>("ISubscrip
 
 
 subscriptionRouter.get("/fetch-all-subscriptions",authenticateToken,(req,res,next)=>subscriptionController.fetchAllSubscriptions(req,res));
-subscriptionRouter.post("/add-subscriptions",authenticateToken,(req,res,next)=>subscriptionController.addSubscription(req,res));
+subscriptionRouter.post("/add-subscriptions",(req,res,next)=>subscriptionController.addSubscription(req,res));
 subscriptionRouter.patch('/update-status/:id',authenticateToken, (req, res, next) => subscriptionController.updateIsActive(req, res,));
 subscriptionRouter.put('/update-subscriptiondetiles/:id',authenticateToken, (req, res, next) => subscriptionController.updateSubscriptionDetails(req, res,));
 

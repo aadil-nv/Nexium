@@ -2,6 +2,7 @@ import axios from "axios";
 import { logout as superAdminLogout } from "../features/superAdminSlice";
 import { logout as businessOwnerLogout } from "../features/businessOwnerSlice";
 import { store } from "../store/store";
+import { log } from "console";
 
 // Create a reusable function to handle the refresh token logic
 const handleTokenRefresh = async (originalRequest: any) => {
@@ -19,18 +20,16 @@ const handleTokenRefresh = async (originalRequest: any) => {
   }
 };
 
-const handleTokenError = (error: any) => {
-  if (error.response?.status === 403) {
-    const state = store.getState();
-    const userRole = state.superAdmin.role || state.businessOwner.role;
-
-    if (userRole === 'superAdmin') {
-      store.dispatch(superAdminLogout());
-    } else if (userRole === 'businessOwner') {
-      store.dispatch(businessOwnerLogout());
-    }
+const handleTokenError = (refreshError: any) => {
+  try {
+    store.dispatch(businessOwnerLogout());
+    businessOwnerInstance.post('/businessOwner/api/business-owner/logout');
+    console.log('Business owner logged out successfully');
+  } catch (error) {
+    console.error('Logout failed:', error);
   }
-  console.error('Refresh token failed:', error);
+
+  console.error('Refresh token failed:', refreshError);
 };
 
 // Axios instance for business owner API

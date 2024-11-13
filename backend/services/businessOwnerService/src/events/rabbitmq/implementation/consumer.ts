@@ -18,41 +18,62 @@ export default class BusinessOwnerConsumer implements IConsumer {
     const exchange = 'fanout_exchange';
 
     try {
- 
       const connection = await amqp.connect('amqp://localhost:5672');
       const channel = await connection.createChannel();
 
       await channel.assertExchange(exchange, 'fanout', { durable: true });
 
-      // Assert the queue without exclusivity for persistence
       await channel.assertQueue(queue, { durable: true });
       console.log('Waiting for messages in queue...');
 
-      // Bind the queue to the exchange
       await channel.bindQueue(queue, exchange, '');
 
-      // Consume messages from the queue
+      // Handle messages as they come in
       channel.consume(queue, async (msg) => {
         if (msg !== null) {
           try {
-            const businessOwnerData = JSON.parse(msg.content.toString());
-            console.log('Received businessOwner data:', businessOwnerData);
+            const data = JSON.parse(msg.content.toString());
 
-            // Call the service layer to handle the data
-            await this.businessOwnerService.registerBusinessOwner(businessOwnerData);
 
-            // Acknowledge the message after processing
+            if (Array.isArray(data)) {
+              // If multiple data pieces, handle each one separately
+              for (const businessOwnerData of data) {
+                await this.processBusinessOwnerData(businessOwnerData);
+              }
+            } else {
+              // If it's a single data piece, process it
+              await this.processBusinessOwnerData(data);
+            }
+
+            // Acknowledge the message
             channel.ack(msg);
           } catch (err) {
             console.error('Error processing message:', err);
-            // Optionally, nack the message if there's an error processing it
+
+            // Negative acknowledge if an error occurs
             channel.nack(msg);
           }
         }
       });
     } catch (error) {
       console.error('Error in RabbitMQ consumer:', error);
-      // Handle connection/channel errors gracefully
+    }
+  }
+
+  // Helper method to process business owner data
+  private async processBusinessOwnerData(data: any) {
+    try {
+
+      if (data.businessOwnerData) {
+        await this.businessOwnerService.registerBusinessOwner(data.businessOwnerData);
+      }
+
+      if (data.subscriptionData) {
+        await this.businessOwnerService.addSubscription(data.subscriptionData);
+      }
+    } catch (err) {
+      console.error('Error processing businessOwner data:', err);
+      throw err;
     }
   }
 }

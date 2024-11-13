@@ -49,12 +49,13 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     
         try {
           const decoded = verifyRefreshToken(refreshToken);
+          const admin = decoded?.admin
     
-          if (!decoded) {
+          if (!decoded || !admin) {
             throw new Error("Invalid or expired refresh token");
           }
 
-          const newAccessToken = generateCompanyAccessToken({ decoded });
+          const newAccessToken = generateCompanyAccessToken({ admin });
     
           if (!newAccessToken) {
             throw new Error("Failed to generate a new access token");

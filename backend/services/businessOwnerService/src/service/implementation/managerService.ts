@@ -1,4 +1,5 @@
 
+import { log } from "console";
 import IManagerRepoitory from "../../repository/interface/IManagerReopsitory";
 import IManagerService from "../interface/IManagerService";
 import { inject, injectable } from "inversify";
@@ -17,6 +18,9 @@ export default class ManagerService implements IManagerService {
     async addManagers(businessOwnerId: string, managerData: any): Promise<any> {
         
         try {
+            const businessOwnerData = await this.managerRepository.findById(businessOwnerId)
+            const subscriptionId = businessOwnerData
+            
             return await this.managerRepository.addManagers(businessOwnerId, managerData)
         } catch (error) {
             console.error("Error adding HR Manager:", error);

@@ -33,31 +33,34 @@ export default class BusinessOwnerConsumer implements IConsumer {
       this.channel?.bindQueue(queue, exchange, '');
 
       // Handle incoming messages
-      this.channel?.consume(queue, async (msg) => {  
+      this.channel?.consume(queue, async (msg) => {
         if (msg !== null) {
           try {
-            const businessOwnerData = JSON.parse(msg.content.toString());
-            console.log('Received businessOwner data:', businessOwnerData);
+            const data = JSON.parse(msg.content.toString());
+            console.log('Received businessOwner data:', data);
 
-            // Register the business owner
-            await this.businessOwnerService.registerBusinessOwner(businessOwnerData);
 
-            // Acknowledge the message
+            if (data.businessOwnerData) {
+              await this.businessOwnerService.registerBusinessOwner(data.businessOwnerData);
+            }
+
+            // Acknowledge the message after processing
             this.channel?.ack(msg);
           } catch (err) {
             console.error('Error processing message:', err);
-            this.channel?.nack(msg, false, true);  // Requeue the message in case of error
+            // Negative acknowledge to requeue the message in case of error
+            this.channel?.nack(msg, false, true);
           }
         }
       });
 
       // Handle connection close
-      this.connection?.on('close', () => {  
+      this.connection?.on('close', () => {
         console.log('RabbitMQ connection closed');
       });
 
       // Handle errors on the channel
-      this.channel?.on('error', (err) => {  
+      this.channel?.on('error', (err) => {
         console.error('Channel error:', err);
       });
 

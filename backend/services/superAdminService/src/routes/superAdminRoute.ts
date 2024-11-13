@@ -8,3 +8,7 @@ const superAdminRouter = Router();
 const superAdminController = container.get<ISuperAdminController>("ISuperAdminController");
 
 superAdminRouter.post("/refresh-token",authenticateToken,(req,res,next)=>superAdminController.setNewAccessToken(req,res));
+superAdminRouter.post('/logout',authenticateToken,(req,res,next)=>superAdminController.logout(req,res));
+
+
+export default superAdminRouter;

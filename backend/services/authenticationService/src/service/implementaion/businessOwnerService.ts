@@ -65,97 +65,14 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
     
 
-    // async register(businessOwnerData: Partial<ICompany>): Promise<{ tokens?: ITokenResponse; message?: string; email?: string }> {
-    //     console.log("hitting register service", businessOwnerData);
-        
-    //     if (businessOwnerData.password) {
-    //         businessOwnerData.password = await bcrypt.hash(businessOwnerData.password, 10);
-    //     }
-    //    console.log("222222222222222222222222222222222222");
-       
-       
-       
-    //    if (!businessOwnerData.registrationNumber) {
-    //        throw new Error("Registration number is required");
-    //     }
-        
-    //     const existingBusinessOwner = await this.businessOwnerRepository.findByEmail(businessOwnerData.email ?? "");         
-        
-    //     console.log("33333333333333333333333333333333333333333");
-    //     if (existingBusinessOwner) {
-    //         if (existingBusinessOwner.isVerified) {
-    //             throw new Error("Credentials already used. Please check the details.");
-    //         }
-    //         const otp = generateOtp()
-    //         await this.sendOtp(existingBusinessOwner.email,otp);
-    //         console.log("businessOwnerData EMAIL", existingBusinessOwner.email);
-            
-    //         return { message: "true", email: existingBusinessOwner.email };
-    //     }
-        
-    //     console.log("444444444444444444444444444444444444");
-
-    //     console.log("*************************************************");
-        
-        
-    //     console.log("new businessOwnerData data", businessOwnerData);
-    //     console.log("*************************************************");
-        
-        
-    //     const newCompanyData: ICompanyDocument = new businessOwnerSchema({
-    //         _id: new mongoose.Types.ObjectId(),
-    //         name: businessOwnerData.name || "",
-    //         email: businessOwnerData.email || "",
-    //         address: businessOwnerData.address || "",
-    //         password: businessOwnerData.password || "",
-    //         phone: businessOwnerData.phone || "",
-    //         website: businessOwnerData.website || "",
-    //         registrationNumber: businessOwnerData.registrationNumber,
-    //         documents: businessOwnerData.documents || [],
-    //         subscription: businessOwnerData.subscription || "",
-    //         isVerified: false,
-    //         companyLogo: "https://example.com/default-logo.png",
-    //         profileImage: "https://example.com/default-profile.png",
-    //     });
-        
-    //     console.log("555555555555555555555555555555555555555555");
-        
-        
-    //     const savedCompany = await this.businessOwnerRepository.create(newCompanyData);
-    //     console.log("saved company data ##############################", savedCompany);
-    //     const companyDbName = `${savedCompany._id}`;
-    //     console.log("companyDbName data ##############################", companyDbName);
-    //     const companyDb = mongoose.connection.useDb(companyDbName);
-        
-    //     console.log("6666666666666666666666666666666666666666666666666666");
-    //     await companyDb.createCollection("users").catch((err) => {
-    //         if (err.codeName !== 'NamespaceExists') {
-    //             throw err;
-    //         }
-    //     });
-        
-        
-    //     const otp = generateOtp()
-        
-    //     await this.sendOtp(savedCompany.email,otp);
-    //     console.log("77777777777777777777777777777777777777777777");
-            
-    //     return {
-
-    //         message: "true",
-    //         email: savedCompany.email,
-    //     };
-    // }
 
     async register(businessOwnerData: Partial<ICompany>): Promise<{ tokens?: ITokenResponse; message?: string; email?: string }> {
         console.log("hitting register service", businessOwnerData);
-        
-        // Hash the password
+
         if (businessOwnerData.password) {
             businessOwnerData.password = await bcrypt.hash(businessOwnerData.password, 10);
         }
-        
-        // Ensure all required fields are present
+
         if (!businessOwnerData.registrationNumber) {
             throw new Error("Registration number is required");
         }
@@ -273,7 +190,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
    
  
 
-async validateOtp(email: string, otp: string): Promise<any> {
+    async validateOtp(email: string, otp: string): Promise<any> {
     console.log("hitting validateOtp service", email, otp);
     
     try {
@@ -308,7 +225,7 @@ async validateOtp(email: string, otp: string): Promise<any> {
         console.error("Error validating OTP:", error);
         return { success: false }; 
     }
-}
+    }
         
      async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponse> {
     console.log("touching checkout session controller ---------------");
@@ -336,7 +253,7 @@ async validateOtp(email: string, otp: string): Promise<any> {
 
           console.log("accessToken and refreshToken from register service ---------------", accessToken, refreshToken);
           
-          await rabbitMQMessager.sendToMultipleQueues(businessOwnerData);
+          await rabbitMQMessager.sendToMultipleQueues({businessOwnerData:businessOwnerData});
   
           return {
             message: 'Subscription updated successfully',

@@ -54,4 +54,5 @@ container.bind<ISuperAdminRepository>("ISuperAdminRepository").to(SuperAdminRepo
 
 
 
+
 export default container

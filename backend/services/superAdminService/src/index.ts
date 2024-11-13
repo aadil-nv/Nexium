@@ -6,6 +6,7 @@ import cors from 'cors';
 import connectDB from './config/connectDB';
 import businessOwnerRoutes from './routes/businessOwnerRoute';
 import subscriptionRoutes from './routes/subscriptionRoute';
+import superAdminRoutes from './routes/superAdminRoute';
 import 'colors';
 import { connectConsumer } from './events/connectCosumer';
 import cookieParser from 'cookie-parser';
@@ -29,6 +30,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/businessowner', businessOwnerRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/superadmin', superAdminRoutes);
 
 connectConsumer()
 
