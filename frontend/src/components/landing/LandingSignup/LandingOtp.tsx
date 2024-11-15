@@ -119,7 +119,7 @@ const LandingOtp: React.FC = () => {
 
     const otpString = otp.join('');
     try {
-      const response = await axios.post('http://localhost:7000/api/business-owner/otp-validation',
+      const response = await axios.post('http://localhost:3000/authentication/api/business-owner/otp-validation',
         { email, otp: otpString },
         { withCredentials: true }
 

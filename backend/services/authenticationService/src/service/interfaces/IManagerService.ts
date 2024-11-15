@@ -1,3 +1,4 @@
 export default interface IManagerService {
-    login(email: string, password: string): Promise<any>;
+    managerLogin(email: string, password: string): Promise<any>;
+    addManager(data: any): Promise<any>;
 }

@@ -1,5 +1,6 @@
+import { Request, Response } from "express";
 export default interface IManagerController {
-    login(req: Request, res: Response): Promise<Response>;
+    managerLogin(req: Request, res: Response): Promise<Response>;
 }
 
 

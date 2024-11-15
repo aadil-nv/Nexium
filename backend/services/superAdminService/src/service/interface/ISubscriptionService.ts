@@ -5,4 +5,5 @@ export default interface ISubscriptionService {
     fetchAllSubscriptions(): Promise<Response>;
     updateIsActive(id: string): Promise<Response>;
     updateSubscriptionDetails  (id: string, updateData: any): Promise<Response>;
+   
 }

@@ -51,8 +51,4 @@ container.bind<ISuperAdminService>("ISuperAdminService").to(SuperAdminService);
 container.bind<ISuperAdminRepository>("ISuperAdminRepository").to(SuperAdminRepository);
 
 
-
-
-
-
 export default container

@@ -5,9 +5,12 @@ dotenv.config();
 import cors from 'cors';
 import connectDB from './config/connectDB';
 import superAdminRoutes from './routes/superAdminRoutes';
-import businessOwnerRouter from './routes/businessOwnerRoutes';
+import businessOwnerRoutes from './routes/businessOwnerRoutes';
+import managerRoutes from './routes/managerRoutes';
 import 'colors';
 import cookieParser from 'cookie-parser'; // Correct import
+import {connectConsumer}from './events/rabbitmq/connectConsumer';
+
 
 
 
@@ -31,7 +34,9 @@ app.get('/', (req, res) => {
 
 
 app.use('/api/super-admin', superAdminRoutes);
-app.use('/api/business-owner', businessOwnerRouter);
+app.use('/api/business-owner', businessOwnerRoutes);
+app.use('/api/manager', managerRoutes);
+connectConsumer()
 
 app.listen(PORT, () => {
   console.log(`authService is running on http://localhost:${PORT}`.bgGreen.bold);

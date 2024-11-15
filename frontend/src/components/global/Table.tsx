@@ -73,7 +73,7 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
             onClick={exportToExcel}
             className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-blue-700"
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.95 }}  
           >
             <FaFileExcel className="mr-2" /> Excel
           </motion.button>

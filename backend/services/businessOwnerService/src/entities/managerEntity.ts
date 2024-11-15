@@ -27,7 +27,7 @@ export default interface IManager extends Document {
   isActive: boolean;
   isVerified: boolean;
   isBlocked: boolean;
-  companyCredentials: {
+  managerCredentials: {
     companyName: string;
     companyRegistrationNumber: string;
     email: string;

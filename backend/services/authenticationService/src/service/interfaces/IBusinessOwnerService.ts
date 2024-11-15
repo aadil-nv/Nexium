@@ -1,16 +1,18 @@
 import { Document, Types } from "mongoose";
 
 export interface ISubscription {
-  planName: string;
-  planType: string;
+
+  subscriptionId:Types.ObjectId;
   startDate: Date;
   endDate: Date;
   status: string;
 }
 
-export interface ICompanyDocument extends Document {
+
+export interface IBusinessOwnerDocument extends Document {
   _id: Types.ObjectId;
-  name: string;
+  companyName: string;
+  businessOwnerName: string;
   email: string;
   address: string;
   password: string;
@@ -27,7 +29,7 @@ export interface ICompanyDocument extends Document {
   subscription: ISubscription; 
 }
 
-export interface ICompany extends Omit<ICompanyDocument, "_id"> {}
+export interface IBusinessOwner extends Omit<IBusinessOwnerDocument, "_id"> {}
 
 export interface ITokenResponse {
   email?: string;
@@ -43,7 +45,7 @@ export interface IPaymentIntentResponse {
   success: boolean;
   message?: string;
   role?: string;
-  planId: number;
+  planName?: string;
   session?: any;
   accessToken?: string;
   refreshToken?: string;
@@ -60,9 +62,8 @@ export interface IPaymentIntentResponse {
 export default interface IBusinessOwnerService {
 
   login(email: string, password: string): Promise<ITokenResponse>;
-  register(companyData: Partial<ICompany>): Promise<{ tokens?: ITokenResponse; message?: string; email?: string }>;
+  register(businessOwnerData: Partial<IBusinessOwner>): Promise<{ success?: boolean; message?: string; email?: string }>;
   sendOtp(email: string, otp: string): Promise<void>;
-
   validateOtp(email: string, otp: string): Promise<any>;
   createCheckoutSession(plan: any,amount: number,currency: string, email: string): Promise<IPaymentIntentResponse>;
   resendOtp(email: string): Promise<{ success: boolean; message: string }>;

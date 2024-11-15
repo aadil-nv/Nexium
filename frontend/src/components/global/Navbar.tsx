@@ -11,12 +11,13 @@ import useTheme from "../../hooks/useTheme";
 import DropdownMenu from "./DropDown";
 import { businessOwnerInstance  } from "../../services/businessOwnerInstance";
 import { superAdminInstance } from "../../services/superAdminInstance";
+import {  managerInstance} from "../../services/managerInstance";
 
 
 export default function Navbar() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const { businessOwner, superAdmin } = useAuth();
+  const { businessOwner, superAdmin,manager } = useAuth();
   const { isActiveMenu, themeColor } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -31,6 +32,10 @@ export default function Navbar() {
       dispatch(superAdminLogout());
       superAdminInstance.post("/superAdmin/api/superadmin/logout");
       navigate("/superadmin-login");
+    }else if (manager.isAuthenticated) {
+      dispatch(superAdminLogout());
+      managerInstance.post("/manager/api/manger/logout");
+      navigate("/manager-login");
     }
   };
 

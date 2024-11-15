@@ -24,7 +24,7 @@ const BusinessOwnersList: React.FC = () => {
       cell: ({ row }) => (
         <button
           onClick={() => toggleBlockStatus(row.original)}
-          className={`flex items-center gap-2 w-28 h-10 rounded-md text-white font-semibold transition ${
+          className={`flex items-center justify-center gap-2 w-28 h-10 rounded-md text-white font-semibold transition ${
             row.original.isBlocked ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"
           }`}
         >

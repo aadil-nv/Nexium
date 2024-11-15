@@ -10,11 +10,13 @@ import Leaves from "../components/manager/dashboard/Leaves";
 import Announcements from "../components/global/Announcements";
 import Notifications from "../components/global/Notifications";
 import ServiceRequests from "../components/manager/dashboard/ServiceRequest";
+import ManagerPrivateRoute from "./ManagerPrivateRoute";
 
 
 const MangerRoutes = () => {
   return (
     <Routes>
+     <Route element={<ManagerPrivateRoute />}>
       <Route element={<DashBoardLayout />}>
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="emoployees" element={<Employees />} />
@@ -28,6 +30,7 @@ const MangerRoutes = () => {
         <Route path="profile" element={<Notifications />} />
         <Route path="settings" element={<Notifications />} />
       </Route>
+     </Route>
     </Routes>
   );
 };

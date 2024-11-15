@@ -16,7 +16,6 @@ export default class BusinessOwnerRepository  implements IBusinessOwnerRepositor
   async create(businessOwnerData: IBusinessOwnerDocument): Promise<IBusinessOwnerDocument> {
     console.log("businessOwnerData from rep===============================", businessOwnerData);
 
-    // Create the new business owner document
     const businessOwner = new businessOwnerSchema(businessOwnerData);
 
     try {
@@ -27,8 +26,6 @@ export default class BusinessOwnerRepository  implements IBusinessOwnerRepositor
         throw new Error("Error saving business owner data");
     }
 }
-
-
 
 
   async findOtpByEmail(email: string): Promise<any | null> {

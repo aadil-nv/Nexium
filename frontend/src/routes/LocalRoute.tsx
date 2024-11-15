@@ -10,6 +10,7 @@ import LandingLoginPage from "../pages/landingPages/LandingLoginPage";
 import LandingPage from "../pages/landingPages/LandingPage";
 import SuperAdminLogin from "../components/superAdmin/superAdminLogin/superAdminLogin";
 import PrivateRoute from "./PrivateRoute";
+import Login from "../components/manager/authentication/Login";
 
 const LocalRoutes = () => {
   const routes = [
@@ -22,6 +23,8 @@ const LocalRoutes = () => {
     { path: "/verify-email", element: <LandingForgottEmail /> },
     { path: "/change-password", element: <LandingNewPasswordPage /> },
     { path: "/forgot-otp", element: <LandingForgottOtp /> },
+    { path: "/manager-login", element: <Login /> },
+
   ];
 
   return (

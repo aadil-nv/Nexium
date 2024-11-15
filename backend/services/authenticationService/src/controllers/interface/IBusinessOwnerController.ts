@@ -1,9 +1,8 @@
 import { Document, Types } from "mongoose";
-import {  Request, Response } from "express";
+import {  NextFunction, Request, Response } from "express";
 
 export interface ISubscription {
-  planName: string;
-  planType: string;
+  subscriptionId: Types.ObjectId;
   startDate: Date;
   endDate: Date;
   status: string;
@@ -11,7 +10,8 @@ export interface ISubscription {
 
 export interface IBusinessOwnerDocument extends Document {
   _id: Types.ObjectId;
-  name: string;
+  companyName: string;
+  businessOwnerName: string;
   email: string;
   address: string;
   password: string;
@@ -45,9 +45,9 @@ export interface IPaymentIntentResponse {
 
 
   export default interface IBusinessOwnerController {
-    register(req: Request, res: Response): Promise<Response>;
-    login(req: Request, res: Response): Promise<Response>;
-    validateOtp(req: Request, res: Response): Promise<any>;
+    register(req: Request, res: Response , next: NextFunction):Promise<void>;
+    login(req: Request, res: Response ): Promise<Response>;
+    validateOtp(req: Request, res: Response,next: NextFunction): Promise<void>;
     resendOtp(req: Request, res: Response): Promise<Response>;
     createCheckoutSession(req: Request, res: Response): Promise<Response>;
     forgotPassword(req: Request, res: Response): Promise<Response>;

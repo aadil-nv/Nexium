@@ -14,6 +14,23 @@ import BusinessOwnerService from "../service/implementaion/businessOwnerService"
 import IBusinessOwnerRepository from "../repository/interfaces/IBusinessOwnerRepository";
 import BusinessOwnerRepository from "../repository/implementaion/businessOwnerRepository";
 
+import IManagerController from "../controllers/interface/IManagerController";
+import ManagerController from "../controllers/implementation/managerController";
+import IManagerService from "../service/interfaces/IManagerService";
+import ManagerService from "../service/implementaion/managerService";
+import IManagerRepository from "../repository/interfaces/IManagerRepository";
+import ManagerRepository from "../repository/implementaion/managerRepository";
+import IConsumer from "../events/rabbitmq/interface/IConsumer"; //! Do not remove it is using
+import Consumer from "./../events/rabbitmq/consumer/consumer"
+
+import BaseRepository from "../repository/implementaion/baseRepository";
+import IBaseRepository from "../repository/interfaces/IBaseRepository";
+import ManagerModel from "../model/managerModel";
+import EmployeeModel from '../model/employeeModel';
+import BusinessOwnerModel from '../model/businessOwnerModel';
+import SuperAdminModel from '../model/superAdminModel';
+import IManager from "../entities/managerEntities";
+
 
 
 const container = new Container();
@@ -25,6 +42,22 @@ container.bind<ISuperAdminRepository>("ISuperAdminRepository").to(SuperAdminRepo
 container.bind<IBusinessOwnerController>("IBusinessOwnerController").to(BusinessOwnerController);
 container.bind<IBusinessOwnerService>("IBusinessOwnerService").to(BusinessOwnerService);
 container.bind<IBusinessOwnerRepository>("IBusinessOwnerRepository").to(BusinessOwnerRepository);
+
+container.bind<IManagerController>("IManagerController").to(ManagerController);
+container.bind<IManagerService>("IManagerService").to(ManagerService);
+container.bind<IManagerRepository>("IManagerRepository").to(ManagerRepository);
+
+container.bind<Consumer>("IConsumer").to(Consumer);
+
+// container.bind<IBaseRepository<IManager>>("IBaseRepository<IManager>").to(BaseRepository);
+
+container.bind<typeof ManagerModel>("managerModel").toConstantValue(ManagerModel);
+container.bind<typeof SuperAdminModel>("superAdminModel").toConstantValue(SuperAdminModel);
+container.bind<typeof EmployeeModel>("employeeModel").toConstantValue(EmployeeModel);
+container.bind<typeof BusinessOwnerModel>("businessOwnerModel").toConstantValue(BusinessOwnerModel);
+
+
+
 
 
 export default container;

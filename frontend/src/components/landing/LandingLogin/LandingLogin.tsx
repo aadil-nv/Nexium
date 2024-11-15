@@ -33,44 +33,40 @@ export default function LandingLoginPage() {
       const errors = result.error.format();
       setErrors({
         email: errors.email?._errors[0],
-        password: errors.password?._errors[0]
+        password: errors.password?._errors[0],
       });
       return;
     }
+  
     setErrors({});
   
     try {
       const { data } = await axios.post(
-        'http://localhost:7000/api/business-owner/login',
+        'http://localhost:3000/authentication/api/business-owner/login',
         { email, password },
-        { withCredentials: true } // Enable cookies
+        { withCredentials: true }
       );
-      console.log("comig 111111111111111111111111");
-      
   
-      if (!data.success) {
-        if (data.isVerified === false) {
-          navigate('/otp', { state: { email: data.email } });
-        } else {
-          setCredentialError(data.message || 'Invalid email or password');
-        }
-        return;
+      if (data.success) {
+        dispatch(login({ role: 'businessOwner', token: data.accessToken }));
+        navigate('/business-owner/dashboard');
+      } else {
+        setCredentialError(data.message || 'Invalid email or password');
       }
-
-      console.log("data is --", data);
-      
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Invalid email or password';
+      setCredentialError(errorMessage);
   
-      dispatch(login({
-        role: 'businessOwner',
-        token: data.accessToken,
-      }));
-  
-      navigate('/business-owner/dashboard');
-    } catch (error) {
-      console.error('Error during login:', error);
-      setCredentialError('Invalid email or password');
+      if (error.response?.data?.email) {
+        navigate('/otp', { state: { email: error.response.data.email } });
+      } else {
+        console.error('Error during login:', error);
+      }
     }
   };
+  
+  
+  
   
 
   const inputBorderStyle = (field: string) => {

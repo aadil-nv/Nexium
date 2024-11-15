@@ -5,13 +5,22 @@ import { useNavigate } from 'react-router-dom';
 import { signUpSchema } from '../../../config/validationSchema';
 import axios from 'axios';
 
-// Spinner component
 const Spinner: React.FC = () => {
   return (
     <div className="flex justify-center items-center">
       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
     </div>
   );
+};
+
+type ErrorState = {
+  form?: string;
+  companyName?: string;
+  email?: string;
+  password?: string;
+  confirm_password?: string;
+  phone?: string;
+  registrationNumber?: string;
 };
 
 const SignUp: React.FC = () => {
@@ -22,7 +31,7 @@ const SignUp: React.FC = () => {
   const [confirm_password, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [registrationNumber, setRegistrationNumber] = useState('');
-  const [error, setError] = useState<Record<string, string>>({});
+  const [error, setError] = useState<ErrorState>({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -52,22 +61,16 @@ const SignUp: React.FC = () => {
   
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:7000/api/business-owner/register', {
+      const response = await axios.post('http://localhost:3000/authentication/api/business-owner/register', {
         companyName,
-        registrationNumber,
         email,
         password,
         phone,
-        address: 'local',
-        website: '',
-        documents: [],
       });
-  
+
       const data = response.data;
-  
-      if (data.message === 'true') {
-        console.log("MESSAge fron cont to frn",data);
-        
+
+      if (data.success == true) {
         setUserMail(data.email);  
         navigate('/otp', { state: { email: data.email } }); 
       } else {
@@ -75,7 +78,7 @@ const SignUp: React.FC = () => {
       }
     } catch (error) {
       console.error("Error during signup:", error);
-      setError({ form: 'An error occurred during signup. Please try again.' });
+      setError(error);
     } finally {
       setLoading(false);
     }
@@ -92,9 +95,7 @@ const SignUp: React.FC = () => {
   return (
     <div className={`w-full h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
       <motion.div
-        className={`p-8 rounded-lg w-[90%] max-w-2xl transition-shadow duration-300 shadow-lg ${
-          theme === 'dark' ? 'bg-black-800 shadow-blue-500' : 'bg-white shadow-md'
-        }`}
+        className={`p-8 rounded-lg w-[90%] max-w-2xl transition-shadow duration-300 shadow-lg ${theme === 'dark' ? 'bg-black-800 shadow-blue-500' : 'bg-white shadow-md'}`}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -109,9 +110,7 @@ const SignUp: React.FC = () => {
               <label className={theme === 'dark' ? 'text-white' : 'text-gray-700'}>Company Name</label>
               <input
                 type="text"
-                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass(
-                  'companyName'
-                )}`}
+                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass('companyName')}`}
                 placeholder="Enter your company name"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
@@ -123,9 +122,7 @@ const SignUp: React.FC = () => {
               <label className={theme === 'dark' ? 'text-white' : 'text-gray-700'}>Email</label>
               <input
                 type="email"
-                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass(
-                  'email'
-                )}`}
+                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass('email')}`}
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -137,9 +134,7 @@ const SignUp: React.FC = () => {
               <label className={theme === 'dark' ? 'text-white' : 'text-gray-700'}>Password</label>
               <input
                 type={showPassword ? 'text' : 'password'}
-                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass(
-                  'password'
-                )}`}
+                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass('password')}`}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -158,9 +153,7 @@ const SignUp: React.FC = () => {
               <label className={theme === 'dark' ? 'text-white' : 'text-gray-700'}>Confirm Password</label>
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
-                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass(
-                  'confirm_password'
-                )}`}
+                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass('confirm_password')}`}
                 placeholder="Confirm your password"
                 value={confirm_password}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -179,9 +172,7 @@ const SignUp: React.FC = () => {
               <label className={theme === 'dark' ? 'text-white' : 'text-gray-700'}>Phone</label>
               <input
                 type="tel"
-                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass(
-                  'phone'
-                )}`}
+                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass('phone')}`}
                 placeholder="Enter your phone number"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -193,9 +184,7 @@ const SignUp: React.FC = () => {
               <label className={theme === 'dark' ? 'text-white' : 'text-gray-700'}>Registration Number</label>
               <input
                 type="text"
-                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass(
-                  'registrationNumber'
-                )}`}
+                className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass('registrationNumber')}`}
                 placeholder="Enter your registration number"
                 value={registrationNumber}
                 onChange={(e) => setRegistrationNumber(e.target.value)}
@@ -204,16 +193,12 @@ const SignUp: React.FC = () => {
             </div>
           </div>
 
-          {error.form && <p className="text-red-500 text-sm text-center mb-4">{error.form}</p>}
+          {error.form && <p className="text-red-500 text-center mb-4">{error.form}</p>}
 
           <button
             type="submit"
+            className={`w-full py-2 px-4 rounded-lg ${loading ? 'bg-gray-500' : 'bg-green-500'} text-white font-bold`}
             disabled={loading}
-            className={`w-full p-2 text-white font-bold rounded ${
-              loading
-                ? 'bg-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:bg-blue-700'
-            }`}
           >
             {loading ? <Spinner /> : 'Sign Up'}
           </button>

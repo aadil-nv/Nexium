@@ -2,8 +2,7 @@ import { Document, Types } from "mongoose";
 import {  Request, Response } from "express";
 
 export interface ISubscription {
-  planName: string;
-  planType: string;
+  subscriptionId: Types.ObjectId;
   startDate: Date;
   endDate: Date;
   status: string;
@@ -11,7 +10,8 @@ export interface ISubscription {
 
 export interface IBusinessOwnerDocument extends Document {
   _id: Types.ObjectId;
-  name: string;
+  companyName: string;
+  businessOwnerName: string;
   email: string;
   address: string;
   password: string;

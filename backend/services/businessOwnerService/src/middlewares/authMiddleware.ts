@@ -16,7 +16,7 @@ const authenticateToken = (req: CustomRequest,res: Response,next: NextFunction) 
   }
 
   const decoded = verifyAccessToken(token);
-  console.log(`"decoded from middleware ...............................",`.bgWhite);
+  console.log(`"decoded from middleware ...............................",`.bgWhite,decoded);
 
   if (!decoded) {
     return res.status(401).json({ message: "Invalid token" });

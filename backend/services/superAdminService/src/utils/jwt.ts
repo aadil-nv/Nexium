@@ -6,7 +6,7 @@ const secret = process.env.ACCESS_TOKEN_SECRET || 'your_jwt_secret';
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your_refresh_token_secret';
 
 
-export const generateCompanyAccessToken = (data: object): string => {
+export const generateAccessToken = (data: object): string => {
     console.log("Generating access token..." ,data);
     
     return jwt.sign(
@@ -16,7 +16,7 @@ export const generateCompanyAccessToken = (data: object): string => {
     );
 };
 
-export const generateCompanyRefreshToken = (data: object): string => {
+export const generateRefreshToken = (data: object): string => {
     return jwt.sign(
         data, 
         REFRESH_TOKEN_SECRET,

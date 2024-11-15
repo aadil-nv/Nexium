@@ -1,15 +1,16 @@
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
 import { ISubscription } from "../controllers/interface/IBusinessOwnerController";
-import CompanyRepository from "../repository/implementaion/businessOwnerRepository";
+import businessOwnerRepository from "../repository/implementaion/businessOwnerRepository";
+import mongoose from 'mongoose';
 
 class StripeWebhookController {
   private stripe: Stripe;
-  private companyRepository: CompanyRepository;
+  private businessOwnerRepository: businessOwnerRepository;
 
   constructor() {
     this.stripe = new Stripe(process.env.STRIP_SECRET_KEY!);
-    this.companyRepository = new CompanyRepository();
+    this.businessOwnerRepository = new businessOwnerRepository();
   }
 
   public async handleStripeWebhook(req: Request, res: Response): Promise<void> {
@@ -30,15 +31,15 @@ class StripeWebhookController {
 
       if (email) {
         const subscription: ISubscription = {
-          planName: session.metadata?.planName || 'Unknown',
-          planType: 'Paid',
+         subscriptionId:new  mongoose.Types.ObjectId(),
+         
           startDate: new Date(),
           endDate: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000),
           status: 'Active',
         };
 
         try {
-          const updatedCompany = await this.companyRepository.updateSubscriptionByEmail(email, subscription);
+          const updatedCompany = await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
 
           if (updatedCompany) {
             console.log('Subscription updated successfully after payment.');

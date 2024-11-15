@@ -1,8 +1,9 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { loadStripe } from '@stripe/stripe-js';
 import IBusinessOwnerController from "../interface/IBusinessOwnerController";
 import IBusinessOwnerService from "../../service/interfaces/IBusinessOwnerService";
 import { inject, injectable } from "inversify";
+
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
@@ -24,13 +25,18 @@ async login(req: Request, res: Response): Promise<Response> {
   
       const { success, message, accessToken, refreshToken, isVerified, email: companyEmail } =
         await this.businessOwnerService.login(email, password);
-  
+      console.log("success", success);
       if (!success) {
         if (!isVerified) {
-          return res.status(403).json({ message: "Account not verified. OTP sent to email.", email: companyEmail, isVerified: false });
+          return res.status(400).json({ message: "Account not verified. OTP sent to email.", email: companyEmail, isVerified: false ,success:false });
         }
-        return res.status(400).json({ message });
+      
       }
+      console.log("accessToken", accessToken);
+      console.log("refreshToken", refreshToken);
+  
+      res.cookie('companyEmail', companyEmail, { httpOnly: true, secure: process.env.NODE_ENV === 'production', 
+        sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
   
       res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', 
         sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
@@ -44,71 +50,34 @@ async login(req: Request, res: Response): Promise<Response> {
     }
   } 
 
-  async register(req: Request, res: Response): Promise<Response> {
+  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     console.log("Hitting company controller...");
-
-    const { companyName, registrationNumber, email, password,address } = req.body;
-
-    if (!companyName || !registrationNumber || !email || !password) {
-        return res.status(400).json({ message: "All fields are required" });
-    }
-
+    
     try {
-        const registrationData = {
-            name: companyName,
-            registrationNumber,
-            email,
-            password,
-            address:address ||"No address provided",
-            role: "BusinessOwner",
-            subscription: {
-                planName: "Trial",
-                planType: "Trial",
-                startDate: new Date(),
-                endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-                status: "Active",
-            },
-        };
+      const { companyName, email, password, phone } = req.body;
+      const businessOwnerData = { companyName, email, password, phone };
+      const { success,message, email: registeredEmail } = await this.businessOwnerService.register(businessOwnerData);
+      res.status(201).json({message: message ,email: registeredEmail,success: success});
 
-        const { message, email: registeredEmail } = await this.businessOwnerService.register(registrationData);
-
-        return res.status(201).json({
-            message: message || "Registration successful",
-            email: registeredEmail,
-        });
-
-    } catch (error: unknown) {
-        const errorMessage = (error instanceof Error) ? error.message : "Unknown error occurred";
-        return res.status(400).json({ message: errorMessage });
+    } catch (error) {
+        console.error("Error during registration:", error);
+        next(error);  
     }
 }
 
 
-async validateOtp(req: Request, res: Response): Promise<Response> {
+async validateOtp(req: Request, res: Response ,next: NextFunction): Promise<void> {
     console.log("Hitting validateOtp...");
 
-    const { email, otp } = req.body;
-
     try {
+        const { email, otp } = req.body;
         const response = await this.businessOwnerService.validateOtp(email, otp);
-        
-        if (response.success) {
-            return res.status(200).json({
-                success: response.success,
-                email: response.email,    
-            });
-        }
-
-        return res.status(400).json({
-            message: "Invalid OTP or verification failed. Please check and try again.",
-        });
+        res.status(200).json({success: response.success, email: response.email,});
+       
     } catch (error) {
         console.error("Error validating OTP:", error);
-
-        return res.status(500).json({
-            message: "OTP validation failed. Please try again later.",
-        });
-    }
+        next(error);
+}
 }
 
 async resendOtp(req: Request, res: Response): Promise<Response> {
@@ -126,17 +95,18 @@ async resendOtp(req: Request, res: Response): Promise<Response> {
 
 async createCheckoutSession(req: Request, res: Response): Promise<Response> {
   console.log("Hitting Stripe Checkout Session controller...");
+  console.log(`"Body data  from ---------------"`.bgMagenta);
+  
 
   try {
       const { plan, amount, currency, email } = req.body;
-
-      const result = await this.businessOwnerService.createCheckoutSession(plan, amount, currency, email);
-
+      console.log("plan, amount, currency, email", plan, amount, currency, email);
       
+      const result = await this.businessOwnerService.createCheckoutSession(plan, amount, currency, email);
+   
 
-      if (result.planId === 1) {
-  console.log("token is ", result.accessToken);
-  
+      if (result.planName === "Trial") {
+       
         res.cookie('accessToken', result.accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -154,16 +124,18 @@ async createCheckoutSession(req: Request, res: Response): Promise<Response> {
               message: result.message,  
               success: result.success,  
               role: result.role,       
-              planId: result.planId,        
+              planName: result.planName,        
          
               
           });
+          console.log("result is coming $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", result);
+          
       } else {
           
           return res.status(200).json({
               sessionId: result.session.id, 
               success: result.success,     
-              planId: result.planId,    
+              planName: result.planName,    
 
           });
       }

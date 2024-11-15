@@ -2,7 +2,7 @@ import IBusinessOwnerService from "../interface/IBusinessOwnerService";
 import businessOwnerRepository from "../../repository/implementation/businessOwnerRepository";
 import IBusinessOwnerRepository from "../../repository/interface/IBusinessOwnerRepository";
 import { injectable,inject } from "inversify";
-import {generateCompanyAccessToken,verifyAccessToken,verifyRefreshToken,generateCompanyRefreshToken} from "../../utils/jwt"
+import {generateAccessToken,verifyAccessToken,verifyRefreshToken,generateRefreshToken} from "../../utils/jwt"
 
 @injectable()
 export default class BusinessOwnerService implements IBusinessOwnerService {
@@ -55,7 +55,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             throw new Error("Invalid or expired refresh token");
           }
 
-          const newAccessToken = generateCompanyAccessToken({ admin });
+          const newAccessToken = generateAccessToken({ admin });
     
           if (!newAccessToken) {
             throw new Error("Failed to generate a new access token");

@@ -17,9 +17,12 @@ export default class BusinessOwnerController implements IBusinessOwnerController
         console.log("setNewAccessToken is caling  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
         try {
             const refreshToken = req.cookies.refreshToken;
+            console.log(`"refreshToken from controller"`.bgRed.bold, refreshToken);
             if (!refreshToken) return res.status(400).json({ message: 'Refresh token missing.' });
     
             const newAccessToken = await this.businessOwnerService.setNewAccessToken(refreshToken);
+            console.log("newAccessToken------------------------------", newAccessToken);
+            
             if (!newAccessToken) return res.status(401).json({ message: 'Failed to generate new access token.' });
         
             res.cookie('accessToken', newAccessToken, {
@@ -32,12 +35,15 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     
             return res.status(200).json({ accessToken: newAccessToken });
     
-        } catch {
-            return res.status(401).json({ message: 'An unexpected error occurred.' });
+        } catch (error) {
+            
+          return res.status(500).json({ error: 'Failed to generate new access token.' });
         }
     }
     
     async logout(req: Request, res: Response): Promise<Response> {
+        console.log(`"logout is caling  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"`.bgMagenta.bold);
+        
         try {
             res.clearCookie('accessToken');
             res.clearCookie('refreshToken');

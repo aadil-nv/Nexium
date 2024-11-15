@@ -16,3 +16,12 @@ export interface TableProps<T> {
   loading: boolean;
   error: string | null;
 }
+
+export interface LoginFormData{
+    email: string;
+    password: string;
+}
+
+export interface PrivateRouteProps {
+  children: React.ReactNode;
+}

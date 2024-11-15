@@ -1,7 +1,7 @@
 
 import ISuperAdminService from "../../service/interface/ISuperAdminService";
 import { inject, injectable } from "inversify";
-import { generateCompanyAccessToken, verifyRefreshToken } from "../../utils/jwt";
+import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
 import ISuperAdminRepository from "../../repository/interface/ISuperAdminRepository";
 
 @injectable()
@@ -18,7 +18,7 @@ export default class SuperAdminService implements ISuperAdminService {
             throw new Error("Invalid or expired refresh token");
           }
 
-          const newAccessToken = generateCompanyAccessToken({ decoded });
+          const newAccessToken = generateAccessToken({ decoded });
     
           if (!newAccessToken) {
             throw new Error("Failed to generate a new access token");

@@ -21,10 +21,10 @@ const targets = {
   employee: process.env.EMPLOYEE_API_BASE_URL,
 };
 
-// kuhjujkluilksad
-// kjbkbkbb
+// kuhjujkluilksadfgddhgfhfg
+// kjbkbkbbgsdfgdfgdfgdfg
 app.use("/",(req,res,next)=>{
-    console.log("request coming.....");
+    console.log("request coming %%%%%%");
     next();
 })
 

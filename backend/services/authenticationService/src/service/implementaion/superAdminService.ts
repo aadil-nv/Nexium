@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import {ISuperAdmin} from "../../entities/superAdminEntities";
 // import {generateAccessToken,generateRefreshToken,} from "../../utils/jwt";
-import {generateCompanyAccessToken,generateCompanyRefreshToken,verifyAccessToken,verifyRefreshToken} from "../../utils/businessOwnerJWT";
+import {generateAccessToken,generateRefreshToken,verifyAccessToken,verifyRefreshToken} from "../../utils/businessOwnerJWT";
 import ISuperAdminService from "../interfaces/ISuperAdminService";
 import ISuperAdminRepository from "../../repository/interfaces/ISuperAdminRepository";
 import { inject, injectable } from "inversify";
@@ -17,26 +17,34 @@ export default class SuperAdminService implements ISuperAdminService {
   }
 
   async login(email: string, password: string): Promise<{ accessToken: string; refreshToken: string }> {
-
-    const admin = await this.superAdminRepository.findByEmail(email);
+        console.log("login service", email, password);
+    try {
+      const admin = await this.superAdminRepository.findByEmail(email);
+      console.log("admin", admin);
 
     if (!admin) {
       throw new Error("Invalid credentials");
     }
 
     const isMatch = await bcrypt.compare(password, admin.password as string);
+    console.log("isMatch", isMatch);
 
     if (!isMatch) {
       throw new Error("Invalid credentials");
     }
 
-    const accessToken = generateCompanyAccessToken({admin});
-    const refreshToken = generateCompanyRefreshToken({admin});
+    const accessToken = generateAccessToken({admin});
+    const refreshToken = generateRefreshToken({admin});
 
     return {
       accessToken,
       refreshToken,
-    };
+    }
+      
+    } catch (error) {
+      console.log("Error logging in:", error);
+      throw error;
+    }
   }
 
   async register(username: string, email: string, password: string): Promise<Omit<ISuperAdmin, "password">> {
@@ -65,7 +73,7 @@ export default class SuperAdminService implements ISuperAdminService {
       }
       console.log("decoded", decoded);
       
-      const newAccessToken = generateCompanyAccessToken({decoded});
+      const newAccessToken = generateAccessToken({decoded});
 
       return newAccessToken;
     } catch (error) {

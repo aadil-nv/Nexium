@@ -3,11 +3,12 @@ import { Button, ConfigProvider, Modal, Form, Input, Select, DatePicker, Space }
 import { createStyles, useTheme } from 'antd-style';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
+import { toast } from 'react-toastify'; // Assuming you have react-toastify set up for notifications
+import {businessOwnerInstance} from "../../services/businessOwnerInstance"
 
 const { Option } = Select;
 
 const useStyle = createStyles(({ token }) => ({
- 
   'my-modal-mask': {
     boxShadow: `inset 0 0 15px #fff`,
   },
@@ -26,6 +27,18 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
   const { styles } = useStyle();
   const token = useTheme();
   const themeColor = useSelector((state: RootState) => state.menu.themeColor);
+  
+  const [formData, setFormData] = useState({
+    name: '',
+    managerType: '',
+    email: '',
+    phoneNumber: '',
+    joiningDate: '',
+    salary: 0,
+    workTime: '',
+    companyLogo: '',
+    profileImage: '',
+  });
 
   const classNames = {
     body: styles['my-modal-body'],
@@ -41,7 +54,6 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
       borderRadius: 0,
       paddingInlineStart: 5,
     },
-  
     mask: {
       backdropFilter: 'blur(10px)',
     },
@@ -63,10 +75,49 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
     { id: 'workTime', label: 'Work Time', type: 'select', options: ["Full-Time", "Part-Time", "Contract", "Temporary"] },
   ];
 
-  const handleSubmit = (values: any) => {
-    // Handle form submission here
-    console.log(values);
-    onClose();
+  const handleSubmit = async (e: React.FormEvent) => {
+
+    const dataToSend = {
+      ...formData,
+      phone: formData.phoneNumber,
+      documents: [],
+      companyCredentials: {
+        companyName: '',
+        companyRegistrationNumber: '',
+        email: '',
+        password: '',
+      },
+      address: {
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
+        country: '',
+      },
+    };
+
+    try {
+      const response = await businessOwnerInstance.post('/businessOwner/api/manager/add-managers', dataToSend);
+      if (response.status === 200) {
+        toast.success('Form submitted successfully!');
+        setFormData({
+          name: '',
+          managerType: '',
+          email: '',
+          phoneNumber: '',
+          joiningDate: '',
+          companyLogo: '',
+          profileImage: '',
+          salary: 0,
+          workTime: '',
+        });
+      } else {
+        toast.error('Failed to submit the form!');
+      }
+    } catch (error) {
+      toast.error('An error occurred while submitting the form!');
+      console.error('Error:', error);
+    }
   };
 
   return (
@@ -89,7 +140,7 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
             rules={[{ required: true, message: `Please input ${field.label.toLowerCase()}!` }]}
           >
             {field.type === 'select' ? (
-              <Select placeholder={`Select ${field.label}`}>
+              <Select placeholder={`Select ${field.label}`} onChange={(value) => setFormData({ ...formData, [field.id]: value })}>
                 {field.options?.map((option) => (
                   <Option key={option} value={option}>
                     {option}
@@ -97,11 +148,11 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
                 ))}
               </Select>
             ) : field.type === 'date' ? (
-              <DatePicker style={{ width: '100%' }} />
+              <DatePicker style={{ width: '100%' }} onChange={(date) => setFormData({ ...formData, [field.id]: date })} />
             ) : field.type === 'number' ? (
-              <Input type="number" placeholder={`Enter ${field.label}`} />
+              <Input type="number" placeholder={`Enter ${field.label}`} onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })} />
             ) : (
-              <Input placeholder={`Enter ${field.label}`} />
+              <Input placeholder={`Enter ${field.label}`} onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })} />
             )}
           </Form.Item>
         ))}

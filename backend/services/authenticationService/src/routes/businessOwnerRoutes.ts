@@ -10,9 +10,9 @@ const businessOwnerController = container.get<IBusinessOwnerController>("IBusine
 
 businessOwnerRouter.post("/login", (req, res, next) => businessOwnerController.login(req, res));
 
-businessOwnerRouter.post("/register", (req, res) => businessOwnerController.register(req, res));
+businessOwnerRouter.post("/register", (req, res,next) => businessOwnerController.register(req, res,next));
 
-businessOwnerRouter.post("/otp-validation", (req, res) => businessOwnerController.validateOtp(req, res));
+businessOwnerRouter.post("/otp-validation", (req, res,next) => businessOwnerController.validateOtp(req, res,next));
 
 businessOwnerRouter.post("/create-checkout-session", (req, res) => businessOwnerController.createCheckoutSession(req, res));
 

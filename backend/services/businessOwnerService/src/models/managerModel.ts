@@ -84,7 +84,7 @@ const managerSchema: Schema<IManager> = new Schema(
       type: Boolean,
       default: false,
     },
-    companyCredentials: {
+    managerCredentials: {
       companyName: {
         type: String,
         // required: true,

@@ -5,8 +5,9 @@ import { RootState } from '../store/store'; // Adjust this path based on your pr
 const useAuth = () => {
   const businessOwner = useSelector((state: RootState) => state.businessOwner);
   const superAdmin = useSelector((state: RootState) => state.superAdmin);
+  const manager = useSelector((state: RootState) => state.manager);
 
-  return { businessOwner, superAdmin };
+  return { businessOwner, superAdmin,manager };
 };
 
 export default useAuth;

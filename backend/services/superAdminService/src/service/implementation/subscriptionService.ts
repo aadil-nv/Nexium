@@ -36,9 +36,9 @@ export default class SubscriptionService implements ISubscriptionService {
     if (await this.baseRepository.findByName(planName))
       return { success: false, message: `Subscription plan with name "${planName}" already exists.` };
 
-      await rabbitMQMessager.sendToMultipleQueues({subscriptionData:subscriptionData});
-
-      const newSubscription = await this.subscriptionRepository.addSubscription(subscriptionData);
+    
+    const newSubscription = await this.subscriptionRepository.addSubscription(subscriptionData);
+    await rabbitMQMessager.sendToMultipleQueues({subscriptionData:newSubscription});
       return { success: true, message: "Subscription added successfully!", subscription: newSubscription };
     } catch (error) {
       console.error("Error adding subscription:", error);
@@ -86,6 +86,8 @@ export default class SubscriptionService implements ISubscriptionService {
       return { success: false, message: "Internal error occurred while updating subscription." };
     }
   }
+
+  
   
   
 }

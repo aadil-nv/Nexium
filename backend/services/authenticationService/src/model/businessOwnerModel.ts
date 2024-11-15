@@ -3,7 +3,11 @@ import { IBusinessOwnerDocument } from "../controllers/interface/IBusinessOwnerC
 
 const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
   {
-    name: {
+    companyName: {
+      type: String,
+      // required: true,
+    },
+    businessOwnerName: {
       type: String,
       // required: true,
     },
@@ -42,39 +46,36 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
     },
     role: {
       type: String,
-      default: "BusinessOwner",
+      
     },
     documents: [
       {
         documentName: {
           type: String,
-          default: "Company Document",
+         
         },
         documentUrl: {
           type: String,
-          default: "http://localhost:3000",
+         
           match: /^(http|https):\/\/[^ "]+$/,
         },
         uploadedAt: {
           type: Date,
-          default: Date.now,
+          
         },
       },
     ],
     subscription: {
-      planName: {
-        type: String,
+      subscriptionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subscription',  // Assuming 'Subscription' is the name of the model you're referencing
         // required: true,
-      },
-      planType: {
-        type: String,
-        // required: true,
-        enum: ["Trial", "Monthly", "Yearly"],
+        
       },
       startDate: {
         type: Date,
         // required: true,
-        default: Date.now,
+        
       },
       endDate: {
         type: Date,

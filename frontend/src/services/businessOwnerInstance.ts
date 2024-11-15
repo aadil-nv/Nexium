@@ -2,52 +2,67 @@ import axios from "axios";
 import { logout as superAdminLogout } from "../features/superAdminSlice";
 import { logout as businessOwnerLogout } from "../features/businessOwnerSlice";
 import { store } from "../store/store";
-import { log } from "console";
 
-// Create a reusable function to handle the refresh token logic
+let isRefreshing = false;
+let refreshSubscribers: any[] = [];
+
+const notifySubscribers = (newAccessToken: string) => {
+  refreshSubscribers.forEach((callback) => callback(newAccessToken));
+  refreshSubscribers = [];
+};
+
 const handleTokenRefresh = async (originalRequest: any) => {
-    console.log("Attempting refresh token -------------------------------222");
-  try {
-    const refreshResponse = await businessOwnerInstance.post('/businessOwner/api/business-owner/refresh-token');
-    
-    if (refreshResponse.status === 200) {
-      const newAccessToken = refreshResponse.data.accessToken;
-      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-      return businessOwnerInstance(originalRequest); 
-    }
-  } catch (refreshError: any) {
-    handleTokenError(refreshError);
+  if (isRefreshing) {
+    return new Promise((resolve) => {
+      refreshSubscribers.push((newAccessToken: string) => {
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        resolve(businessOwnerInstance(originalRequest));
+      });
+    });
   }
-};
 
-const handleTokenError = (refreshError: any) => {
+  isRefreshing = true;
+
   try {
-    store.dispatch(businessOwnerLogout());
-    businessOwnerInstance.post('/businessOwner/api/business-owner/logout');
-    console.log('Business owner logged out successfully');
+    console.log("Attempting token refresh...");
+    const { data } = await businessOwnerInstance.post("/businessOwner/api/business-owner/refresh-token");
+
+    notifySubscribers(data.accessToken);
+    originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+    return businessOwnerInstance(originalRequest);
   } catch (error) {
-    console.error('Logout failed:', error);
+    console.log("Token refresh failed.");
+    await handleTokenError(error);
+    throw error;
+  } finally {
+    isRefreshing = false;
   }
-
-  console.error('Refresh token failed:', refreshError);
 };
 
-// Axios instance for business owner API
+const handleTokenError = async (error: any) => {
+  console.log("Handling token error...");
+  store.dispatch(businessOwnerLogout());
+  try {
+    await axios.post("http://localhost:3000/businessOwner/api/business-owner/logout");
+    console.log("Logged out successfully.");
+  } catch (logoutError) {
+    console.error("Logout failed:", logoutError);
+  }
+};
+
 export const businessOwnerInstance = axios.create({
-  baseURL: 'http://localhost:3000',
-  withCredentials: true, 
+  baseURL: "http://localhost:3000",
+  withCredentials: true,
 });
 
 businessOwnerInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      return handleTokenRefresh(originalRequest);  // Handle the token refresh
+      return handleTokenRefresh(originalRequest);
     }
-
-    return Promise.reject(error);  // Reject if token refresh fails or it's not a 401
+    return Promise.reject(error);
   }
 );

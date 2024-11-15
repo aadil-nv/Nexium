@@ -3,21 +3,25 @@ import { IBusinessOwnerDocument } from "repository/interface/IBusinessOwnerModel
 
 const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
   {
-    name: {
+    companyName: {
       type: String,
-      required: true,
+      // required: true,
+    },
+    businessOwnerName: {
+      type: String,
+      // required: true,
     },
     email: {
       type: String,
-      required: true,
+      // required: true,
     },
     password: {
       type: String,
-      required: true,
+      // required: true,
     },
     address: {
       type: String,
-      required: true,
+      // required: true,
     },
     phone: {
       type: String,
@@ -28,53 +32,50 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
     },
     registrationNumber: {
       type: String,
-      required: true,
+      // required: true,
     },
     isVerified: {
       type: Boolean,
-      required: true,
+      // required: true,
       default: false,
     },
     isBlocked: {
       type: Boolean,
-      required: true,
+      // required: true,
       default: false,
     },
     role: {
       type: String,
-      default: "BusinessOwner",
+      
     },
     documents: [
       {
         documentName: {
           type: String,
-          default: "Company Document",
+         
         },
         documentUrl: {
           type: String,
-          default: "http://localhost:3000",
+         
           match: /^(http|https):\/\/[^ "]+$/,
         },
         uploadedAt: {
           type: Date,
-          default: Date.now,
+          
         },
       },
     ],
     subscription: {
-      planName: {
-        type: String,
+      subscriptionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subscription',  // Assuming 'Subscription' is the name of the model you're referencing
         // required: true,
-      },
-      planType: {
-        type: String,
-        // required: true,
-        enum: ["Trial", "Monthly", "Yearly"],
+        
       },
       startDate: {
         type: Date,
         // required: true,
-        default: Date.now,
+        
       },
       endDate: {
         type: Date,

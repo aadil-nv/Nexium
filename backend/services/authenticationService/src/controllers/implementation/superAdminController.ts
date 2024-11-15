@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { generateAccessToken, generateRefreshToken } from '../../utils/jwt';
+import { generateAccessToken, generateRefreshToken } from '../../utils/businessOwnerJWT';
 import ISuperAdminController from '../interface/ISuperAdminController';
 import ISuperAdminService from '../../service/interfaces/ISuperAdminService'; // Adjust path as necessary
 import { inject, injectable } from "inversify";

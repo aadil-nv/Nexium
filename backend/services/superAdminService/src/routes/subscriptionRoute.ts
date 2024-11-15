@@ -13,6 +13,7 @@ subscriptionRouter.get("/fetch-all-subscriptions",authenticateToken,(req,res,nex
 subscriptionRouter.post("/add-subscriptions",(req,res,next)=>subscriptionController.addSubscription(req,res));
 subscriptionRouter.patch('/update-status/:id',authenticateToken, (req, res, next) => subscriptionController.updateIsActive(req, res,));
 subscriptionRouter.put('/update-subscriptiondetiles/:id',authenticateToken, (req, res, next) => subscriptionController.updateSubscriptionDetails(req, res,));
+subscriptionRouter.get('/get-subscription', (req, res, next) => subscriptionController.getSubscriptionDetails(req, res,));
 
 
 

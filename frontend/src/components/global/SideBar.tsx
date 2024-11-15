@@ -11,15 +11,16 @@ import useTheme from '../../hooks/useTheme';
 
 
 const Sidebar = () => {
-  const { businessOwner, superAdmin } = useAuth();
+  const { businessOwner, superAdmin ,manager } = useAuth();
   const { isActiveMenu, themeColor } = useTheme();
   const dispatch = useDispatch();
   const isBusinessOwner = businessOwner.isAuthenticated
   const isSuperAdmin = superAdmin.isAuthenticated
+  const isManager = manager.isAuthenticated
   console.log("isBusinessOwner from sidebar ", isBusinessOwner);
   console.log("isSuperAdmin from sidebar ", isSuperAdmin);
   
-  const links = isSuperAdmin ? superAdminLinks :isBusinessOwner ? businessOwnerLinks :   [];
+  const links = isSuperAdmin ? superAdminLinks :isBusinessOwner ? businessOwnerLinks : isManager ? managerLinks :   [];
 
 
 

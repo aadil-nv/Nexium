@@ -6,6 +6,9 @@ import {businessOwnerInstance} from '../../../services/businessOwnerInstance'
 import { Skeleton, Empty } from 'antd';
 import AddEmployeeModal from '../../ui/AddEmployeeModal';
 import { FaPlus } from 'react-icons/fa';
+import { useDispatch } from 'react-redux';
+import {logout as businessOwnerLogout}  from '../../../features/businessOwnerSlice';
+import axios from 'axios';
 
 export default function EmployeeList() {
   const [managers, setManagers] = useState<any[]>([]);
@@ -14,6 +17,7 @@ export default function EmployeeList() {
   const [loading, setLoading] = useState(true);
   const { themeColor } = useTheme();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     businessOwnerInstance.get('/businessOwner/api/manager/get-managers')
@@ -23,6 +27,8 @@ export default function EmployeeList() {
       })
       .catch((error) => {
         console.error('Error fetching managers:', error);
+        axios.post('http://localhost:3000/businessOwner/api/business-owner/logout');
+        dispatch(businessOwnerLogout());
         setLoading(false);
       });
   }, []);

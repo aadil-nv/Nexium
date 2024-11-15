@@ -7,7 +7,7 @@ import rootReducer from './rootReducer'; // Make sure this file exists or define
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['menu', 'businessOwner', 'superAdmin'], // Only persist these slices
+  whitelist: ['menu', 'businessOwner', 'superAdmin' ,'manager'], // Only persist these slices
 };
 
 // Apply persistence to root reducer

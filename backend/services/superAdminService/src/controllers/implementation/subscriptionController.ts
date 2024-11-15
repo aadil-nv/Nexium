@@ -50,4 +50,15 @@ export default class SubscriptionController {
       return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
   }
+
+  async getSubscriptionDetails(req: Request, res: Response): Promise<Response> { 
+    
+    try {
+      const result = await this.subscriptionService.fetchAllSubscriptions();
+      return res.status(result ? 200 : 400).json(result);
+    } catch (error) {
+      console.error("Error in controller:", error);
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  }
 }

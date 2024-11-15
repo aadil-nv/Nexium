@@ -1,30 +1,27 @@
-import { RootState } from "../store/store";
-import React, { useEffect } from "react";
-import { useSelector } from "react-redux";
-import { Navigate, useNavigate } from "react-router-dom";
 
-interface PrivateRouteProps {
-  children: React.ReactNode;
-}
+import React from "react";
+import { Navigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth"
+import {PrivateRouteProps} from "../utils/interfaces"
+
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const isSuperAdmin = useSelector(
-    (state: RootState) => state.superAdmin.isAuthenticated
-  );
-  const isBusinessOwner = useSelector(
-    (state: RootState) => state.businessOwner.isAuthenticated
-  );
+  const { businessOwner, superAdmin,manager } = useAuth();
+  const isSuperAdmin = superAdmin.isAuthenticated
+  const isBusinessOwner = businessOwner.isAuthenticated
+  const isManager = manager.isAuthenticated
   console.log("isSuperAdmin : ",isSuperAdmin)
 
   if (isSuperAdmin) {
     return <Navigate to="/super-admin/dashboard" />;
   } else if (isBusinessOwner) {
     return <Navigate to="/business-owner/dashboard" />;
-  } else {
-    return <>{children}</>;
+  } else if (isManager) {
+    return <Navigate to="/manager/dashboard" />;
+  }else{
+  return <>{children}</>;
   }
 
-  // <Navigate to="/login" />;
 };
 
 export default PrivateRoute;
