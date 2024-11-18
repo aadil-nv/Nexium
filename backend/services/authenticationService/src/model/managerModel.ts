@@ -15,7 +15,7 @@ const managerSchema: Schema<IManager> = new Schema(
     managerType: {
       type: String,
       enum: ["HumanResourceManager" ,"GeneralManager" ,"ProjectManager" , "SalesManager"],
-      required: true, // Assuming managerType is mandatory
+      // required: true, // Assuming managerType is mandatory
     },
     phone: {
       type: String,
@@ -27,12 +27,12 @@ const managerSchema: Schema<IManager> = new Schema(
     },
     salary: {
       type: Number,
-      required: true,
+      // required: true,
     },
     workTime: {
       type: String,
       enum: ["Full-Time", "Part-Time", "Contract", "Temporary"], // Specify allowed values here
-      required: true, // You can adjust whether this is mandatory or not
+      // required: true, // You can adjust whether this is mandatory or not
     },
     joiningDate: {
       type: Date,

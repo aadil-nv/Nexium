@@ -5,15 +5,14 @@ import IBusinessOwnerService from 'service/interface/IBusinessOwnerService';
 
 @injectable()
 export default class BusinessOwnerConsumer implements IConsumer {
-  private businessOwnerService: IBusinessOwnerService;
+  private _businessOwnerService: IBusinessOwnerService;
 
   constructor(@inject("IBusinessOwnerService") businessOwnerService: IBusinessOwnerService) {
-    this.businessOwnerService = businessOwnerService;
+    this._businessOwnerService = businessOwnerService;
   }
 
+  // Receive messages from the RabbitMQ queue
   async receiveFromQueue() {
-    console.log("Consumer initialized...");
-
     const queue = 'businessOwnerQueue';
     const exchange = 'fanout_exchange';
 
@@ -22,36 +21,31 @@ export default class BusinessOwnerConsumer implements IConsumer {
       const channel = await connection.createChannel();
 
       await channel.assertExchange(exchange, 'fanout', { durable: true });
-
       await channel.assertQueue(queue, { durable: true });
-      console.log('Waiting for messages in queue...');
+      console.log(`Waiting for messages in queue...`.bgRed.white.bold);
 
       await channel.bindQueue(queue, exchange, '');
 
-      // Handle messages as they come in
+      // Handle incoming messages
       channel.consume(queue, async (msg) => {
-        if (msg !== null) {
+        if (msg) {
           try {
             const data = JSON.parse(msg.content.toString());
-
-
             if (Array.isArray(data)) {
-              // If multiple data pieces, handle each one separately
+              // Process each item if it's an array
               for (const businessOwnerData of data) {
-                await this.processBusinessOwnerData(businessOwnerData);
+                await this._processBusinessOwnerData(businessOwnerData);
               }
             } else {
-              // If it's a single data piece, process it
-              await this.processBusinessOwnerData(data);
+              // Process a single item
+              await this._processBusinessOwnerData(data);
             }
 
             // Acknowledge the message
             channel.ack(msg);
           } catch (err) {
             console.error('Error processing message:', err);
-
-            // Negative acknowledge if an error occurs
-            channel.nack(msg);
+            channel.nack(msg);  // Negative acknowledge on error
           }
         }
       });
@@ -60,16 +54,15 @@ export default class BusinessOwnerConsumer implements IConsumer {
     }
   }
 
-  // Helper method to process business owner data
-  private async processBusinessOwnerData(data: any) {
+  // Process business owner data
+  private async _processBusinessOwnerData(data: any) {
     try {
-
       if (data.businessOwnerData) {
-        await this.businessOwnerService.registerBusinessOwner(data.businessOwnerData);
+        await this._businessOwnerService.registerBusinessOwner(data.businessOwnerData);
       }
 
       if (data.subscriptionData) {
-        await this.businessOwnerService.addSubscription(data.subscriptionData);
+        await this._businessOwnerService.addSubscription(data.subscriptionData);
       }
     } catch (err) {
       console.error('Error processing businessOwner data:', err);

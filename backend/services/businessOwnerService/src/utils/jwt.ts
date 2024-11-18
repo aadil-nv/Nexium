@@ -5,10 +5,6 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET as string
 const ACCESS_TOKEN_SECRET= process.env.ACCESS_TOKEN_SECRET as string
-console.log(`************************************`.bgGreen);
-console.log( "REFRESH_TOKEN_SECRET ----", REFRESH_TOKEN_SECRET);
-console.log("ACCESS_TOKEN_SECRET   -----",ACCESS_TOKEN_SECRET);
-console.log(`************************************`.bgGreen);
 
 export const generateAccessToken = (data: object): string => {
     console.log("Generating access token..." ,data);
@@ -16,7 +12,7 @@ export const generateAccessToken = (data: object): string => {
     return jwt.sign(
         data, 
         ACCESS_TOKEN_SECRET,
-        { expiresIn: '1m' }
+        { expiresIn: '15m' }
     );
 };
 
@@ -24,19 +20,19 @@ export const generateRefreshToken = (data: object): string => {
     return jwt.sign(
         data, 
         REFRESH_TOKEN_SECRET,
-        { expiresIn: '2m' }
+        { expiresIn: '1d' }
     );
 };
 
 export const verifyRefreshToken = (token: string): JwtPayload | null => {
     try {
-        const decoded=jwt.verify(token, "Admin@123") as JwtPayload; // Verify refresh token
-        console.log("decoded refreshToken : ",decoded);
+        const decoded=jwt.verify(token, REFRESH_TOKEN_SECRET) as JwtPayload; 
         return decoded;
     } catch {
         return null;
     }
 };
+
 
 export const verifyAccessToken = (token: string): JwtPayload | null => {
     try {

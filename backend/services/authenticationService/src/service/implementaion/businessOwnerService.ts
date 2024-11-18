@@ -13,6 +13,7 @@ import { inject, injectable } from "inversify";
 import sendToSuperAdmin from "../../events/rabbitmq/producers/producer";
 import RabbitMQMessager from "../../events/rabbitmq/producers/producer";
 import { IBusinessOwner } from "controllers/interface/IBusinessOwnerController";
+import { generateOtpMail } from "../../utils/generateOtpMail";
 
 
 
@@ -20,34 +21,29 @@ const stripe = new Stripe(process.env.STRIP_SECRET_KEY as string);
 
 const transporter = nodemailer.createTransport({
     service: "Gmail",
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
+    auth: {user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,},
 });
 
 @injectable()
 export default class BusinessOwnerService implements IBusinessOwnerService {
     private businessOwnerRepository: IBusinessOwnerRepository;
 
-
     constructor(@inject("IBusinessOwnerRepository") businessOwnerRepository: IBusinessOwnerRepository) {
         this.businessOwnerRepository = businessOwnerRepository;
     }
-
 
     async login(email: string, password: string): Promise<ITokenResponse> {
         try {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
-    
+
             if (!emailRegex.test(email)) return { success: false, message: "Invalid email format" };
             if (!passwordRegex.test(password)) return { success: false, message: "Password must be at least 6 characters, 1 uppercase letter, 1 number, and 1 special character" };
     
             const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
             if (!businessOwnerData || !(await bcrypt.compare(password, businessOwnerData.password))) 
                 return { success: false, message: "Invalid email or password" };
-                console.log("Business owner data-------:--------", businessOwnerData.isVerified);
             if (!businessOwnerData.isVerified) {
                 const otp = generateOtp();
                 await this.sendOtp(businessOwnerData.email, otp);
@@ -65,11 +61,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         }
     }
     
-
-
     async register(businessOwnerData: Partial<IBusinessOwner>): Promise<{ success?: boolean; message?: string; email?: string }> {
-        console.log("Hitting register service", businessOwnerData);
-    
+
         try {
             if (businessOwnerData.password) {
                 businessOwnerData.password = await bcrypt.hash(businessOwnerData.password, 10);
@@ -115,49 +108,18 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
     
     
-    
-
     async sendOtp(email: string, otp: string): Promise<void> {
         const otpRecord = new otpModel({
             email: email,
             otp: otp,
-            createdAt: new Date(),
-        });
+            createdAt: new Date(),});
     
         await otpRecord.save();
     
-        const currentDate = new Date().toLocaleString(); // Format current date
-        const expirationTime = "10 minutes"; // OTP expiration time
+        const currentDate = new Date().toLocaleString(); 
+        const expirationTime = "10 minutes"; 
     
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: "Your OTP for Verification",
-            text: `Your OTP for verification is ${otp}. It is valid for ${expirationTime}.`,
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;">
-                    <div style="text-align: center;">
-                        <img src="Nexium" alt="Company Logo" style="width: 150px; height: auto; margin-bottom: 20px;" />
-                    </div>
-                    <h2 style="color: #333; text-align: center;">Your OTP for Verification</h2>
-                    <p style="font-size: 16px; color: #555; text-align: center;">
-                        Your OTP for verification is <strong style="font-size: 24px; color: #4CAF50;">${otp}</strong>.
-                    </p>
-                    <p style="font-size: 14px; color: #555; text-align: center;">
-                        This OTP is valid for <strong style="color: #FF5722;">${expirationTime}</strong> from the time of request.
-                    </p>
-                    <p style="font-size: 14px; color: #888; text-align: center;">
-                        Date: <strong>${currentDate}</strong>
-                    </p>
-                    <p style="font-size: 14px; color: #888; text-align: center;">
-                        Please do not share this OTP with anyone.
-                    </p>
-                    <footer style="margin-top: 20px; text-align: center; font-size: 12px; color: #aaa;">
-                        &copy; ${new Date().getFullYear()} Nexium All rights reserved.
-                    </footer>
-                </div>
-            `,
-        };
+        const mailOptions = generateOtpMail(email, otp, expirationTime);
     
         try {
             const info = await transporter.sendMail(mailOptions);
@@ -168,12 +130,9 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         }
     }
     
-
     async validateOtp(email: string, otp: string): Promise<any> {
-    
     try {
         const otpData = await this.businessOwnerRepository.findOtpByEmail(email);
-
         if (!otpData) {throw new Error("Business owner not found");}
         if (otpData.otp == otp) {
             const verification = await this.businessOwnerRepository.updateVerificationStatus(email);
@@ -193,118 +152,113 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         return {message: error instanceof Error ? error.message : "Unknown error occurred",};
     }
     }
-        
-     async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponse> {
-       console.log("touching checkout session service ---------------111");
-       try {
-           const rabbitMQMessager = new RabbitMQMessager();
-           await rabbitMQMessager.init();
-           
-           console.log("touching checkout session service --------------222",plan.planName);
-           if (plan.planName === "Trial") {
-               console.log("touching checkout session service --------suceess------222",);
-               const subscription: ISubscription = {
-                   subscriptionId: plan._id,
-                   startDate: new Date(),
-                   endDate: new Date(new Date().setDate(new Date().getDate() + 30)),  // Add 30 days to the start date
-                   status: "Active",
-                };
-                
-                
-                console.log("touching checkout session service ---------------3333");
-                
-                const businessOwnerData = await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
-                console.log("touching checkout session service --------------4444",businessOwnerData);
-  
-        if (businessOwnerData) {
-          console.log("Updated Company", businessOwnerData);
-  
-          const accessToken = generateAccessToken({ businessOwnerData });
-          const refreshToken = generateRefreshToken({ businessOwnerData });
-
-          
-         rabbitMQMessager.sendToMultipleQueues({businessOwnerData:businessOwnerData});
-  
-          return {
+    
+    async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponse> {
+        try {
+            const rabbitMQMessager = new RabbitMQMessager();
+            await rabbitMQMessager.init();
+    
+            if (plan.planName === 'Trial') {
+                return this.processTrialPlan(plan, email, rabbitMQMessager);
+            }
+    
+            return this.processPaidPlan(plan, amount, currency, email, rabbitMQMessager);
+    
+        } catch (error) {
+            console.error('Error in createCheckoutSession:', error);
+            throw new Error('Failed to process the request: ' + error);
+        }
+    }
+    
+    private async processTrialPlan(plan: any, email: string, rabbitMQMessager: RabbitMQMessager): Promise<IPaymentIntentResponse> {
+        const subscription: ISubscription = {
+            subscriptionId: plan._id,
+            startDate: new Date(),
+            endDate: new Date(new Date().setDate(new Date().getDate() + 30)), // 30 days trial
+            status: 'Active',
+        };
+    
+        const businessOwnerData = await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
+        if (!businessOwnerData) {
+            throw new Error('Company not found');
+        }
+    
+        const accessToken = generateAccessToken({ businessOwnerData });
+        const refreshToken = generateRefreshToken({ businessOwnerData });
+        rabbitMQMessager.sendToMultipleQueues({ businessOwnerData });
+    
+        return {
             message: 'Subscription updated successfully',
             success: true,
             role: businessOwnerData.role,
             planName: plan.planName,
             accessToken,
-            refreshToken
-          };
-        } else {
-          throw new Error('Company not found');
-        }
-
-      } else {
-        const session = await stripe.checkout.sessions.create({
-          payment_method_types: ['card'],
-          line_items: [{
-            price_data: {
-              currency: currency,
-              product_data: {
-                name: plan.name,
-                description: `Payment for ${plan.name} Plan`,
-              },
-              unit_amount: amount,
-            },
-            quantity: 1,
-          }],
-          mode: 'payment',
-          success_url: 'http://localhost:5173/business-owner/dashboard',
-          cancel_url: 'http://localhost:5173/plan',
-        });
-  
-        const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
-        if (!businessOwnerData) {
-          throw new Error('Businessowner not found');
-        }
-  
-        return { session, success: true, planName: plan.planName };
-      }
-    } catch (error) {
-      console.error('Error in createCheckoutSession:', error);
-      throw new Error('Failed to process the request: ' + error);
+            refreshToken,
+        };
     }
-     }
-      
-  
+    
+    private async processPaidPlan(plan: any, amount: number, currency: string, email: string, rabbitMQMessager: RabbitMQMessager): Promise<IPaymentIntentResponse> {
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: currency,
+                    product_data: { name: plan.planName, description: `Payment for ${plan.features} Plan` },
+                    unit_amount: amount,
+                },
+                quantity: 1,
+            }],
+            mode: 'payment',
+            success_url: 'http://localhost:5173/business-owner/dashboard',
+            cancel_url: 'http://localhost:5173/plan',
+        });
+    
+        console.log('Stripe Session Created:', session);
+    
+        const oldBusinessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+        if (!oldBusinessOwnerData) {
+            throw new Error('Business owner not found');
+        }
+    
+        if (!oldBusinessOwnerData.subscription||JSON.stringify(oldBusinessOwnerData.subscription) === '{}') {
+            const subscription: ISubscription = {
+                subscriptionId: plan._id,
+                startDate: new Date(),
+                endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+                status: 'Active',
+            };
+            await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
+        }
+        const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+        const accessToken = generateAccessToken({ businessOwnerData });
+        const refreshToken = generateRefreshToken({ businessOwnerData });
+        rabbitMQMessager.sendToMultipleQueues({ businessOwnerData });
+    
+        return { session, success: true, planName: plan.planName, accessToken, refreshToken };
+    }
+     
     async resendOtp(email: string): Promise<{ success: boolean; message: string }> {
-        console.log("resendOtp mail", email);
-        
         const otp = generateOtp();
-        const existingOtp = await this.businessOwnerRepository.getOtpByEmail(email);
+        const existingOtp = await this.businessOwnerRepository.findOtpByEmail(email);
         
         if (existingOtp) {
-            console.log("Updating existing OTP:", existingOtp);
             await this.businessOwnerRepository.updateOtp(email, otp);
             return { success: true, message: 'OTP updated successfully.' }; 
         } else {
             console.log("No existing OTP, creating a new one");
         }
-        
         await this.sendOtp(email, otp);
-        
         return { success: true, message: 'OTP has been sent successfully.' };
     }
     
-    
     async forgotPassword(email: string): Promise<{ success: boolean; message: string; email?: string }> {
-        console.log("Hitting forgotPassword service for email:", email);
-        
         try {
             const otp = generateOtp();
-            
-            // Using Promise.all to handle both operations concurrently
-            const [existingBusinessOwner] = await Promise.all([
-                this.businessOwnerRepository.findByEmail(email), // Database call
-                // Optional: Cache the OTP or email sending service to reduce delays
-            ]);
+            const [existingBusinessOwner] = await Promise.all([this.businessOwnerRepository.findByEmail(email), ]);
     
             if (existingBusinessOwner) {
                 console.log("Updating existing OTP:", existingBusinessOwner);
-                await this.sendOtp(existingBusinessOwner.email, otp); // This can be optimized further
+                await this.sendOtp(existingBusinessOwner.email, otp); 
                 return { success: true, message: 'OTP sent successfully.', email: existingBusinessOwner.email }; 
             } else {
                 console.log("No existing OTP, creating a new one");
@@ -317,14 +271,10 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         }
     }
     
-
     async addNewPassword(email: string, password: string): Promise<{ success: boolean; message: string }> {
-        console.log("hitting addNewPassword service", email, password);
-        
         try {
             const existingBusinessOwner = await this.businessOwnerRepository.findByEmail(email);
             if (!existingBusinessOwner) {
-                console.log("No existing OTP, creating a new one");
                 return { success: false, message: 'No existing OTP found for this email.' };
             }
             const hashedPassword = await bcrypt.hash(password, 10);
@@ -335,8 +285,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             return { success: false, message: 'Failed to update password. Please try again later.' };
         }
     }
-      
-
+    
 }
 
 

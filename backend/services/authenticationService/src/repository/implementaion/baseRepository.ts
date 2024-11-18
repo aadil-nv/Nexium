@@ -1,72 +1,54 @@
 import { Model, Document, FilterQuery, UpdateQuery } from 'mongoose';
-import IBaseRepository from "../interfaces/IBaseRepository";  // Correct base interface import
+import IBaseRepository from "../interfaces/IBaseRepository"; 
 import { injectable } from 'inversify';
-import managerModel from '../../model/managerModel';
-import employeeModel from '../../model/employeeModel';
-import businessOwnerModel from '../../model/businessOwnerModel';
-import superAdminModel from '../../model/superAdminModel';
 
 @injectable()
 export default class BaseRepository<T extends Document> implements IBaseRepository<T> {
-  constructor(private model: Model<T>) {}
+  constructor(private _model: Model<T>) {}
 
-  // Find one document
   async findOne(filter: FilterQuery<T>): Promise<T | null> {
-    console.log("hitting base repo----------", filter);
-    
     try {
-        console.log("MOdel is -", this.model);
-        
-        const document = await this.model.findOne(filter).exec();
-        console.log("Document found:", document);
-        
-        return document;  // Return the document found
+      return await this._model.findOne(filter).exec();
     } catch (error) {
-        console.error("Error finding document:", error);
-        return null;  // Return null if an error occurs
+      console.error("Error finding document:", error);
+      return null;
     }
   }
 
-  // Find all documents
   async findAll(filter: FilterQuery<T> = {}): Promise<T[]> {
     try {
-        return await this.model.find(filter).exec();  // Ensure the result is returned
+      return await this._model.find(filter).exec();
     } catch (error) {
-        console.error("Error finding documents:", error);
-        return [];  // Return an empty array if an error occurs
+      console.error("Error finding documents:", error);
+      return [];
     }
   }
 
-  // Create a new document
   async create(data: Partial<T>): Promise<T> {
     try {
-        const createdDocument = new this.model(data);
-        return await createdDocument.save();  // Return the saved document
+      const createdDocument = new this._model(data);
+      return await createdDocument.save();
     } catch (error) {
-        console.log("Error creating document:", error);
-        throw error;  // Rethrow error if desired, or return a default value
+      console.log("Error creating document:", error);
+      throw error;
     }
   }
 
-  // Update a document by its ID
+
   async update(id: string, data: UpdateQuery<T>): Promise<T | null> {
     try {
-        const updatedDocument = await this.model.findByIdAndUpdate(id, data, { new: true }).exec();
-        return updatedDocument;  // Return the updated document
+      return await this._model.findByIdAndUpdate(id, data, { new: true }).exec();
     } catch (error) {
-        console.log("Error updating document:", error);
-        return null;  // Return null if an error occurs
+      console.log("Error updating document:", error);
+      return null;
     }
   }
-
-  // Delete a document by its ID
   async delete(id: string): Promise<T | null> {
     try {
-        const deletedDocument = await this.model.findByIdAndDelete(id).exec();
-        return deletedDocument;  // Return the deleted document
+      return await this._model.findByIdAndDelete(id).exec();
     } catch (error) {
-        console.log("Error deleting document:", error);
-        return null;  // Return null if an error occurs
+      console.log("Error deleting document:", error);
+      return null;
     }
   }
 }

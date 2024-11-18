@@ -2,47 +2,48 @@ import amqp from 'amqplib';
 import IProducer from "../interface/IProducer";
 import { rabbitmqConnect, getChannel } from '../../../config/rabbitmq';
 
-export default class RabbitMQMessager implements IProducer {
-    private channel: amqp.Channel | null;
-    private connection: amqp.Connection | null;
-    
-    constructor() {
-        this.channel = null;
-        this.connection = null;
-    }
-    
-    async init(): Promise<void> {
-        console.log('111111111111111111111111111111111111111');
-        await rabbitmqConnect();
-    this.channel = await getChannel();
-    this.connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://localhost');
-  }
 
+
+export default class RabbitMQMessager implements IProducer {
+  private _channel: amqp.Channel | null;
+  private _connection: amqp.Connection | null;
+  
+  constructor() {
+    this._channel = null;
+    this._connection = null;
+  }
+  
+  async init(): Promise<void> {
+    console.log(`************************************`.bgGreen);
+    console.log( process.env.RABBITMQ_URL);
+    
+    console.log(`************************************`.bgGreen);
+    await rabbitmqConnect();
+    this._channel = await getChannel();
+    this._connection = await amqp.connect(process.env.RABBITMQ_URL as string);
+  }
+  
   async sendToMultipleQueues(data: object): Promise<void> {
-    console.log('222222222222222222222222222222222');
-    if (!this.channel) {
+    if (!this._channel) {
       await this.init();
     }
 
-    if (!this.channel) {
+    if (!this._channel) {
       throw new Error("Channel is not connected");
     }
-
+    
     try {
-        console.log('33333333333333333333333333333333333333333333');
-      await this.channel.assertExchange('fanout_exchange', 'fanout', { durable: true });
-      console.log('444444444444444444444444444444444444444444444');
-      this.channel.publish('fanout_exchange', '', Buffer.from(JSON.stringify(data)), { persistent: true });
-      console.log(`Message sent to all services:`, data);
+      await this._channel.assertExchange('fanout_exchange', 'fanout', { durable: true });
+      this._channel.publish('fanout_exchange', '', Buffer.from(JSON.stringify(data)), { persistent: true });
+      console.log(`Message sent to all services:`.bgBlue.white.bold, data);
     } catch (error) {
       console.error('Error in producer:', error);
     }
   }
 
   async closeConnection(): Promise<void> {
-    console.log('5555555555555555555555555555555555555555555');
-    if (this.connection) {
-      await this.connection.close();
+    if (this._connection) {
+      await this._connection.close();
     }
   }
 }

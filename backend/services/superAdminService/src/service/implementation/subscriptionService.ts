@@ -6,39 +6,44 @@ import RabbitMQMessager from "../../events/rabbitmq/producers/producer";
 
 @injectable()
 export default class SubscriptionService implements ISubscriptionService {
+  private _subscriptionRepository: ISubscriptionRepository;
+  private _baseRepository: IBaseRepository;
+
   constructor(
-    @inject("ISubscriptionRepository") private subscriptionRepository: ISubscriptionRepository,
-    @inject("IBaseRepository") private baseRepository: IBaseRepository
-  ) {}
+    @inject("ISubscriptionRepository") subscriptionRepository: ISubscriptionRepository,
+    @inject("IBaseRepository") baseRepository: IBaseRepository
+  ) {
+    this._subscriptionRepository = subscriptionRepository;
+    this._baseRepository = baseRepository;
+  }
 
   async addSubscription(subscriptionData: any): Promise<any> {
-    try {
     const { planName, description, price, planType, durationInMonths, isActive } = subscriptionData;
 
-    const rabbitMQMessager = new RabbitMQMessager();
-    await rabbitMQMessager.init();
+    try {
+      if (!planName || !description || price === undefined || !planType || !durationInMonths)
+        return { success: false, message: "Missing required fields." };
 
-    if (!planName || !description || price === undefined || !planType || !durationInMonths)
-      return { success: false, message: "Missing required fields." };
+      if (typeof price !== "number" || price < 0)
+        return { success: false, message: "Price must be a positive number." };
 
-    if (typeof price !== "number" || price < 0)
-      return { success: false, message: "Price must be a positive number." };
+      if (!["Trial", "Basic", "Premium"].includes(planType))
+        return { success: false, message: `Invalid planType. Allowed values are Trial, Basic, Premium.` };
 
-    if (!["Trial", "Basic", "Premium"].includes(planType))
-      return { success: false, message: `Invalid planType. Allowed values are Trial, Basic, Premium.` };
+      if (typeof durationInMonths !== "number" || durationInMonths <= 0)
+        return { success: false, message: "Duration in months must be a positive integer." };
 
-    if (typeof durationInMonths !== "number" || durationInMonths <= 0)
-      return { success: false, message: "Duration in months must be a positive integer." };
+      if (typeof isActive !== "boolean")
+        return { success: false, message: "isActive must be a boolean value." };
 
-    if (typeof isActive !== "boolean")
-      return { success: false, message: "isActive must be a boolean value." };
+      if (await this._baseRepository.findByName(planName))
+        return { success: false, message: `Subscription plan with name "${planName}" already exists.` };
 
-    if (await this.baseRepository.findByName(planName))
-      return { success: false, message: `Subscription plan with name "${planName}" already exists.` };
+      const newSubscription = await this._subscriptionRepository.addSubscription(subscriptionData);
+      const rabbitMQMessager = new RabbitMQMessager();
+      await rabbitMQMessager.init();
+      await rabbitMQMessager.sendToMultipleQueues({ subscriptionData: newSubscription });
 
-    
-    const newSubscription = await this.subscriptionRepository.addSubscription(subscriptionData);
-    await rabbitMQMessager.sendToMultipleQueues({subscriptionData:newSubscription});
       return { success: true, message: "Subscription added successfully!", subscription: newSubscription };
     } catch (error) {
       console.error("Error adding subscription:", error);
@@ -48,7 +53,7 @@ export default class SubscriptionService implements ISubscriptionService {
 
   async fetchAllSubscriptions(): Promise<any> {
     try {
-      const subscriptions = await this.subscriptionRepository.fetchAllSubscriptions();
+      const subscriptions = await this._subscriptionRepository.fetchAllSubscriptions();
       return { success: true, subscriptions };
     } catch (error) {
       console.error("Error fetching subscriptions:", error);
@@ -58,10 +63,10 @@ export default class SubscriptionService implements ISubscriptionService {
 
   async updateIsActive(id: string): Promise<any> {
     try {
-      const subscription = await this.baseRepository.findById(id);
+      const subscription = await this._baseRepository.findById(id);
       if (!subscription) return { success: false, message: "Subscription not found." };
-  
-      const updatedSubscription = await this.baseRepository.findByIdAndUpdate(id, { isActive: !subscription.isActive });
+
+      const updatedSubscription = await this._baseRepository.findByIdAndUpdate(id, { isActive: !subscription.isActive });
       return updatedSubscription
         ? { success: true, message: "Subscription status updated successfully!", subscription: updatedSubscription }
         : { success: false, message: "Failed to update subscription status." };
@@ -69,15 +74,14 @@ export default class SubscriptionService implements ISubscriptionService {
       console.error("Error updating subscription:", error);
       return { success: false, message: "Internal error occurred while updating subscription." };
     }
-  }  
+  }
 
   async updateSubscriptionDetails(id: string, updateData: any): Promise<any> {
     try {
-      const subscription = await this.baseRepository.findById(id);
+      const subscription = await this._baseRepository.findById(id);
       if (!subscription) return { success: false, message: "Subscription not found." };
 
-      const updatedSubscription = await this.subscriptionRepository.updateById(id, updateData);
-
+      const updatedSubscription = await this._subscriptionRepository.updateById(id, updateData);
       return updatedSubscription
         ? { success: true, message: "Subscription details updated successfully!", subscription: updatedSubscription }
         : { success: false, message: "Failed to update subscription details." };
@@ -86,8 +90,4 @@ export default class SubscriptionService implements ISubscriptionService {
       return { success: false, message: "Internal error occurred while updating subscription." };
     }
   }
-
-  
-  
-  
 }

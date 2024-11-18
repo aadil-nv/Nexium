@@ -3,13 +3,8 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET as string
 const ACCESS_TOKEN_SECRET= process.env.ACCESS_TOKEN_SECRET as string
 
-console.log(`************************************`.bgGreen);
-console.log( "REFRESH_TOKEN_SECRET ----", REFRESH_TOKEN_SECRET);
-console.log("ACCESS_TOKEN_SECRET   -----",ACCESS_TOKEN_SECRET);
-console.log(`************************************`.bgGreen);
-
 export const generateAccessToken = (data: object): string => {
-    console.log("Generating access token..." ,data);
+ 
     
     return jwt.sign(
         data, 

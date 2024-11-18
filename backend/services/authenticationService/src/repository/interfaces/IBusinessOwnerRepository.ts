@@ -48,7 +48,7 @@ export interface IPaymentIntentResponse {
     findOtpByEmail(email: string): Promise<any | null>;
     updateVerificationStatus(email: string): Promise<any>;
     updateSubscriptionByEmail(email: string, subscription: ISubscription): Promise<IBusinessOwnerDocument | null>;
-    getOtpByEmail(email: string): Promise<any | null>;
+    // getOtpByEmail(email: string): Promise<any | null>;
     updateOtp(email: string, otp: string): Promise<void>;
     updatePassword(email: string, hashedPassword: string): Promise<void>;
   }

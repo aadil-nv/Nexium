@@ -14,6 +14,5 @@ superAdminRouter.post('/register', (req, res) => superAdminController.adminRegis
 
 superAdminRouter.post('/refresh-token', (req, res) => superAdminController.setNewAccessToken(req, res));
 
-// Uncomment this if you need the refresh access token route
 
 export default superAdminRouter;

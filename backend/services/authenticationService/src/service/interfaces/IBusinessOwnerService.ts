@@ -32,7 +32,9 @@ export interface IBusinessOwnerDocument extends Document {
 export interface IBusinessOwner extends Omit<IBusinessOwnerDocument, "_id"> {}
 
 export interface ITokenResponse {
+  id?: string;
   email?: string;
+  name?: string;
   success?: boolean;
   message?: string;
   accessToken?: string;

@@ -8,15 +8,14 @@ import SubscriptionModel from "../../models/subscriptionModel";
 @injectable()
 export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwnerDocument> implements IBusinessOwnerRepository {
   constructor(
-    @inject("BusinessOwnerModel") private businessOwnerModel: typeof BusinessOwnerModel
+    @inject("BusinessOwnerModel") private _businessOwnerModel: typeof BusinessOwnerModel
   ) {
-    super(businessOwnerModel);  // Pass the model to the base repository constructor
+    super(_businessOwnerModel);
   }
 
-  // Implement the registerBusinessOwner method
   async registerBusinessOwner(businessOwnerData: any): Promise<IBusinessOwnerDocument> {
     try {
-      const newBusinessOwner = new this.businessOwnerModel(businessOwnerData);
+      const newBusinessOwner = new this._businessOwnerModel(businessOwnerData);
       return await newBusinessOwner.save();
     } catch (error) {
       console.error("Error registering business owner:", error);

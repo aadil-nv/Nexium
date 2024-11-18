@@ -1,61 +1,147 @@
-import { injectable } from "inversify";
+import { injectable, inject } from "inversify";
 import IManagerService from "../interfaces/IManagerService";
 import { ITokenResponse } from "../interfaces/IBusinessOwnerService";
-import { inject } from "inversify";
-import  IManagerRepository  from "../../repository/interfaces/IManagerRepository";
-import bcrypt from 'bcryptjs';
+import IManagerRepository from "../../repository/interfaces/IManagerRepository";
 import { generateAccessToken, generateRefreshToken } from "../../utils/businessOwnerJWT";
+import generateOtp from "../../utils/otp";
+import nodemailer from "nodemailer";
+import OtpModel from "../../model/otpModel";
+
+const transporter = nodemailer.createTransport({
+  service: "Gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 @injectable()
-export  default class ManagerService implements IManagerService {
-    private managerRepository: IManagerRepository;
+export default class ManagerService implements IManagerService {
+  private _managerRepository: IManagerRepository;
 
-    constructor(@inject("IManagerRepository") managerRepository: IManagerRepository) {
-        this.managerRepository = managerRepository;
-    }
+  constructor(@inject("IManagerRepository") managerRepository: IManagerRepository) {
+    this._managerRepository = managerRepository;
+  }
 
-  
+  async managerLogin(email: string, password: string): Promise<ITokenResponse> {
+    console.log("email",email ,"passwor",password);
+    
+    try {
+      if (!email || !password) throw new Error('Email and password are required');
 
-    async managerLogin(email: string, password: string): Promise<any> {
-        try {
-          if (!email || !password) throw new Error('Email and password are required');
+      // const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      // const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
+
+      // if (!emailRegex.test(email)) throw new Error('Invalid email format');
+      // if (!passwordRegex.test(password)) throw new Error('Password must be at least 6 characters, 1 uppercase, 1 digit, 1 symbol');
+
+      const managerData = await this._managerRepository.findByEmail(email);
+      console.log("manaager data from service====",managerData);
       
-          const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-          const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
-      
-          if (!emailRegex.test(email)) throw new Error('Invalid email format');
-          if (!passwordRegex.test(password)) throw new Error('Password must be at least 6 characters, 1 uppercase, 1 digit, 1 symbol');
-      
-          const result = await this.managerRepository.findByEmail(email);
-          if (!result || result.managerCredentials.password !== password) throw new Error('Invalid email or password');
+      if (!managerData || managerData.managerCredentials.password !== password) throw new Error('Invalid email or password');
 
-          const accessToken = generateAccessToken({ result });
-          const refreshToken = generateRefreshToken({ result });
+      if (!managerData.isVerified) {
+        const otp = generateOtp();
+        await this.sendOtp(managerData.email, otp);
 
-      
-          return { id: result.id, email: result.email, name: result.name ,accessToken:accessToken, refreshToken:refreshToken };
-        } catch (error) {
-          console.error('Error in managerLogin:', error);
-          throw error; // Re-throw to maintain existing error handling
-        }
+        return {
+          success: false,
+          message: "Account not verified. Check your email for OTP",
+          isVerified: false,
+          email: managerData.email,
+        };
       }
-      
-    
-    
-    
-    
-    
 
-    
+      const accessToken = generateAccessToken({ result: managerData });
+      const refreshToken = generateRefreshToken({ result: managerData });
 
-    addManager(data: any): Promise<any> {
-        console.log(`Adding manager with data: `.bgWhite, data);
-        
-        try {
-            return this.managerRepository.create(data);
-        } catch (error) {
-            console.log(error);
-            return Promise.resolve(error); // Return a resolved promise with undefined
-        }
+      return {
+        id: managerData.id,
+        email: managerData.email,
+        name: managerData.name,
+        accessToken,
+        refreshToken,
+        success: true,
+      };
+    } catch (error) {
+      console.error('Error in managerLogin service:', error);
+      throw error;
     }
+  }
+
+  async sendOtp(email: string, otp: string): Promise<void> {
+    const otpRecord = new OtpModel({
+      email,
+      otp,
+      createdAt: new Date(),
+    });
+
+    await otpRecord.save();
+
+    const expirationTime = "10 minutes";
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your OTP for Verification",
+      text: `Your OTP for verification is ${otp}. It is valid for ${expirationTime}.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;">
+          <h2>Your OTP for Verification</h2>
+          <p>Your OTP for verification is <strong style="font-size: 24px; color: #4CAF50;">${otp}</strong>.</p>
+          <p>This OTP is valid for <strong style="color: #FF5722;">${expirationTime}</strong> from the time of request.</p>
+          <p>Date: <strong>${new Date().toLocaleString()}</strong></p>
+          <footer>&copy; ${new Date().getFullYear()} Nexium All rights reserved.</footer>
+        </div>
+      `,
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error("Error sending OTP email:", error);
+      throw new Error("Failed to send OTP. Please try again later.");
+    }
+  }
+
+  async validateOtp(email: string, otp: string): Promise<any> {
+    try {
+      const otpData = await this._managerRepository.findOtpByEmail(email);
+      if (!otpData) throw new Error("Manager not found");
+
+      if (otpData.otp === otp) {
+        const verification = await this._managerRepository.updateVerificationStatus(email);
+        if (!verification) {
+          return { success: false, message: "Manager verification failed." };
+        }
+
+        const result = await this._managerRepository.findByEmail(email);
+        const accessToken = generateAccessToken({ result });
+        const refreshToken = generateRefreshToken({ result });
+
+        return {
+          success: true,
+          email,
+          message: "OTP validated and company verified successfully",
+          accessToken,
+          refreshToken,
+        };
+      } else {
+        throw new Error("Invalid OTP provided.");
+      }
+    } catch (error) {
+      console.error("Error validating OTP:", error);
+      return { message: error instanceof Error ? error.message : "Unknown error occurred" };
+    }
+  }
+
+  async addManager(data: any): Promise<any> {
+    console.log("data derpppppppppppppppppppppppppppppppp",data);
     
+    try {
+      return this._managerRepository.create(data);
+    } catch (error) {
+      console.error(error);
+      return Promise.resolve(error);
+    }
+  }
 }

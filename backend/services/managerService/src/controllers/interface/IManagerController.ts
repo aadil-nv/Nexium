@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 export default interface IManagerController {
-    createManager(req: Request, res: Response): Promise<void>;
+    getManagers(req: Request, res: Response): Promise<Response>;
 }

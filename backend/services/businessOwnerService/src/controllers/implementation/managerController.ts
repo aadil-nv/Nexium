@@ -1,47 +1,42 @@
-import { Request, Response } from "express";    
+import { Request, Response } from "express";
 import IManagerController from "../interface/IManagerController";
 import IManagerService from "service/interface/IManagerService";
 import { inject, injectable } from "inversify";
 
 @injectable()
 export default class ManagerController implements IManagerController {
-    
-    private managerService: IManagerService;
-    constructor(@inject("IManagerService") managerService: IManagerService) {
-        this.managerService = managerService;
-    }
-    
-    async addManagers(req: any, res: any): Promise<any> {
-        console.log("Hitting the addManager from manger controller",);
-        try {
-            const managerData= req.body 
-            const businessOwnerId = (req as any).user.businessOwnerData._id;
- 
-            console.log("managerData", managerData);
-            console.log("businessOwnerId", businessOwnerId);
-            
-            await this.managerService.addManagers(businessOwnerId, managerData);
-            return res.status(201).json({ message: "Successfully added HR Manager" });
-        } catch (error) {
-            console.error("Error adding HR Manager:", error);
-            return res.status(500).json({ error: "Internal Server Error" });
-        }
-    }
+  private _managerService: IManagerService;
 
-    async getAllManagers(req: Request, res: Response): Promise<Response> {
-        console.log("Hitting the getAllManagers from manger controller");
-        try {
+  constructor(@inject("IManagerService") managerService: IManagerService) {
+    this._managerService = managerService;
+  }
 
-            const businessOwnerId = (req as any).user.businessOwnerData._id;
-            console.log("businessOwnerId from controller", businessOwnerId);
-            
-            const managers = await this.managerService.getAllManagers(businessOwnerId);
-       
-            return res.status(200).json(managers);
-        } catch (error) {
-            console.error("Error fetching registered companies:", error);
-            return res.status(500).json({ error: "Internal Server Error" });
-        }
+  async addManagers(req: Request, res: Response): Promise<Response> {
+    try {
+      const managerData = req.body;
+      const businessOwnerId = (req as any).user.businessOwnerData._id;
+
+      const newManagerData = await this._managerService.addManagers(businessOwnerId, managerData);
+      return res.status(200).json({ message: "Successfully added Manager", data: newManagerData });
+    } catch (error: any) {
+      const errorMessage = error.message || "Internal Server Error. Please try again later.";
+
+      if (error.name === "ValidationError") {
+        return res.status(400).json({ error: errorMessage });
+      }
+
+      return res.status(500).json({ error: errorMessage });
     }
+  }
 
+  async getAllManagers(req: Request, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = (req as any).user.businessOwnerData._id;
+      const managers = await this._managerService.getAllManagers(businessOwnerId);
+      
+      return res.status(200).json(managers);
+    } catch (error) {
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
 }

@@ -8,10 +8,8 @@ import superAdminRoutes from './routes/superAdminRoutes';
 import businessOwnerRoutes from './routes/businessOwnerRoutes';
 import managerRoutes from './routes/managerRoutes';
 import 'colors';
-import cookieParser from 'cookie-parser'; // Correct import
+import cookieParser from 'cookie-parser'; 
 import {connectConsumer}from './events/rabbitmq/connectConsumer';
-
-
 
 
 const app = express();
@@ -19,25 +17,15 @@ const PORT = process.env.PORT || 3000;
 
 connectDB();
 
-app.use(cors({
-  origin: 'http://localhost:5173', // replace with your frontend domain
-  credentials: true, // Allow cookies to be sent with requests
-}));
+app.use(cors({origin: 'http://localhost:5173', credentials: true, }));
 
 app.use(express.json());
 app.use(cookieParser()); // Use cookie-parser middleware
-
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
-});
-
-
-
+app.get('/', (req, res) => {res.send('Auth service is running..');});
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/business-owner', businessOwnerRoutes);
 app.use('/api/manager', managerRoutes);
+
 connectConsumer()
 
-app.listen(PORT, () => {
-  console.log(`authService is running on http://localhost:${PORT}`.bgGreen.bold);
-});
+app.listen(PORT, () => {console.log(`authenticationService  on http://localhost:${PORT}`.bgGreen.bold)});

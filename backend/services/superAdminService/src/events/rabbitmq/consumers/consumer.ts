@@ -69,7 +69,7 @@ export default class BusinessOwnerConsumer implements IConsumer {
     }
   }
 
-  // Graceful shutdown: Close connection and channel
+
   async shutdown() {
     try {
       if (this.channel) {

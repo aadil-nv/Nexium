@@ -1,40 +1,40 @@
 interface ManagerCredentials {
   companyName: string;
-  companyRegistrationNumber: string;
   email: string;
   password: string;
 }
 
 // Helper function to format email
-function formatEmail(companyName: string, managerName: string): string {
+function formatEmail(managerName: string, companyName: string, managerId: string): string {
   const formattedCompanyName = companyName.toLowerCase().replace(/\s+/g, '');
-  const formattedManagerName = managerName.toLowerCase().replace(/\s+/g, '');
-  return `${formattedManagerName}@${formattedCompanyName}.com`;
+  const formattedManagerName = managerName.toLowerCase().replace(/\s+/g, '').slice(0, 3); // First 3 letters of manager name
+  const formattedManagerId = managerId.slice(0, 3); // First 3 characters of managerId
+  return `${formattedManagerName}.${formattedCompanyName}${formattedManagerId}@gmail.com`;
 }
 
-// Helper function to generate a secure password in the format "Aadil@123"
-function generatePassword(managerName: string, registrationNumber: string): string {
-  const symbols = '!@#$%^&*';
-  const digits = '0123456789';
-  const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-  const randomDigit = digits[Math.floor(Math.random() * digits.length)];
-  const capitalizedName = managerName.charAt(0).toUpperCase();  // Capital first letter
-  const lowercasePart = managerName.slice(1, 6).toLowerCase();  // Next few lowercase letters
-  const lastThreeDigits = registrationNumber.slice(-3);  // Last 3 digits for more randomness
+// Helper function to generate a password
+function generatePassword(managerName: string, companyName: string, managerId: string): string {
+  const capitalizedManagerName = managerName.charAt(0).toUpperCase(); // Capital first letter
+  const lowercaseNamePart = managerName.slice(1, 3).toLowerCase();   // Next 2 lowercase letters
+  const formattedCompanyName = companyName.toLowerCase().replace(/\s+/g, '');
+  const formattedManagerId = managerId.slice(0, 3); // First 3 characters of managerId
 
-  // Construct a password like "Aadi@123"
-  return `${capitalizedName}${lowercasePart}${randomSymbol}${randomDigit}${lastThreeDigits}`;
+  // Construct password like "Aadnike@b45"
+  return `${capitalizedManagerName}${lowercaseNamePart}${formattedCompanyName}@${formattedManagerId}`;
 }
 
 // Main function to generate manager credentials
-export default function generateManagerCredentials(companyName: string, companyRegistrationNumber: string, managerName: string): { managerCredentials: ManagerCredentials } {
-  const email = formatEmail(companyName, managerName);
-  const password = generatePassword(managerName, companyRegistrationNumber);
+export default function generateManagerCredentials(
+  companyName: string,
+  managerName: string,
+  managerId: string
+): { managerCredentials: ManagerCredentials } {
+  const email = formatEmail(managerName, companyName, managerId);
+  const password = generatePassword(managerName, companyName, managerId);
 
   return {
     managerCredentials: {
       companyName,
-      companyRegistrationNumber,
       email,
       password,
     }

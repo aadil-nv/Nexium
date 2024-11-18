@@ -1,7 +1,7 @@
 import express, { Router } from "express";
 import container from "../config/inversify";
 import IBusinessOwnerController from "../controllers/interface/IBusinessOwnerController";
-import StripeWebhookController from "../hooks/StripeWebhook";
+
 
 const businessOwnerRouter = Router();
 
@@ -15,10 +15,6 @@ businessOwnerRouter.post("/register", (req, res,next) => businessOwnerController
 businessOwnerRouter.post("/otp-validation", (req, res,next) => businessOwnerController.validateOtp(req, res,next));
 
 businessOwnerRouter.post("/create-checkout-session", (req, res) => businessOwnerController.createCheckoutSession(req, res));
-
-businessOwnerRouter.post("/webhook", express.raw({ type: "application/json" }),
-    (req, res, next) => StripeWebhookController.handleStripeWebhook(req, res)
-);
 
 businessOwnerRouter.post("/forgot-password", (req, res) => businessOwnerController.forgotPassword(req, res));
 

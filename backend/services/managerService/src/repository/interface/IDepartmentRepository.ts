@@ -1,0 +1,9 @@
+import IDepartment from "../../entities/departmentEntities";
+import BaseRepository from "../../repository/implementation/baseRepository";
+
+export default interface IDepartmentRepository extends BaseRepository<any> {
+        addDepartments(departmentName: string, employees: any): Promise<any>;
+        findDepartment(departmentId:string):Promise<any>
+        updateDepartment(departmentId: string, updateData: any):Promise<any>
+        deleteDepartment(departmentId: string): Promise<any>
+}
