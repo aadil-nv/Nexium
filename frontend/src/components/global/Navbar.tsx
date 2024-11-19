@@ -6,6 +6,7 @@ import { TooltipComponent } from "@syncfusion/ej2-react-popups";
 import { useNavigate } from "react-router-dom";
 import { logout as superAdminLogout } from "../../features/superAdminSlice";
 import { logout as businessOwnerLogout } from "../../features/businessOwnerSlice";
+import { logout as managerLogout } from "../../features/managerSlice";
 import useAuth from "../../hooks/useAuth";
 import useTheme from "../../hooks/useTheme";
 import DropdownMenu from "./DropDown";
@@ -33,7 +34,7 @@ export default function Navbar() {
       superAdminInstance.post("/superAdmin/api/superadmin/logout");
       navigate("/superadmin-login");
     }else if (manager.isAuthenticated) {
-      dispatch(superAdminLogout());
+      dispatch(managerLogout());
       managerInstance.post("/manager/api/manger/logout");
       navigate("/manager-login");
     }

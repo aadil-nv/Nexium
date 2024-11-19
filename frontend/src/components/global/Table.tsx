@@ -5,16 +5,17 @@ import * as XLSX from "xlsx";
 import { FaSearch, FaFileCsv, FaFileExcel, FaPlus } from "react-icons/fa";
 import { motion } from "framer-motion";
 import DebouncedInput from "../ui/DebouncedInput";
-import AddEmployeeModal from "../ui/AddEmployeeModal";
+import AddManagerModal from "../ui/AddManagerModal";
 import useTheme from "../../hooks/useTheme";
 import { Skeleton } from "antd";
 import useAuth from "../../hooks/useAuth";
 import {TableProps} from '../../utils/interfaces'
+import AddEmployeeModal from "./AddEmployeeModal";
 
 
 function Table<T>({ data, columns, loading, error }: TableProps<T>) {
   const { themeColor } = useTheme();
-  const { superAdmin, businessOwner } = useAuth();
+  const { superAdmin, businessOwner ,manager } = useAuth();
   const [globalFilter, setGlobalFilter] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -47,7 +48,7 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
           />
         </div>
 
-        {businessOwner.isAuthenticated && !superAdmin.isAuthenticated && (
+        {businessOwner.isAuthenticated || manager.isAuthenticated && !superAdmin.isAuthenticated && (
           <motion.button
             onClick={() => setIsModalVisible(true)}
             style={{ backgroundColor: themeColor }}
@@ -151,8 +152,11 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
           Next
         </button>
       </div>
+      {businessOwner.isAuthenticated ? <AddManagerModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} /> :
+       manager.isAuthenticated ? <AddEmployeeModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} /> : null}
 
-      <AddEmployeeModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
+      
+      
     </div>
   );
 }

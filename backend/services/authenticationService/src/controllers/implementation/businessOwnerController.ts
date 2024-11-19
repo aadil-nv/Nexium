@@ -8,6 +8,7 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
 
 console.log("-------------------------------------------");
+console.log("fghftdhfghdfghfgh");
 
 console.log(process.env.COOKIE_MAX_AGE );
 console.log("-------------------------------------------");
@@ -24,6 +25,8 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async login(req: Request, res: Response): Promise<Response> {
+    console.log("hitiing login-------------------");
+    
     try {
       const { email, password } = req.body;
       if (!email || !password) return res.status(400).json({ message: "Email and password are required" });

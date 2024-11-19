@@ -29,6 +29,9 @@ const PlanSelection: React.FC = () => {
     fetchPlans();
   }, []);
 
+  console.log("plan is ---",plans);
+  
+
   const handlePayment = async () => {
     if (!selectedPlan) return alert('Please select a plan first.');
     try {

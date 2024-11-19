@@ -5,17 +5,32 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import 'colors';
 import morgan from 'morgan';
+import { createStream } from 'rotating-file-stream';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
 const app = express();
 
+// Ensure logs directory exists
+const logDirectory = path.resolve(__dirname, './logs');
+if (!fs.existsSync(logDirectory)) {
+  fs.mkdirSync(logDirectory);
+}
+
+// Log rotation setup for 7 days
+const accessLogStream = createStream('access.log', {
+  interval: '1d', // Rotate daily
+  path: logDirectory,
+});
+
+app.use(morgan('combined', { stream: accessLogStream })); // Write logs to file
+app.use(morgan('dev')); // Also log to console
+
 // Middleware setup
 app.use(cookieParser());
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
-
-// Log HTTP requests using Morgan
-app.use(morgan('dev'));
 
 // Define target URLs for proxying
 const targets = {

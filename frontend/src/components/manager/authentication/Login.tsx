@@ -11,7 +11,6 @@ import { motion } from "framer-motion";
 import { LoginFormData } from "../../../utils/interfaces";
 import { managerLogin } from "../../../api/managerApi";
 
-
 export default function ManagerLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -20,13 +19,19 @@ export default function ManagerLogin() {
   const { register, handleSubmit, formState: { errors, isValid } } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
   const dispatch = useDispatch();
 
-
   const handleLogin = async (data: LoginFormData) => {
     setLoading(true);
     setLoginError(null);
-  
+
     try {
       const responseData = await managerLogin(data);
+       console.log("responseData------------",responseData);
+       
+      if (responseData.success === false) {
+        navigate("/manager-otpvalidation", { state: { email: responseData.email, message: responseData.message } });
+        return;
+      }
+      // If verified, proceed to dashboard
       dispatch(login({ role: "manager", token: responseData.accessToken }));
       navigate("/manager/dashboard");
     } catch (err: any) {
@@ -37,29 +42,29 @@ export default function ManagerLogin() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-gray-200">
+    <div className="flex items-center justify-center min-h-screen bg-gray-200 py-2">
       <motion.div
         className="bg-white shadow-md rounded-2xl flex flex-col md:flex-row w-full max-w-4xl"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5}}
+        transition={{ duration: 0.5 }}
       >
         {/* Left Section (Login Form) */}
-        <div className="w-full md:w-3/5 p-5 ">
-          <div className="text-left font-bold ">
+        <div className="w-full md:w-3/5 p-5">
+          <div className="text-left font-bold">
             <img src={images.nexuimLogoWithName} alt="Logo" className="w-20 h-auto" />
           </div>
           <div className="py-10">
             <div className="text-center">
-              <h2 className="text-4xl font-bold text-red-500">Login to your account</h2>
-              <div className="w-24 h-1 bg-red-500 mx-auto mt-4 mb-4"></div>
+              <h2 className="text-4xl font-bold text-green-500">Login to your account</h2>
+              <div className="w-24 h-1 bg-green-500 mx-auto mt-4 mb-4"></div>
             </div>
 
             <form onSubmit={handleSubmit(handleLogin)} className="flex flex-col items-center w-full max-w-xs">
               {/* Email Input */}
               <motion.div
-                className={`bg-gray-100 w-full p-2 flex items-center mb-3 rounded-md border-2 
-                  ${errors.email ? "border-red-500" : isValid ? "border-green-500" : "border-gray-300"}`}
+                className={`bg-gray-100 w-full p-2 flex items-center mb-3 rounded-md border-2
+                  ${errors.email ? "border-green-500" : isValid ? "border-green-500" : "border-gray-300"}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
@@ -72,12 +77,12 @@ export default function ManagerLogin() {
                   {...register("email")}
                 />
               </motion.div>
-              {errors.email && <p className="text-red-500 text-xs mb-2">{errors.email.message}</p>}
+              {errors.email && <p className="text-green-500 text-xs mb-2">{errors.email.message}</p>}
 
               {/* Password Input */}
               <motion.div
-                className={`bg-gray-100 w-full p-2 flex items-center mb-3 rounded-md border-2 relative 
-                  ${errors.password ? "border-red-500" : isValid ? "border-green-500" : "border-gray-300"}`}
+                className={`bg-gray-100 w-full p-2 flex items-center mb-3 rounded-md border-2 relative
+                  ${errors.password ? "border-green-500" : isValid ? "border-green-500" : "border-gray-300"}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
@@ -97,15 +102,15 @@ export default function ManagerLogin() {
                   {showPassword ? <FaEyeSlash className="text-gray-400" /> : <FaEye className="text-gray-400" />}
                 </button>
               </motion.div>
-              {errors.password && <p className="text-red-500 text-xs mb-2">{errors.password.message}</p>}
+              {errors.password && <p className="text-green-500 text-xs mb-2">{errors.password.message}</p>}
 
               {/* Login Error */}
-              {loginError && <p className="text-red-500 text-xs mb-2">{loginError}</p>}
+              {loginError && <p className="text-green-500 text-xs mb-2">{loginError}</p>}
 
               {/* Submit Button */}
               <motion.button
                 type="submit"
-                className={`w-full pt-2 border-2 border-red-500 text-red-500 rounded-full px-12 py-2 inline-block font-semibold hover:bg-red-500 hover:text-white transition-colors
+                className={`w-full pt-2 border-2 border-green-500 text-green-500 rounded-full px-12 py-2 inline-block font-semibold hover:bg-green-500 hover:text-white transition-colors
                 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                 disabled={loading}
                 initial={{ scale: 0.9 }}
@@ -120,7 +125,7 @@ export default function ManagerLogin() {
 
         {/* Right Section (Decoration) */}
         <motion.div
-          className="w-full md:w-2/5 bg-red-500 text-white rounded-tr-2xl rounded-br-2xl py-36 px-12 flex flex-col justify-center items-center"
+          className="w-full md:w-2/5 bg-green-500 text-white rounded-tr-2xl rounded-br-2xl py-36 px-12 flex flex-col justify-center items-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -132,7 +137,7 @@ export default function ManagerLogin() {
           <p className="mb-4 text-center">Welcome back Admin, show your skill</p>
           <a
             href="/"
-            className="border-2 border-white rounded-full px-12 py-2 inline-block font-semibold hover:bg-white hover:text-red-500 transition-colors"
+            className="border-2 border-white rounded-full px-12 py-2 inline-block font-semibold hover:bg-white hover:text-green-500 transition-colors"
           >
             Home
           </a>

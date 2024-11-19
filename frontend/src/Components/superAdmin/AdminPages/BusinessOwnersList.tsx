@@ -38,7 +38,7 @@ const BusinessOwnersList: React.FC = () => {
   const toggleBlockStatus = async (businessOwner: IBusinessOwner) => {
     try {
       const newIsBlocked = !businessOwner.isBlocked;
-      await superAdminInstance.patch(`/superAdmin/businessowner/update-isblocked/${businessOwner.id}`, { isBlocked: newIsBlocked });
+      await superAdminInstance.patch(`/superAdmin/api/businessowner/update-isblocked/${businessOwner.id}`, { isBlocked: newIsBlocked });
       setData(data.map((item) => (item.id === businessOwner.id ? { ...item, isBlocked: newIsBlocked } : item)));
     } catch (err) {
       console.error("Error updating block status:", err);

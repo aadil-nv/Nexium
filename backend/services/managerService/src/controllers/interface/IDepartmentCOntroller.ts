@@ -5,4 +5,6 @@ export default interface IDepartmentController {
     getDepartments(req: Request, res: Response): Promise<any>;
     removeEmployee(req: Request, res: Response): Promise<any>;
     deleteDepartment(req: Request, res: Response): Promise<any>;
+    updateDepartmentName(req: Request, res: Response): Promise<any>;
+    addEmployeeToDepartment(req: Request, res: Response): Promise<any>;
 }

@@ -2,6 +2,9 @@ import IDepartmentRepository from "../../repository/interface/IDepartmentReposit
 import IDepartmentService from "../interface/IDepartmentService";
 import { inject, injectable } from "inversify";
 
+
+console.log("dfgdfgd777dfgdsdfsdfsf7ssdfsdffsdfsdsfsdfsdfsdfsddf43532d453sfssfg");
+
 @injectable()
 export default class DepartmentService implements IDepartmentService {
   constructor(
@@ -69,4 +72,70 @@ export default class DepartmentService implements IDepartmentService {
       throw error;
     }
   }
+
+  async updateDepartmentName(departmentId: string, newDepartmentName: string): Promise<any> {
+    try {
+        // Validation: Ensure the new department name is not empty and has at least 3 characters
+        if (!newDepartmentName || newDepartmentName.length < 3) {
+            throw new Error("Department name must be at least 3 characters long and cannot be empty");
+        }
+
+        // Retrieve department using repository
+        const department = await this._departmentRepository.findDepartment(departmentId);
+
+        if (!department) {
+            throw new Error("Department not found");
+        }
+
+        // Update the department name
+        department.departmentName = newDepartmentName;
+
+        // Save the updated department
+        return await this._departmentRepository.saveDepartment(department);
+
+          // Return the updated department
+    } catch (error: any) {
+      console.error("Error in removeEmployee service:", error.message);
+      throw error;
+    }
+}
+
+async addEmployeeToDepartment(employeeId: string, departmentId: string) {
+  try {
+      // Fetch the department
+      const department = await this._departmentRepository.findDepartment(departmentId);
+      if (!department) {
+          throw new Error('Department not found.');
+      }
+
+      // Fetch the employee
+      const employee = await this._departmentRepository.findEmployee(employeeId);
+      if (!employee) {
+          throw new Error('Employee not found.');
+      }
+
+      // Add the employee to the department
+      const updatedDepartment = await this._departmentRepository.addEmployeeToDepartment(departmentId, employee);
+
+      return {
+          departmentId: updatedDepartment._id,
+          departmentName: updatedDepartment.departmentName,
+          employeeId: employee.id,
+          employeeName: employee.name,
+      };
+  } catch (error: any) {
+      console.error('Error in service layer:', error.message);
+      throw error;
+  }
+}
+
+
+ 
+
+
+  
+  
+      
+      
+
 }

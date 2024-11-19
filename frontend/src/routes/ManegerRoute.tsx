@@ -11,6 +11,9 @@ import Announcements from "../components/global/Announcements";
 import Notifications from "../components/global/Notifications";
 import ServiceRequests from "../components/manager/dashboard/ServiceRequest";
 import ManagerPrivateRoute from "./ManagerPrivateRoute";
+import OnBordingEmployeeList from "../components/manager/dashboard/OnBordingEmployeeList";
+import PreBoarding from "../components/manager/dashboard/PreBoarding";
+import Interview from "../components/manager/dashboard/Interview";
 
 
 const MangerRoutes = () => {
@@ -19,7 +22,7 @@ const MangerRoutes = () => {
      <Route element={<ManagerPrivateRoute />}>
       <Route element={<DashBoardLayout />}>
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="emoployees" element={<Employees />} />
+        <Route path="employees" element={<Employees />} />
         <Route path="departments" element={<Departments />} />
         <Route path="attendances" element={<Attendance />} />
         <Route path="service-requests" element={<ServiceRequests />} />
@@ -29,6 +32,9 @@ const MangerRoutes = () => {
         <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<Notifications />} />
         <Route path="settings" element={<Notifications />} />
+        <Route path="onboarding-employee-list" element={<OnBordingEmployeeList />} />
+        <Route path="pre-boarding" element={<PreBoarding />} />
+        <Route path="interview" element={<Interview />} />
       </Route>
      </Route>
     </Routes>

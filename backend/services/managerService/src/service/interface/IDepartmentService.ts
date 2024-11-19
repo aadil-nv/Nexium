@@ -3,4 +3,6 @@ export default interface IDepartmentService {
     getDepartments():Promise<any>
     removeEmployee(employeeId:string , departmentId:string):Promise<any>
     deleteDepartment(departmentId: string): Promise<any>
+    updateDepartmentName(departmentId: string, newDepartmentName: string): Promise<any>
+    addEmployeeToDepartment(employeeId: string, departmentId: string):Promise<any>
 }

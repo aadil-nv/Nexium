@@ -1,55 +1,51 @@
-import React, { useState } from 'react';
-import ProfileCard from '../global/ProfileCard';
-import PersonalDetails from '../global/PersonalDetailes';
-import Address from '../global/Address';
-import Documents from '../global/Documents';
-import PasswordChange from '../global/Securitie';
-import { Box } from '@mui/material';
+import React from 'react';
+import { Tabs } from 'antd'; // Import Ant Design's Tabs component
+import PersonalDetailes from './PersonalDetailes'; // Your personal details component
+import Documents from './Documents'; // Your documents component
+import Address from './Address'; // Your address component
+import Securitie from './Securitie'; // Your securities component
+
+const { TabPane } = Tabs;
 
 export default function Profile() {
-  const [activeSection, setActiveSection] = useState('personaldetails'); // Default section to display
-
-  const handleSectionChange = (section: string) => {
-    setActiveSection(section);
-  };
-
   return (
-    <Box sx={{
-      padding: { xs: 2, sm: 3 },
-      display: 'flex',
-      flexDirection: { xs: 'column', sm: 'row' },
-      height: '100vh',
-      width: '100%',
-      justifyContent: 'space-between',
-      overflowY: 'auto', // Enable vertical scroll
-    }}>
-      {/* Left Side: Profile Card */}
-      <Box sx={{
-        flex: 1,
-        mb: { xs: 3, sm: 0 },
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-      }}>
-        <ProfileCard handleSectionChange={handleSectionChange} />
-      </Box>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Tabs 
+        defaultActiveKey="1" 
+        centered
+        tabBarStyle={{
+          fontSize: '16px', // Default font size
+          padding: '0 20px',
+        }}
+      >
+        <TabPane tab="Personal Details" key="1">
+          <PersonalDetailes />
+        </TabPane>
+        <TabPane tab="Address" key="2">
+          <Address />
+        </TabPane>
+        <TabPane tab="Documents" key="3">
+          <Documents />
+        </TabPane>
+        <TabPane tab="Professional Details" key="4">
+          <Securitie />
+        </TabPane>
+      </Tabs>
 
-      {/* Right Side: Active Section */}
-      <Box sx={{
-        flex: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        overflowY: 'auto', // Ensure scrolling
-        maxHeight: '100vh',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-      }}>
-        {activeSection === 'personaldetails' && <PersonalDetails />}
-        {activeSection === 'address' && <Address />}
-        {activeSection === 'documents' && <Documents />}
-        {activeSection === 'passwordchange' && <PasswordChange />}
-      </Box>
-    </Box>
+      {/* Mobile styling */}
+      <style>
+        {`
+          @media (max-width: 768px) {
+            .ant-tabs-tab {
+              font-size: 12px; /* Reduce font size for mobile */
+              padding: 8px 12px; /* Adjust padding */
+            }
+            .ant-tabs {
+              font-size: 12px;
+            }
+          }
+        `}
+      </style>
+    </div>
   );
 }

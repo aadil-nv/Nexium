@@ -5,6 +5,7 @@ import BaseRepository from "./baseRepository";
 import departmentModel from "../../models/departmentModel";
 import IDepartment from '../../entities/departmentEntities';
 import { Model } from "mongoose";
+import employeeModel from "../../models/employeeModel"
 
 @injectable()
 export default class DepartmentRepository extends BaseRepository<any> implements IDepartmentRepository {
@@ -73,7 +74,59 @@ export default class DepartmentRepository extends BaseRepository<any> implements
         }
       }
     
+
     
+      async saveDepartment(department: any): Promise<any> {
+        try {
+          const updatedDepartment = await this._departmentModel.findByIdAndUpdate(
+            department._id, // Assuming the `department` object has an `_id` field
+            { departmentName: department.departmentName }, // Pass only the fields to update
+            { new: true } // Return the updated document
+          );
+      
+          return updatedDepartment; // Return the updated department
+        } catch (error:any) {
+          throw new Error(`Failed to save department: ${error.message}`);
+        }
+      }
+
+
+      async findEmployee(employeeId: string): Promise<any> {
+        try {
+            return await employeeModel.findById(employeeId);
+        } catch (error) {
+            console.error('Error in Repository (findEmployee):', error);
+            throw error;
+        }
+    }
     
+      
+    async addEmployeeToDepartment(departmentId: string, employee: any): Promise<any> {
+      try {
+          const department = await this._departmentModel.findById(departmentId);
+          if (!department) {
+              throw new Error('Department not found.');
+          }
+  
+          // Check if the employee is already part of the department
+          if (department.employees.some((emp: any) => emp.id === employee.id)) {
+              throw new Error('Employee is already in the department.');
+          }
+  
+          // Add the employee to the department
+          department.employees.push(employee);
+  
+          // Save the updated department
+          await department.save();
+  
+          return department;
+      } catch (error) {
+          console.error('Error in Repository (addEmployeeToDepartment):', error);
+          throw error;
+      }
+  }
+  
+      
+      
 
 }

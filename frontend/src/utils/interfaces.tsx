@@ -25,3 +25,11 @@ export interface LoginFormData{
 export interface PrivateRouteProps {
   children: React.ReactNode;
 }
+
+export interface Employee {
+  id: string;      // Unique identifier for the employee
+  name: string;    // Employee's name
+  position: string; // Job position of the employee
+  email: string;   // Employee's email address
+  isOnline: boolean; // Employee's online status
+}

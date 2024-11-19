@@ -10,6 +10,10 @@ import images from "../../../images/images"
 import { login   } from "../../../features/superAdminSlice";
 import {privateApi} from "../../../services/axiosConfig"
 import useAuth from "../../../hooks/useAuth";
+// import { RESET_STORE } from '../../../store/resetAction';
+
+// Somewhere in your application
+
 
 
 // Define Form Inputs based on the Zod schema
@@ -26,6 +30,7 @@ export default function superAdminLogin() {
   const {register, handleSubmit,formState: { errors, isValid },} = useForm<FormInputs>({resolver: zodResolver(loginSchema),});
   const dispatch = useDispatch();
   const {businessOwner,superAdmin}=useAuth()
+  // dispatch({ type: RESET_STORE });
 
   console.log("businessOwner",businessOwner.isAuthenticated);
   console.log("superAdmin",superAdmin.isAuthenticated);

@@ -4,7 +4,7 @@ import ManagerCard from '../../global/ManagerCard';
 import useTheme from '../../../hooks/useTheme';
 import {businessOwnerInstance} from '../../../services/businessOwnerInstance'
 import { Skeleton, Empty } from 'antd';
-import AddEmployeeModal from '../../ui/AddEmployeeModal';
+import AddManagerModal from '../../ui/AddManagerModal';
 import { FaPlus } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import {logout as businessOwnerLogout}  from '../../../features/businessOwnerSlice';
@@ -49,7 +49,7 @@ export default function EmployeeList() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6 flex-wrap">
-        <h1 className="text-2xl font-semibold w-full sm:w-auto text-center sm:text-left">Employee List</h1>
+        <h1 className="text-2xl text-black font-semibold w-full sm:w-auto text-center sm:text-left">Managers List</h1>
         <motion.button
             onClick={() => setIsModalVisible(true)}
             style={{ backgroundColor: themeColor }}
@@ -57,7 +57,7 @@ export default function EmployeeList() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <FaPlus className="mr-2" /> Add Employee
+            <FaPlus className="mr-2" />Manager
           </motion.button>
       </div>
 
@@ -122,7 +122,7 @@ export default function EmployeeList() {
             </motion.div>
           ))
         )}
-         <AddEmployeeModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
+         <AddManagerModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
       </div>
     </div>
   );
