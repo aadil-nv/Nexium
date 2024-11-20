@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { loginSchema } from "../../../config/validationSchema"; // Import Zod schema
 import { useDispatch } from "react-redux";
 import images from "../../../images/images";
-import { login } from "../../../features/managerSlice";
+import { login } from "../../../redux/slices/managerSlice";
 import { motion } from "framer-motion";
 import { LoginFormData } from "../../../utils/interfaces";
 import { managerLogin } from "../../../api/managerApi";

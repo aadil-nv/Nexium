@@ -25,6 +25,8 @@ export default interface IEmployee extends Document {
     currentStatus: string;
     companyName: string;
     salary: number;
+    skills: string[];
+    
   };
   employeeCredentials: {
     companyEmail: string;

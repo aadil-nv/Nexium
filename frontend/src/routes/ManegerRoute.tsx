@@ -14,6 +14,7 @@ import ManagerPrivateRoute from "./ManagerPrivateRoute";
 import OnBordingEmployeeList from "../components/manager/dashboard/OnBordingEmployeeList";
 import PreBoarding from "../components/manager/dashboard/PreBoarding";
 import Interview from "../components/manager/dashboard/Interview";
+import Profile from "../components/global/Profile";
 
 
 const MangerRoutes = () => {
@@ -35,6 +36,7 @@ const MangerRoutes = () => {
         <Route path="onboarding-employee-list" element={<OnBordingEmployeeList />} />
         <Route path="pre-boarding" element={<PreBoarding />} />
         <Route path="interview" element={<Interview />} />
+        <Route path="profile" element={<Profile />} />
       </Route>
      </Route>
     </Routes>

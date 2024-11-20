@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Input, Select, DatePicker } from 'antd';
 import { createStyles, useTheme } from 'antd-style';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
+import { RootState } from '../../redux/store/store';
 import { toast } from 'react-toastify';
 import { managerInstance } from '../../services/managerInstance';
 import { z } from 'zod';

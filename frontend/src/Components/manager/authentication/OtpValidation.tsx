@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom"; // Add react-router-dom for navigation
 import images from "../../../images/images";
 import { validateOtp } from "../../../api/managerApi"; // Adjust the import according to your project structure
-import { login } from "../../../features/managerSlice";
+import { login } from "../../../redux/slices/managerSlice";
 import { useDispatch } from "react-redux";
 
 export default function OtpValidation() {

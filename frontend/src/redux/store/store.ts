@@ -1,13 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import rootReducer from './rootReducer'; // Make sure this file exists or define the reducers directly
+import rootReducer from '../reducers/rootReducer'; 
 
 // Persist configurations
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['menu', 'businessOwner', 'superAdmin' ,'manager'], // Only persist these slices
+  whitelist: ['menu', 'businessOwner', 'superAdmin' ,'manager','employee'], 
 };
 
 // Apply persistence to root reducer
@@ -17,7 +17,7 @@ export const store = configureStore({
   reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false, // Disabling serializable check for persist
+      serializableCheck: false,
     }),
 });
 

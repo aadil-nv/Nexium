@@ -1,7 +1,7 @@
 import axios from "axios";
-import { logout as superAdminLogout } from "../features/superAdminSlice";
-import { logout as businessOwnerLogout } from "../features/businessOwnerSlice";
-import { store } from "../store/store";
+import { logout as superAdminLogout } from "../redux/slices/superAdminSlice";
+import { logout as businessOwnerLogout } from "../redux/slices/businessOwnerSlice";
+import { store } from "../redux/store/store";
 
 let isRefreshing = false;
 let refreshSubscribers: any[] = [];

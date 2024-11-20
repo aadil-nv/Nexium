@@ -1,51 +1,33 @@
-import React from 'react';
-import { Tabs } from 'antd'; // Import Ant Design's Tabs component
-import PersonalDetailes from './PersonalDetailes'; // Your personal details component
-import Documents from './Documents'; // Your documents component
-import Address from './Address'; // Your address component
-import Securitie from './Securitie'; // Your securities component
+import React, { useState } from 'react';
+import { Tabs } from 'antd';
+import useTheme from '../../hooks/useTheme';
+import { businessOwnerTabs, superAdminTabs, managerTabs, employeeTabs } from "../../utils/centralPaths";
+import useAuth from '../../hooks/useAuth';
 
 const { TabPane } = Tabs;
 
 export default function Profile() {
+  const [activeKey, setActiveKey] = useState("1");
+  const { businessOwner, superAdmin, manager, employeee } = useAuth();
+  
+  const tabsToShow = businessOwner.isAuthenticated ? businessOwnerTabs :
+                     superAdmin.isAuthenticated ? superAdminTabs :
+                     manager.isAuthenticated ? managerTabs :
+                     employeee.isAuthenticated ? employeeTabs : [];
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <Tabs 
-        defaultActiveKey="1" 
-        centered
-        tabBarStyle={{
-          fontSize: '16px', // Default font size
-          padding: '0 20px',
-        }}
-      >
-        <TabPane tab="Personal Details" key="1">
-          <PersonalDetailes />
-        </TabPane>
-        <TabPane tab="Address" key="2">
-          <Address />
-        </TabPane>
-        <TabPane tab="Documents" key="3">
-          <Documents />
-        </TabPane>
-        <TabPane tab="Professional Details" key="4">
-          <Securitie />
-        </TabPane>
+      <Tabs activeKey={activeKey} onChange={setActiveKey} defaultActiveKey="1" centered tabBarStyle={{ fontSize: 16, padding: '0 20px' }}>
+        {tabsToShow.map(({ key, tab, component }) => (
+          <TabPane tab={tab} key={key}>{component}</TabPane>
+        ))}
       </Tabs>
 
-      {/* Mobile styling */}
-      <style>
-        {`
-          @media (max-width: 768px) {
-            .ant-tabs-tab {
-              font-size: 12px; /* Reduce font size for mobile */
-              padding: 8px 12px; /* Adjust padding */
-            }
-            .ant-tabs {
-              font-size: 12px;
-            }
-          }
-        `}
-      </style>
+      <style>{`
+        .ant-tabs-tab { color: red; }
+        .ant-tabs-tab-active { color: red; font-weight: bold; }
+        @media (max-width: 768px) { .ant-tabs-tab { font-size: 12px; padding: 8px 12px; } }
+      `}</style>
     </div>
   );
 }

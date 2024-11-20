@@ -33,3 +33,17 @@ export interface Employee {
   email: string;   // Employee's email address
   isOnline: boolean; // Employee's online status
 }
+
+
+export interface UserStatus { //! Part of navbar Functions do not remove
+  isAuthenticated: boolean;
+}
+
+export interface NavbarFunctionsProps {
+  isBusinessOwner: UserStatus;
+  isSuperAdmin: UserStatus;
+  isManager: UserStatus;
+  isEmployee: UserStatus;
+  dispatch: any;
+  navigate: any;
+}

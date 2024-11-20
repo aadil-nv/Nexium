@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Form, Input, Button } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
+import useTheme from '../../hooks/useTheme';
 
 export default function Address() {
   const [form] = Form.useForm();
-  const [isEditing, setIsEditing] = useState(false); 
+  const [isEditing, setIsEditing] = useState(false);
+  const { themeColor } = useTheme();
 
   const initialValues = {
     street: '123 Main St',
@@ -14,39 +16,36 @@ export default function Address() {
     zip: '12345',
   };
 
+  const fields = ['street', 'city', 'state', 'country', 'zip'];
+
   const onFinish = (values: any) => console.log('Form values:', values);
 
   return (
     <div className="mt-6">
-
-      
       <Form form={form} onFinish={onFinish} layout="vertical" initialValues={initialValues} className="mt-4">
-        {['street', 'city', 'state', 'country', 'zip'].map((field) => (
-          <Form.Item
-            key={field}
-            name={field}
-            label={field.replace(/([A-Z])/g, ' $1').toUpperCase()}
-            rules={[{ required: true, message: `Please enter your ${field.toLowerCase()}` }]}
-          >
-            <Input
-              placeholder={`Enter your ${field.toLowerCase()}`}
-              disabled={!isEditing} 
-            />
+        {fields.map((field) => (
+          <Form.Item key={field} name={field} label={field.charAt(0).toUpperCase() + field.slice(1)} rules={[{ required: true, message: `Please enter your ${field}` }]}>
+            <Input placeholder={`Enter your ${field}`} disabled={!isEditing} />
           </Form.Item>
         ))}
-        
+
         {isEditing && (
           <Form.Item>
-            <Button type="primary" htmlType="submit" block>Save Changes</Button>
+            <Button type="primary" htmlType="submit" block style={{ backgroundColor: themeColor, borderColor: themeColor }}>
+              Save Changes
+            </Button>
           </Form.Item>
         )}
       </Form>
 
-      {!isEditing && (
-        <Button icon={<EditOutlined />} onClick={() => setIsEditing(!isEditing)} className="mt-3">
-          Edit Address
-        </Button>
-      )}
+      <Button
+        icon={<EditOutlined />}
+        onClick={() => setIsEditing(!isEditing)}
+        className="mt-3 text-white"
+        style={{ backgroundColor: themeColor, borderColor: themeColor }}
+      >
+        Edit Address
+      </Button>
     </div>
   );
 }

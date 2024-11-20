@@ -1,7 +1,7 @@
 import axios from "axios";
 
-import { logout as managerLogout } from "../features/managerSlice";
-import { store } from "../store/store";
+import { logout as managerLogout } from "../redux/slices/managerSlice";
+import { store } from "../redux/store/store";
 
 let isRefreshing = false;
 let refreshSubscribers: any[] = [];

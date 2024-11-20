@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MdOutlineCancel } from "react-icons/md";
 import { BsCheck } from "react-icons/bs";
 import { useDispatch, useSelector } from 'react-redux';
-import { setThemeMode, setThemeColor } from '../../features/menuSlice';
+import { setThemeMode, setThemeColor } from '../../redux/slices/menuSlice';
 import { motion } from 'framer-motion';
 
 interface ThemeSettingsProps {

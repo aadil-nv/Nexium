@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setUserRole } from '../../../features/menuSlice';
+import { setUserRole } from '../../../redux/slices/menuSlice';
 import { z } from 'zod';
-import { login } from '../../../features/businessOwnerSlice';
+import { login } from '../../../redux/slices/businessOwnerSlice';
 import axios from 'axios';
 
 // Zod schema for validation

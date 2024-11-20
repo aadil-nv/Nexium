@@ -7,7 +7,7 @@ import "./index.css";
 import { ThemeProvider } from "./components/landing/landingPage/theme-provider.tsx";
 import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react'; // Import PersistGate
-import  {store ,persistor} from "./store/store.ts"; // Update import
+import  {store ,persistor} from "./redux/store/store.ts"; // Update import
 
 createRoot(document.getElementById("root")!).render(
   <Provider store={store}>

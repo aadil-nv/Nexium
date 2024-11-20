@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { RootState } from '../store/store'; 
+import { RootState } from '../redux/store/store'; 
 
 const useTheme = () => {
   const isActiveMenu = useSelector((state: RootState) => state.menu.activeMenu);

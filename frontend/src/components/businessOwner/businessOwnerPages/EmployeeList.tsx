@@ -7,7 +7,7 @@ import { Skeleton, Empty } from 'antd';
 import AddManagerModal from '../../ui/AddManagerModal';
 import { FaPlus } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
-import {logout as businessOwnerLogout}  from '../../../features/businessOwnerSlice';
+import {logout as businessOwnerLogout}  from '../../../redux/slices/businessOwnerSlice';
 import axios from 'axios';
 
 export default function EmployeeList() {

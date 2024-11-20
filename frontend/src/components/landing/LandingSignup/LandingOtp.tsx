@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast'; // Import React Hot Toast
 import { useDispatch } from 'react-redux';
-import { login } from '../../../features/businessOwnerSlice';
+import { login } from '../../../redux/slices/businessOwnerSlice';
 
 
 // Define the type for the location state

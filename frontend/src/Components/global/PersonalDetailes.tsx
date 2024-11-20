@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Upload } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined } from '@ant-design/icons';
-import CardImage from './CardImage'; 
+import CardImage from './CardImage';
+import useTheme from '../../hooks/useTheme';
 
 export default function PersonalDetails() {
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false); 
+  const { themeColor } = useTheme(); // Get theme color
 
   const initialValues = {
     companyName: 'Demo Company',
@@ -44,18 +46,32 @@ export default function PersonalDetails() {
                 prefix={field === 'email' ? <MailOutlined /> : field === 'phoneNumber' ? <PhoneOutlined /> : <UserOutlined />}
                 placeholder={`Enter your ${field.toLowerCase()}`}
                 disabled={!isEditing} 
+                style={{ borderColor: themeColor }} // Apply theme color to input fields
               />
             </Form.Item>
           ))}
+          
           {isEditing && (
             <Form.Item>
-              <Button type="primary" htmlType="submit" block>Save Changes</Button>
+              <Button 
+                type="primary" 
+                htmlType="submit" 
+                block 
+                style={{ backgroundColor: themeColor, borderColor: themeColor }} // Apply theme color to button
+              >
+                Save Changes
+              </Button>
             </Form.Item>
           )}
         </Form>
 
         {!isEditing && (
-          <Button icon={<EditOutlined />} onClick={() => setIsEditing(!isEditing)} className="mt-3">
+          <Button 
+            icon={<EditOutlined />} 
+            onClick={() => setIsEditing(!isEditing)} 
+            className="mt-3"
+            style={{ backgroundColor: themeColor, borderColor: themeColor }} // Apply theme color to button
+          >
             Edit Details
           </Button>
         )}

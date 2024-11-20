@@ -3,8 +3,8 @@ import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setUserRole } from '../../../features/menuSlice';
-import { login } from '../../../features/businessOwnerSlice';
+import { setUserRole } from '../../../redux/slices/menuSlice';
+import { login } from '../../../redux/slices/businessOwnerSlice';
 
 type Plan = { _id: string; planName: string; price: number; features: string[] };
 
