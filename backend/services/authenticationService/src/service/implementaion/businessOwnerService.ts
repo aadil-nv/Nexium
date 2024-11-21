@@ -3,7 +3,6 @@ import {IBusinessOwnerDocument,ISubscription} from "../../entities/businessOwner
 import bcrypt from "bcryptjs";
 import {generateAccessToken,generateRefreshToken,} from "../../utils/businessOwnerJWT";
 import mongoose from "mongoose";
-import businessOwnerSchema from "../../model/businessOwnerModel";
 import generateOtp from "../../utils/otp";
 import nodemailer from "nodemailer";
 import otpModel from "../../model/otpModel";
@@ -11,7 +10,6 @@ import Stripe from "stripe"
 import IBusinessOwnerService from "../interfaces/IBusinessOwnerService";
 import IBusinessOwnerRepository from "repository/interfaces/IBusinessOwnerRepository";
 import { inject, injectable } from "inversify";
-import sendToSuperAdmin from "../../events/rabbitmq/producers/producer";
 import RabbitMQMessager from "../../events/rabbitmq/producers/producer";
 import { IBusinessOwner } from "controllers/interface/IBusinessOwnerController";
 import { generateOtpMail } from "../../utils/generateOtpMail";
@@ -36,6 +34,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
 
     async login(email: string, password: string): Promise<ITokenResponse> {
+        console.log("hitttttttttttttttttttttttttttttttttttttttttttttt");
+        
         try {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
@@ -44,16 +44,23 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             if (!passwordRegex.test(password)) return { success: false, message: "Password must be at least 6 characters, 1 uppercase letter, 1 number, and 1 special character" };
     
             const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+            console.log("businessOwnerData-->", businessOwnerData);
+            
             if (!businessOwnerData || !(await bcrypt.compare(password, businessOwnerData.personalDetails.password))) 
                 return { success: false, message: "Invalid email or password" };
             if (!businessOwnerData.isVerified) {
                 const otp = generateOtp();
+                console.log("otp-->", otp);
+                
                 await this.sendOtp(businessOwnerData.personalDetails.email, otp);
+                console.log("email-->", businessOwnerData.personalDetails.email);
+                
                 return { success: false, message: "Account not verified. Check your email for OTP", isVerified:false, email: businessOwnerData.personalDetails.email };
             }
     
             const accessToken = generateAccessToken({ businessOwnerData });
             const refreshToken = generateRefreshToken({ businessOwnerData });
+             
     
             return { success: true, message: "Login successful", accessToken, refreshToken, isVerified: true, email: businessOwnerData.personalDetails.email };
     
@@ -243,140 +250,49 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         };
     }
     
-    // private async processPaidPlan(plan: any, amount: number, currency: string, email: string, rabbitMQMessager: RabbitMQMessager): Promise<IPaymentIntentResponse> {
-    //     const session = await stripe.checkout.sessions.create({
-    //         payment_method_types: ['card'],
-    //         line_items: [{
-    //             price_data: {
-    //                 currency: currency,
-    //                 product_data: { name: plan.planName, description: `Payment for ${plan.features} Plan` },
-    //                 unit_amount: amount,
-    //             },
-    //             quantity: 1,
-    //         }],
-    //         mode: 'payment',
-    //         success_url: 'http://localhost:5173/business-owner/dashboard',
-    //         cancel_url: 'http://localhost:5173/plan',
-    //     });
-    
-    //     console.log('Stripe Session Created:', session);
-    
-    //     const oldBusinessOwnerData = await this.businessOwnerRepository.findByEmail(email);
-    //     if (!oldBusinessOwnerData) {
-    //         throw new Error('Business owner not found');
-    //     }
-    
-    //     console.log(`oldBusinessOwnerData: ${JSON.stringify(oldBusinessOwnerData)}`.bgCyan);
-    //     console.log(`%%%%%%%%%%%%%%%%%`.bgRed,oldBusinessOwnerData.subscription.status);
-    
-    //     if (oldBusinessOwnerData.subscription.status == "Pending" ) {
-    //         const subscription: ISubscription = {
-    //             subscriptionId: plan._id,
-    //             startDate: new Date(),
-    //             endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
-    //             status: 'Active',
-    //         };
-    //         await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
-    //     }
-    //     const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
-    //     const accessToken = generateAccessToken({ businessOwnerData });
-    //     const refreshToken = generateRefreshToken({ businessOwnerData });
-    //     rabbitMQMessager.sendToMultipleQueues({ businessOwnerData });
-    
-    //     return { session, success: true, planName: plan.planName, accessToken, refreshToken };
-    // }
-
     private async processPaidPlan(plan: any, amount: number, currency: string, email: string, rabbitMQMessager: RabbitMQMessager): Promise<IPaymentIntentResponse> {
-        console.log('Starting processPaidPlan...');
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: currency,
+                    product_data: { name: plan.planName, description: `Payment for ${plan.features} Plan` },
+                    unit_amount: amount,
+                },
+                quantity: 1,
+            }],
+            mode: 'payment',
+            success_url: 'http://localhost:5173/business-owner/dashboard',
+            cancel_url: 'http://localhost:5173/plan',
+        });
     
-        // Explicitly type sagaState with rollback actions as an array of async functions
-        const sagaState: { stage: string; rollbackActions: (() => Promise<void>)[] } = { 
-            stage: 'INIT', 
-            rollbackActions: [] 
-        };
+        console.log('Stripe Session Created:', session);
     
-        try {
-            // Step 1: Create a Stripe session
-            const session = await stripe.checkout.sessions.create({
-                payment_method_types: ['card'],
-                line_items: [{
-                    price_data: {
-                        currency: currency,
-                        product_data: { name: plan.planName, description: `Payment for ${plan.features} Plan` },
-                        unit_amount: amount,
-                    },
-                    quantity: 1,
-                }],
-                mode: 'payment',
-                success_url: 'http://localhost:5173/business-owner/dashboard',
-                cancel_url: 'http://localhost:5173/plan',
-            });
-    
-            console.log('Stripe Session Created:', session);
-            sagaState.stage = 'STRIPE_SESSION_CREATED';
-    
-            // Step 2: Fetch the business owner data
-            const oldBusinessOwnerData = await this.businessOwnerRepository.findByEmail(email);
-            if (!oldBusinessOwnerData) {
-                throw new Error('Business owner not found');
-            }
-    
-            console.log(`Fetched old businessOwnerData: ${JSON.stringify(oldBusinessOwnerData)}`.bgCyan);
-            sagaState.stage = 'BUSINESS_OWNER_FETCHED';
-    
-            // Step 3: Update subscription if needed
-            if (oldBusinessOwnerData.subscription.status === 'Pending') {
-                const subscription: ISubscription = {
-                    subscriptionId: plan._id,
-                    startDate: new Date(),
-                    endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
-                    status: 'Active',
-                };
-    
-                await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
-                sagaState.stage = 'SUBSCRIPTION_UPDATED';
-    
-                // Add rollback action for subscription
-                sagaState.rollbackActions.push(async () => {
-                    console.log('Rolling back subscription update...');
-                    const previousSubscription = { ...oldBusinessOwnerData.subscription };
-                    await this.businessOwnerRepository.updateSubscriptionByEmail(email, previousSubscription);
-                });
-            }
-    
-            // Step 4: Fetch updated business owner data
-            const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
-            console.log(`Updated businessOwnerData: ${JSON.stringify(businessOwnerData)}`.bgCyan);
-    
-            const accessToken = generateAccessToken({ businessOwnerData });
-            const refreshToken = generateRefreshToken({ businessOwnerData });
-    
-            // Step 5: Send data to RabbitMQ
-            rabbitMQMessager.sendToMultipleQueues({ businessOwnerData });
-            sagaState.stage = 'MESSAGE_SENT_TO_QUEUES';
-    
-            return { session, success: true, planName: plan.planName, accessToken, refreshToken };
-    
-        } catch (error) {
-            console.error('Error in processPaidPlan:', error);
-    
-            // Rollback in reverse order of actions
-            for (const rollbackAction of sagaState.rollbackActions.reverse()) {
-                try {
-                    await rollbackAction();
-                } catch (rollbackError) {
-                    console.error('Error during rollback:', rollbackError);
-                }
-            }
-    
-            throw new Error('Failed to process paid plan');
+        const oldBusinessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+        if (!oldBusinessOwnerData) {
+            throw new Error('Business owner not found');
         }
+    
+        console.log(`oldBusinessOwnerData: ${JSON.stringify(oldBusinessOwnerData)}`.bgCyan);
+        console.log(`%%%%%%%%%%%%%%%%%`.bgRed,oldBusinessOwnerData.subscription.status);
+    
+        if (oldBusinessOwnerData.subscription.status == "Pending" ) {
+            const subscription: ISubscription = {
+                subscriptionId: plan._id,
+                startDate: new Date(),
+                endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+                status: 'Active',
+            };
+            await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
+        }
+        const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+        const accessToken = generateAccessToken({ businessOwnerData });
+        const refreshToken = generateRefreshToken({ businessOwnerData });
+        rabbitMQMessager.sendToMultipleQueues({ businessOwnerData });
+    
+        return { session, success: true, planName: plan.planName, accessToken, refreshToken };
     }
-    
-    
-
-  
-     
+       
     async resendOtp(email: string): Promise<{ success: boolean; message: string }> {
         const otp = generateOtp();
         const existingOtp = await this.businessOwnerRepository.findOtpByEmail(email);

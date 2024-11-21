@@ -24,7 +24,7 @@ export const validateOtp = async (email: string, otp: string) => {
   }
 };
 
-export const loginBusinessOwnerAPI = async (email, password) => {
+export const loginBusinessOwnerAPI = async (email:string, password:string) => {
   try {
     const { data } = await axios.post(
       `${apiUrl}/authentication/api/business-owner/login`,

@@ -10,8 +10,12 @@ import { IBusinessOwnerDocument,ISubscription } from "../../entities/businessOwn
 export default class BusinessOwnerRepository implements IBusinessOwnerRepository {
 
   async findByEmail(email: string): Promise<IBusinessOwnerDocument | null> {
+    console.log("hitting repo---",email);
+    console.log("hitting repo---",email);
+    
     try {
-      const businessOwner = await businessOwnerModel.findOne({ "personalDetails.email": email }).exec();
+      const businessOwner = await businessOwnerModel.findOne({ "personalDetails.email": email  }).exec();
+      console.log("hitting businessOwner---",businessOwner);
       return businessOwner;
     } catch (error) {
       // Log the error for debugging purposes
@@ -56,9 +60,6 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
   }
 
   async updateSubscriptionByEmail(email: string, subscription: ISubscription): Promise<IBusinessOwnerDocument | null> {
-    console.log(`======================================`.bgWhite);
-    
-    console.log(`email: ${email} subscription: ${JSON.stringify(subscription)}`.bgRed);
   
     try {
       // Update the subscription field for the business owner with the given email
@@ -72,15 +73,12 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
         throw new Error("No business owner found with the provided email.");
       }
   
-      console.log(`updatedBusinessOwner: ${JSON.stringify(updatedBusinessOwner)}`.bgGreen);
-  
       return updatedBusinessOwner;
     } catch (error) {
       console.error("Error updating subscription:", error);
       throw new Error(error instanceof Error ? error.message : "Unknown error occurred.");
     }
   }
-  
   
 
   async updateOtp(email: string, otp: string): Promise<void> {

@@ -48,6 +48,6 @@ app.use('/superAdmin', createProxyMiddleware({ target: targets.superAdmin, chang
 app.use('/manager', createProxyMiddleware({ target: targets.manager, changeOrigin: true }));
 app.use('/employee', createProxyMiddleware({ target: targets.employee, changeOrigin: true }));
 
-// Start the serverfsdfsdfsdfsdfsdfsdfsdfsdfdsfdsf
+// Start the serverfsdfsdfsdfsdfsdfsasdsadasddfsdfsdfdsfdsfsdasdsadasd
 const port = process.env.GATEWAY_PORT || 3000;
 app.listen(port, () => console.log(`Gateway server running on http://localhost:${port}`.bgMagenta.bold));

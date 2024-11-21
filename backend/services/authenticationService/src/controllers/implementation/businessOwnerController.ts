@@ -21,7 +21,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     
     try {
       const { email, password } = req.body;
-      // if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
+      if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
 
       const { success, message, accessToken, refreshToken, isVerified, email: companyEmail } =
         await this._businessOwnerService.login(email, password);
@@ -49,7 +49,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     try {
       const { companyName, email, password, phone } = req.body;
       const businessOwnerData = { companyName, email, password, phone };
-      const { success, message, email: registeredEmail } = await this._businessOwnerService.register(businessOwnerData);
+      const { success, message, email: registeredEmail  } = await this._businessOwnerService.register(businessOwnerData);
       res.status(201).json({ message, email: registeredEmail, success });
     } catch (error) {
       console.error("Error during registration:", error);
@@ -84,11 +84,12 @@ export default class BusinessOwnerController implements IBusinessOwnerController
 
     try {
       const result = await this._businessOwnerService.createCheckoutSession(plan, amount, currency, email);
-
+        console.log("result----------------------......-.....>",result);
+        
       res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
-         maxAge: parseInt(process.env.COOKIE_MAX_AGE || '604800000'), sameSite: 'lax' });
+         maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
-         maxAge: parseInt(process.env.COOKIE_MAX_AGE || '604800000'), sameSite: 'lax' });
+         maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
 
       const response = result.planName === 'Trial' 
         ? { message: result.message, success: result.success, role: result.role, planName: result.planName }

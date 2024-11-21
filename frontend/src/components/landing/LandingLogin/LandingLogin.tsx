@@ -42,6 +42,8 @@ export default function LandingLoginPage() {
 
     try {
       const data = await loginBusinessOwnerAPI(email, password); 
+      console.log("data ",data);
+      
 
       if (data.success) {
         dispatch(login({ role: 'businessOwner', token: data.accessToken }));

@@ -34,4 +34,6 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
       throw new Error("Could not add subscription.");
     }
   }
+
+ 
 }
