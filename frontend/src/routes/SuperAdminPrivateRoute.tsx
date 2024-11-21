@@ -8,9 +8,8 @@ interface SuperAdminPrivateRouteProps {
 
 const SuperAdminPrivateRoute = ({ children }: SuperAdminPrivateRouteProps) => {
   const{superAdmin}= useAuth()
-  const isAuthenticated = superAdmin?.isAuthenticated;
 
-  if (!isAuthenticated) {
+  if (!superAdmin.isAuthenticated) {
     return <Navigate to="/superadmin-login" />;
   }
 

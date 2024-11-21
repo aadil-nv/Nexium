@@ -9,6 +9,7 @@ import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react'; // Import PersistGate
 import  {store ,persistor} from "./redux/store/store.ts"; // Update import
 
+
 createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}> {/* Add PersistGate */}

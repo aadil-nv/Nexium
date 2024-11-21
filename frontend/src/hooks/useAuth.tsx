@@ -6,9 +6,9 @@ const useAuth = () => {
   const businessOwner = useSelector((state: RootState) => state.businessOwner);
   const superAdmin = useSelector((state: RootState) => state.superAdmin);
   const manager = useSelector((state: RootState) => state.manager);
-  const employeee= useSelector((state: RootState) => state.employee);
+  const employee= useSelector((state: RootState) => state.employee);
 
-  return { businessOwner, superAdmin,manager,employeee };
+  return { businessOwner, superAdmin,manager,employee };
 };
 
 export default useAuth;

@@ -9,7 +9,6 @@ import ServiceRequests from "../components/businessOwner/BusinessOwnerPages/Serv
 import EmployeeList from "../components/businessOwner/businessOwnerPages/EmployeeList";
 import Notifications from "../components/global/Notifications";
 import Announcements from "../components/global/Announcements";
-import Table from "../components/global/Table";
 import DemoTable from "../components/businessOwner/businessOwnerPages/DemoTable";
 import Profile from "../components/global/Profile";
 import PersonalDetailes from "../components/global/PersonalDetailes";

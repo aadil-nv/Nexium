@@ -1,13 +1,13 @@
+// LandingLoginPage.js
 import React, { useState } from 'react';
 import { useTheme } from '../landingPage/theme-provider';
 import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setUserRole } from '../../../redux/slices/menuSlice';
 import { z } from 'zod';
 import { login } from '../../../redux/slices/businessOwnerSlice';
-import axios from 'axios';
+import { loginBusinessOwnerAPI } from '../../../api/authApi'; // Import the loginUser function
 
 // Zod schema for validation
 const loginSchema = z.object({
@@ -24,10 +24,10 @@ export default function LandingLoginPage() {
   const [credentialError, setCredentialError] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
- 
+  
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
       const errors = result.error.format();
@@ -37,16 +37,12 @@ export default function LandingLoginPage() {
       });
       return;
     }
-  
+
     setErrors({});
-  
+
     try {
-      const { data } = await axios.post(
-        'http://localhost:3000/authentication/api/business-owner/login',
-        { email, password },
-        { withCredentials: true }
-      );
-  
+      const data = await loginBusinessOwnerAPI(email, password); 
+
       if (data.success) {
         dispatch(login({ role: 'businessOwner', token: data.accessToken }));
         navigate('/business-owner/dashboard');
@@ -56,7 +52,7 @@ export default function LandingLoginPage() {
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Invalid email or password';
       setCredentialError(errorMessage);
-  
+
       if (error.response?.data?.email) {
         navigate('/otp', { state: { email: error.response.data.email } });
       } else {
@@ -64,10 +60,6 @@ export default function LandingLoginPage() {
       }
     }
   };
-  
-  
-  
-  
 
   const inputBorderStyle = (field: string) => {
     if (errors[field]) return 'border-red-500';

@@ -2,9 +2,8 @@ import React, { useEffect, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import Table from "../../global/Table";
 import { Skeleton } from "antd";
-import { superAdminInstance } from "../../../services/superAdminInstance";
-import  {IBusinessOwner}  from "../../../utils/interfaces";
-
+import { fetchBusinessOwners, updateBlockStatus } from "../../../api/superAdminApi";
+import { IBusinessOwner } from "../../../utils/interfaces";
 
 const BusinessOwnersList: React.FC = () => {
   const [data, setData] = useState<IBusinessOwner[]>([]);
@@ -38,7 +37,7 @@ const BusinessOwnersList: React.FC = () => {
   const toggleBlockStatus = async (businessOwner: IBusinessOwner) => {
     try {
       const newIsBlocked = !businessOwner.isBlocked;
-      await superAdminInstance.patch(`/superAdmin/api/businessowner/update-isblocked/${businessOwner.id}`, { isBlocked: newIsBlocked });
+      await updateBlockStatus(businessOwner.id, newIsBlocked);
       setData(data.map((item) => (item.id === businessOwner.id ? { ...item, isBlocked: newIsBlocked } : item)));
     } catch (err) {
       console.error("Error updating block status:", err);
@@ -47,29 +46,11 @@ const BusinessOwnersList: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchCompanies = async () => {
-      setLoading(true);
-      try {
-        const { data: responseData } = await superAdminInstance.get("/superAdmin/api/businessowner/find-all-companies");
-        setData(
-          responseData.businessOwners.map((owner: any) => ({
-            id: owner._id,
-            name: owner.name,
-            email: owner.email,
-            phone: owner.phone,
-            registrationNumber: owner.registrationNumber,
-            subscriptionStatus: owner.subscription?.status || "N/A",
-            isBlocked: owner.isBlocked,
-          }))
-        );
-      } catch (err) {
-        console.error("Error fetching business owners:", err);
-        setError("Failed to load data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCompanies();
+    setLoading(true);
+    fetchBusinessOwners()
+      .then(owners => setData(owners))
+      .catch(() => setError("Failed to load data"))
+      .finally(() => setLoading(false));
   }, []);
 
   return (

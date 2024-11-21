@@ -8,12 +8,12 @@ const { TabPane } = Tabs;
 
 export default function Profile() {
   const [activeKey, setActiveKey] = useState("1");
-  const { businessOwner, superAdmin, manager, employeee } = useAuth();
+  const { businessOwner, superAdmin, manager, employee } = useAuth();
   
   const tabsToShow = businessOwner.isAuthenticated ? businessOwnerTabs :
                      superAdmin.isAuthenticated ? superAdminTabs :
                      manager.isAuthenticated ? managerTabs :
-                     employeee.isAuthenticated ? employeeTabs : [];
+                     employee.isAuthenticated ? employeeTabs : [];
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

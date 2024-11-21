@@ -1,6 +1,6 @@
 import amqp from 'amqplib';
 import { inject, injectable } from 'inversify';
-import IConsumer from 'entities/consumerEntities';
+import IConsumer from '../../../entities/consumerEntities';
 import IBusinessOwnerService from 'service/interface/IBusinessOwnerService';
 
 @injectable()

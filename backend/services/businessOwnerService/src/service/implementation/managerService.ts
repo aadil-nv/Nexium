@@ -36,7 +36,7 @@ export default class ManagerService implements IManagerService {
       if (existingEmail) throw new Error("Manager with this email already exists");
 
       const managerCredentials = createManagerCredentials(
-        businessOwnerData.companyName,
+        businessOwnerData.companyDetails.companyName,
         businessOwnerId,
         managerData.name
       );

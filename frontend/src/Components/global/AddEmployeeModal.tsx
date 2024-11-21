@@ -4,8 +4,7 @@ import { createStyles, useTheme } from 'antd-style';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
 import { toast } from 'react-toastify';
-import { managerInstance } from '../../services/managerInstance';
-import { z } from 'zod';
+import { fetchDepartments, addEmployee } from '../../api/managerApi'; // Importing the new service
 import { addEmployeeSchema } from '../../config/validationSchema'; // Importing the validation schema
 import { useForm } from 'antd/lib/form/Form';
 
@@ -47,22 +46,16 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
   const [form] = useForm(); // Form instance from Ant Design
 
   useEffect(() => {
-    const fetchDepartments = async () => {
+    const loadDepartments = async () => {
       try {
-        const response = await managerInstance.get('/manager/api/department/get-departments');
-        if (response.status === 200) {
-          const departmentNames = response.data.map((department: { departmentName: string }) => department.departmentName);
-          setDepartments(departmentNames);
-        } else {
-          toast.error('Failed to fetch departments!');
-        }
+        const departmentNames = await fetchDepartments(); // Use the separated function
+        setDepartments(departmentNames);
       } catch (error) {
-        toast.error('An error occurred while fetching departments!');
-        console.error('Error:', error);
+        toast.error('Failed to fetch departments!');
       }
     };
 
-    fetchDepartments();
+    loadDepartments();
   }, []);
 
   const classNames = {
@@ -113,19 +106,12 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
         phoneNumber: formValues.phoneNumber,
         salary: Number(formValues.salary),
         workTime: formValues.workTime,
-       
         joiningDate: formValues.joiningDate,
       };
 
-      const payload = { employeedata: employeeData };
-
       try {
-        const response = await managerInstance.post('/manager/api/employee/add-employees', payload, {
-          withCredentials: true,
-        });
-
-        if (response.status === 200) {
-          toast.success('Employee added successfully!');
+        const success = await addEmployee(employeeData); // Use the separated function
+        if (success) {
           setFormData({
             name: '',
             position: '',
@@ -137,12 +123,9 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
             department: '',
           });
           onClose();
-        } else {
-          toast.error('Failed to add the employee!');
         }
       } catch (error) {
-        toast.error(error.response.data.message);
-        console.error('Error:', error);
+        console.error('Error adding employee:', error);
       }
     } else {
       form.setFields(
@@ -175,8 +158,7 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
             key={field.id}
             label={field.label}
             name={field.id}
-            rules={[{ required: true, message: `Please input ${field.label.toLowerCase()}!` }]}
-          >
+            rules={[{ required: true, message: `Please input ${field.label.toLowerCase()}!` }]}>
             {field.type === 'select' ? (
               <Select
                 placeholder={`Select ${field.label}`}

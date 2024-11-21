@@ -1,16 +1,9 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import {IDropdownMenuProps}  from "../../interface/GlobalInterface"
 
 
-interface DropdownMenuProps {
-  themeColor: string;
-  onLogoutClick: () => void;
-  onProfileClick: () => void;
-  onSettingsClick: () => void;
-}
 
-
-const DropdownMenu: React.FC<DropdownMenuProps> = ({
+const DropdownMenu: React.FC<IDropdownMenuProps> = ({
   themeColor,
   onLogoutClick,
   onProfileClick,

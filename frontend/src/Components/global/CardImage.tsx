@@ -1,13 +1,10 @@
 import React from 'react';
 import { Card, Button } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
+import {ICardImageProps}  from "../../interface/GlobalInterface"
 
-interface CardImageProps {
-  title: string;
-  imgSrc: string;
-}
 
-const CardImage: React.FC<CardImageProps> = ({ title, imgSrc }) => (
+const CardImage: React.FC<ICardImageProps> = ({ title, imgSrc }) => (
   <Card
     hoverable
     className="mb-2 flex flex-col items-center pt-4 h-[40%]"

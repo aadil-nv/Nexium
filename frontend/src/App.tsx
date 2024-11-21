@@ -5,9 +5,10 @@ import { ToastContainer } from 'react-toastify';
 import SuperAdminRoutes from './routes/SuperAdminRoute';
 import BusinessOwnerRoutes from './routes/BusinessOwnerRoute';
 import LocalRoute from './routes/LocalRoute';
-import HrMangerRoutes from './routes/ManegerRoute';
-import useAuth from './hooks/useAuth';
+import MangerRoutes from './routes/ManegerRoute';
 import 'react-toastify/dist/ReactToastify.css'; 
+
+
 
 
 
@@ -15,17 +16,15 @@ import 'react-toastify/dist/ReactToastify.css';
 export default function App() {
   return (
     <Router>
-        <ToastContainer />
+      <ToastContainer />
       <Toaster />
       <Routes>
-      <Route path='/*'  element={  <LocalRoute />} />
+        <Route path='/*'  element={  <LocalRoute />} />
         <Route path="/business-owner/*" element={ <BusinessOwnerRoutes /> } />
         <Route path="/super-admin/*" element={<SuperAdminRoutes /> } />
-        
-        <Route path="/manager/*" element={ <HrMangerRoutes />} />
+        <Route path="/manager/*" element={ <MangerRoutes />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
-   
   );
 }

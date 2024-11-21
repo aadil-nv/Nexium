@@ -2,19 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FaInfoCircle, FaUserLock, FaUnlock, FaCheckCircle, FaTimesCircle } from 'react-icons/fa'; // Import icons for verified/unverified
 import useTheme from '../../hooks/useTheme';
+import {IManagerCardProps} from '../../interface/managerInterface'
 
-interface ManagerCardProps {
-  image: string;
-  name: string;
-  email: string;
-  onViewDetails: () => void;
-  onToggleStatus: () => void; // Changed from onUpdate to onToggleStatus for blocking/unblocking
-  isActive: boolean; // New prop to track the active status
-  isVerified: boolean; // New prop for verification status
-  isBlocked: boolean; // New prop to check if the manager is blocked
-}
 
-const ManagerCard: React.FC<ManagerCardProps> = ({
+
+const ManagerCard: React.FC<IManagerCardProps> = ({
   image,
   name,
   email,

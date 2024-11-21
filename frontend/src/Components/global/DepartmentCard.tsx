@@ -3,26 +3,10 @@ import { motion } from 'framer-motion';
 import { FaEllipsisV } from 'react-icons/fa';
 import useTheme from '../../hooks/useTheme';
 import AddCandidateModal from './AddCandidateModal';
-import axios from 'axios';
+import { removeEmployee } from '../../api/managerApi'; 
+import {IDepartmentCardProps} from '../../interface/GlobalInterface'
 
-interface Employee {
-  id: string;
-  photo: string;
-  name: string;
-  email: string;
-  position: string;
-  isOnline: boolean;
-}
 
-interface DepartmentCardProps {
-  departmentName: string;
-  employees: Employee[];
-  themeColor: string;
-  onEditEmployee: (id: string) => void;
-  onRemoveEmployee: (id: string) => void;
-  onRemoveDepartment: () => void;
-  departmentId:string
-}
 
 export default function DepartmentCard({
   departmentName,
@@ -32,7 +16,7 @@ export default function DepartmentCard({
   onRemoveEmployee,
   onRemoveDepartment,
   departmentId,
-}: DepartmentCardProps) {
+}: IDepartmentCardProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false); // For toggling modal visibility
   const { isActiveMenu, themeMode } = useTheme();
@@ -49,25 +33,15 @@ export default function DepartmentCard({
     setIsModalVisible(false); // Close the modal
   };
 
-  // Function to handle employee removal
-  const handleRemoveEmployee = async (employeeId: string) => {
+  const handleRemoveEmployeeClick = async (employeeId: string) => {
     try {
-      const response = await axios.patch(
-        'http://localhost:3000/manager/api/department/remove-employee',
-        {
-          employeeId, // employee ID to be removed
-          departmentId: departmentId, // department ID (you should send the correct department ID)
-        }
-      );
-      // Immediately update the UI without requiring a page refresh
-      onRemoveEmployee(employeeId);
-      console.log('Employee removed successfully:', response.data);
+      const response = await removeEmployee(employeeId, departmentId); 
+      onRemoveEmployee(employeeId); 
+      console.log('Employee removed successfully:', response);
     } catch (error) {
       console.error('Error removing employee:', error);
     }
   };
-
-  
 
   return (
     <motion.div
@@ -80,14 +54,11 @@ export default function DepartmentCard({
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      {/* Top section with department name and dropdown */}
       <div className="flex justify-between items-center mb-4 relative">
         <h2 className="text-xl font-bold text-gray-800">{departmentName}</h2>
-
-        {/* Dropdown Menu */}
         <div className="relative">
           <button
-            className=" text-gray-800 font-semibold py-2 px-4 rounded-full z-10 hover:bg-gray-300 transition"
+            className="text-gray-800 font-semibold py-2 px-4 rounded-full z-10 hover:bg-gray-300 transition"
             onClick={() => toggleMenu('options')}
           >
             <FaEllipsisV />
@@ -96,7 +67,7 @@ export default function DepartmentCard({
             <div className="absolute right-0 mt-2 bg-white shadow-lg rounded-lg py-2 w-32 z-20">
               <button
                 className="w-full text-left px-4 py-2 text-sm text-blue-500 hover:bg-gray-100"
-                onClick={handleAddCandidate} // Trigger the modal
+                onClick={handleAddCandidate}
               >
                 Add Candidate
               </button>
@@ -111,7 +82,6 @@ export default function DepartmentCard({
         </div>
       </div>
 
-      {/* Employees list */}
       <ul className="space-y-4 overflow-y-auto" style={{ maxHeight: '300px' }}>
         {employees.map((employee) => (
           <li key={employee.id} className="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
@@ -133,7 +103,6 @@ export default function DepartmentCard({
               </div>
             </div>
 
-            {/* Dropdown menu for actions */}
             <div className="relative">
               <button
                 className="text-gray-500 hover:text-gray-700"
@@ -151,7 +120,7 @@ export default function DepartmentCard({
                   </button>
                   <button
                     className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
-                    onClick={() => handleRemoveEmployee(employee.id)} // Call remove employee function
+                    onClick={() => handleRemoveEmployeeClick(employee.id)}
                   >
                     Remove
                   </button>
@@ -162,7 +131,6 @@ export default function DepartmentCard({
         ))}
       </ul>
 
-      {/* Show the AddCandidateModal when isModalVisible is true */}
       {isModalVisible && (
         <AddCandidateModal isVisible={isModalVisible} onClose={handleCloseModal} />
       )}

@@ -7,13 +7,6 @@ import { inject, injectable } from "inversify";
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
 
-console.log("-------------------------------------------");
-console.log("fghftdhfghdfghfgh");
-
-console.log(process.env.COOKIE_MAX_AGE );
-console.log("-------------------------------------------");
-
-
 @injectable()
 export default class BusinessOwnerController implements IBusinessOwnerController {
   private _businessOwnerService: IBusinessOwnerService;
@@ -25,11 +18,10 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async login(req: Request, res: Response): Promise<Response> {
-    console.log("hitiing login-------------------");
     
     try {
       const { email, password } = req.body;
-      if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
+      // if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
 
       const { success, message, accessToken, refreshToken, isVerified, email: companyEmail } =
         await this._businessOwnerService.login(email, password);
@@ -39,9 +31,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
           return res.status(400).json({ message: "Account not verified. OTP sent to email.", email: companyEmail, isVerified: false, success: false });
         }
       }
-      console.log("accessToken", accessToken);
-      console.log("refreshToken", refreshToken);
-      
+    
 
       res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
          maxAge:7 * 24 * 60 * 60 * 1000 });

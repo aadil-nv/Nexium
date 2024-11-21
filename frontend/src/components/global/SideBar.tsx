@@ -8,7 +8,7 @@ import useAuth from '../../hooks/useAuth';
 import useTheme from '../../hooks/useTheme';
 
 const Sidebar = () => {
-  const { businessOwner, superAdmin, manager, employeee } = useAuth();
+  const { businessOwner, superAdmin, manager, employee } = useAuth();
   const { isActiveMenu, themeColor } = useTheme();
   const dispatch = useDispatch();
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
@@ -20,7 +20,7 @@ const Sidebar = () => {
     ? businessOwnerLinks
     : isAuthenticated(manager)
     ? managerLinks
-    : isAuthenticated(employeee)
+    : isAuthenticated(employee)
     ? employeeLinks
     : [];
 

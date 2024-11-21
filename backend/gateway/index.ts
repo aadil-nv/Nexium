@@ -19,20 +19,20 @@ if (!fs.existsSync(logDirectory)) {
   fs.mkdirSync(logDirectory);
 }
 
-// Log rotation setup for 7 days
+
 const accessLogStream = createStream('access.log', {
-  interval: '1d', // Rotate daily
+  interval: '1d',
   path: logDirectory,
 });
 
-app.use(morgan('combined', { stream: accessLogStream })); // Write logs to file
-app.use(morgan('dev')); // Also log to console
+app.use(morgan('combined', { stream: accessLogStream }));
+app.use(morgan('dev'));
 
-// Middleware setup
+
 app.use(cookieParser());
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
-// Define target URLs for proxying
+
 const targets = {
   authentication: process.env.AUTHENTICATION_API_BASE_URL,
   businessOwner: process.env.BUSINESS_OWNER_API_BASE_URL,
@@ -41,13 +41,13 @@ const targets = {
   employee: process.env.EMPLOYEE_API_BASE_URL,
 };
 
-// Proxy setup for different routes
+
 app.use('/authentication', createProxyMiddleware({ target: targets.authentication, changeOrigin: true }));
 app.use('/businessOwner', createProxyMiddleware({ target: targets.businessOwner, changeOrigin: true }));
 app.use('/superAdmin', createProxyMiddleware({ target: targets.superAdmin, changeOrigin: true }));
 app.use('/manager', createProxyMiddleware({ target: targets.manager, changeOrigin: true }));
 app.use('/employee', createProxyMiddleware({ target: targets.employee, changeOrigin: true }));
 
-// Start the server
+// Start the serverfsdfsdfsdfsdfsdfsdfsdfsdfdsfdsf
 const port = process.env.GATEWAY_PORT || 3000;
 app.listen(port, () => console.log(`Gateway server running on http://localhost:${port}`.bgMagenta.bold));

@@ -13,6 +13,8 @@ export default class Consumer implements IConsumer {
     this._managerService = managerService;
   }
 
+
+  
   async receiveFromQueue() {
     const queue = 'authenticateQueue';
     const exchange = 'fanout_exchange';

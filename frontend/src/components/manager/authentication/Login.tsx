@@ -25,8 +25,6 @@ export default function ManagerLogin() {
 
     try {
       const responseData = await managerLogin(data);
-       console.log("responseData------------",responseData);
-       
       if (responseData.success === false) {
         navigate("/manager-otpvalidation", { state: { email: responseData.email, message: responseData.message } });
         return;

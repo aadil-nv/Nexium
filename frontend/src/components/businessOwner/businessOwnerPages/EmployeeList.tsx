@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ManagerCard from '../../global/ManagerCard';
 import useTheme from '../../../hooks/useTheme';
-import {businessOwnerInstance} from '../../../services/businessOwnerInstance'
 import { Skeleton, Empty } from 'antd';
 import AddManagerModal from '../../ui/AddManagerModal';
 import { FaPlus } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
-import {logout as businessOwnerLogout}  from '../../../redux/slices/businessOwnerSlice';
-import axios from 'axios';
+import { logout as businessOwnerLogout } from '../../../redux/slices/businessOwnerSlice';
+import { fetchManagers } from '../../../api/businessOwnerApi';
 
 export default function EmployeeList() {
   const [managers, setManagers] = useState<any[]>([]);
@@ -20,67 +19,49 @@ export default function EmployeeList() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    businessOwnerInstance.get('/businessOwner/api/manager/get-managers')
-      .then((response) => {
-        setManagers(response.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching managers:', error);
-        axios.post('http://localhost:3000/businessOwner/api/business-owner/logout');
+    (async () => {
+      try {
+        setManagers(await fetchManagers());
+      } catch (error) {
         dispatch(businessOwnerLogout());
+      } finally {
         setLoading(false);
-      });
-  }, []);
+      }
+    })();
+  }, [dispatch]);
 
-  const filteredManagers = managers.filter(manager => 
+  const filteredManagers = managers.filter(manager =>
     manager.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
     (roleFilter === 'All' || manager.role === roleFilter)
   );
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const handleFilterChange = (role: string) => {
-    setRoleFilter(role);
-  };
-
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6 flex-wrap">
-        <h1 className="text-2xl text-black font-semibold w-full sm:w-auto text-center sm:text-left">Managers List</h1>
+        <h1 className="text-2xl font-semibold text-center sm:text-left w-full sm:w-auto">Managers List</h1>
         <motion.button
-            onClick={() => setIsModalVisible(true)}
-            style={{ backgroundColor: themeColor }}
-            className="flex items-center text-white px-4 py-2 rounded-md transition duration-300"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <FaPlus className="mr-2" />Manager
-          </motion.button>
+          onClick={() => setIsModalVisible(true)}
+          style={{ backgroundColor: themeColor }}
+          className="flex items-center text-white px-4 py-2 rounded-md transition duration-300"
+          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+        >
+          <FaPlus className="mr-2" />Manager
+        </motion.button>
       </div>
 
-      <motion.div
-        className="mb-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <input
-          type="text"
-          placeholder="Search by name"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          className="w-full sm:w-72 p-2 border border-gray-300 rounded-md"
-        />
-      </motion.div>
+      <motion.input
+        type="text"
+        placeholder="Search by name"
+        value={searchQuery}
+        onChange={e => setSearchQuery(e.target.value)}
+        className="w-full sm:w-72 p-2 border border-gray-300 rounded-md mb-6"
+      />
 
-      <div className="mb-6 flex flex-wrap justify-start gap-2">
-        {['All', 'Manager', 'Admin', 'Employee'].map((role) => (
+      <div className="mb-6 flex gap-2">
+        {['All', 'Manager', 'Admin', 'Employee'].map(role => (
           <button
             key={role}
-            onClick={() => handleFilterChange(role)}
+            onClick={() => setRoleFilter(role)}
             className={`px-4 py-2 rounded-md ${roleFilter === role ? 'bg-gray-300' : 'bg-blue-500'} text-white`}
             style={{ backgroundColor: roleFilter === role ? '#ccc' : themeColor }}
           >
@@ -97,18 +78,10 @@ export default function EmployeeList() {
             </div>
           ))
         ) : filteredManagers.length === 0 ? (
-          <div className="flex justify-center items-center align-center ">
-            <Empty description="No employees found" />
-          </div>
+          <div className="flex justify-center items-center"><Empty description="No employees found" /></div>
         ) : (
           filteredManagers.map((manager, index) => (
-            <motion.div 
-              key={index}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="flex justify-center"
-            >
+            <motion.div key={index} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.1, duration: 0.5 }} className="flex justify-center">
               <ManagerCard
                 image={manager.profilePicture}
                 name={manager.name}
@@ -122,7 +95,7 @@ export default function EmployeeList() {
             </motion.div>
           ))
         )}
-         <AddManagerModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
+        <AddManagerModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
       </div>
     </div>
   );

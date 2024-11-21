@@ -10,7 +10,7 @@ import { handleLogout, handleProfileClick, onSettingsClick, NavButton, toggleMen
 export default function Navbar() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const { businessOwner, superAdmin, manager, employeee } = useAuth();
+  const { businessOwner, superAdmin, manager, employee } = useAuth();
   const { isActiveMenu, themeColor } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -22,9 +22,9 @@ export default function Navbar() {
     : "User";
 
   const toggleMenuFunc = () => toggleMenu(dispatch, isActiveMenu);
-  const handleProfile = () => handleProfileClick({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employeee, dispatch, navigate });
-  const handleSettings = () => onSettingsClick({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employeee, dispatch, navigate });
-  const handleLogoutAction = () => handleLogout({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employeee, dispatch, navigate });
+  const handleProfile = () => handleProfileClick({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employee, dispatch, navigate });
+  const handleSettings = () => onSettingsClick({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employee, dispatch, navigate });
+  const handleLogoutAction = () => handleLogout({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employee, dispatch, navigate });
 
   return (
     <div className={`flex items-center justify-between p-2 h-16 bg-gray-100 shadow-sm fixed top-0 z-50 ${isActiveMenu ? "w-[calc(100%-250px)]" : "w-full"}`}>

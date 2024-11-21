@@ -1,78 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import Table from '../../global/Table';
-import { Employee } from '../../../utils/interfaces';
+import { IEmployee } from '../../../interface/managerInterface';
 import { ColumnDef } from '@tanstack/react-table';
 import useTheme from '../../../hooks/useTheme';
 import useAuth from '../../../hooks/useAuth';
 import { motion } from 'framer-motion';
 import { FaEdit, FaUserLock, FaSignOutAlt } from 'react-icons/fa';
-import {managerInstance} from "../../../services/managerInstance"
+import { fetchEmployees } from '../../../api/managerApi';
 
 export default function Employees() {
-  const [employeeData, setEmployeeData] = useState<Employee[]>([]);
+  const [employeeData, setEmployeeData] = useState<IEmployee[]>([]);
   const { themeColor } = useTheme();
   const { manager } = useAuth();
   const isManager = manager?.isAuthenticated;
 
-  // Fetch employee data from the API
+
   useEffect(() => {
-    const fetchEmployeeData = async () => {
-      console.log("hiting fetch employee=======");
-      
-      try {
-        const response = await managerInstance.get('/manager/api/employee/get-employees');
-        console.log("response ====",response);
-        
-        const employees = response.data.map((employee: any) => ({
-          id: employee._id,
-          name: employee.personalDetails?.firstName + ' ' + employee.personalDetails?.lastName,
-          position: employee.professionalDetails?.position,
-          email: employee.personalDetails?.email,
-          isOnline: employee.isActive,
-        }));
-        console.log("employees",employees);
-        
-        setEmployeeData(employees);
-      } catch (error) {
-        console.error('Error fetching employee data:', error);
-      }
-    };
-  
-    fetchEmployeeData();
+    fetchEmployees()
+      .then(setEmployeeData)
+      .catch((error) => console.error('Error fetching employee data:', error));
   }, []);
-  
 
-  // Handle actions like Edit, Remove, and Block
-  const handleEdit = (employeeId: string) => {
-    console.log(`Edit employee with ID: ${employeeId}`);
-  };
+  const handleEdit = (employeeId: string) => console.log(`Edit employee with ID: ${employeeId}`);
+  const handleRemove = (employeeId: string) => console.log(`Employee with ID: ${employeeId} left`);
+  const handleBlock = (employeeId: string) => console.log(`Block employee with ID: ${employeeId}`);
 
-  const handleRemove = (employeeId: string) => {
-    console.log(`Employee with ID: ${employeeId} left`);
-  };
-
-  const handleBlock = (employeeId: string) => {
-    console.log(`Block employee with ID: ${employeeId}`);
-  };
-
-  const columns: ColumnDef<Employee>[] = [
-    {
-      id: 'ID',
-      accessorKey: 'id',
-    },
-    {
-      header: 'Name',
-      accessorKey: 'name',
-    },
-    {
-      header: 'Position',
-      accessorKey: 'position',
-    },
-    {
-      header: 'Email',
-      accessorKey: 'email',
-    },
+  const columns: ColumnDef<IEmployee>[] = [
+    { id: 'ID', accessorKey: 'id' },
+    { header: 'Name', accessorKey: 'name' },
+    { header: 'Position', accessorKey: 'position' },
+    { header: 'Email', accessorKey: 'email' },
     {
       header: 'Status',
       accessorKey: 'isOnline',
@@ -131,8 +88,8 @@ export default function Employees() {
       <Table
         data={employeeData}
         columns={columns}
-        loading={!employeeData.length} // Set loading state accordingly
-        error={null} // Handle errors if any
+        loading={!employeeData.length}
+        error={null}
       />
     </div>
   );

@@ -1,31 +1,54 @@
 import { Document, Types } from "mongoose";
+import { CompanyIncorporationDocType, BusinessOwnerIDProofType } from "../utils/enums";
+
 
 export interface ISubscription {
-  subscriptionId: Types.ObjectId;
-  startDate: Date;
-  endDate: Date;
-  status: string;
+    subscriptionId: Types.ObjectId;
+    startDate: Date;
+    endDate: Date;
+    status: "Active" | "Expired" | "Pending";
+  }
+  
+export interface IAddress {
+  streetAddress: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
 }
 
-export interface IBusinessOwnerDocument extends Document {
-  _id: Types.ObjectId;
-  companyName: string;
+export interface IDocument {
+  companyIncorporationDocument: CompanyIncorporationDocType;
+  businessOwnerIdProof: BusinessOwnerIDProofType;
+}
+
+export interface IPersonalDetails {
   businessOwnerName: string;
   email: string;
-  address: string;
   password: string;
   phone: string;
-  website?: string;
-  registrationNumber: string;
+  personalWebsite?: string;
+  profileImage?: string;
+}
+
+export interface ICompanyDetails {
+  companyName: string;
+  companyLogo?: string;
+  companyRegistrationNumber: string;
+  companyEmail: string;
+  companyWebsite?: string;
+  documents: IDocument;
+}
+
+export interface IBusinessOwnerDocument extends Document {  // <-- Ensure this extends `Document`
+  _id: Types.ObjectId;
+  personalDetails: IPersonalDetails;
+  companyDetails: ICompanyDetails;
+  address: IAddress;
   isVerified: boolean;
   isBlocked: boolean;
   role: string;
-  documents: {
-    documentName: string;
-    documentUrl: string;
-    uploadedAt: Date;
-  }[];
   subscription: ISubscription;
-  companyLogo: string;
-  profileImage: string; 
+  createdAt: Date;
+  updatedAt: Date;
 }

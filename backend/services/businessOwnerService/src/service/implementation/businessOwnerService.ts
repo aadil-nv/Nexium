@@ -12,6 +12,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
   }
 
   async registerBusinessOwner(businessOwnerData: string): Promise<any> {
+    console.log(`businessowner data: ${businessOwnerData}`.bgRed);
+    
     try {
       return await this._businessOwnerRepository.registerBusinessOwner(businessOwnerData);
     } catch (error) {

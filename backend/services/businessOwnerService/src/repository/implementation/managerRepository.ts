@@ -6,7 +6,7 @@ import { inject, injectable } from "inversify";
 import BaseRepository from "./baseRepository";
 import IManager from "entities/managerEntity";
 import BusinessOwnerModel from "../../models/businessOwnerModel";
-import { IBusinessOwnerDocument } from "../interface/IBusinessOwnerModel";
+import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntity";
 
 @injectable()
 export default class ManagerRepository extends BaseRepository<IManager> implements IManagerRepository {
