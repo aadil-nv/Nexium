@@ -30,6 +30,7 @@ const BusinessOwnerRoutes = () => {
           <Route path="notifications" element={<Notifications />} />
           <Route path="announcements" element={<Announcements />} />
           <Route path="demo" element={<DemoTable />} />
+          
           <Route path="profile" element={<Profile />} />
           <Route path="personaldetails" element={<PersonalDetailes  />} />
           <Route path="address" element={<Address />} />

@@ -39,11 +39,11 @@ const Sidebar = () => {
         {isActiveMenu && (
           <div className="h-full flex flex-col">
             <div className="flex justify-between items-center p-4">
-              <NavLink
-                to={`/${isAuthenticated(businessOwner) ? 'business-owner' : 'super-admin'}/dashboard`}
+            <NavLink
+                to={`/${isAuthenticated(businessOwner) ? 'business-owner' : isAuthenticated(superAdmin) ? 'super-admin' : isAuthenticated(manager) ? 'manager' : 'employee'}/dashboard`}
                 className="text-xl font-extrabold text-gray-800"
               >
-                {isAuthenticated(businessOwner) ? 'Business Owner' : 'Super Admin'}
+                {isAuthenticated(businessOwner) ? 'Business Owner' : isAuthenticated(superAdmin) ? 'Super Admin' : isAuthenticated(manager) ? 'Manager' : 'Employee'}
               </NavLink>
             </div>
             <div className="flex-grow overflow-y-auto">

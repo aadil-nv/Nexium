@@ -52,3 +52,4 @@ export interface IBusinessOwnerDocument extends Document {  // <-- Ensure this e
   createdAt: Date;
   updatedAt: Date;
 }
+

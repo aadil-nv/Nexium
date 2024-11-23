@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { Button, Modal, Form, Input, Select, DatePicker } from 'antd';
 import { createStyles, useTheme } from 'antd-style';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
 import { toast } from 'react-toastify';
-import { fetchDepartments, addEmployee } from '../../api/managerApi'; // Importing the new service
-import { addEmployeeSchema } from '../../config/validationSchema'; // Importing the validation schema
+import { addEmployee } from '../../api/managerApi'; // Removed fetchDepartments import as it is no longer needed
+import { addEmployeeSchema } from '../../config/validationSchema'; 
 import { useForm } from 'antd/lib/form/Form';
 
 const { Option } = Select;
@@ -38,25 +38,9 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
     joiningDate: '',
     salary: 0,
     workTime: '',
-    department: ''
   });
 
-  const [departments, setDepartments] = useState<string[]>([]);
-
-  const [form] = useForm(); // Form instance from Ant Design
-
-  useEffect(() => {
-    const loadDepartments = async () => {
-      try {
-        const departmentNames = await fetchDepartments(); // Use the separated function
-        setDepartments(departmentNames);
-      } catch (error) {
-        toast.error('Failed to fetch departments!');
-      }
-    };
-
-    loadDepartments();
-  }, []);
+  const [form] = useForm(); 
 
   const classNames = {
     body: styles['my-modal-body'],
@@ -85,7 +69,6 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
 
   const fields = [
     { id: 'name', label: 'Employee Name', type: 'text' },
-    { id: 'department', label: 'Department', type: 'select' },
     { id: 'position', label: 'Position', type: 'select', options: ["Team Lead", "Senior Software Engineer", "Junior Software Engineer"] },
     { id: 'email', label: 'Email', type: 'email' },
     { id: 'phoneNumber', label: 'Phone Number', type: 'text' },
@@ -110,7 +93,7 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
       };
 
       try {
-        const success = await addEmployee(employeeData); // Use the separated function
+        const success = await addEmployee(employeeData); 
         if (success) {
           setFormData({
             name: '',
@@ -120,7 +103,6 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
             joiningDate: '',
             salary: 0,
             workTime: '',
-            department: '',
           });
           onClose();
         }
@@ -159,24 +141,17 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
             label={field.label}
             name={field.id}
             rules={[{ required: true, message: `Please input ${field.label.toLowerCase()}!` }]}>
+
             {field.type === 'select' ? (
               <Select
                 placeholder={`Select ${field.label}`}
                 onChange={(value) => setFormData({ ...formData, [field.id]: value })}
               >
-                {field.id === 'department' ? (
-                  departments.map((department) => (
-                    <Option key={department} value={department}>
-                      {department}
-                    </Option>
-                  ))
-                ) : (
-                  field.options?.map((option) => (
-                    <Option key={option} value={option}>
-                      {option}
-                    </Option>
-                  ))
-                )}
+                {field.options?.map((option) => (
+                  <Option key={option} value={option}>
+                    {option}
+                  </Option>
+                ))}
               </Select>
             ) : field.type === 'date' ? (
               <DatePicker

@@ -11,6 +11,7 @@ import { NavbarFunctionsProps} from "../utils/interfaces"
 
 
 
+
 export const handleLogout = ({
   isBusinessOwner,
   isSuperAdmin,
@@ -42,6 +43,11 @@ export const handleLogout = ({
 export const handleProfileClick = (
   { isBusinessOwner, isSuperAdmin, isManager, isEmployee, navigate }: NavbarFunctionsProps
 ) => {
+  console.log("isBusinessOwner.isAuthenticated:", isBusinessOwner.isAuthenticated);
+  console.log("isSuperAdmin.isAuthenticated:", isSuperAdmin.isAuthenticated);
+  console.log("isManager.isAuthenticated:", isManager.isAuthenticated);
+  console.log("isEmployee.isAuthenticated:", isEmployee.isAuthenticated);
+  
   if (isBusinessOwner.isAuthenticated) {
     navigate("/business-owner/profile");
   } else if (isSuperAdmin.isAuthenticated) {

@@ -18,6 +18,8 @@ export default function Dashboard() {
     const fetchManagers = async () => {
       try {
         const data = await getAllManagers();
+        console.log("data", data);
+        
         setManagers(data);
       } catch (error) {
         setError('Failed to load managers');

@@ -36,7 +36,7 @@ const PlanSelection: React.FC = () => {
       const data = await createCheckoutSession(email, selectedPlan);
       
       if (data.planName === 'Trial') {
-        dispatch(login({ role: 'businessOwner', token: data.accessToken }));
+        dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
         navigate('/business-owner/dashboard');
       } else {
         const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });

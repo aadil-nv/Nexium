@@ -15,7 +15,7 @@ export default class ManagerService implements IManagerService {
       const decodedData = verifyRefreshToken(refreshToken);
       console.log("decodedData", decodedData);
       
-      const dataBaseId = decodedData?.result?.businessOwnerId;
+      const dataBaseId = decodedData?.managerData?.businessOwnerId;
 
       const mongoUrl = process.env.MONGODB_URL;
       if (!mongoUrl) {
@@ -39,6 +39,32 @@ export default class ManagerService implements IManagerService {
     } catch (error) {
       console.error("Error fetching managers:", error);
       throw new Error("Error fetching managers");
+    }
+  }
+
+  async getManagerPersonalInfo(refreshToken: any): Promise<any> {
+    console.log(`hitting getManagerPersonalInfo service=------------------`.bgRed,refreshToken);
+
+    
+    try {
+      const decoded = verifyRefreshToken(refreshToken);
+      console.log(`decoded------------------`.bgRed,decoded);
+      
+      const managerId = decoded?.managerData._id;
+      console.log(`mangerId------------------`.bgRed,managerId);
+      
+      if (!managerId) {
+        throw new Error("Manager ID not found");
+       
+      }
+      
+      const managerProfile = await this._managerRepository.findOne({managerId});
+      console.log(`managerProfile------------------`.bgRed,managerProfile);
+      return managerProfile;
+
+    } catch (error) {
+      console.error("Error adding manager:", error);
+      throw new Error("Error adding manager");
     }
   }
 }

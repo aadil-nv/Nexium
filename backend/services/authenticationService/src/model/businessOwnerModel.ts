@@ -36,7 +36,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       profileImage: {
         type: String,
-        default: "https://example.com/default-profile-image.png",
+        default: "https://avatar.iran.liara.run/public/boy?username=Ash",
       },
     },
 

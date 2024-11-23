@@ -22,7 +22,7 @@ const SuperAdminLogin: React.FC = () => {
     setLoginError(null);
     try {
       const { accessToken } = await loginSuperAdmin(data);
-      dispatch(login({ role: "superAdmin", token: accessToken }));
+      dispatch(login({ role: "superAdmin", isAuthenticated: true }));
       navigate("/super-admin/dashboard");
     } catch (err: any) {
       setLoginError("Login failed. Please check your credentials.");

@@ -11,7 +11,8 @@ const managerController = container.get<IManagerController>("IManagerController"
 
 
 managerRouter.get("/get-managers", (req, res) => managerController.getManagers(req , res));
-
+managerRouter.get("/get-managerpersonalinfo",authenticateToken, (req, res) => managerController.getManagerPersonalInfo(req , res));
+managerRouter.get
 
 
 export default managerRouter

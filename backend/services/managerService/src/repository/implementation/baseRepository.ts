@@ -12,11 +12,8 @@ export default class BaseRepository<T extends Document> implements IBaseReposito
 
 
     async findOne(filter: FilterQuery<T>): Promise<T | null> {
-        console.log("BaseRepository: Finding one document with filter:", filter);
-
         try {
-            const document = await this.model.findOne(filter).exec();
-            console.log("Document found:", document);
+            const document = await this.model.findOne({_id: filter.managerId}).exec();
             return document; 
         } catch (error) {
             console.error("Error finding document:", error);

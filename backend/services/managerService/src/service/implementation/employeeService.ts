@@ -26,13 +26,16 @@ export default class EmployeeService implements IEmployeeService {
   async addEmployees(employeeData: any, refreshToken: string): Promise<any> {
     console.log(`==========================================================`.bgRed);
     console.log(`===========employeeData===========`, employeeData);
+    console.log(`===========refreshToken===========`, refreshToken);
     console.log(`==========================================================`.bgRed);
     console.log("");
   
     try {
       const decoded = verifyRefreshToken(refreshToken);
       console.log("decoded", decoded);
-      const managerId = decoded?.result._id;
+      const managerId = decoded?.managerData._id;
+      console.log("manager id is ===>",managerId);
+      
   
       if (!managerId) {
         return { success: false, message: "Invalid manager ID." };
@@ -53,13 +56,13 @@ export default class EmployeeService implements IEmployeeService {
       console.log("mappedEmployeeData", mappedEmployeeData);
       console.log(`========================================`.bgGreen);
     
-      const managerName = decoded?.result.name;
+      const managerName = decoded?.managerData.name;
       mappedEmployeeData.professionalDetails.salary = employeeData.salary;
       mappedEmployeeData.professionalDetails.workTime = employeeData.workTime;
       mappedEmployeeData.professionalDetails.joiningDate = employeeData.joiningDate;
     //   mappedEmployeeData.professionalDetails.department = employeeData.department;
       mappedEmployeeData.professionalDetails.position = employeeData.position;
-      mappedEmployeeData.professionalDetails.companyName = decoded?.result.managerCredentials.companyName;
+      mappedEmployeeData.professionalDetails.companyName = decoded?.managerData.managerCredentials.companyName;
 
       const email = generateEmail( mappedEmployeeData.professionalDetails.companyName, employeeData.name, managerId);
       console.log(`==========email============`.bgWhite, email);
@@ -73,9 +76,9 @@ export default class EmployeeService implements IEmployeeService {
   
       console.log("mappedEmployeeData===========last ^^^^^^^^^^^^", mappedEmployeeData);
   
-      const result = await this._employeeRepository.addEmployee(mappedEmployeeData);
+      const managerData = await this._employeeRepository.addEmployee(mappedEmployeeData);
       await this.sendOfferLetter(managerName, mappedEmployeeData);
-      return { success: true, data: result };
+      return { success: true, data: managerData };
     } catch (error) {
       console.error("Error in addEmployees service:", error);
       return { success: false, message: "Failed to add employee" };
@@ -111,9 +114,7 @@ export default class EmployeeService implements IEmployeeService {
       return { success: false, message: "Work time is required" };
     }
 
-    if (!employeeData.department) {
-      return { success: false, message: "Department is required" };
-    }
+ 
 
     return { success: true, message: "" };
   }

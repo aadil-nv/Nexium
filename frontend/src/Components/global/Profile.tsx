@@ -15,6 +15,9 @@ export default function Profile() {
                      manager.isAuthenticated ? managerTabs :
                      employee.isAuthenticated ? employeeTabs : [];
 
+                     console.log("tabsToShow", tabsToShow);
+                     
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <Tabs activeKey={activeKey} onChange={setActiveKey} defaultActiveKey="1" centered tabBarStyle={{ fontSize: 16, padding: '0 20px' }}>

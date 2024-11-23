@@ -99,11 +99,11 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
               password: businessOwnerData.password,
               phone: businessOwnerData.phone,
               personalWebsite: businessOwnerData.website ?? "",
-              profileImage: "https://example.com/default-profile-image.png", // Default image
+              profileImage: "https://avatar.iran.liara.run/public/boy?username=Ash", // Default image
             },
             companyDetails: {
               companyName: businessOwnerData.companyName,
-              companyLogo: "https://example.com/default-logo.png", // Default logo
+              companyLogo: "https://avatar.iran.liara.run/public/boy?username=Ash", // Default logo
               companyRegistrationNumber: "",
               companyEmail: "",
               companyWebsite: "",

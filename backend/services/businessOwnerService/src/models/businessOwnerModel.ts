@@ -46,7 +46,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       companyLogo: {
         type: String,
-        default: "https://example.com/default-logo.png",
+        default: "https://avatar.iran.liara.run/public/boy?username=Ash",
       },
       companyRegistrationNumber: {
         type: String,

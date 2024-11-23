@@ -35,7 +35,7 @@ export default class ManagerService implements IManagerService {
       // if (!emailRegex.test(email)) throw new Error('Invalid email format');
       // if (!passwordRegex.test(password)) throw new Error('Password must be at least 6 characters, 1 uppercase, 1 digit, 1 symbol');
 
-      const managerData = await this._managerRepository.findByEmail(email);
+      const managerData = await this._managerRepository.findByCredentialEmail(email);
       console.log("manaager data from service====",managerData);
       
       if (!managerData || managerData.managerCredentials.password !== password) throw new Error('Invalid email or password');
@@ -51,9 +51,10 @@ export default class ManagerService implements IManagerService {
           email: managerData.email,
         };
       }
-
-      const accessToken = generateAccessToken({ result: managerData });
-      const refreshToken = generateRefreshToken({ result: managerData });
+        console.log("managerData",managerData);
+        
+      const accessToken = generateAccessToken({  managerData });
+      const refreshToken = generateRefreshToken({ managerData });
 
       return {
         id: managerData.id,
@@ -113,10 +114,19 @@ export default class ManagerService implements IManagerService {
         if (!verification) {
           return { success: false, message: "Manager verification failed." };
         }
+          console.log("email",email);
+          
+        const managerData = await this._managerRepository.findByEmail(email);
+        console.log("managerData",managerData);
+        
+        const accessToken = generateAccessToken({ managerData });
+        const refreshToken = generateRefreshToken({ managerData });
 
-        const result = await this._managerRepository.findByEmail(email);
-        const accessToken = generateAccessToken({ result });
-        const refreshToken = generateRefreshToken({ result });
+        console.log("managerData",managerData);
+        console.log("accessToken",accessToken);
+        console.log("refreshToken",refreshToken);
+        
+        
 
         return {
           success: true,

@@ -36,7 +36,7 @@ export interface Employee {
 
 
 export interface UserStatus { //! Part of navbar Functions do not remove
-  isAuthenticated: boolean;
+  isAuthenticated: any;
 }
 
 export interface NavbarFunctionsProps {

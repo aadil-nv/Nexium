@@ -46,7 +46,7 @@ export default function LandingLoginPage() {
       
 
       if (data.success) {
-        dispatch(login({ role: 'businessOwner', token: data.accessToken }));
+        dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
         navigate('/business-owner/dashboard');
       } else {
         setCredentialError(data.message || 'Invalid email or password');

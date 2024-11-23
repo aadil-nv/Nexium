@@ -119,3 +119,25 @@ export const addEmployee = async (employeeData: any) => {
     }
   };  
   
+
+
+  export async function fetchManagerPersonalInfo(): Promise<any> {
+
+  
+      try {
+          const response = await managerInstance.get("/manager/api/manager/get-managerpersonalinfo", {
+              headers: {
+                  "Content-Type": "application/json",
+              },
+          });
+          console.log("Manager personal info:", response.data);
+          
+          return response.data;
+      } catch (error) {
+          console.error("Error fetching manager personal info:", error);
+          throw error;
+      }
+  }
+  
+
+  

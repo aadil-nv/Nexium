@@ -5,7 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import SuperAdminRoutes from './routes/SuperAdminRoute';
 import BusinessOwnerRoutes from './routes/BusinessOwnerRoute';
 import LocalRoute from './routes/LocalRoute';
-import MangerRoutes from './routes/ManegerRoute';
+import MangerRoutes from './routes/ManagerRoute';
 import 'react-toastify/dist/ReactToastify.css'; 
 
 

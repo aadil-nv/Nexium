@@ -4,6 +4,7 @@ import ProffessionalDetiles from '../components/global/ProffessionalDetiles';
 import Address from '../components/global/Address';
 import Documents from '../components/global/Documents';
 import Securitie from '../components/global/Securitie';
+import CompanyDetails from '../components/global/CompanyDetailes';
 
 interface LinkItem {
   title: string;
@@ -66,19 +67,21 @@ export const managerLinks: LinkItem[] = [
   { title: 'Announcements', route: '/manager/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   { title: 'Service Requests', route: '/manager/service-requests', icon: 'fi fi-tr-hr-group' },
 ];
+  
+
 
 export const businessOwnerTabs = [
   { key: "1", tab: "Personal Details", component: <PersonalDetailes /> },
+  { key: "2", tab: "Company Details", component: <CompanyDetails /> },
   { key: "3", tab: "Address", component: <Address /> },
   { key: "4", tab: "Documents", component: <Documents /> },
-  { key: "5", tab: "Securities", component: <Securitie /> },
+
 ];
 export const superAdminTabs = [
   { key: "1", tab: "Personal Details", component: <PersonalDetailes /> },
   { key: "2", tab: "Professional Details", component: <ProffessionalDetiles /> },
   { key: "3", tab: "Address", component: <Address /> },
-  { key: "4", tab: "Documents", component: <Documents /> },
-  { key: "5", tab: "Securities", component: <Securitie /> },
+
 ];
 export const managerTabs = [
   { key: "1", tab: "Personal Details", component: <PersonalDetailes /> },

@@ -25,12 +25,14 @@ export default function ManagerLogin() {
 
     try {
       const responseData = await managerLogin(data);
+      console.log("responseData", responseData);
+      
       if (responseData.success === false) {
         navigate("/manager-otpvalidation", { state: { email: responseData.email, message: responseData.message } });
         return;
       }
       // If verified, proceed to dashboard
-      dispatch(login({ role: "manager", token: responseData.accessToken }));
+      dispatch(login({ role: "manager" ,isAuthenticated: true }));
       navigate("/manager/dashboard");
     } catch (err: any) {
       setLoginError("Login failed. Please check your credentials.");

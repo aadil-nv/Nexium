@@ -14,10 +14,12 @@ export interface ICardProps {
     onPlanUpdate: (updatedPlan: any) => void;
   }
 
-export interface ICardImageProps {
+  export interface ICardImageProps {
     title: string;
     imgSrc: string;
+    onImageChange: (updatedImageUrl: string) => void; // Added the callback function type
   }
+  
 
 
  export  interface IEmployee {

@@ -28,7 +28,7 @@ const accessLogStream = createStream('access.log', {
 app.use(morgan('combined', { stream: accessLogStream }));
 app.use(morgan('dev'));
 
-
+// !kjgkkrgbfbdjlkg
 app.use(cookieParser());
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
@@ -48,6 +48,6 @@ app.use('/superAdmin', createProxyMiddleware({ target: targets.superAdmin, chang
 app.use('/manager', createProxyMiddleware({ target: targets.manager, changeOrigin: true }));
 app.use('/employee', createProxyMiddleware({ target: targets.employee, changeOrigin: true }));
 
-// Start the serverfsdfsdfsdfsdfsdfsasdsadasddfsdfsdfdsfdsfsdasdsadasd
+// Start the serverfsdfsdfsdfsdfsdfsasdsadasddfsdfsdfdssdfsdfsdfadffddsfdsf34tsfsdfsdfsdfasdfsfdsfsdasdsadasd
 const port = process.env.GATEWAY_PORT || 3000;
 app.listen(port, () => console.log(`Gateway server running on http://localhost:${port}`.bgMagenta.bold));

@@ -28,4 +28,29 @@ export default class ManagerController implements IManagerController {
       return res.status(500).json({ message: "Failed to get managers", error });
     }
   }
+
+  async getManagerPersonalInfo(req: Request, res: Response): Promise<Response> {
+    console.log(`hitting getManagerPersonalInfo COntroller------------------`.bgWhite);
+    try {
+      const refreshToken = req.cookies.refreshToken;
+
+      if (!refreshToken) {
+        return res
+          .status(400)
+          .json({ message: "Business owner ID not provided in cookies" });
+      }
+
+      await this._managerService.connectDB(refreshToken);
+
+      const managerpersonalinfo = await this._managerService.getManagerPersonalInfo(refreshToken);
+
+      return res.status(200).json(managerpersonalinfo);
+      
+    } catch (error) {
+      return res.status(500).json({ message: "Failed to get manager personal info", error });
+
+      
+    }
+  }
+
 }

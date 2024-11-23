@@ -13,12 +13,26 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         super(_managerModel); 
     }
 
-    async findByEmail(email: string): Promise<IManager | null> {
-        console.log("hitting managerLogin repo--------------");
+    async findByCredentialEmail(email: string): Promise<IManager | null> {
+        console.log("hitting managerLogin repo--------------",email);
         
         try {
 
             const manager = await this._managerModel.findOne({ 'managerCredentials.email': email });
+            console.log("manager---from repo", manager);
+            
+            return manager;
+        } catch (error) {
+            console.error("Error logging in manager repo:", error);
+            throw new Error("Manager login failed");
+        }
+    }
+    async findByEmail(email: string): Promise<IManager | null> {
+        console.log("hitting managerLogin repo--------------",email);
+        
+        try {
+
+            const manager = await this._managerModel.findOne({  email });
             console.log("manager---from repo", manager);
             
             return manager;

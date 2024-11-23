@@ -4,6 +4,7 @@ import BusinessOwnerModel from "../../models/businessOwnerModel";
 import BaseRepository from "../implementation/baseRepository";
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntity";
 import SubscriptionModel from "../../models/subscriptionModel";
+import { IPersonalDetailsDTO } from "dto/businessOwnerDTO";
 
 @injectable()
 export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwnerDocument> implements IBusinessOwnerRepository {
@@ -35,5 +36,84 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     }
   }
 
+  async getDetails(businessOwnerId: string): Promise<IBusinessOwnerDocument> {
+    try {
+      const result = await this._businessOwnerModel.findById(businessOwnerId);
+      if (!result) {
+        throw new Error(`No business owner found with ID: ${businessOwnerId}`);
+      }
+      return result;
+    } catch (error) {
+      console.error("Error getting personal details:", error);
+      throw new Error("Could not get personal details.");
+    }
+  }
+
+  async updateDetails(businessOwnerId: string, data: any): Promise<IBusinessOwnerDocument> {
+    console.log("Data received:-->>>>>>", data);
+  
+    try {
+      // Define the fields allowed to be updated
+      const allowedFields: (keyof IPersonalDetailsDTO)[] = ["businessOwnerName", "email", "personalWebsite", "phone"];
+  
+      // Extract only the allowed fields from the incoming data
+      const updateFields: Partial<IPersonalDetailsDTO> = {};
+      for (const key of allowedFields) {
+        if (key in data && data[key] !== undefined) {
+          updateFields[key] = data[key]; // Only include valid fields
+        }
+      }
+  
+      // Ensure that at least one field is being updated
+      if (Object.keys(updateFields).length === 0) {
+        throw new Error("No valid fields provided for update.");
+      }
+  
+      // Update only the allowed fields in the `personalDetails`
+      const result = await this._businessOwnerModel.findByIdAndUpdate(
+        businessOwnerId,
+        { $set: { 
+            "personalDetails.businessOwnerName": updateFields.businessOwnerName,
+            "personalDetails.email": updateFields.email,
+            "personalDetails.personalWebsite": updateFields.personalWebsite,
+            "personalDetails.phone": updateFields.phone
+          } },
+        { new: true } // Return the updated document
+      );
+  
+      if (!result) {
+        throw new Error(`No business owner found with ID: ${businessOwnerId}`);
+      }
+  
+      console.log("Updated personal details:", result);
+      return result;
+    } catch (error) {
+      console.error("Error updating personal details:", error);
+      throw new Error("Could not update personal details.");
+    }
+  }
+  
+ 
+  async uploadImages(businessOwnerId: string, filePath: string): Promise<IBusinessOwnerDocument> {
+    console.log("Data received:-->>>>>>", filePath);
+    
+    try {
+      const result = await this._businessOwnerModel.findByIdAndUpdate(
+        businessOwnerId,
+        { $set: { 'personalDetails.profileImage': filePath } }, // Save the file path
+        { new: true }
+      );
+  
+      if (!result) {
+        throw new Error(`No business owner found with ID: ${businessOwnerId}`);
+      }
+  
+      return result;
+    } catch (error) {
+      console.error('Error updating personal details:', error);
+      throw new Error('Could not update personal details.');
+    }
+  }
+  
  
 }
