@@ -5,8 +5,6 @@ import useTheme from '../../../hooks/useTheme';
 import { Skeleton, Empty } from 'antd';
 import AddManagerModal from '../../ui/AddManagerModal';
 import { FaPlus } from 'react-icons/fa';
-import { useDispatch } from 'react-redux';
-import { logout as businessOwnerLogout } from '../../../redux/slices/businessOwnerSlice';
 import { fetchManagers } from '../../../api/businessOwnerApi';
 
 export default function EmployeeList() {
@@ -16,24 +14,44 @@ export default function EmployeeList() {
   const [loading, setLoading] = useState(true);
   const { themeColor } = useTheme();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const dispatch = useDispatch();
 
   useEffect(() => {
-    (async () => {
+    const loadManagers = async () => {
+      setLoading(true);
       try {
-        setManagers(await fetchManagers());
+        const managersData = await fetchManagers();
+        setManagers(managersData);
       } catch (error) {
-        dispatch(businessOwnerLogout());
+        console.error('Error fetching managers:', error);
       } finally {
         setLoading(false);
       }
-    })();
-  }, [dispatch]);
+    };
+
+    loadManagers();
+  }, []);
 
   const filteredManagers = managers.filter(manager =>
-    manager.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    manager.personalDetails.managerName.toLowerCase().includes(searchQuery.toLowerCase()) &&
     (roleFilter === 'All' || manager.role === roleFilter)
   );
+
+  const handleManagerAdded = () => {
+    // Re-fetch the managers list after adding a new manager
+    const loadManagers = async () => {
+      setLoading(true);
+      try {
+        const managersData = await fetchManagers();
+        setManagers(managersData);
+      } catch (error) {
+        console.error('Error fetching managers:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadManagers();
+  };
 
   return (
     <div className="p-6">
@@ -83,11 +101,11 @@ export default function EmployeeList() {
           filteredManagers.map((manager, index) => (
             <motion.div key={index} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.1, duration: 0.5 }} className="flex justify-center">
               <ManagerCard
-                image={manager.profilePicture}
-                name={manager.name}
-                email={manager.email}
-                onViewDetails={() => alert(`Viewing details for ${manager.name}`)}
-                onToggleStatus={() => alert(`Blocking/Unblocking ${manager.name}`)}
+                image={manager.personalDetails.profilePicture}
+                name={manager.personalDetails.managerName}
+                email={manager.personalDetails.email}
+                onViewDetails={() => alert(`Viewing details for ${manager.personalDetails.name}`)}
+                onToggleStatus={() => alert(`Blocking/Unblocking ${manager.personalDetails.name}`)}
                 isActive={manager.isActive}
                 isBlocked={manager.isBlocked}
                 isVerified={manager.isVerified}
@@ -95,8 +113,13 @@ export default function EmployeeList() {
             </motion.div>
           ))
         )}
-        <AddManagerModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} />
       </div>
+
+      <AddManagerModal
+        isVisible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        onManagerAdded={handleManagerAdded} // Pass the handler to AddManagerModal
+      />
     </div>
   );
 }

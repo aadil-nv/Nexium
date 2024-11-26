@@ -1,52 +1,27 @@
 import mongoose, { Schema } from "mongoose";
-import  IManager  from "../entities/managerEntity"; 
+import { IManager } from "../entities/managerEntity"; // Import the updated interface
 
 const managerSchema: Schema<IManager> = new Schema(
   {
-    name: {
-      type: String,
-      // required: true,
+    personalDetails: {
+      managerName: { type: String },
+      personalWebsite: { type: String },
+      email: { type: String },
+      profilePicture: { type: String, default: "https://avatar.iran.liara.run/public/boy?username=Ash" },
+      phone: { type: String },
     },
-    email: {
-      type: String,
-      // required: true,
-      // unique: true,
-    },
-    managerType: {
-      type: String,
-      enum: ["HumanResourceManager" ,"GeneralManager" ,"ProjectManager" , "SalesManager"],
-      required: true, // Assuming managerType is mandatory
-    },
-    phone: {
-      type: String,
-    },
-    employeeId: {
-      type: String,
-      // required: true,
-      // unique: true,
-    },
-    salary: {
-      type: Number,
-      required: true,
-    },
-    workTime: {
-      type: String,
-      enum: ["Full-Time", "Part-Time", "Contract", "Temporary"], // Specify allowed values here
-      required: true, // You can adjust whether this is mandatory or not
-    },
-    joiningDate: {
-      type: Date,
-      // required: true,
-      default: Date.now,
-    },
-    profilePicture: {
-      type: String,
-      // required: true,
-      default: "https://avatar.iran.liara.run/public/boy?username=Ash",
-    },
-    subscriptionId :{
-      type: mongoose.Schema.Types.ObjectId,
-      ref : "Subscription"
+    professionalDetails: {
+      managerType: {
+        type: String,
+        enum: ["HumanResourceManager", "GeneralManager", "ProjectManager", "SalesManager"],
+      },
+      workTime: {
+        type: String,
+        enum: ["Full-Time", "Part-Time", "Contract", "Temporary"],
+      },
+      joiningDate: { type: Date, default: Date.now },
+      designation: { type: String },
+      salary: { type: Number },
     },
     address: {
       street: { type: String },
@@ -55,64 +30,40 @@ const managerSchema: Schema<IManager> = new Schema(
       zip: { type: String },
       country: { type: String },
     },
+    companyDetails: {
+      companyName: { type: String },
+      companyLogo: { type: String },
+      companyRegistrationNumber: { type: String },
+      companyWebsite: { type: String },
+    },
     documents: [
       {
-        documentName: {
-          type: String,
-          default: "HR Document",
-        },
-        documentUrl: {
-          type: String,
-          match: /^(http|https):\/\/[^ "]+$/, // URL validation
-          // required: true,
-        },
-        uploadedAt: {
-          type: Date,
-          default: Date.now,
-        },
+        documentName: { type: String, default: "HR Document" },
+        documentUrl: { type: String, match: /^(http|https):\/\/[^ "]+$/ },
+        uploadedAt: { type: Date, default: Date.now },
       },
     ],
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    isBlocked: {
-      type: Boolean,
-      default: false,
-    },
     managerCredentials: {
-      companyName: {
-        type: String,
-        // required: true,
-      },
-      companyRegistrationNumber: {
-        type: String,
-        // required: true,
-      },
-      email: {
-        type: String,
-        // required: true,
-      },
-      password: {
-        type: String,
-        // required: true,
-      },
+      companyEmail: { type: String },
+      companyPassword: { type: String },
     },
+    isActive: { type: Boolean, default: true },
+    isVerified: { type: Boolean, default: false },
+    isBlocked: { type: Boolean, default: false },
     businessOwnerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'BusinessOwner', // Assuming you have a BusinessOwner model
-      // required: true, // Assuming this is a required field
+      ref: 'BusinessOwner',
+    },
+    subscriptionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subscription",
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically adds createdAt and updatedAt
   }
 );
 
-const managerModel = mongoose.model<IManager>("manager", managerSchema);
+const managerModel = mongoose.model<IManager>("Manager", managerSchema);
 
 export default managerModel;

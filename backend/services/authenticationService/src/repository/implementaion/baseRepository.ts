@@ -25,8 +25,14 @@ export default class BaseRepository<T extends Document> implements IBaseReposito
   }
 
   async create(data: Partial<T>): Promise<T> {
+    console.log("data sis ==>",data);
+    
     try {
+      console.log("model is ==>",this._model);
+      
       const createdDocument = new this._model(data);
+      console.log("careate document",createdDocument);
+      
       return await createdDocument.save();
     } catch (error) {
       console.log("Error creating document:", error);

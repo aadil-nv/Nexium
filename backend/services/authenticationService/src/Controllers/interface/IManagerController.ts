@@ -1,5 +1,7 @@
+import { NextFunction, Request, Response } from "express";
 export default interface IManagerController {
-    login(req: Request, res: Response): Promise<Response>;
+    managerLogin(req: Request, res: Response): Promise<Response>;
+    validateOtp(req: Request, res: Response ,next: NextFunction): Promise<void>;
 }
 
 

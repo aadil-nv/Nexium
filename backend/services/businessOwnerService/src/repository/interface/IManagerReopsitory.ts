@@ -1,5 +1,5 @@
 import BaseRepository from "repository/implementation/baseRepository";
-import IManager from "../../entities/managerEntity";  // Assuming IManager is an interface for manager document
+import {IManager} from "../../entities/managerEntity";  // Assuming IManager is an interface for manager document
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntity"; // If necessary for any other purpose, you can still import it
 
 export default interface IManagerRepository extends BaseRepository<IManager> {  // Corrected to IManager

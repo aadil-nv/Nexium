@@ -15,16 +15,14 @@ export default class ManagerController implements IManagerController {
     try {
       const managerData = req.body;
       const businessOwnerId = (req as any).user.businessOwnerData._id;
+      const response = await this._managerService.addManagers(businessOwnerId, managerData);
+      return res.status(200).json(response);
 
-      const newManagerData = await this._managerService.addManagers(businessOwnerId, managerData);
-      return res.status(200).json({ message: "Successfully added Manager", data: newManagerData });
     } catch (error: any) {
       const errorMessage = error.message || "Internal Server Error. Please try again later.";
-
       if (error.name === "ValidationError") {
         return res.status(400).json({ error: errorMessage });
       }
-
       return res.status(500).json({ error: errorMessage });
     }
   }

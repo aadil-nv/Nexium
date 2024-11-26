@@ -5,6 +5,7 @@ import createManagerCredentials from "../../utils/generateManagerCredentials";
 import generateOfferLetter from "../../utils/generateOfferLetter";
 import nodemailer from "nodemailer";
 import RabbitMQMessager from "../../events/rabbitmq/implementation/producer";
+import { IResponseDTO } from "dto/businessOwnerDTO";
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -22,51 +23,129 @@ export default class ManagerService implements IManagerService {
     this._managerRepository = managerRepository;
   }
 
-  async addManagers(businessOwnerId: string, managerData: any): Promise<any> {
+  async addManagers(businessOwnerId: string, data: any): Promise<IResponseDTO> {
+    console.log(`===================`.bgCyan.bold, data);
+
     try {
-      const rabbitMQMessager = new RabbitMQMessager();
-      await rabbitMQMessager.init();
+        const rabbitMQMessager = new RabbitMQMessager();
+        await rabbitMQMessager.init();
 
-      this.validateManagerData(managerData);
+        // Validate the incoming manager data
+        this.validateManagerData(data);
 
-      const businessOwnerData = await this._managerRepository.findById(businessOwnerId);
-      if (!businessOwnerData) throw new Error("Business owner not found");
+        // Fetch the business owner data to verify existence and get company details
+        const businessOwnerData = await this._managerRepository.findById(businessOwnerId);
+        if (!businessOwnerData) throw new Error("Business owner not found");
 
-      const existingEmail = await this._managerRepository.findByEmail(businessOwnerId, managerData.email);
-      if (existingEmail) throw new Error("Manager with this email already exists");
+        // Check if a manager with the same email already exists
+        const existingEmail = await this._managerRepository.findByEmail(businessOwnerId, data.email);
+        if (existingEmail) throw new Error("Manager with this email already exists");
 
-      const managerCredentials = createManagerCredentials(
-        businessOwnerData.companyDetails.companyName,
-        businessOwnerId,
-        managerData.name
-      );
+        // Generate manager credentials
+        const managerCredentials = createManagerCredentials(
+            businessOwnerData.companyDetails.companyName,
+            businessOwnerId,
+            data.name
+        );
+        console.log(`managerCredentials:`.bgWhite, managerCredentials);
 
-      managerData.subscriptionId = businessOwnerData.subscription.subscriptionId;
-      managerData.businessOwnerId = businessOwnerId;
-      managerData.managerCredentials = managerCredentials.managerCredentials;
+        // Prepare `managerData` structure
+        const newManagerData: any = {
+            personalDetails: {
+                managerName: data.name,
+                email: data.email,
+                personalWebsite: '', // Default value
+                profilePicture: data.profileImage || "",
+                phone: data.phoneNumber,
+            },
+            professionalDetails: {
+                managerType: data.managerType,
+                joiningDate: data.joiningDate || new Date(),
+                salary: data.salary,
+                workTime: data.workTime,
+            },
+            companyDetails: {
+                companyName: businessOwnerData.companyDetails.companyName,
+                companyLogo: data.companyLogo || undefined,
+            },
+            managerCredentials: {
+                companyEmail: managerCredentials.managerCredentials.email,
+                companyPassword: managerCredentials.managerCredentials.password,
+            },
+            address: {
+              street: "",
+              city: "",
+              state: "",
+              zip: "",
+              country:"",
+            },
+            documents: [
+              {
+                documentName: "HR Document", // Default name
+                documentUrl: "https://example.com/default-document", // Default URL
+                uploadedAt: new Date(), // Default timestamp
+              },
+            ],
+            businessOwnerId,
+            subscriptionId: businessOwnerData.subscription.subscriptionId,
+        };
 
-      await this.sendOfferLetter(managerData.name, managerCredentials.managerCredentials, managerData.email);
+        console.log(`Prepared Manager Data:`, newManagerData);
 
-      const newManagerData = await this._managerRepository.addManagers(businessOwnerId, managerData);
-      rabbitMQMessager.sendToMultipleQueues({ newManagerData });
+        // Send offer letter
+        await this.sendOfferLetter(data.name, managerCredentials.managerCredentials, data.email);
 
-      return newManagerData;
+        // Add the manager to the database
+        const managerData = await this._managerRepository.addManagers(businessOwnerId, newManagerData);
+
+        // Send the new manager data to RabbitMQ for further processing
+        rabbitMQMessager.sendToMultipleQueues({ managerData });
+
+        return {
+          success:true,
+          message:"Manager added successfully"
+        }
     } catch (error: any) {
-      console.error("Error adding HR Manager:", error);
-      throw new Error(error.message || "Error adding HR Manager");
+        console.error("Error adding HR Manager:", error.message.bgRed);
+        throw new Error(error.message || "Error adding HR Manager");
     }
-  }
+}
 
-  private validateManagerData(managerData: any): void {
-    if (!managerData.name || managerData.name.length < 3) throw new Error("Manager name must be at least 3 characters long");
-    if (!managerData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(managerData.email)) throw new Error("Invalid email address");
-    if (!managerData.phoneNumber || !/^\d{10}$/.test(managerData.phoneNumber)) throw new Error("Phone number must be exactly 10 digits");
-    if (/(.)\1{2,}/.test(managerData.phoneNumber)) throw new Error("Phone number must not have consecutive numbers");
-    if (!managerData.joiningDate || new Date(managerData.joiningDate) < new Date()) throw new Error("Joining date must be today or a future date");
-    if (typeof managerData.salary !== 'string' || managerData.salary <= 0) throw new Error("Salary must be a positive number");
-    if (!managerData.workTime) throw new Error("Work time is required");
-    if (!managerData.managerType) throw new Error("Manager type is required");
+  
+  private validateManagerData(data: any): void {
+    // Validate manager name
+    if (!data.name || data.name.length < 3) throw new Error("Manager name must be at least 3 characters long");
+    console.log(`Manager Name: ${data.name}`.green);
+  
+    // Validate email format
+    if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) throw new Error("Invalid email address");
+    console.log(`Manager Email: ${data.email}`.blue);
+  
+    // Validate phone number
+    if (!data.phoneNumber || !/^\d{10}$/.test(data.phoneNumber)) throw new Error("Phone number must be exactly 10 digits");
+    if (/(.)\1{2,}/.test(data.phoneNumber)) throw new Error("Phone number must not have consecutive numbers");
+    console.log(`Manager Phone Number: ${data.phoneNumber}`.yellow);
+  
+    // Validate joining date (should not be in the past)
+    if (!data.joiningDate || new Date(data.joiningDate) < new Date()) {
+      console.log(`Invalid Joining Date: ${data.joiningDate}`.bgRed);
+      throw new Error("Joining date must be today or a future date");
+    }
+    console.log(`Manager Joining Date: ${data.joiningDate}`.cyan);
+  
+    // Validate salary (must be a positive number and an integer)
+    // if (typeof data.salary !== 'number' || data.salary <= 0) throw new Error("Salary must be a positive number");
+    // console.log(`Manager Salary: ${data.salary}`.magenta);
+  
+    // Validate work time and manager type
+    if (!data.workTime) throw new Error("Work time is required");
+    if (!data.managerType) throw new Error("Manager type is required");
+  
+    console.log(`Work Time: ${data.workTime}`.green);
+    console.log(`Manager Type: ${data.managerType}`.blue);
   }
+  
+  
 
   async sendOfferLetter(managerName: string, managerCredentials: any, managerEmail: string): Promise<void> {
     try {

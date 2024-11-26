@@ -13,7 +13,7 @@ dotenv.config();
 
 const app = express();
 
-// Ensure logs directory exists
+
 const logDirectory = path.resolve(__dirname, './logs');
 if (!fs.existsSync(logDirectory)) {
   fs.mkdirSync(logDirectory);
@@ -48,6 +48,5 @@ app.use('/superAdmin', createProxyMiddleware({ target: targets.superAdmin, chang
 app.use('/manager', createProxyMiddleware({ target: targets.manager, changeOrigin: true }));
 app.use('/employee', createProxyMiddleware({ target: targets.employee, changeOrigin: true }));
 
-// Start the serverfsdfsdfsdfsdfsdfsasdsadasddfsdfsdfdssdfsdfsdfadffddsfdsf34tsfsdfsdfsdfasdfsfdsfsdasdsadasd
 const port = process.env.GATEWAY_PORT || 3000;
 app.listen(port, () => console.log(`Gateway server running on http://localhost:${port}`.bgMagenta.bold));

@@ -4,6 +4,7 @@ import { EditOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
 import { fetchBusinessOwnerAddress } from '../../api/businessOwnerApi';
+import { fetchManagerAddress } from '../../api/managerApi';
 
 const Address = () => {
   const [form] = Form.useForm();
@@ -26,8 +27,19 @@ const Address = () => {
           console.error('Error fetching address:', error);
         }
       })();
+    }else if(manager.isAuthenticated){
+      (async () => {
+        try {
+          const { street, city, state, country, zip } = await fetchManagerAddress();
+          const mappedData = { street: street, city, state, country, zip };
+          setAddress(mappedData);
+          form.setFieldsValue(mappedData);
+        } catch (error) {
+          console.error('Error fetching address:', error);
+        }
+      })();
     }
-  }, [businessOwner.isAuthenticated, form]);
+  }, [businessOwner.isAuthenticated,manager.isAuthenticated, form]);
 
   const onFinish = (values: any) => console.log('Form values:', values);
 

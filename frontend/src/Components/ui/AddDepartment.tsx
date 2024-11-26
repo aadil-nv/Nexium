@@ -9,11 +9,12 @@ const AddDepartmentModal: React.FC<{
   isVisible: boolean;
   onClose: () => void;
   onAddDepartment: (department: any) => void;
-  employees: any[]; // Adjusted to accept the full employee data structure
+  employees: any[];
 }> = ({ isVisible, onClose, onAddDepartment, employees }) => {
   const [form] = Form.useForm();
   
-  // Handles form submission
+  console.log("employees", employees);
+
   const handleSubmit = async (values: any) => {
     console.log('Form values:', values);  // Log the form values to ensure it's correct
 
@@ -28,7 +29,13 @@ const AddDepartmentModal: React.FC<{
             return null;
           }
           // Return an object with employee id and name
-          return { id: employee._id, name: `${employee.personalDetails.firstName} ${employee.personalDetails.lastName}`, position: `${employee.professionalDetails.position}`, isActive: `${employee.isActive}`, profilePicture: `${employee.profilePicture}` };
+          return { 
+            id: employee._id, 
+            name: employee.employeeName || 'No Name', 
+            position: employee.position || 'No Position', 
+            isActive: employee.isActive, 
+            profilePicture: employee.profilePicture || '' 
+          };
         })
         .filter((emp) => emp !== null); // Remove any invalid employees
 
@@ -74,7 +81,7 @@ const AddDepartmentModal: React.FC<{
         <Form.Item
           label="Department Name"
           name="departmentName"
-          rules={[
+          rules={[ 
             { required: true, message: 'Please input the department name!' },
             { min: 3, message: 'Department name must be at least 3 characters long!' }
           ]}
@@ -87,7 +94,6 @@ const AddDepartmentModal: React.FC<{
           label="Select Employees"
           name="employees"
           rules={[{ required: true, message: 'Please select employees!' }]}
-
         >
           <Select
             mode="multiple"
@@ -98,7 +104,7 @@ const AddDepartmentModal: React.FC<{
             }
             options={employees.map((emp) => ({
               value: emp._id, // Use the employee's unique _id
-              label: `${emp.personalDetails.firstName} ${emp.personalDetails.lastName}`, // Combine first and last name for display
+              label: `${emp.employeeName || 'Unknown Employee'}`, // Use employee name as label
             }))}
           />
         </Form.Item>

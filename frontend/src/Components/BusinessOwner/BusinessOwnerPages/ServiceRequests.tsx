@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import AddEmployeeModal from '../../ui/AddEmployeeModal';
+
 import useTheme from '../../../hooks/useTheme';
 
 const serviceRequestsData = [
@@ -62,8 +62,7 @@ const ServiceRequests = () => {
         ))}
       </div>
 
-      {/* AddEmployeeModal */}
-      {isModalVisible && <AddEmployeeModal isVisible={isModalVisible} onClose={handleCloseModal} />}
+     
     </div>
   );
 };

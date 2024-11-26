@@ -4,7 +4,7 @@ import managerModel from "../../models/managerModel";
 import mongoose from "mongoose";
 import { inject, injectable } from "inversify";
 import BaseRepository from "./baseRepository";
-import IManager from "entities/managerEntity";
+import {IManager} from "../../entities/managerEntity";
 import BusinessOwnerModel from "../../models/businessOwnerModel";
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntity";
 

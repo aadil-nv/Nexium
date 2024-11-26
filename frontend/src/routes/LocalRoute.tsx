@@ -12,6 +12,8 @@ import SuperAdminLogin from "../components/superAdmin/superAdminLogin/superAdmin
 import PrivateRoute from "./PrivateRoute";
 import Login from "../components/manager/authentication/Login";
 import  OtpValidation from "../components/manager/authentication/OtpValidation";
+import EmployeeLogin from "../components/auth/EmployeeLogin";
+import EmployeeOtp from "../components/auth/EmployeeeOtp";
 
 const LocalRoutes = () => {
   const routes = [
@@ -26,6 +28,10 @@ const LocalRoutes = () => {
     { path: "/forgot-otp", element: <LandingForgottOtp /> },
     { path: "/manager-login", element: <Login /> },
     { path: "/manager-otpvalidation", element: <OtpValidation /> },
+    { path: "/employee-login", element: <EmployeeLogin /> },
+    { path: "/employee-otpvalidation", element: <EmployeeOtp /> },
+
+
 
   ];
 

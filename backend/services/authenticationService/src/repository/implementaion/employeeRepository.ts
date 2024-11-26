@@ -1,0 +1,60 @@
+import { injectable, inject } from "inversify";
+import employeeModel from "../../model/employeeModel";
+import IEmployeeRepository from "../interfaces/IEmployeeRepository";
+import  IEmployeeDocument  from "../../entities/employeeEntities";
+import BaseRepository from "./baseRepository";
+import OtpModel from "../../model/otpModel";
+
+
+
+@injectable()
+export default class EmployeeRepository extends BaseRepository<IEmployeeDocument> implements IEmployeeRepository {
+    constructor(@inject("employeeModel") private _employeeModel: any) {
+        super(_employeeModel);
+    }
+
+    async findByCredentialEmail(email: string): Promise<any> {
+        try {
+          const employee = await this._employeeModel.findOne({ 'employeeCredentials.companyEmail': email });
+          
+          if (!employee) {
+            throw new Error("Invalid email or password");
+          }
+    
+          return employee; // Return the employee data
+        } catch (error) {
+          console.error("Error finding employee by email:", error);
+          throw new Error("Failed to find employee by email");
+        }
+      }
+
+
+      async findOtpByEmail(email: string): Promise<any | null> {
+        return OtpModel.findOne({ email }).exec();
+      }
+
+      async updateVerificationStatus(email: string): Promise<any> {
+        try {
+            return await this._employeeModel.updateOne({"personalDetails.email": email }, { isVerified: true }).exec();
+        } catch (error) {
+            console.error("Error updating verification status:", error);
+            throw new Error("Failed to update verification status");
+        }
+    }
+    
+    async findByEmail(email: string): Promise<IEmployeeDocument | null> {
+        console.log("hitting repo---",email);
+        console.log("hitting repo---",email);
+        
+        try {
+          const employee = await this._employeeModel.findOne({ "personalDetails.email": email  }).exec();
+          console.log("hitting employee---",employee);
+          return employee;
+        } catch (error:any) {
+          // Log the error for debugging purposes
+          console.error("Error finding employee by email:", error.message);
+          throw new Error("Failed to find employee by email");
+        }
+      }
+      
+}

@@ -10,6 +10,7 @@ import managerRoutes from './routes/managerRoutes';
 import 'colors';
 import cookieParser from 'cookie-parser'; 
 import {connectConsumer}from './events/rabbitmq/connectConsumer';
+import employeeRoutes from './routes/employeeRoutes';
 
 
 const app = express();
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {res.send('Auth service is running..');});
 app.use('/api/super-admin', superAdminRoutes);
 app.use('/api/business-owner', businessOwnerRoutes);
 app.use('/api/manager', managerRoutes);
+app.use('/api/employee', employeeRoutes);
 
 connectConsumer()
 

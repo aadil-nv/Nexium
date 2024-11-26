@@ -1,5 +1,6 @@
+import { IEmployeesDTO } from "../../dto/IEmployeesDTO";
 import IEmployee from "../../entities/employeeEntities";
 export default interface IEmployeeService {
-    addEmployees(employeeData: any , refreshToken: string): Promise<any>;
-    getEmployees():Promise<any>
+    addEmployees(employeeData: any , managerData: any): Promise<any>;
+    getEmployees():Promise<IEmployeesDTO[]>
 }

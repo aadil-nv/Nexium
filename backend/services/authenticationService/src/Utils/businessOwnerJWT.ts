@@ -1,24 +1,40 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET as string
+const ACCESS_TOKEN_SECRET= process.env.ACCESS_TOKEN_SECRET as string
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your_refresh_token_secret';
-
-
-export const generateCompanyAccessToken = (data: object): string => {
+export const generateAccessToken = (data: object): string => {
+ 
+    
     return jwt.sign(
         data, 
-        JWT_SECRET,
+        ACCESS_TOKEN_SECRET,
         { expiresIn: '15m' }
     );
 };
 
-export const generateCompanyRefreshToken = (data: object): string => {
+export const generateRefreshToken = (data: object): string => {
     return jwt.sign(
         data, 
         REFRESH_TOKEN_SECRET,
-        { expiresIn: '7d' }
+        { expiresIn: '1d' }
     );
+};
+
+export const verifyRefreshToken = (token: string): JwtPayload | null => {
+    try {
+        return jwt.verify(token, "Admin@123") as JwtPayload; // Verify refresh token
+    } catch {
+        return null;
+    }
+};
+
+export const verifyAccessToken = (token: string): JwtPayload | null => {
+    try {
+        return jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload; 
+    } catch {
+        return null;
+    }
 };
 
 

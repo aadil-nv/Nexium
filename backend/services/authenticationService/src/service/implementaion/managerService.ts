@@ -6,6 +6,7 @@ import { generateAccessToken, generateRefreshToken } from "../../utils/businessO
 import generateOtp from "../../utils/otp";
 import nodemailer from "nodemailer";
 import OtpModel from "../../model/otpModel";
+import { ILoginDTO, IValidateOtpDTO } from "dto/ILoginDTO";
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -23,7 +24,7 @@ export default class ManagerService implements IManagerService {
     this._managerRepository = managerRepository;
   }
 
-  async managerLogin(email: string, password: string): Promise<ITokenResponse> {
+  async managerLogin(email: string, password: string): Promise<ILoginDTO> {
     console.log("email",email ,"passwor",password);
     
     try {
@@ -38,17 +39,17 @@ export default class ManagerService implements IManagerService {
       const managerData = await this._managerRepository.findByCredentialEmail(email);
       console.log("manaager data from service====",managerData);
       
-      if (!managerData || managerData.managerCredentials.password !== password) throw new Error('Invalid email or password');
+      if (!managerData || managerData.managerCredentials.companyPassword !== password) throw new Error('Invalid email or password');
 
       if (!managerData.isVerified) {
         const otp = generateOtp();
-        await this.sendOtp(managerData.email, otp);
+        await this.sendOtp(managerData.personalDetails.email, otp);
 
         return {
           success: false,
           message: "Account not verified. Check your email for OTP",
           isVerified: false,
-          email: managerData.email,
+          email: managerData.personalDetails.email,
         };
       }
         console.log("managerData",managerData);
@@ -56,14 +57,7 @@ export default class ManagerService implements IManagerService {
       const accessToken = generateAccessToken({  managerData });
       const refreshToken = generateRefreshToken({ managerData });
 
-      return {
-        id: managerData.id,
-        email: managerData.email,
-        name: managerData.name,
-        accessToken,
-        refreshToken,
-        success: true,
-      };
+      return {accessToken,refreshToken,success: true,};
     } catch (error) {
       console.error('Error in managerLogin service:', error);
       throw error;
@@ -104,7 +98,7 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async validateOtp(email: string, otp: string): Promise<any> {
+  async validateOtp(email: string, otp: string): Promise<IValidateOtpDTO> {
     try {
       const otpData = await this._managerRepository.findOtpByEmail(email);
       if (!otpData) throw new Error("Manager not found");

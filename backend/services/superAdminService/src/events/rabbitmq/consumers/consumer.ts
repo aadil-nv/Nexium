@@ -40,9 +40,9 @@ export default class BusinessOwnerConsumer implements IConsumer {
             console.log('Received businessOwner data:', data);
 
 
-            if (data.businessOwnerData) {
-              await this.businessOwnerService.registerBusinessOwner(data.businessOwnerData);
-            }
+            // if (data.businessOwnerData) {
+            //   await this.businessOwnerService.registerBusinessOwner(data.businessOwnerData);
+            // }
 
             // Acknowledge the message after processing
             this.channel?.ack(msg);

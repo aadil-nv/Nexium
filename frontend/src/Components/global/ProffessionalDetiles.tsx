@@ -1,63 +1,144 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, DatePicker, Row, Col } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Input, Button, DatePicker, Row, Col, message } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import useTheme from '../../hooks/useTheme';
+import useAuth from '../../hooks/useAuth';
+import axios from 'axios';
+import { managerInstance } from '../../services/managerInstance';
 
 export default function ProfessionalDetails() {
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { themeColor } = useTheme();
+  const { employee, manager } = useAuth();
+  const isManager = manager.isAuthenticated;
+  const isEmployee = employee.isAuthenticated;
+  const [professionalDetails, setProfessionalDetails] = useState({}); // Initialize as an empty object
 
-  const initialValues = {
-    position: 'Software Engineer',
-    department: 'IT',
-    workTime: 'Full-Time',
-    joiningDate: dayjs('2022-01-01'),
-    currentStatus: 'Active',
-    companyName: 'Demo Company',
-    salary: '50000',
-    skills: 'JavaScript, React, Node.js',
+  const fetchProfessionalDetails = async () => {
+    try {
+      let response;
+      if (isManager) {
+        response = await managerInstance.get('/manager/api/manager/get-managerprofessionalinfo');
+      } else if (isEmployee) {
+        response = await axios.get('http://localhost:3000/employee/api/employeee/get-employeeprofessianl');
+      }
+      console.log("------------respose------------",response.data)
+
+      if (response?.data) {
+        console.log("hited--------------------------")
+        setProfessionalDetails(response.data);
+
+        // Set form fields with fetched data
+        form.setFieldsValue({
+          ...response.data,
+          joiningDate: dayjs(response.data.joiningDate),
+        });
+      }
+
+      setLoading(false);
+    } catch (error) {
+      message.error('Failed to fetch professional details');
+      console.error('Error fetching professional details:', error);
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchProfessionalDetails();
+  }, [isManager, isEmployee]);
+  console.log("")
+
   const fields = [
-    { name: 'position', label: 'Position' },
-    { name: 'department', label: 'Department' },
+    { name: 'managerType', label: 'Position' },
     { name: 'workTime', label: 'Work Time' },
-    { name: 'currentStatus', label: 'Current Status' },
-    { name: 'companyName', label: 'Company Name' },
     { name: 'salary', label: 'Salary' },
-    { name: 'skills', label: 'Skills' },
   ];
 
-  const onFinish = (values: any) => console.log('Form values:', values);
+  const onFinish = (values: any) => {
+    console.log('Form values:', values);
+    message.success('Details updated successfully!');
+  };
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <div className="mt-6">
-      <Form form={form} onFinish={onFinish} layout="vertical" initialValues={initialValues} className="mt-4">
+      <Form
+        form={form}
+        onFinish={onFinish}
+        layout="vertical"
+        initialValues={professionalDetails}
+        className="mt-4"
+      >
         <Row gutter={16}>
           <Col xs={24} sm={12}>
             {fields.slice(0, 4).map((field) => (
-              <Form.Item key={field.name} name={field.name} label={field.label} rules={[{ required: true, message: `Please enter your ${field.label.toLowerCase()}` }]}>
-                <Input placeholder={`Enter your ${field.label.toLowerCase()}`} disabled={!isEditing} />
+              <Form.Item
+                key={field.name}
+                name={field.name}
+                label={field.label}
+                rules={[
+                  {
+                    required: true,
+                    message: `Please enter your ${field.label.toLowerCase()}`,
+                  },
+                ]}
+              >
+                <Input
+                  placeholder={`Enter your ${field.label.toLowerCase()}`}
+                  disabled={!isEditing}
+                />
               </Form.Item>
             ))}
           </Col>
           <Col xs={24} sm={12}>
             {fields.slice(4).map((field) => (
-              <Form.Item key={field.name} name={field.name} label={field.label} rules={[{ required: true, message: `Please enter your ${field.label.toLowerCase()}` }]}>
-                <Input placeholder={`Enter your ${field.label.toLowerCase()}`} disabled={!isEditing} />
+              <Form.Item
+                key={field.name}
+                name={field.name}
+                label={field.label}
+                rules={[
+                  {
+                    required: true,
+                    message: `Please enter your ${field.label.toLowerCase()}`,
+                  },
+                ]}
+              >
+                <Input
+                  placeholder={`Enter your ${field.label.toLowerCase()}`}
+                  disabled={!isEditing}
+                />
               </Form.Item>
             ))}
-            <Form.Item name="joiningDate" label="Joining Date" rules={[{ required: true, message: 'Please select your joining date' }]}>
-              <DatePicker style={{ width: '100%' }} disabled value={dayjs('2022-01-01')} placeholder="Select your joining date" />
+            <Form.Item
+              name="joiningDate"
+              label="Joining Date"
+              rules={[
+                { required: true, message: 'Please select your joining date' },
+              ]}
+            >
+              <DatePicker
+                style={{ width: '100%' }}
+                disabled={!isEditing}
+                placeholder="Select your joining date"
+              />
             </Form.Item>
           </Col>
         </Row>
 
         {isEditing && (
           <Form.Item>
-            <Button type="primary" htmlType="submit" block style={{ backgroundColor: themeColor, borderColor: themeColor }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              style={{ backgroundColor: themeColor, borderColor: themeColor }}
+            >
               Save Changes
             </Button>
           </Form.Item>
@@ -70,7 +151,7 @@ export default function ProfessionalDetails() {
         className="mt-3 text-white"
         style={{ backgroundColor: themeColor, borderColor: themeColor }}
       >
-        Edit Details
+        {isEditing ? 'Cancel' : 'Edit Details'}
       </Button>
     </div>
   );

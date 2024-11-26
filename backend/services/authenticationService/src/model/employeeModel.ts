@@ -1,110 +1,49 @@
-import mongoose from "mongoose";
-import IEmployeeDocument from "../entities/employeeEntities";
+import mongoose, { Schema } from "mongoose";
+import  IEmployee  from "../entities/employeeEntities";
 
 
-const employeeSchema = new mongoose.Schema({
-    hriId: {
-      type: String,
-      required: true,
-      unique: true
-    },
-    name: {
-      type: String,
-      required: true
-    },
-    personalDetails: {
-      address: {
-        type: String,
-        required: true
-      },
-      phone: {
-        type: String,
-        required: true
-      },
-      emergencyContact: {
-        type: String,
-        required: true
-      },
-      bloodGroup: {
-        type: String,
-        required: true
-      },
-      maritalStatus: {
-        type: String,
-        required: true
-      }
-    },
-    professionalDetails: {
-      designation: {
-        type: String,
-        required: true
-      },
-      department: {
-        type: String,
-        required: true
-      },
-      jobDescription: {
-        type: String,
-        required: true
-      },
-      experience: {
-        type: Number,
-        required: true
-      },
-      skills: {
-        type: [String],
-        required: true
-      }
-    },
-    accountAccess: {
-      companyEmail: {
-        type: String,
-        required: true,
-        unique: true
-      },
-      password: {
-        type: String,
-        required: true
-      }
-    },
-    documents: {
-      type: [
-        {
-          documentType: {
-            type: String,
-            required: true
-          },
-          documentName: {
-            type: String,
-            required: true
-          },
-          documentPath: {
-            type: String,
-            required: true
-          }
-        }
-      ],
-      required: true
-    },
-    isActive: {
-      type: Boolean,
-      required: true,
-      default: true
-    },
-    isVerified: {
-      type: Boolean,
-      required: true,
-      default: false
-    },
-    joiningDate: {
-      type: Date,
-      required: true
-    },
-    role: {
-      type: String,
-      required: true
-    }
-  });
+const employeeSchema = new Schema<IEmployee>({
+  managerId: { type: mongoose.Schema.Types.ObjectId, ref: 'manager' }, // Corrected reference type
+  isActive: { type: Boolean, default: true },
+  isVerified: { type: Boolean, default: false },
+  isBlocked: { type: Boolean, default: false },
   
-  const employeeModel = mongoose.model<IEmployeeDocument>('Employee', employeeSchema);
-  export default employeeModel
+  personalDetails: {
+    profilePicture:{ type: String ,default: "https://avatar.iran.liara.run/public/boy?username=Ash"},
+    employeeName: { type: String },
+    email: { type: String, required: true },
+    phone: { type: String },
+  },
+  address:{
+    street: { type: String },
+    city: { type: String },
+    state: { type: String },
+    country: { type: String },
+    zipCode: { type: String },
+  },
+  
+  professionalDetails: {
+    position: { type: String, enum: ["Team Lead", "Senior Software Engineer", "Junior Software Engineer"] },
+    workTime: { type: String, enum: ["Full-Time", "Part-Time", "Contract", "Temporary"] },
+    department: { type: String },
+    joiningDate: { type: Date },
+    currentStatus: { type: String },
+    companyName: { type: String },
+    salary: { type: Number },
+  },
+  
+  employeeCredentials: {
+    companyEmail: { type: String, required: true, unique: true }, // Ensure uniqueness
+    companyPassword: { type: String },
+  },
+
+  documents: {
+    resume: { type: String },
+    idProof: { type: String },
+  },
+});
+
+
+const Employee = mongoose.model<IEmployee>('Employee', employeeSchema);
+
+export default Employee;

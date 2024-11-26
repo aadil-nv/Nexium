@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react'; 
+// AddManagerModal.tsx
+
+import React, { useState } from 'react'; 
 import { Button, Modal, Form, Input, Select, DatePicker } from 'antd';
 import { createStyles, useTheme } from 'antd-style';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store/store';
-import { toast } from 'react-toastify';
-import { addEmployee } from '../../api/managerApi'; // Removed fetchDepartments import as it is no longer needed
+import { addEmployee } from '../../api/managerApi'; 
 import { addEmployeeSchema } from '../../config/validationSchema'; 
 import { useForm } from 'antd/lib/form/Form';
 
@@ -25,7 +26,11 @@ const useStyle = createStyles(({ token }) => ({
   },
 }));
 
-const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = ({ isVisible, onClose }) => {
+const AddManagerModal: React.FC<{
+  isVisible: boolean;
+  onClose: () => void;
+  onManagerAdded: (newManager: any) => void; // Add this line to accept onManagerAdded prop
+}> = ({ isVisible, onClose, onManagerAdded }) => {
   const { styles } = useStyle();
   const token = useTheme();
   const themeColor = useSelector((state: RootState) => state.menu.themeColor);
@@ -104,6 +109,7 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
             salary: 0,
             workTime: '',
           });
+          onManagerAdded(success); // Call onManagerAdded to notify the parent
           onClose();
         }
       } catch (error) {
@@ -182,4 +188,4 @@ const AddEmployeeModal: React.FC<{ isVisible: boolean; onClose: () => void }> = 
   );
 };
 
-export default AddEmployeeModal;
+export default AddManagerModal;

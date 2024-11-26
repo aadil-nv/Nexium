@@ -16,16 +16,20 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
 
     async getEmployees(): Promise<IEmployee[]> {
         try {
-            return await this.findAll();
+            const employees = await this.employeeModel.find();
+            return employees;
         } catch (error) {
             console.error("Error finding employees:", error);
-            return [];
+            return []; // Return an empty array in case of an error
         }
     }
+    
 
     async addEmployee(employeeData: IEmployee): Promise<IEmployee> {
         try {
             const employee = new this.employeeModel(employeeData);
+            console.log("employee from repo -----------------", employee);
+            
             return await employee.save();
         } catch (error) {
             console.error("Error in addEmployee repository:", error);

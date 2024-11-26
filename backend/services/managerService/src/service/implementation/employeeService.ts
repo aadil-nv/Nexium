@@ -1,12 +1,13 @@
 import IEmployeeRepository from "../../repository/interface/IEmployeeRepository";
 import { inject, injectable } from "inversify";
 import IEmployeeService from "../interface/IEmployeeService";
-import { verifyRefreshToken } from "../../utils/jwt";
 import { generateEmail } from "../../utils/generateEmail";
 import { generatePassword } from "../../utils/generatePassword";
 import nodemailer from "nodemailer";
 import { generateOfferLetter } from "../../utils/generateOfferLetter";
-import { decode } from "punycode";
+import { IEmployeesDTO } from "../../dto/IEmployeesDTO";
+import RabbitMQMessager from "../../events/implementation/producer";
+
 
 
 const transporter = nodemailer.createTransport({
@@ -23,68 +24,58 @@ export default class EmployeeService implements IEmployeeService {
     @inject("IEmployeeRepository") private _employeeRepository: IEmployeeRepository
   ) {}
 
-  async addEmployees(employeeData: any, refreshToken: string): Promise<any> {
-    console.log(`==========================================================`.bgRed);
-    console.log(`===========employeeData===========`, employeeData);
-    console.log(`===========refreshToken===========`, refreshToken);
-    console.log(`==========================================================`.bgRed);
-    console.log("");
-  
-    try {
-      const decoded = verifyRefreshToken(refreshToken);
-      console.log("decoded", decoded);
-      const managerId = decoded?.managerData._id;
-      console.log("manager id is ===>",managerId);
-      
-  
-      if (!managerId) {
-        return { success: false, message: "Invalid manager ID." };
-      }
-  
-      const existingEmail = await this._employeeRepository.findByEmail(employeeData.email);
-      if (existingEmail) {
-        return { success: false, message: "Email already exists" };
-      }
-  
-      const validationResult = this.validateEmployeeData(employeeData);
-      if (!validationResult.success) {
-        return { success: false, message: validationResult.message };
-      }
-  
-      const mappedEmployeeData = this.mapEmployeeData(managerId, employeeData);
-      console.log(`========================================`.bgGreen);
-      console.log("mappedEmployeeData", mappedEmployeeData);
-      console.log(`========================================`.bgGreen);
-    
-      const managerName = decoded?.managerData.name;
-      mappedEmployeeData.professionalDetails.salary = employeeData.salary;
-      mappedEmployeeData.professionalDetails.workTime = employeeData.workTime;
-      mappedEmployeeData.professionalDetails.joiningDate = employeeData.joiningDate;
-    //   mappedEmployeeData.professionalDetails.department = employeeData.department;
-      mappedEmployeeData.professionalDetails.position = employeeData.position;
-      mappedEmployeeData.professionalDetails.companyName = decoded?.managerData.managerCredentials.companyName;
+  async addEmployees(employeeData: any, managerData: any): Promise<any> {
+    const rabbitMQMessager = new RabbitMQMessager();
+    await rabbitMQMessager.init();   
 
-      const email = generateEmail( mappedEmployeeData.professionalDetails.companyName, employeeData.name, managerId);
-      console.log(`==========email============`.bgWhite, email);
-  
- 
-      const password = generatePassword( mappedEmployeeData.professionalDetails.companyName, employeeData.name, managerId);
-      console.log(`============password==========`.bgWhite, password);
-  
-      mappedEmployeeData.employeeCredentials.companyEmail = email;
-      mappedEmployeeData.employeeCredentials.companyPassword = password;
-  
-      console.log("mappedEmployeeData===========last ^^^^^^^^^^^^", mappedEmployeeData);
-  
-      const managerData = await this._employeeRepository.addEmployee(mappedEmployeeData);
-      await this.sendOfferLetter(managerName, mappedEmployeeData);
-      return { success: true, data: managerData };
-    } catch (error) {
-      console.error("Error in addEmployees service:", error);
-      return { success: false, message: "Failed to add employee" };
+    try {
+        const managerId = managerData._id
+
+
+        if (!managerId) {
+            return { success: false, message: "Invalid manager ID." };
+        }
+
+        const existingEmail = await this._employeeRepository.findByEmail(employeeData.email);
+        if (existingEmail) {
+            return { success: false, message: "Email already exists" };
+        }
+
+        const validationResult = this.validateEmployeeData(employeeData);
+        if (!validationResult.success) {
+            return { success: false, message: validationResult.message };
+        }
+
+        const mappedEmployeeData = this.mapEmployeeData(managerId, employeeData);
+
+        const managerName = managerData.name;
+
+        mappedEmployeeData.personalDetails.employeeName = employeeData.name;
+        mappedEmployeeData.professionalDetails.salary = employeeData.salary;
+        mappedEmployeeData.professionalDetails.workTime = employeeData.workTime;
+        mappedEmployeeData.professionalDetails.joiningDate = employeeData.joiningDate;
+        mappedEmployeeData.professionalDetails.department = "";
+        mappedEmployeeData.professionalDetails.position = employeeData.position;
+        mappedEmployeeData.professionalDetails.companyName = managerData.companyDetails.companyName;
+
+        const email = generateEmail(mappedEmployeeData.professionalDetails.companyName, employeeData.name, managerId);
+
+        const password = generatePassword(mappedEmployeeData.professionalDetails.companyName, employeeData.name, managerId);
+
+        mappedEmployeeData.employeeCredentials.companyEmail = email;
+        mappedEmployeeData.employeeCredentials.companyPassword = password;
+
+
+        const addedEmployee = await this._employeeRepository.addEmployee(mappedEmployeeData); // Renamed variable
+        rabbitMQMessager.sendToMultipleQueues({ employeeData: addedEmployee });
+        return { success: true, data: addedEmployee }; // Renamed variable
+        await this.sendOfferLetter(managerName, mappedEmployeeData);
+    } catch (error: any) {
+        console.error("Error in addEmployees service:", error.message);
+        return { success: false, message: "Failed to add employee" };
     }
-  }
-  
+}
+
 
 
 
@@ -170,12 +161,25 @@ export default class EmployeeService implements IEmployeeService {
     }
   }
 
-  async getEmployees(): Promise<any> {
+  async getEmployees(): Promise<IEmployeesDTO[]> {
     try {
-      return await this._employeeRepository.getEmployees();
+        const employeesData = await this._employeeRepository.findAll();
+
+        // Map the repository data to the DTO structure
+        const employeesDTO: IEmployeesDTO[] = employeesData.map((employee) => ({
+            employeeName: employee.personalDetails.employeeName, // Assuming `name` is the field in the repository data
+            position: employee.professionalDetails.position,
+            isActive: employee.isActive,
+            profilePicture: employee.profilePicture || "", // Provide a fallback for optional fields
+            email: employee.personalDetails.email,
+            _id: employee._id
+        }));
+
+        return employeesDTO;
     } catch (error) {
-      console.error("Error in service layer:", error);
-      throw new Error("Failed to fetch employees data");
+        console.error("Error in service layer:", error);
+        throw new Error("Failed to fetch employees data");
     }
-  }
+}
+
 }

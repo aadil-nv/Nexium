@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Button, Modal, Form, Input, Select, DatePicker, Spin, Row, Col } from 'antd';
 import { toast } from 'react-toastify';
-import { z } from 'zod';
 import { managerSchema } from '../../config/validationSchema';
 import { businessOwnerInstance } from '../../services/businessOwnerInstance';
+import { z } from 'zod';
+import moment from 'moment';
 
 const { Option } = Select;
 
-const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void }> = ({ isVisible, onClose }) => {
+const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onManagerAdded: () => void }> = ({ isVisible, onClose, onManagerAdded }) => {
   const [formData, setFormData] = useState({
     name: '',
     managerType: 'GeneralManager',
@@ -63,8 +64,6 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void }> = (
     try {
       const response = await businessOwnerInstance.post('/businessOwner/api/manager/add-managers', { ...formData });
       setLoading(false); // Set loading state to false after request
-        console.log("response------------",response);
-        
       if (response.status === 200) {
         toast.success(response.data.message);
         setFormData({
@@ -79,11 +78,10 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void }> = (
           profileImage: '',
         });
         setErrors({});
+        onManagerAdded(); // Notify parent component that manager has been added
         onClose(); // Close modal after successful submission
       }
     } catch (error) {
-      console.log("errrrrr",error);
-      
       setLoading(false); // Set loading state to false in case of error
       setErrorMessage(error.response.data.error);
       toast.error('An error occurred while submitting the form!');
@@ -100,64 +98,42 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void }> = (
       width={600} // Ensures modal width remains unchanged
     >
       <Spin spinning={loading}> {/* Show spinner while loading */}
-        <Form layout="horizontal" onFinish={handleSubmit}>
-          {errorMessage && (
-            <Row>
-              <Col span={24}>
-                <div style={{ color: 'rose', padding: '10px', border: '1px solid #f44336', borderRadius: '4px' }}>
-                  {errorMessage} {/* Display error message at the top */}
-                </div>
+        <Form layout="horizontal">
+          <Row gutter={16}>
+            {fields.map((field) => (
+              <Col span={12} key={field.id}>
+                <Form.Item label={field.label} validateStatus={errors[field.id] ? 'error' : ''} help={errors[field.id]}>
+                  {field.type === 'select' ? (
+                    <Select
+                      value={formData[field.id]}
+                      onChange={(value) => setFormData({ ...formData, [field.id]: value })}
+                    >
+                      {field.options?.map((option) => (
+                        <Option key={option} value={option}>{option}</Option>
+                      ))}
+                    </Select>
+                  ) : field.type === 'date' ? (
+                    <DatePicker
+  value={formData[field.id] ? moment(formData[field.id]) : null}
+  onChange={(date) => setFormData({ ...formData, [field.id]: date?.toISOString().split('T')[0] })}
+  format="YYYY-MM-DD"
+/>
+                  ) : (
+                    <Input
+                      type={field.type}
+                      value={formData[field.id]}
+                      onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                    />
+                  )}
+                </Form.Item>
               </Col>
-            </Row>
-          )}
-
-          {fields.map((field) => (
-            <Form.Item
-              key={field.id}
-              label={field.label}
-              name={field.id}
-              help={errors[field.id]} // Show error message below input
-              validateStatus={errors[field.id] ? 'error' : ''} // Highlight field in red if there's an error
-            >
-              {field.type === 'select' ? (
-                <Select
-                  onChange={(value) => setFormData({ ...formData, [field.id]: value })}
-                  value={formData[field.id]}
-                >
-                  {field.options?.map((option) => (
-                    <Option key={option} value={option}>
-                      {option}
-                    </Option>
-                  ))}
-                </Select>
-              ) : field.type === 'date' ? (
-                <DatePicker
-                  style={{ width: '100%' }}
-                  onChange={(date, dateString) => setFormData({ ...formData, [field.id]: dateString })}
-                  value={formData[field.id] ? formData[field.id] : null}
-                />
-              ) : field.type === 'number' ? (
-                <Input
-                  type="number"
-                  placeholder={`Enter ${field.label}`}
-                  onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                  value={formData[field.id]}
-                />
-              ) : (
-                <Input
-                  placeholder={`Enter ${field.label}`}
-                  onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                  value={formData[field.id]}
-                />
-              )}
-            </Form.Item>
-          ))}
-
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block loading={loading}> {/* Add loading to button */}
-              Submit
-            </Button>
-          </Form.Item>
+            ))}
+          </Row>
+          {errorMessage && <p className="text-red-500 text-center">{errorMessage}</p>}
+          <div className="flex justify-end mt-4">
+            <Button onClick={onClose} style={{ marginRight: '10px' }}>Cancel</Button>
+            <Button type="primary" onClick={handleSubmit}>Submit</Button>
+          </div>
         </Form>
       </Spin>
     </Modal>

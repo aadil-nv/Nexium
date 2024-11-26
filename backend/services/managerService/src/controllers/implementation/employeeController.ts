@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import IEmployeeService from "../../service/interface/IEmployeeService";
 import IEmployeeController from "../interface/IEmployeeController";
 import { inject, injectable } from "inversify";
+import { CustomRequest } from "../../middlewares/tokenAuthenticate";
 
 @injectable()
 export default class EmployeeController implements IEmployeeController {
@@ -9,12 +10,22 @@ export default class EmployeeController implements IEmployeeController {
         @inject("IEmployeeService") private _employeeService: IEmployeeService
     ) {}
 
-    async addEmployees(req: Request, res: Response): Promise<void> {
+    async addEmployees(req: CustomRequest, res: Response): Promise<void> {
         try {
             const { employeedata } = req.body;
-            const refreshToken = req.cookies.refreshToken;
+            const managerData= req?.user?.managerData;
+            console.log(`"*****************************************"`.bgRed);
+            console.log(employeedata);
+            console.log();
+            console.log();
+            console.log(managerData);
+            
+            console.log(`"*****************************************"`.bgRed);
+            
 
-            const result = await this._employeeService.addEmployees(employeedata, refreshToken);
+            const result = await this._employeeService.addEmployees(employeedata, managerData);
+            console.log("result from controller", result);
+            
 
             if (result.success) {
                 res.status(200).json({ message: 'Employee added successfully', data: result.data });

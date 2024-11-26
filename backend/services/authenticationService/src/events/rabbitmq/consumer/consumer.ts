@@ -2,19 +2,24 @@ import amqp from 'amqplib';
 import { inject, injectable } from 'inversify';
 import IConsumer from '../interface/IConsumer';
 import IManagerService from '../../../service/interfaces/IManagerService';
+import IEmployeeService from '../../../service/interfaces/IEmployeeService';
 
 @injectable()
 export default class Consumer implements IConsumer {
   private _managerService: IManagerService;
+  private _employeeService: IEmployeeService; // Declare _employeeService
   private _connection: amqp.Connection | null = null;
   private _channel: amqp.Channel | null = null;
 
-  constructor(@inject("IManagerService") managerService: IManagerService) {
+  // Inject IManagerService and IEmployeeService in the constructor
+  constructor(
+    @inject("IManagerService") managerService: IManagerService,
+    @inject("IEmployeeService") employeeService: IEmployeeService
+  ) {
     this._managerService = managerService;
+    this._employeeService = employeeService; // Initialize _employeeService
   }
 
-
-  
   async receiveFromQueue() {
     const queue = 'authenticateQueue';
     const exchange = 'fanout_exchange';
@@ -33,11 +38,17 @@ export default class Consumer implements IConsumer {
         if (msg !== null) {
           try {
             const data = JSON.parse(msg.content.toString());
-            console.log("data ---------------QUEUE",data);
-            
-            if (data.newManagerData) {
-              await this._managerService.addManager(data.newManagerData);
+            console.log("data ---------------QUEUE", data);
+
+            if (data.managerData) {
+              await this._managerService.addManager(data.managerData);
             }
+
+            // Check for employeeData and send it to the employee service
+            if (data.employeeData) {
+              await this._employeeService.addEmployee(data.employeeData);
+            }
+
             this._channel?.ack(msg);
           } catch (err) {
             console.error('Error processing message:', err);

@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
 import managerModel from "../../model/managerModel";
 import IManagerRepository from "../interfaces/IManagerRepository";
-import IManager from "../../entities/managerEntities";    
+import {IManager} from "../../entities/managerEntities";    
 import BaseRepository from "./baseRepository";
 import OtpModel from "../../model/otpModel";
 
@@ -18,7 +18,7 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         
         try {
 
-            const manager = await this._managerModel.findOne({ 'managerCredentials.email': email });
+            const manager = await this._managerModel.findOne({ 'managerCredentials.companyEmail': email });
             console.log("manager---from repo", manager);
             
             return manager;
@@ -32,7 +32,7 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         
         try {
 
-            const manager = await this._managerModel.findOne({  email });
+            const manager = await this._managerModel.findOne({ "personalDetails.email   ": email });
             console.log("manager---from repo", manager);
             
             return manager;
@@ -53,7 +53,7 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
 
     async updateVerificationStatus(email: string): Promise<any> {
         try {
-            return await this._managerModel.updateOne({ email }, { isVerified: true }).exec();
+            return await this._managerModel.updateOne({"personalDetails.email": email }, { isVerified: true }).exec();
         } catch (error) {
             console.error("Error updating verification status:", error);
             throw new Error("Failed to update verification status");

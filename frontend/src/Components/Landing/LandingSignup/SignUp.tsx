@@ -1,9 +1,10 @@
+// src/components/SignUp.tsx
 import React, { useState } from 'react';
 import { useTheme } from '../landingPage/theme-provider';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { signUpSchema } from '../../../config/validationSchema';
-import axios from 'axios';
+import { signUpBusinessOwner } from '../../../api/authApi'; // Import the new API call
 
 // Spinner component
 const Spinner: React.FC = () => {
@@ -31,7 +32,7 @@ const SignUp: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-  
+
     const validation = signUpSchema.safeParse({
       companyName,
       email,
@@ -40,7 +41,7 @@ const SignUp: React.FC = () => {
       phone,
       registrationNumber,
     });
-  
+
     if (!validation.success) {
       const formErrors = validation.error.errors.reduce(
         (acc, curr) => ({ ...acc, [curr.path[0]]: curr.message }),
@@ -49,33 +50,21 @@ const SignUp: React.FC = () => {
       setError(formErrors);
       return;
     }
-  
+
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:7000/api/business-owner/register', {
-        companyName,
-        registrationNumber,
-        email,
-        password,
-        phone,
-        address: 'local',
-        website: '',
-        documents: [],
-      });
-  
-      const data = response.data;
-  
-      if (data.message === 'true') {
-        console.log("MESSAge fron cont to frn",data);
-        
-        setUserMail(data.email);  
-        navigate('/otp', { state: { email: data.email } }); 
+      const data = await signUpBusinessOwner(companyName, registrationNumber, email, password, phone);
+      
+      console.log("data ",data);
+      if (data.success ==true) {
+        console.log("Message from controller to frontend", data);
+        setUserMail(data.email);
+        navigate('/otp', { state: { email: data.email } });
       } else {
         setError({ form: data.message });
       }
     } catch (error) {
-      console.error("Error during signup:", error);
-      setError({ form: 'An error occurred during signup. Please try again.' });
+      setError({ form: error.message });
     } finally {
       setLoading(false);
     }
@@ -155,7 +144,7 @@ const SignUp: React.FC = () => {
             </div>
 
             <div className="relative">
-              <label className={theme === 'dark' ? 'text-white' : 'text-gray-700'}>Confirm Password</label>
+              <label className={theme === 'dark' ? 'text-white' : 'text-gray-700'}>Confir Password</label>
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 className={`mt-1 p-2 border rounded w-full ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} ${getInputClass(
@@ -204,19 +193,16 @@ const SignUp: React.FC = () => {
             </div>
           </div>
 
-          {error.form && <p className="text-red-500 text-sm text-center mb-4">{error.form}</p>}
+          {error.form && <p className="text-red-500 text-sm mb-4">{error.form}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full p-2 text-white font-bold rounded ${
-              loading
-                ? 'bg-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:bg-blue-700'
-            }`}
-          >
-            {loading ? <Spinner /> : 'Sign Up'}
-          </button>
+          <div className="text-center">
+            <button
+              type="submit"
+              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+            >
+              {loading ? <Spinner /> : 'Sign Up'}
+            </button>
+          </div>
         </form>
       </motion.div>
     </div>

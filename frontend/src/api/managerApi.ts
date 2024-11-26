@@ -3,7 +3,9 @@ import { LoginFormData } from "../utils/interfaces"
 import { managerInstance } from "../services/managerInstance";
 import { IEmployee } from "../interface/managerInterface";
 import { toast } from 'react-toastify';
+import { message } from 'antd';
 
+const baseURL= "/manager/api/"
 export const managerLogin = async (formData: LoginFormData) => {
     try {
         const response = await axios.post('http://localhost:3000/authentication/api/manager/manager-login', formData, {
@@ -39,6 +41,7 @@ export const validateOtp = async (otp: string ,email: string) => {
 
 export const fetchEmployeesAPI = async () => {
     const response = await managerInstance.get('/manager/api/employee/get-employees');
+    console.log("response",response.data)
     return response.data;
 };
   
@@ -54,20 +57,25 @@ export const removeDepartmentAPI = async (departmentId: string) => {
 };
 
 export const fetchEmployees = async (): Promise<IEmployee[]> => {
-    try {
+  try {
       const response = await managerInstance.get('/manager/api/employee/get-employees');
+
+      console.log("===============response============", response.data);
+
+      // Adjusting the mapping to match the provided data structure
       return response.data.map((employee: any) => ({
-        id: employee._id,
-        name: `${employee.personalDetails?.firstName || ''} ${employee.personalDetails?.lastName || ''}`,
-        position: employee.professionalDetails?.position || '',
-        email: employee.personalDetails?.email || '',
-        isOnline: employee.isActive || false,
+          id: employee._id, // Directly from employee._id
+          name: employee.employeeName || '', // Directly from employee.employeeName
+          position: employee.position || '', // Directly from employee.position
+          profilePicture: employee.profilePicture || '', // Directly from employee.profilePicture
+          isOnline: employee.isActive || false, // Directly from employee.isActive
       }));
-    } catch (error) {
+  } catch (error) {
       console.error('Error fetching employee data:', error);
       throw error;
-    }
-  };
+  }
+};
+
 
 
 export const fetchDepartments = async () => {
@@ -120,19 +128,18 @@ export const addEmployee = async (employeeData: any) => {
   };  
   
 
-
   export async function fetchManagerPersonalInfo(): Promise<any> {
 
   
       try {
-          const response = await managerInstance.get("/manager/api/manager/get-managerpersonalinfo", {
+          const response = await managerInstance.get(`${baseURL}manager/get-managerpersonalinfo`, {
               headers: {
                   "Content-Type": "application/json",
               },
           });
-          console.log("Manager personal info:", response.data);
+          console.log("Manager personal info:", response.data.personalDetails);
           
-          return response.data;
+          return response.data.personalDetails;
       } catch (error) {
           console.error("Error fetching manager personal info:", error);
           throw error;
@@ -140,4 +147,27 @@ export const addEmployee = async (employeeData: any) => {
   }
   
 
-  
+  export const fetchManagerAddress = async () => {
+    try {
+      const response = await managerInstance.get('/manager/api/manager/get-manageraddress');
+      console.log("*******************",response)
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching business owner address:', error);
+      throw error;
+    }
+  };
+
+
+  export const updateManagerPersonalInfo = async (details: any): Promise<void> => {
+    try {
+      await managerInstance.patch(
+        '/manager/api/manager/update-personalinfo',
+        details
+      );
+      message.success('Details updated successfully!');
+    } catch (error) {
+      message.error('Failed to update details.');
+      throw error;
+    }
+  };

@@ -1,12 +1,13 @@
+// LandingLoginPage.js
 import React, { useState } from 'react';
 import { useTheme } from '../landingPage/theme-provider';
 import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setUserRole } from '../../../features/menuSlice';
 import { z } from 'zod';
-import { login } from '../../../features/businessOwnerSlice';
+import { login } from '../../../redux/slices/businessOwnerSlice';
+import { loginBusinessOwnerAPI } from '../../../api/authApi'; // Import the loginUser function
 
 // Zod schema for validation
 const loginSchema = z.object({
@@ -23,55 +24,42 @@ export default function LandingLoginPage() {
   const [credentialError, setCredentialError] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch();
- 
+  
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Validation with Zod
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
-      const validationErrors = result.error.format();
+      const errors = result.error.format();
       setErrors({
-        email: validationErrors.email?._errors[0],
-        password: validationErrors.password?._errors[0]
+        email: errors.email?._errors[0],
+        password: errors.password?._errors[0],
       });
       return;
-    } 
-    setErrors({}); // Clear errors if valid
+    }
 
-    // Attempt login
+    setErrors({});
+
     try {
-      const response = await fetch('http://localhost:7000/api/business-owner/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-
-      const data = await response.json();
-      console.log("Login response:", data.success);
-      console.log("Login response: isVerfied", data.isVerfied);
+      const data = await loginBusinessOwnerAPI(email, password); 
+      console.log("data ",data);
       
 
-      if (!data.success) {
-        if (data.isVerified === false) {
-          navigate('/otp', { state: { email: data.email } });
-        } else {
-          setCredentialError(data.message || 'Invalid email or password');
-        }
+      if (data.success) {
+        dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
+        navigate('/business-owner/dashboard');
+      } else {
+        setCredentialError(data.message || 'Invalid email or password');
       }
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || 'Invalid email or password';
+      setCredentialError(errorMessage);
 
-    
-      dispatch(login({
-        role: 'business-owner',
-        token: data.accessToken,
-        isAuthenticated: true
-      }));
-
-      localStorage.setItem('businessOwnerToken', data.accessToken);
-      navigate('/business-owner/dashboard');
-    } catch (error) {
-      console.error('Error during login:', error);
-      setCredentialError('Invalid email or password');
+      if (error.response?.data?.email) {
+        navigate('/otp', { state: { email: error.response.data.email } });
+      } else {
+        console.error('Error during login:', error);
+      }
     }
   };
 

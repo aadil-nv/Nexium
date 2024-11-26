@@ -4,8 +4,8 @@ import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined } from '@ant-de
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
 import { usePersonalDetails } from '../../api/businessOwnerApi';
-import { uploadProfileImage, updatePersonalDetails } from '../../api/businessOwnerApi';
-import { fetchManagerPersonalInfo } from '../../api/managerApi';
+import { uploadProfileImage, updateBusinessOwnerPersonalInfo } from '../../api/businessOwnerApi';
+import { fetchManagerPersonalInfo , updateManagerPersonalInfo } from '../../api/managerApi';
 
 export default function PersonalDetails() {
   const [form] = Form.useForm();
@@ -50,7 +50,12 @@ export default function PersonalDetails() {
     const updatedDetails = { ...values };
     console.log('Form values:', updatedDetails);
     try {
-      await updatePersonalDetails(updatedDetails);
+      if(businessOwner?.isAuthenticated){
+        await updateBusinessOwnerPersonalInfo(updatedDetails);
+        
+      }else if(manager?.isAuthenticated){
+        await updateManagerPersonalInfo(updatedDetails);
+      }
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating personal details:', error.message);
@@ -107,7 +112,7 @@ export default function PersonalDetails() {
           layout="vertical"
           initialValues={{
             businessOwnerName: displayDetails?.businessOwnerName || displayDetails?.managerName,
-            email: displayDetails?.email,
+            email: displayDetails?.email || displayDetails.email,
             personalWebsite: displayDetails?.personalWebsite,
             phone: displayDetails?.phone,
           }}

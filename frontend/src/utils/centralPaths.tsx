@@ -36,15 +36,9 @@ export const superAdminLinks: LinkItem[] = [
 
 export const employeeLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/manager/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
-  { title: 'Employees', route: '/manager/employees', icon: 'fi fi-tr-employees' },
-  { title: 'Departments', route: '/manager/departments', icon: 'fi fi-tr-department-structure' },
+  { title: 'Team', route: '/manager/team', icon: 'fi fi-tr-department-structure' },
   { title: 'Attendance', route: '/manager/attendances', icon: 'fi fi-tr-skill' },
   { title: 'Payroll', route: '/manager/payroll', icon: 'fi fi-tr-payroll' },
-  {title: 'Onboarding',route: '/manager/onboarding-employee-list',icon: 'fi fi-tr-onboarding',
-    hasSubMenu: true,subLinks: [
-      { title: 'Pre Boarding', route: '/manager/pre-boarding', icon: 'fi fi-tr-skill' },
-      { title: 'Interview', route: '/manager/interview', icon: 'fi fi-tr-chart-user' },]
-  },
   { title: 'Leaves', route: '/manager/leaves', icon: 'fi fi-tr-house-leave' },
   { title: 'Notifications', route: '/manager/notifications', icon: 'fi fi-tr-bells' },
   { title: 'Announcements', route: '/manager/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },

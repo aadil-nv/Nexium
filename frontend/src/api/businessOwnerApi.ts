@@ -6,6 +6,7 @@ import { message } from 'antd';
 export const fetchManagers = async () => {
   try {
     const response = await businessOwnerInstance.get('/businessOwner/api/manager/get-managers');
+    console.log("manger is from API ==",response)
     return response.data;
   } catch (error) {
     console.error('Error fetching managers:', error);
@@ -13,27 +14,6 @@ export const fetchManagers = async () => {
     throw error;
   }
 };
-
-// export const  usePersonalDetails =async  () => {
-//   const [loading, setLoading] = useState(true);
-//   const [personalDetails, setPersonalDetails] = useState<any>(null);
-
-//     try {
-//       setLoading(true);
-//       const response = await businessOwnerInstance.get('/businessOwner/api/business-owner/get-personaldetailes');
-//       console.log('response', response);
-      
-//       setPersonalDetails(response.data.data);
-//     } catch (error) {
-//       console.error('Error fetching personal details:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-  
-
-//   return { loading, personalDetails };
-// };
-
 
 export const usePersonalDetails = (isAuthenticated: boolean) => {
   const [loading, setLoading] = useState(true);
@@ -111,7 +91,7 @@ export const uploadProfileImage = async (file: File): Promise<string> => {
   }
 };
 
-export const updatePersonalDetails = async (details: any): Promise<void> => {
+export const updateBusinessOwnerPersonalInfo = async (details: any): Promise<void> => {
   try {
     await businessOwnerInstance.patch(
       '/businessOwner/api/business-owner/update-personaldetailes',

@@ -1,15 +1,43 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Input, Button, message, List } from 'antd';
 import useTheme from '../../hooks/useTheme';
+import useAuth from '../../hooks/useAuth';
+import axios from 'axios';
+import { managerInstance } from '../../services/managerInstance';
 
 const Securitie = () => {
+  const [credentials, setCredentials] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const { themeColor } = useTheme();
+  const { employee, manager } = useAuth();
+  const isManager = manager?.isAuthenticated;
+  const isEmployee = employee?.isAuthenticated;
 
-  const inputFields = [
-    { label: 'Company Email', name: 'email', placeholder: 'Enter company email', type: 'email', initialValue: 'demo@company.com' },
-    { label: 'Password', name: 'password', placeholder: 'Enter your password', type: 'password', initialValue: 'password123' }
-  ];
+  useEffect(() => {
+    const fetchCredentials = async () => {
+      try {
+        const url = isManager
+          ? '/manager/api/manager/get-managercredentials'
+          : isEmployee
+          ? 'http://localhost:3000/employee/api/employeee/get-employeecredentials'
+          : null;
+
+        if (!url) {
+          message.error('Unauthorized access');
+          return;
+        }
+
+        const response = await managerInstance.get(url);
+        console.log('Fetched Credentials:', response.data);
+        setCredentials(response.data);
+      } catch (error) {
+        console.error('Error fetching credentials:', error);
+        message.error('Failed to fetch credentials');
+      }
+    };
+
+    fetchCredentials();
+  }, [isManager, isEmployee]);
 
   const handleSubmit = (values: any) => {
     console.log('Submitted values:', values);
@@ -20,40 +48,97 @@ const Securitie = () => {
 
   return (
     <div className="mt-6">
+      <h2>Your Credentials</h2>
+      {credentials ? (
+        <div>
+          <List
+            bordered
+            dataSource={[credentials]}
+            renderItem={(cred) => (
+              <List.Item>
+                <div>
+                  <p>
+                    <strong>Company Email:</strong> {cred.companyEmail}
+                  </p>
+                  <p>
+                    <strong>Password:</strong> {cred.companyPassword}
+                  </p>
+                  {cred.documentUrl && (
+                    <div>
+                      <img
+                        src={cred.documentUrl}
+                        alt="Document"
+                        style={{ maxWidth: 100, display: 'block', margin: '10px 0' }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </List.Item>
+            )}
+          />
+        </div>
+      ) : (
+        <p>Loading credentials...</p>
+      )}
+
       <Form
         layout="vertical"
         onFinish={handleSubmit}
-        initialValues={inputFields.reduce((acc, { name, initialValue }) => ({ ...acc, [name]: initialValue }), {})}
+        initialValues={{
+          email: credentials?.companyEmail || '',
+          password: credentials?.companyPassword || '',
+        }}
         className="mt-4"
       >
-        {inputFields.map(({ label, name, placeholder, type }) => (
-          <Form.Item
-            key={name}
-            label={label}
-            name={name}
-            rules={[
-              { required: true, message: `Please enter your ${label.toLowerCase()}!` },
-              ...(type === 'email' ? [{ type: 'email' as 'email', message: 'Please enter a valid email!' }] : []),
-              ...(type === 'password' ? [{ min: 6, message: 'Password must be at least 6 characters long' }] : [])
-            ]}
-          >
-            {type === 'password' ? 
-              <Input.Password placeholder={placeholder} disabled={!isEditing} style={{ borderColor: themeColor }} /> : 
-              <Input placeholder={placeholder} disabled={!isEditing} style={{ borderColor: themeColor }} />
-            }
-          </Form.Item>
-        ))}
+        <Form.Item
+          label="Company Email"
+          name="email"
+          rules={[
+            { required: true, message: 'Please enter your email!' },
+            { type: 'email', message: 'Please enter a valid email!' },
+          ]}
+        >
+          <Input
+            placeholder="Enter company email"
+            disabled={!isEditing}
+            style={{ borderColor: themeColor }}
+          />
+        </Form.Item>
+
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[
+            { required: true, message: 'Please enter your password!' },
+            { min: 6, message: 'Password must be at least 6 characters long' },
+          ]}
+        >
+          <Input.Password
+            placeholder="Enter your password"
+            disabled={!isEditing}
+            style={{ borderColor: themeColor }}
+          />
+        </Form.Item>
 
         {isEditing && (
           <Form.Item>
-            <Button type="primary" htmlType="submit" block style={{ backgroundColor: themeColor, borderColor: themeColor }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              style={{ backgroundColor: themeColor, borderColor: themeColor }}
+            >
               Save Changes
             </Button>
           </Form.Item>
         )}
       </Form>
 
-      <Button onClick={() => setIsEditing(!isEditing)} className="mt-3 text-white" style={{ backgroundColor: themeColor, borderColor: themeColor }}>
+      <Button
+        onClick={() => setIsEditing(!isEditing)}
+        className="mt-3 text-white"
+        style={{ backgroundColor: themeColor, borderColor: themeColor }}
+      >
         Edit Security Settings
       </Button>
 
