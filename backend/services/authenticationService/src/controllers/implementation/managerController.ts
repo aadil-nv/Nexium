@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import IManagerController from "../interface/IManagerController";
 import IManagerService from "../../service/interfaces/IManagerService";
 import { inject, injectable } from "inversify";
+import { HttpStatusCode } from "../../utils/statusCodes";
 
 @injectable()
 export default class ManagerController implements IManagerController {
@@ -14,12 +15,9 @@ export default class ManagerController implements IManagerController {
     async managerLogin(req: Request, res: Response): Promise<Response> {
         try {
             const result = await this._managerService.managerLogin(req.body.email, req.body.password);
-            console.log("result.accessToken",result.accessToken);
-            console.log("result.refreshToken",result.refreshToken);
             
-
             if (!result.success && !result.isVerified) {
-                return res.status(200).json({
+                return res.status(HttpStatusCode.OK).json({
                     success: false,
                     message: result.message,
                     email: result.email,
@@ -31,19 +29,19 @@ export default class ManagerController implements IManagerController {
                 res.cookie('accessToken', result.accessToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
-                    maxAge: 7 * 24 * 60 * 60 * 1000, 
+                    maxAge: 7 * 24 * 60 * 60 * 1000,
                     sameSite: 'strict',
                 });
 
                 res.cookie('refreshToken', result.refreshToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
-                    maxAge: 7 * 24 * 60 * 60 * 1000, 
+                    maxAge: 7 * 24 * 60 * 60 * 1000,
                     sameSite: 'strict',
                 });
             }
 
-            return res.status(200).json({
+            return res.status(HttpStatusCode.ACCEPTED ).json({
                 message: "Login successful",
                 data: result,
                 success: true,
@@ -51,7 +49,7 @@ export default class ManagerController implements IManagerController {
         } catch (error: unknown) {
             console.error('Login error:', error);
             const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
-            return res.status(400).json({ message: errorMessage, error: true });
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ message: errorMessage, error: true });
         }
     }
 
@@ -61,15 +59,25 @@ export default class ManagerController implements IManagerController {
         try {
             const { email, otp } = req.body;
             console.log("Email:", email, "OTP:", otp);
-            
+
             const response = await this._managerService.validateOtp(email, otp);
             console.log("OTP validation response:", response);
 
             if (response.success) {
-                res.cookie('accessToken', response.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge:7 * 24 * 3600 * 1000 });
-                res.cookie('refreshToken', response.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 3600 * 1000 }); // 7 days
+                res.cookie('accessToken', response.accessToken, { 
+                    httpOnly: true, 
+                    secure: process.env.NODE_ENV === 'production', 
+                    maxAge: 7 * 24 * 3600 * 1000 ,
+                    sameSite: 'strict'
+                });
+                res.cookie('refreshToken', response.refreshToken, { 
+                    httpOnly: true, 
+                    secure: process.env.NODE_ENV === 'production', 
+                    maxAge: 7 * 24 * 3600 * 1000 ,
+                    sameSite: 'strict'
+                }); // 7 days
 
-                res.status(200).json({
+                res.status(HttpStatusCode.OK).json({
                     success: true,
                     message: response.message,
                     email: response.email,
@@ -77,7 +85,7 @@ export default class ManagerController implements IManagerController {
                     refreshToken: response.refreshToken,
                 });
             } else {
-                res.status(400).json({
+                res.status(HttpStatusCode.BAD_REQUEST).json({
                     success: false,
                     message: response.message || "OTP validation failed.",
                 });
@@ -87,4 +95,17 @@ export default class ManagerController implements IManagerController {
             next(error);
         }
     }
+
+    async resendOtp(req: Request, res: Response): Promise<Response> {
+        try {
+          const { email } = req.body;
+          const result = await this._managerService.resendOtp(email);
+          return res.status(200).json(result);
+        } catch (error) {
+          console.error('Error resending OTP:', error);
+          return res.status(500).json({ message: 'Internal Server Error' });
+        }
+      }
+
+
 }

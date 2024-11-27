@@ -29,7 +29,16 @@ import ManagerModel from "../model/managerModel";
 import EmployeeModel from '../model/employeeModel';
 import BusinessOwnerModel from '../model/businessOwnerModel';
 import SuperAdminModel from '../model/superAdminModel';
-import IManager from "../entities/managerEntities";
+import {IManager} from "../entities/managerEntities";
+
+
+import IEmployeeController from "../controllers/interface/IEmployeeController";
+import EmployeeController from "../controllers/implementation/employeeController";
+import IEmployeeService from "../service/interfaces/IEmployeeService";
+import EmployeeService from "../service/implementaion/employeeService";
+import IEmployeeRepository from "../repository/interfaces/IEmployeeRepository";
+import EmployeeRepository from "../repository/implementaion/employeeRepository";
+
 
 
 
@@ -57,6 +66,9 @@ container.bind<typeof EmployeeModel>("employeeModel").toConstantValue(EmployeeMo
 container.bind<typeof BusinessOwnerModel>("businessOwnerModel").toConstantValue(BusinessOwnerModel);
 
 
+container.bind<IEmployeeController>("IEmployeeController").to(EmployeeController);
+container.bind<IEmployeeService>("IEmployeeService").to(EmployeeService);
+container.bind<IEmployeeRepository>("IEmployeeRepository").to(EmployeeRepository);
 
 
 

@@ -1,40 +1,41 @@
+import mongoose, { Schema, Document } from 'mongoose';
 
-import mongoose from "mongoose";
-export default interface IEmployee {
-    employeeId: string;
+export default interface IEmployee extends Document {
+  managerId: mongoose.Schema.Types.ObjectId; // Correct reference to HR
+  isActive: boolean;
+  isVerified: boolean;
+  isBlocked: boolean;
+  personalDetails: {
     employeeName: string;
-    attendance: string;
-    date: Date;
-}
-
-export default interface IEmployeeDocument extends mongoose.Document {
-    hriId: string;
-    name: string;
-    personalDetails: {
-      address: string;
-      phone: string;
-      emergencyContact: string;
-      bloodGroup: string;
-      maritalStatus: string;
-    };
-    professionalDetails: {
-      designation: string;
-      department: string;
-      jobDescription: string;
-      experience: number;
-      skills: string[];
-    };
-    accountAccess: {
-      companyEmail: string;
-      password: string;
-    };
-    documents: {
-      documentType: string;
-      documentName: string;
-      documentPath: string;
-    }[];
-    isActive: boolean;
-    isVerified: boolean;
-    joiningDate: Date;
-    role: string;
+    email: string;
+    phone: string;
+    profilePicture:string
+   
+  };
+  address:{
+    street: String ,
+    city:  String ,
+    state:  String ,
+    country:  String ,
+    zipCode:  String ,
   }
+  professionalDetails: {
+    position: "Team Lead" | "Senior Software Engineer" | "Junior Software Engineer" ;
+    department: string;
+    workTime: "Full-Time" | "Part-Time" | "Contract" | "Temporary";
+    joiningDate: Date;
+    currentStatus: string;
+    companyName: string;
+    salary: number;
+    skills: string[];
+    
+  };
+  employeeCredentials: {
+    companyEmail: string;
+    companyPassword: string;
+  };
+  documents: {
+    resume: string;
+    idProof: string;
+  };
+}

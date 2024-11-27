@@ -5,19 +5,26 @@ import {PrivateRouteProps} from "../utils/interfaces"
 
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const { businessOwner, superAdmin,manager } = useAuth();
+  const { businessOwner, superAdmin,manager,employee } = useAuth();
   const isSuperAdmin = superAdmin.isAuthenticated
   const isBusinessOwner = businessOwner.isAuthenticated
   const isManager = manager.isAuthenticated
-  console.log("isSuperAdmin : ",isSuperAdmin)
+  const isEmployee = employee.isAuthenticated
+  console.log("isSuperAdmin :==> ",isSuperAdmin)
+  console.log("isManager :==> ",isManager)
+  console.log("isEmployee :==> ",isEmployee)
+  console.log("isBusinessOwner :==> ",isBusinessOwner)
 
   if (isSuperAdmin) {
     return <Navigate to="/super-admin/dashboard" />;
   } else if (isBusinessOwner) {
     return <Navigate to="/business-owner/dashboard" />;
   } else if (isManager) {
+    console.log("manager hited from privatrout ********************************************************************** ",)
     return <Navigate to="/manager/dashboard" />;
-  }else{
+  }else if (isEmployee) {
+    return <Navigate to="/employee/dashboard" />;
+  } else {
   return <>{children}</>;
   }
 

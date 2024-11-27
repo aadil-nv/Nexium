@@ -146,8 +146,57 @@ export default class ManagerController implements IManagerController {
 }
 
   
+async setNewAccessToken(req: Request, res: Response): Promise<Response> {
+  console.log("hitted setNewAccessToken-----------------------------------");
+  
+  console.log("Cookies received in request:", req.cookies); // Log all cookies
+  
+  const refreshToken = req.cookies?.refreshToken; // Use optional chaining
+  
+  console.log(`Extracted refresh token: ${refreshToken}`);
+  
+  try {
+    if (!refreshToken) {
+      console.error("Refresh token is missing from cookies.");
+      return res.status(400).json({ message: 'Refresh token missing.' });
+    }
+
+    const newAccessToken = await this._managerService.setNewAccessToken(refreshToken);
+    
+    if (!newAccessToken) {
+      console.error("Failed to generate a new access token.");
+      return res.status(401).json({ message: 'Failed to generate new access token.' });
+    }
+
+    console.log(`Generated new access token: ${newAccessToken}`);
+
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 3600000, // 1 hour
+      sameSite: 'strict',
+    });
+
+    return res.status(200).json({ accessToken: newAccessToken });
+  } catch (error) {
+    console.error("Error in setNewAccessToken:", error);
+    return res.status(500).json({ error: 'Failed to generate new access token.' });
+  }
+}
 
 
+
+async logout(req: Request, res: Response): Promise<Response> {
+  console.log("hitted logout-----------------------------------");
+  
+  try {
+    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
+    return res.status(200).json({ message: 'Logged out successfully.' });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to logout.' });
+  }
+}
 
   
 }

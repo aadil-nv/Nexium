@@ -1,4 +1,3 @@
-// PlanSelection.tsx
 import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -6,7 +5,13 @@ import { useDispatch } from 'react-redux';
 import { login } from '../../../redux/slices/businessOwnerSlice';
 import { fetchPlans, createCheckoutSession } from '../../../api/authApi';
 
-type Plan = { _id: string; planName: string; price: number; features: string[] };
+type Plan = {
+  _id: string;
+  planName: string;
+  price: number;
+  features: string[];
+  isActive: boolean; // Added `isActive` for clarity
+};
 
 const PlanSelection: React.FC = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -19,7 +24,9 @@ const PlanSelection: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setPlans(await fetchPlans());
+        const fetchedPlans = await fetchPlans();
+        const activePlans = fetchedPlans.filter((plan: Plan) => plan.isActive); // Filter active plans
+        setPlans(activePlans);
       } catch (error) {
         console.error('Error fetching plans:', error);
       }
@@ -32,9 +39,9 @@ const PlanSelection: React.FC = () => {
     try {
       const stripe = await stripePromise;
       if (!stripe) return alert('Stripe failed to load. Please try again.');
-  
+
       const data = await createCheckoutSession(email, selectedPlan);
-      
+
       if (data.planName === 'Trial') {
         dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
         navigate('/business-owner/dashboard');

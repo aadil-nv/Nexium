@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@aws-sdk/s3-request-presigner": "^3.699.0",
-    "@types/cookie-parser": "^1.4.7",
+    "@types/cookie-parser": "^1.4.8",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/nodemailer": "^6.4.16",
     "amqplib": "^0.10.4",

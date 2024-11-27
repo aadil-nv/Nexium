@@ -17,9 +17,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
         try {
           const employee = await this._employeeModel.findOne({ 'employeeCredentials.companyEmail': email });
           
-          if (!employee) {
-            throw new Error("Invalid email or password");
-          }
     
           return employee; // Return the employee data
         } catch (error) {
@@ -56,5 +53,17 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
           throw new Error("Failed to find employee by email");
         }
       }
+
+      async updateOtp(email: string, otp: string): Promise<void> {
+        const result = await OtpModel.updateOne(
+          { email },
+          { otp, createdAt: new Date(), updatedAt: new Date() }
+        );
+    
+        if (result.modifiedCount === 0) {
+          throw new Error('Failed to update OTP. No document found or OTP was not changed.');
+        }
+      } 
       
+
 }

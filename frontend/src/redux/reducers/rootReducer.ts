@@ -4,6 +4,7 @@ import businessOwnerReducer from '../slices/businessOwnerSlice';
 import superAdminReducer from '../slices/superAdminSlice';
 import managerReducer from '../slices/managerSlice';
 import employeeReducer from '../slices/employeeSlice';
+import otpReducer from '../slices/otpSlice';
 import { RESET_STORE } from './resetAction';
 
 
@@ -12,7 +13,8 @@ const appReducer = combineReducers({
   businessOwner: businessOwnerReducer,
   superAdmin: superAdminReducer,
   manager:managerReducer,
-  employee: employeeReducer
+  employee: employeeReducer,
+  otp: otpReducer
 });
 
 const rootReducer = (state: any, action: any) => {

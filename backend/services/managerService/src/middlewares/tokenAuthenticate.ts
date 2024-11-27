@@ -13,11 +13,14 @@ export interface CustomRequest extends Request {
   }
   
 
-// Middleware function to authenticate the token
 const authenticateToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
-        // Retrieve the token from cookies
+
         const token = req.cookies?.accessToken; // Use optional chaining to safely access the cookie
+        const refreshToken = req.cookies?.refreshToken;
+
+        console.log(`refresh token is ==>`.bgRed, refreshToken);
+        
 
         if (!token) {
             return res.status(401).json({ message: "Access denied. No token provided" });
@@ -35,6 +38,11 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
                 console.error("Token verification failed:", err);
                 return res.status(401).json({ message: 'Invalid token' });
             }
+
+            console.log(``.magenta
+                + `Decoded token: ${JSON.stringify(decoded)}`
+            );
+            
 
             req.user = decoded as JwtPayload; // Attach the decoded user info to the request
 

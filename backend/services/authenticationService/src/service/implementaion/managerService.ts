@@ -6,7 +6,7 @@ import { generateAccessToken, generateRefreshToken } from "../../utils/businessO
 import generateOtp from "../../utils/otp";
 import nodemailer from "nodemailer";
 import OtpModel from "../../model/otpModel";
-import { ILoginDTO, IValidateOtpDTO } from "dto/ILoginDTO";
+import { ILoginDTO, IValidateOtpDTO } from "../../dto/managerDTO";
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -37,7 +37,7 @@ export default class ManagerService implements IManagerService {
       // if (!passwordRegex.test(password)) throw new Error('Password must be at least 6 characters, 1 uppercase, 1 digit, 1 symbol');
 
       const managerData = await this._managerRepository.findByCredentialEmail(email);
-      console.log("manaager data from service====",managerData);
+    
       
       if (!managerData || managerData.managerCredentials.companyPassword !== password) throw new Error('Invalid email or password');
 
@@ -148,4 +148,18 @@ export default class ManagerService implements IManagerService {
       return Promise.resolve(error);
     }
   }
+
+  async resendOtp(email: string): Promise<IValidateOtpDTO> {
+    const otp = generateOtp();
+    const existingOtp = await this._managerRepository.findOtpByEmail(email);
+    
+    if (existingOtp) {
+        await this._managerRepository.updateOtp(email, otp);
+        return { success: true, message: 'OTP updated successfully.' }; 
+    } else {
+        console.log("No existing OTP, creating a new one");
+    }
+    await this.sendOtp(email, otp);
+    return { success: true, message: 'OTP has been sent successfully.' };
+}
 }

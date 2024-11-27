@@ -2,6 +2,7 @@ import axios from "axios";
 import { logout as superAdminLogout } from "../redux/slices/superAdminSlice";
 import { logout as businessOwnerLogout } from "../redux/slices/businessOwnerSlice";
 import { store } from "../redux/store/store";
+import toast from "react-hot-toast";
 
 let isRefreshing = false;
 let refreshSubscribers: any[] = [];
@@ -43,7 +44,8 @@ const handleTokenError = async (error: any) => {
   console.log("Handling token error...");
   store.dispatch(businessOwnerLogout());
   try {
-    await axios.post("http://localhost:3000/businessOwner/api/business-owner/logout");
+    const result = await axios.post("http://localhost:3000/businessOwner/api/business-owner/logout");
+    toast.success(result.data.message);
     console.log("Logged out successfully.");
   } catch (logoutError) {
     console.error("Logout failed:", logoutError);

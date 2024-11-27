@@ -19,4 +19,7 @@ managerRouter.get("/get-managercredentials",authenticateToken,(req,res)=>manager
 
 managerRouter.patch("/update-personalinfo",authenticateToken,(req,res)=>managerController.updateManagerPersonalInfo(req,res))
 
+managerRouter.post('/refresh-token',(req, res, next) => managerController.setNewAccessToken(req, res));
+managerRouter.post('/logout', (req, res) => managerController.logout(req, res));
+
 export default managerRouter

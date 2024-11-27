@@ -1,4 +1,4 @@
-import { verifyRefreshToken } from "../../utils/jwt";
+import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
 import IManagerRepository from "../../repository/interface/IManagerRepository";
 import IManagerService from "../interface/IManagerService";
 import { inject, injectable } from "inversify";
@@ -155,6 +155,24 @@ export default class ManagerService implements IManagerService {
   }
   
 
+  async setNewAccessToken(refreshToken: string): Promise<string> {
+    console.log("refresh token in manager service", refreshToken);
+    
+    try {
+      const decoded = verifyRefreshToken(refreshToken);
+      console.log("decoded==================>", decoded);
+      
+      const managerData = decoded?.managerData;
+
+      if (!decoded || !managerData) {
+        throw new Error("Invalid or expired refresh token");
+      }
+
+      return generateAccessToken({ managerData });
+    } catch (error) {
+      throw new Error("Error generating new access token: " + error);
+    }
+  }
 
   
   

@@ -6,7 +6,7 @@ import { IEmoloyeeLoginDTO } from "../../dto/employeeDTO";
 import nodemailer from "nodemailer";
 import OtpModel from "../../model/otpModel";
 import generateOtp from "../../utils/otp";
-import { IValidateOtpDTO } from "dto/ILoginDTO";
+import { IValidateOtpDTO } from "../../dto/employeeDTO";
 
 
 const transporter = nodemailer.createTransport({
@@ -24,42 +24,55 @@ export default class EmployeeService implements IEmployeeService {
     }
 
     async employeeLogin(email: string, password: string): Promise<any> {
-        try {
+      try {
           // Find employee by email and password
-          const employeeData = await this._employeeRepository.findByCredentialEmail(email,password);
-             console.log("employeeData===================",employeeData);
-             
-          // Check if employee is found
+          const employeeData = await this._employeeRepository.findByCredentialEmail(email, password);
+  
+          console.log("Employee Data:", employeeData);
+  
+          // Check if employee exists
           if (!employeeData) {
-            throw new Error("Invalid email or password");
+              return { message: "Invalid email or password. Please try again." };
           }
-    
-          // Check if employee is verified
+  
+          // Check if account is verified
           if (!employeeData.isVerified) {
-            const otp = generateOtp();
-            await this.sendOtp(employeeData.personalDetails.email, otp);
-            throw new Error("Account not verified. OTP has been sent to your email.");
-            return { success :false , message:"Account not verified",email: employeeData.personalDetails.email }
+              const otp = generateOtp();
+              await this.sendOtp(employeeData.personalDetails.email, otp);
+  
+              return { 
+                  success: false, 
+                  message: "Account not verified. OTP has been sent to your registered email.",
+                  email: employeeData.personalDetails.email 
+              };
           }
-    
-          // Compare the password with the stored hashed password using bcrypt
-          const isPasswordValid = password == employeeData.employeeCredentials.companyPassword
-          
+  
+          // Compare passwords
+          const isPasswordValid = password === employeeData.employeeCredentials.companyPassword; // You might want to use bcrypt.compare here
+  
           if (!isPasswordValid) {
-            throw new Error("Invalid email or password");
+              return { success: false, message: "Invalid email or password. Please try again." };
           }
-    
+  
           // Generate access and refresh tokens
-          const accessToken = generateAccessToken({ employeeData });
-          const refreshToken = generateRefreshToken({ employeeData });
-    
-          // Return employee data with tokens
-          return { ...employeeData.toJSON(), accessToken, refreshToken };
-        } catch (error) {
-          console.error("Error in employee login service", error);
-          throw error;
-        }
+          const accessToken = generateAccessToken({ employeeId: employeeData.id });
+          const refreshToken = generateRefreshToken({ employeeId: employeeData.id });
+  
+          // Return success response
+          return { 
+              success: true, 
+              message: "Login successful.", 
+              data: { ...employeeData.toJSON() },
+              accessToken,
+             refreshToken 
+          };
+  
+      } catch (error) {
+          console.error("Error in employee login service:", error);
+          throw new Error("An error occurred while processing your request. Please try again.");
       }
+  }
+  
 
    async  addEmployee(employeeData: any):Promise<any>{
     console.log("employee data",employeeData);
@@ -113,41 +126,63 @@ export default class EmployeeService implements IEmployeeService {
 
       async validateOtp(email: string, otp: string): Promise<IValidateOtpDTO> {
         try {
-          const otpData = await this._employeeRepository.findOtpByEmail(email);
-          if (!otpData) throw new Error("Manager not found");
+            // Check if OTP exists for the email
+            const otpData = await this._employeeRepository.findOtpByEmail(email);
+            if (!otpData) {
+                return { success: false, message: "No OTP record found for the provided email." };
+            }
     
-          if (otpData.otp === otp) {
+            // Verify OTP match
+            if (otpData.otp !== otp) {
+                return { success: false, message: "Invalid OTP provided. Please try again." };
+            }
+    
+            // Update verification status
             const verification = await this._employeeRepository.updateVerificationStatus(email);
             if (!verification) {
-              return { success: false, message: "Manager verification failed." };
+                return { success: false, message: "Failed to update verification status. Please try again." };
             }
-              console.log("email",email);
-              
-            const managerData = await this._employeeRepository.findByEmail(email);
-            console.log("managerData",managerData);
-            
-            const accessToken = generateAccessToken({ managerData });
-            const refreshToken = generateRefreshToken({ managerData });
     
-            console.log("managerData",managerData);
+            // Retrieve employee data
+            const employeeData = await this._employeeRepository.findByEmail(email);
+            if (!employeeData) {
+                return { success: false, message: "Employee not found after verification. Please contact support." };
+            }
+    
+            // Generate tokens
+            const accessToken = generateAccessToken({employeeData });
+            const refreshToken = generateRefreshToken({ employeeData });
+
             console.log("accessToken",accessToken);
             console.log("refreshToken",refreshToken);
             
-            
     
+            // Return success response
             return {
-              success: true,
-              email,
-              message: "OTP validated and company verified successfully",
-              accessToken,
-              refreshToken,
+                success: true,
+                email,
+                message: "OTP validated and account verified successfully.",
+                accessToken,
+                refreshToken,
             };
-          } else {
-            throw new Error("Invalid OTP provided.");
-          }
-        } catch (error) {
-          console.error("Error validating OTP:", error);
-          return { message: error instanceof Error ? error.message : "Unknown error occurred" };
+        } catch (error: any) {
+            console.error("Error validating OTP:", error.message);
+            return { success: false, message: "An error occurred while validating OTP. Please try again." };
         }
-      }  
+    }
+     
+    async resendOtp(email: string): Promise<{ success: boolean; message: string }> {
+      const otp = generateOtp();
+      const existingOtp = await this._employeeRepository.findOtpByEmail(email);
+      
+      if (existingOtp) {
+          await this._employeeRepository.updateOtp(email, otp);
+          return { success: true, message: 'OTP updated successfully.' }; 
+      } else {
+          console.log("No existing OTP, creating a new one");
+      }
+      await this.sendOtp(email, otp);
+      return { success: true, message: 'OTP has been sent successfully.' };
+  }
+
 }

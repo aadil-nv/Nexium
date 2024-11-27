@@ -2,34 +2,64 @@ import React, { useState } from "react";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
 import image from "../../images/images";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login } from "../../redux/slices/employeeSlice";
+import { z } from "zod";
+import { Spin } from "antd";
+
+// Zod schema for validation
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
 const EmployeeLogin: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  
+  const [validationError, setValidationError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false); // Loading state
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // Handle form submission
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate inputs using Zod
+    const result = loginSchema.safeParse({ email, password });
+    if (!result.success) {
+      setValidationError(result.error.errors[0].message);
+      return;
+    }
+
+    setValidationError(""); // Clear validation errors
+    setLoading(true); // Start loading
+
     try {
       const response = await axios.post(
         "http://localhost:3000/authentication/api/employee/employee-login",
-        { email, password }
+        { email, password },
+        { withCredentials: true }
       );
-      // Handle the response after successful login
-      console.log("Login successful:", response.data);
-      // Redirect or update the UI as needed
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response) {
-        // Show the error message from the backend
-        setError(err.response.data.message || "An error occurred.");
-      } else {
-        // Show a general error message if the error is not from the backend
-        setError("An error occurred while logging in.");
+      if (response.data.success === true) {
+        dispatch(login({ role: "employee", isAuthenticated: true }));
+        navigate("/employee/dashboard");
       }
+    } catch (err) {
+      console.error("Error during login:", err);
+      if (axios.isAxiosError(err) && err.response) {
+        if (err.response.data.success === false) {
+          navigate("/employee-otpvalidation", { state: { email: err.response.data.email } });
+        }
+        setError(err.response.data.message || "An error occurred. Please try again.");
+      } else {
+        setError("An error occurred while logging in. Please try again later.");
+      }
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -71,12 +101,14 @@ const EmployeeLogin: React.FC = () => {
                   {showPassword ? <FaEyeSlash className="text-gray-400" /> : <FaEye className="text-gray-400" />}
                 </button>
               </div>
+              {validationError && <div className="text-red-500 text-sm mb-4">{validationError}</div>}
               {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
               <button
                 type="submit"
-                className="w-full pt-2 border-2 border-blue-500 text-blue-500 rounded-full px-12 py-2 font-semibold"
+                className="w-full pt-2 border-2 border-blue-500 text-blue-500 rounded-full px-12 py-2 font-semibold flex items-center justify-center"
+                disabled={loading}
               >
-                Login
+                {loading ? <Spin size="small" /> : "Login"}
               </button>
             </form>
           </div>

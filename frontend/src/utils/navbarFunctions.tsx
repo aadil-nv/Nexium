@@ -30,11 +30,11 @@ export const handleLogout = ({
     navigate("/superadmin-login");
   } else if (isManager.isAuthenticated) {
     dispatch(managerLogout());
-    managerInstance.post("/manager/api/manger/logout");
+    managerInstance.post("/manager/api/manager/logout");
     navigate("/manager-login");
   } else if (isEmployee.isAuthenticated) {
     dispatch(employeeLogout());
-    managerInstance.post("/manager/api/manger/logout");
+    managerInstance.post("/manager/api/manager/logout");
     navigate("/employee-login");
   }
 };

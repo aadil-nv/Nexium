@@ -6,4 +6,5 @@ export default interface IManagerService {
     getManagerCredentials(managerId: string): Promise<any>
     getManagerDocuments(managerId: string): Promise<any>
     updateManagerPersonalInfo(managerId: string , data: any): Promise<any>
+    setNewAccessToken(refreshToken: string): Promise<string>
 }

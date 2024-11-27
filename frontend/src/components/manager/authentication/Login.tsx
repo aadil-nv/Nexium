@@ -32,9 +32,8 @@ export default function ManagerLogin() {
         return;
       }
       // If verified, proceed to dashboard
-      dispatch(login({ role: "manager" ,isAuthenticated: true }));
-      navigate("/manager/dashboard");
-    } catch (err: any) {
+      dispatch(login({ role: "manager", isAuthenticated: true }));
+            navigate("/manager/dashboard");
       setLoginError("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);

@@ -20,9 +20,7 @@ businessOwnerRouter.post('/upload-images', authenticateToken,uploadMiddleware,  
 
 
 businessOwnerRouter.patch('/update-personaldetailes', authenticateToken, (req, res, next) => businessOwnerController.updatePersonalDetails(req, res));
-// businessOwnerRouter.patch('/update-companydetailes', authenticateToken, (req, res, next) => businessOwnerController.updateCompanyDetails(req, res));
-// businessOwnerRouter.patch('/update-address', authenticateToken, (req, res, next) => businessOwnerController.updateAddress(req, res));
-// businessOwnerRocduter.patch('/update-documents', authenticateToken, (req, res, next) => businessOwnerController.updateDocuments(req, res));
+
 
 businessOwnerRouter.post('/refresh-token',(req, res, next) => businessOwnerController.setNewAccessToken(req, res));
 businessOwnerRouter.post('/logout', (req, res, next) => businessOwnerController.logout(req, res));

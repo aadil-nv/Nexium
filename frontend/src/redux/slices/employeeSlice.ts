@@ -17,7 +17,7 @@ const employeeSlice = createSlice({
   name: 'employee',
   initialState,
   reducers: {
-    login: (state, action: PayloadAction<{ role: string; token: string;  }>) => {
+    login: (state, action: PayloadAction<{ role: string; isAuthenticated: boolean  }>) => {
       state.role = action.payload.role;
       state.isAuthenticated = true; 
     },

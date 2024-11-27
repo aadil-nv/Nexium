@@ -7,4 +7,5 @@ export default interface IEmployeeRepository extends BaseRepository<IEmployeeDoc
     findOtpByEmail(email: string): Promise<any | null> 
     updateVerificationStatus(email: string): Promise<any>
     findByEmail(email: string): Promise<IEmployeeDocument | null>
+    updateOtp(email: string, otp: string): Promise<void>
 }

@@ -28,3 +28,4 @@ start_service "Business Owner Service" "$BUSINESS_OWNER_SERVICE_PATH"
 # Wait for all background processes to complete
 wait
 echo "All services and the frontend are now running."
+# awsedrawsdkughaskudhuikaseHBIKDLUHGBASLUIKDEBFLBDASJKGHBJADSHJFGDAS

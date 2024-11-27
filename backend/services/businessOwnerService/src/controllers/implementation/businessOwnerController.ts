@@ -12,8 +12,14 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async setNewAccessToken(req: Request, res: Response): Promise<Response> {
+    console.log("hitting set new access token---------------------------");
+    
+    console.log("Received request body:", req.cookies);
+    
     try {
       const refreshToken = req.cookies.refreshToken;
+      console.log(`refreshToken: ${refreshToken}`);
+      
       if (!refreshToken) return res.status(400).json({ message: 'Refresh token missing.' });
 
       const newAccessToken = await this._businessOwnerService.setNewAccessToken(refreshToken);

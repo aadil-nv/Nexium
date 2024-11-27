@@ -14,9 +14,7 @@ import Profile from "../components/global/Profile";
 const SuperAdminRoutes = () => {
   return (
     <Routes>
-      <Route element={<SuperAdminPrivateRoute> {/* Wrap with private route */} 
-        <DashBoardLayout />
-      </SuperAdminPrivateRoute>}>
+      <Route element={<SuperAdminPrivateRoute> <DashBoardLayout /></SuperAdminPrivateRoute>}>
         <Route path="dashboard" element={<AdminDashBoard />} />
         <Route path="businessowners" element={<BusinessOwnersList />} />
         <Route path="plans" element={<AllPlans />} />

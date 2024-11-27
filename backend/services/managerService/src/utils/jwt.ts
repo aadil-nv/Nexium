@@ -1,14 +1,7 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
-
-
-
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET as string
 const ACCESS_TOKEN_SECRET= process.env.ACCESS_TOKEN_SECRET as string
-
-
-console.log( "REFRESH_TOKEN_SECRET ----", REFRESH_TOKEN_SECRET);
-console.log("ACCESS_TOKEN_SECRET   -----",ACCESS_TOKEN_SECRET);
 
 
 export const generateAccessToken = (data: object): string => {
@@ -25,7 +18,7 @@ export const generateRefreshToken = (data: object): string => {
     return jwt.sign(
         data, 
         REFRESH_TOKEN_SECRET,
-        { expiresIn: '2m' }
+        { expiresIn: '4m' }
     );
 };
 

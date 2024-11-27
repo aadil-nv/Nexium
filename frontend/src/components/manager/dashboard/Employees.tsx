@@ -10,20 +10,26 @@ import { fetchEmployees } from '../../../api/managerApi';
 
 export default function Employees() {
   const [employeeData, setEmployeeData] = useState<IEmployee[]>([]);
+  const [updateTrigger, setUpdateTrigger] = useState(0); // State to trigger re-fetching data
   const { themeColor } = useTheme();
   const { manager } = useAuth();
   const isManager = manager?.isAuthenticated;
-
 
   useEffect(() => {
     fetchEmployees()
       .then(setEmployeeData)
       .catch((error) => console.error('Error fetching employee data:', error));
-  }, []);
+  }, []); // Re-fetch when `updateTrigger` changes
 
   const handleEdit = (employeeId: string) => console.log(`Edit employee with ID: ${employeeId}`);
-  const handleRemove = (employeeId: string) => console.log(`Employee with ID: ${employeeId} left`);
-  const handleBlock = (employeeId: string) => console.log(`Block employee with ID: ${employeeId}`);
+  const handleRemove = (employeeId: string) => {
+    console.log(`Employee with ID: ${employeeId} left`);
+    setUpdateTrigger((prev) => prev + 1); // Trigger re-fetch
+  };
+  const handleBlock = (employeeId: string) => {
+    console.log(`Block employee with ID: ${employeeId}`);
+    setUpdateTrigger((prev) => prev + 1); // Trigger re-fetch
+  };
 
   const columns: ColumnDef<IEmployee>[] = [
     { id: 'ID', accessorKey: 'id' },

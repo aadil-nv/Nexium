@@ -17,6 +17,20 @@ export const managerLogin = async (formData: LoginFormData) => {
     }
 };
 
+export const resendOtp = async (email: string, url: string): Promise<{ success: boolean }> => {
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    return await response.json();
+  } catch {
+    return { success: false };
+  }
+};
+
+
 export const getAllManagers = async () => {
     try {
         const response = await managerInstance.get('/manager/api/manager/get-managers', {
@@ -69,6 +83,7 @@ export const fetchEmployees = async (): Promise<IEmployee[]> => {
           position: employee.position || '', // Directly from employee.position
           profilePicture: employee.profilePicture || '', // Directly from employee.profilePicture
           isOnline: employee.isActive || false, // Directly from employee.isActive
+          email:employee.email
       }));
   } catch (error) {
       console.error('Error fetching employee data:', error);
