@@ -41,7 +41,7 @@ const targets = {
   employee: process.env.EMPLOYEE_API_BASE_URL,
 };
 
-// fgklijdfhgkljnhdfkgjbdfkgbjfdbgklbdflkjgbkdflsghbljkdsfbsgbdfsjiklhgbdfg
+// fgklijdfhgkljnhdfkgjbdfdsafsdfsdfsdafdfgdfgdf
 app.use('/authentication', createProxyMiddleware({ target: targets.authentication, changeOrigin: true }));
 app.use('/businessOwner', createProxyMiddleware({ target: targets.businessOwner, changeOrigin: true }));
 app.use('/superAdmin', createProxyMiddleware({ target: targets.superAdmin, changeOrigin: true }));
