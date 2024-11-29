@@ -1,12 +1,23 @@
 import { Container } from "inversify";
 
 import IAttendanceController from "../controllers/interface/IAttendanceController";
-import IAttendanceService from "../service/interface/IAttendanceService";
-import IAttendanceRepository from "../repository/interface/IAttendanceRepository";
-
 import AttendenceController from "../controllers/implementation/attendenceController";
+import IAttendanceService from "../service/interface/IAttendanceService";
 import AttendanceService from "../service/implementation/attendanceService";
+import IAttendanceRepository from "../repository/interface/IAttendanceRepository";
 import AttendanceRepository from "../repository/implementation/attendanceRepository";
+
+import IEmployeeController from "../controllers/interface/IEmployeeController";
+import EmployeeController from "../controllers/implementation/employeeController";
+import IEmployeeService from "../service/interface/IEmployeeService";
+import EmployeeService from "../service/implementation/employeeService";
+import IEmployeeRepository from "../repository/interface/IEmployeeRepository";
+import EmployeeRepository from "../repository/implementation/employeeRepository";
+
+import EmployeeModel from "../models/employeeModel";
+
+import mongoose from "mongoose";
+import IEmployee from "../entities/employeeEntities";
 
 
 const container = new Container();
@@ -14,6 +25,15 @@ const container = new Container();
 container.bind<IAttendanceController>("IAttendanceController").to(AttendenceController);
 container.bind<IAttendanceService>("IAttendanceService").to(AttendanceService);
 container.bind<IAttendanceRepository>("IAttendanceRepository").to(AttendanceRepository);
+
+
+container.bind<IEmployeeController>("IEmployeeController").to(EmployeeController);
+container.bind<IEmployeeService>("IEmployeeService").to(EmployeeService);
+container.bind<IEmployeeRepository>("IEmployeeRepository").to(EmployeeRepository);
+
+container.bind<mongoose.Model<IEmployee>>("IEmployee").toConstantValue(EmployeeModel);
+
+
 
 
 export default container

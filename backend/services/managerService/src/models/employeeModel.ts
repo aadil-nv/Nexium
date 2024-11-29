@@ -4,6 +4,7 @@ import IEmployee from '../entities/employeeEntities';
 
 const employeeSchema = new Schema<IEmployee>({
   managerId: { type: mongoose.Schema.Types.ObjectId, ref: 'manager' }, // Corrected reference type
+  businessOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessOwner' },
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
   isBlocked: { type: Boolean, default: false },

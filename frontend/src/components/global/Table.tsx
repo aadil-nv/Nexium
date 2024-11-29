@@ -152,8 +152,8 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
           Next
         </button>
       </div>
-      {businessOwner.isAuthenticated ? <AddManagerModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} /> :
-       manager.isAuthenticated ? <AddEmployeeModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} /> : null}
+      {businessOwner.isAuthenticated ? <AddManagerModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)}  onManagerAdded={() => {}}  /> :
+       manager.isAuthenticated ? <AddEmployeeModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} onManagerAdded={() => {}}  /> : null}
 
       
       

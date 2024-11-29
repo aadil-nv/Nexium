@@ -185,7 +185,6 @@ async setNewAccessToken(req: Request, res: Response): Promise<Response> {
 }
 
 
-
 async logout(req: Request, res: Response): Promise<Response> {
   console.log("hitted logout-----------------------------------");
   

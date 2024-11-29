@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export default interface IEmployee extends Document {
   managerId: mongoose.Schema.Types.ObjectId; // Correct reference to HR
+  businessOwnerId: mongoose.Schema.Types.ObjectId;
   isActive: boolean;
   isVerified: boolean;
   isBlocked: boolean;

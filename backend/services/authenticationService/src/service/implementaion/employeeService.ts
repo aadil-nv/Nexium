@@ -55,8 +55,8 @@ export default class EmployeeService implements IEmployeeService {
           }
   
           // Generate access and refresh tokens
-          const accessToken = generateAccessToken({ employeeId: employeeData.id });
-          const refreshToken = generateRefreshToken({ employeeId: employeeData.id });
+          const accessToken = generateAccessToken({ employeeData });
+          const refreshToken = generateRefreshToken({ employeeData });
   
           // Return success response
           return { 
@@ -64,7 +64,7 @@ export default class EmployeeService implements IEmployeeService {
               message: "Login successful.", 
               data: { ...employeeData.toJSON() },
               accessToken,
-             refreshToken 
+              refreshToken 
           };
   
       } catch (error) {

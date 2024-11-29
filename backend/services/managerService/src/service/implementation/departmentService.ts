@@ -3,7 +3,6 @@ import IDepartmentService from "../interface/IDepartmentService";
 import { inject, injectable } from "inversify";
 
 
-console.log("dfgdfgd777dfgdsdfsdfsf7ssdfsdffsdfsdsfsdfsdfsdfsddf43532d453sfssfg");
 
 @injectable()
 export default class DepartmentService implements IDepartmentService {

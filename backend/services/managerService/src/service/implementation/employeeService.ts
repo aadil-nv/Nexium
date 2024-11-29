@@ -49,7 +49,11 @@ export default class EmployeeService implements IEmployeeService {
         const mappedEmployeeData = this.mapEmployeeData(managerId, employeeData);
 
         const managerName = managerData.name;
-
+        console.log(`===============================================`.bgRed);
+        console.log(`=====================managerData.businessOwnerId==========================`,managerData.businessOwnerId);
+        
+        mappedEmployeeData.businessOwnerId = managerData.businessOwnerId;
+        console.log(`===============================================`.bgRed);
         mappedEmployeeData.personalDetails.employeeName = employeeData.name;
         mappedEmployeeData.professionalDetails.salary = employeeData.salary;
         mappedEmployeeData.professionalDetails.workTime = employeeData.workTime;

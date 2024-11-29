@@ -9,6 +9,6 @@ const attendanceRouter = Router();
 const attendanceController = Container.get<IAttendanceController>("IAttendanceController");
 
 
-attendanceRouter.get("/fetch-attendance", attendanceController.fetchAttendance);
+attendanceRouter.get("/fetch-attendance",(req, res)=> attendanceController.fetchAttendance(req, res));
 
 export default attendanceRouter

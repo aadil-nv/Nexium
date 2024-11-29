@@ -35,14 +35,14 @@ export const superAdminLinks: LinkItem[] = [
 ];
 
 export const employeeLinks: LinkItem[] = [
-  { title: 'Dashboard', route: '/manager/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
-  { title: 'Team', route: '/manager/team', icon: 'fi fi-tr-department-structure' },
-  { title: 'Attendance', route: '/manager/attendances', icon: 'fi fi-tr-skill' },
-  { title: 'Payroll', route: '/manager/payroll', icon: 'fi fi-tr-payroll' },
-  { title: 'Leaves', route: '/manager/leaves', icon: 'fi fi-tr-house-leave' },
-  { title: 'Notifications', route: '/manager/notifications', icon: 'fi fi-tr-bells' },
-  { title: 'Announcements', route: '/manager/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
-  { title: 'Service Requests', route: '/manager/service-requests', icon: 'fi fi-tr-hr-group' },
+  { title: 'Dashboard', route: '/employee/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
+  { title: 'Team', route: '/employee/team', icon: 'fi fi-tr-department-structure' },
+  { title: 'Attendance', route: '/employee/attendance', icon: 'fi fi-tr-skill' },
+  { title: 'Payroll', route: '/employee/payroll', icon: 'fi fi-tr-payroll' },
+  { title: 'Leaves', route: '/employee/leaves', icon: 'fi fi-tr-house-leave' },
+  { title: 'Notifications', route: '/employee/notifications', icon: 'fi fi-tr-bells' },
+  { title: 'Announcements', route: '/employee/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  // { title: 'Service Requests', route: '/employee/service-requests', icon: 'fi fi-tr-hr-group' },
 ];
 
 export const managerLinks: LinkItem[] = [
