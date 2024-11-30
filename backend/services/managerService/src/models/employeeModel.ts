@@ -42,6 +42,13 @@ const employeeSchema = new Schema<IEmployee>({
     resume: { type: String },
     idProof: { type: String },
   },
+  leaves: {
+    casualLeave: { type: Number, default: 12 }, // Default 12 days of casual leave
+    sickLeave: { type: Number, default: 10 },   // Default 10 days of sick leave
+    paidLeave: { type: Number, default: 15 },   // Default 15 days of paid leave
+    unpaidLeave: { type: Number, default: 5 },  // Default 5 days of unpaid leave
+  },
+  
 });
 
 

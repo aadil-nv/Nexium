@@ -64,7 +64,9 @@ export default class EmployeeService implements IEmployeeService {
               message: "Login successful.", 
               data: { ...employeeData.toJSON() },
               accessToken,
-              refreshToken 
+              refreshToken,
+              workTime: employeeData.professionalDetails.workTime,
+              position: employeeData.professionalDetails.position
           };
   
       } catch (error) {
@@ -164,6 +166,8 @@ export default class EmployeeService implements IEmployeeService {
                 message: "OTP validated and account verified successfully.",
                 accessToken,
                 refreshToken,
+                workTime: employeeData.professionalDetails.workTime,
+                position: employeeData.professionalDetails.position
             };
         } catch (error: any) {
             console.error("Error validating OTP:", error.message);

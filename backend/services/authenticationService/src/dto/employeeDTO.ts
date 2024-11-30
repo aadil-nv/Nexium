@@ -12,4 +12,6 @@ export  interface IValidateOtpDTO{
     accessToken?:string;
     refreshToken?:string;
     email?:string;
+    workTime?:string;
+    position?:string;
 }

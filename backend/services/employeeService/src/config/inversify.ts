@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Container } from "inversify";
 
 import IAttendanceController from "../controllers/interface/IAttendanceController";
@@ -15,9 +16,10 @@ import IEmployeeRepository from "../repository/interface/IEmployeeRepository";
 import EmployeeRepository from "../repository/implementation/employeeRepository";
 
 import EmployeeModel from "../models/employeeModel";
+import AttendanceModel from "../models/attendanceModel";
 
-import mongoose from "mongoose";
 import IEmployee from "../entities/employeeEntities";
+import { IEmployeeAttendance } from "../entities/attendanceEntities";
 
 
 const container = new Container();
@@ -32,6 +34,7 @@ container.bind<IEmployeeService>("IEmployeeService").to(EmployeeService);
 container.bind<IEmployeeRepository>("IEmployeeRepository").to(EmployeeRepository);
 
 container.bind<mongoose.Model<IEmployee>>("IEmployee").toConstantValue(EmployeeModel);
+container.bind<mongoose.Model<IEmployeeAttendance>>("IEmployeeAttendance").toConstantValue(AttendanceModel);
 
 
 

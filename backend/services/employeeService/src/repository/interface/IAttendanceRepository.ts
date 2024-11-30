@@ -1,3 +1,10 @@
-export default interface IAttendanceRepository {
-    fetchAttendances(employeeId: string): Promise<any>
+import BaseRepository from "../implementation/baseRepository";
+
+import { IEmployeeAttendance } from "../../entities/attendanceEntities";
+
+export default interface IAttendanceRepository extends BaseRepository<IEmployeeAttendance>  {
+    fetchAttendances(employeeId: string): Promise<any>;
+    findAttendanceByEmployeeId(employeeId: string): Promise<any>;
+    createAttendanceRecord(employeeId: string): Promise<any>;
+    updateAttendance(id: string, attendanceData: any): Promise<any>;
 }

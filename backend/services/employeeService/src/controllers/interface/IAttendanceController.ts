@@ -1,4 +1,7 @@
 import { Request ,Response } from "express";
+import { CustomRequest } from "../../middlewares/tokenAuth";
 export default interface IAttendanceController {
     fetchAttendance(req: Request, res: Response): Promise<Response>;
+    markCheckin(req :CustomRequest, res: Response): Promise<Response>;
+    markCheckout(req :CustomRequest, res: Response): Promise<Response>;
 }

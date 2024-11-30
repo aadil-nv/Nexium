@@ -20,6 +20,8 @@ if (!fs.existsSync(logDirectory)) {
 }
 
 
+//dfoisdhfoisdhikofhosjikadhnfkksdjbfjkasbdkf
+
 const accessLogStream = createStream('access.log', {
   interval: '1d',
   path: logDirectory,

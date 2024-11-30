@@ -47,9 +47,9 @@ export default class EmployeeController implements IEmployeeController {
                 secure: process.env.NODE_ENV === 'production',
                 maxAge: 7 * 24 * 3600 * 1000, // 7 day
             })
-            console.log("cokkit setted successfully");
+            console.log("cokkit setted successfully",result);
             
-    
+                
             return res.status(HttpStatusCode.Accepted).json(result);
         } catch (error: any) {
             console.error('Error during employee login:', error.message);
@@ -69,7 +69,7 @@ export default class EmployeeController implements IEmployeeController {
             const response = await this._employeeService.validateOtp(email, otp);
             console.log("OTP validation response:", response);
     
-            if (response.success) {
+            if (response.success ==true) {
                 // Set cookies for access and refresh tokens
                 res.cookie('accessToken', response.accessToken, {
                     httpOnly: true,
@@ -81,7 +81,7 @@ export default class EmployeeController implements IEmployeeController {
                     secure: process.env.NODE_ENV === 'production',
                     maxAge: 7 * 24 * 3600 * 1000, // 7 days
                 });
-    
+                console.log("Response data:", response);
                 // Respond with success
                 return res.status(200).json({
                     success: true,
@@ -89,6 +89,8 @@ export default class EmployeeController implements IEmployeeController {
                     email: response.email,
                     accessToken: response.accessToken,
                     refreshToken: response.refreshToken,
+                    workTime: response.workTime,
+                    position: response.position
                 });
             } 
     

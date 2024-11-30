@@ -44,8 +44,9 @@ const EmployeeLogin: React.FC = () => {
         { email, password },
         { withCredentials: true }
       );
+      console.log("Response data:", response.data);
       if (response.data.success === true) {
-        dispatch(login({ role: "employee", isAuthenticated: true }));
+        dispatch(login({ role: "employee", isAuthenticated: true ,position: response.data.position, workTime: response.data.workTime,workTimer: response.data.workTimer }));
         navigate("/employee/dashboard");
       }
     } catch (err) {

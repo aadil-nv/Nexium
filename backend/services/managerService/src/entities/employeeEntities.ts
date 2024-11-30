@@ -39,4 +39,11 @@ export default interface IEmployee extends Document {
     resume: string;
     idProof: string;
   };
+
+  leaves: {
+    casualLeave: number;
+    sickLeave: number;
+    paidLeave: number;
+    unpaidLeave: number;
+  };
 }

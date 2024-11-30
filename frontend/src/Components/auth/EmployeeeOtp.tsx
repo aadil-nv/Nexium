@@ -88,15 +88,13 @@ const EmployeeOtp: React.FC = () => {
 
     try {
       setLoading(true); // Start loading
-      const response = await axios.post("http://localhost:3000/authentication/api/employee/employee-validateotp", {
-        email,
-        otp,
-      });
+      const response = await axios.post("http://localhost:3000/authentication/api/employee/employee-validateotp", 
+        {email,otp},{ withCredentials: true });
       setLoading(false); // Stop loading
-
+      console.log("Response data:", response.data);
       if (response.data.success) {
         setSuccessMessage(response.data.message || "OTP validated successfully.");
-        dispatch(login({ role: "employee", isAuthenticated: true }));
+        dispatch(login({ role: "employee", isAuthenticated: true , position: response.data.position, workTime: response.data.workTime,workTimer: response.data.workTimer }));
         dispatch(setTimer(0)); // Clear the timer from Redux
         navigate("/employee/dashboard");
       } else {
