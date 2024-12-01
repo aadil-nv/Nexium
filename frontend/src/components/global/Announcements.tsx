@@ -1,33 +1,108 @@
-import React from 'react';
-import useTheme from '../../hooks/useTheme';
+import React, { useState } from 'react';
+import { RichTextEditor } from '@mantine/rte';
+import { Button, Card, List, Space, Select, Divider } from 'antd';
+import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
-
+const { Option } = Select;
 
 export default function Announcements() {
-  const { themeColor}=useTheme()
+  const [announcement, setAnnouncement] = useState('');
+  const [selectedOwner, setSelectedOwner] = useState('');
+  const [announcementsList, setAnnouncementsList] = useState<
+    { id: number; owner: string; content: string; timestamp: string; status: 'success' | 'failure' }[]
+  >([]);
 
-  const announcements = [
-    { id: 1, message: 'Company will be closed on Thanksgiving Day.', timestamp: '2024-10-24' },
-    { id: 2, message: 'New health insurance plans available for enrollment.', timestamp: '2024-10-22' },
-    { id: 3, message: 'Join us for the annual holiday party on December 15!', timestamp: '2024-10-20' },
-    
-  ];
+  const businessOwners = ['Owner 1', 'Owner 2', 'Owner 3', 'Owner 4'];
+
+  const handleCreateAnnouncement = () => {
+    if (announcement.trim() && selectedOwner) {
+      const newAnnouncement = {
+        id: announcementsList.length + 1,
+        owner: selectedOwner,
+        content: announcement,
+        timestamp: new Date().toLocaleString(),
+        status: Math.random() > 0.3 ? 'success' : 'failure', // TypeScript will infer this as 'success' | 'failure'
+      } as const; // Using `as const` to ensure type inference for status
+      setAnnouncementsList([newAnnouncement, ...announcementsList]);
+      setAnnouncement('');
+      setSelectedOwner('');
+    }
+  };
+  
+  
+
+  const handleClearAnnouncements = () => {
+    setAnnouncementsList([]);
+  };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4" style={{ color: themeColor }}>Announcements</h1>
-      <div className="space-y-4">
-        {announcements.length === 0 ? (
-          <p>No announcements available.</p>
+    <div style={{ padding: '20px' }}>
+      <Card title="Create New Announcement" style={{ marginBottom: '20px' }}>
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Select
+            placeholder="Select Business Owner"
+            value={selectedOwner}
+            onChange={(value) => setSelectedOwner(value)}
+            style={{ width: '100%' }}
+          >
+            {businessOwners.map((owner) => (
+              <Option key={owner} value={owner}>
+                {owner}
+              </Option>
+            ))}
+          </Select>
+          <RichTextEditor
+            value={announcement}
+            onChange={setAnnouncement}
+          />
+          <Button type="primary" onClick={handleCreateAnnouncement} disabled={!selectedOwner || !announcement.trim()}>
+            Add Announcement
+          </Button>
+        </Space>
+      </Card>
+
+      <Card
+        title="Incoming Announcements"
+        extra={
+          <Button danger onClick={handleClearAnnouncements}>
+            Clear All
+          </Button>
+        }
+      >
+        {announcementsList.length ? (
+          <List
+            dataSource={announcementsList}
+            renderItem={(item) => (
+              <List.Item key={item.id}>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Divider>Session {item.id}</Divider>
+                  <p>
+                    <strong>Business Owner:</strong> {item.owner}
+                  </p>
+                  <p>
+                    <strong>Time:</strong> {item.timestamp}
+                  </p>
+                  <div dangerouslySetInnerHTML={{ __html: item.content }} />
+                  <p>
+                    <strong>Status:</strong>{' '}
+                    {item.status === 'success' ? (
+                      <span style={{ color: 'green' }}>
+                        <CheckCircleOutlined /> Sent Successfully
+                      </span>
+                    ) : (
+                      <span style={{ color: 'red' }}>
+                        <CloseCircleOutlined /> Failed to Send
+                      </span>
+                    )}
+                  </p>
+                </Space>
+              </List.Item>
+            )}
+          />
         ) : (
-          announcements.map(announcement => (
-            <div key={announcement.id} className="border rounded-md p-4 flex flex-col">
-              <p className="text-gray-800" style={{ color: themeColor }}>{announcement.message}</p>
-              <p className="text-sm text-gray-500">{announcement.timestamp}</p>
-            </div>
-          ))
+          <p>No announcements to display.</p>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

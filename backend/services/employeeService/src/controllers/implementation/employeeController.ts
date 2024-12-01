@@ -14,7 +14,6 @@ export default class EmployeeController implements IEmployeeController {
     private _employeeService: IEmployeeService) {}
 
     async setNewAccessToken(req: Request, res: Response): Promise<Response> {
-            console.log("refresh token in controller", req.cookies?.refreshToken);
             
         try {
             const  refreshToken = req.cookies?.refreshToken;
@@ -29,7 +28,6 @@ export default class EmployeeController implements IEmployeeController {
                 return res.status(401).json({ message: 'Failed to generate new access token.' });
               }
           
-              console.log(`Generated new access token:`,result.accessToken);
           
               res.cookie('accessToken', result.accessToken, {
                 httpOnly: true,

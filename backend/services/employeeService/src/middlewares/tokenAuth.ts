@@ -18,7 +18,6 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
     try {
 
         const token = req.cookies?.accessToken; 
-       console.log("tokrn isd -------------------------------",token);
        
         
 
@@ -27,8 +26,7 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
         }
 
         const secret = process.env.ACCESS_TOKEN_SECRET; // Get the secret from environment variables
-        console.log(`seceret is ----------->`.bgCyan,secret) ;
-        console.log(`seceret is ----------->`.bgCyan, typeof secret);
+ 
         
         if (!secret) {
             console.error('Access token secret is not defined');
@@ -42,7 +40,6 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
                 return res.status(401).json({ message: 'Invalid token' });
             }
 
-            console.log(`edcoded======`.bgMagenta,decoded);
             
             
             req.user = decoded as JwtPayload;
@@ -50,10 +47,8 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
             
             
             const employeeData = (req.user as JwtPayload).employeeData;
-            console.log(`employeeData======`.bgYellow,employeeData);
             if (employeeData && employeeData.businessOwnerId) {
                 const businessOwnerId = employeeData.businessOwnerId.toString();
-                console.log(`businessOwnerId======`.bgCyan,businessOwnerId);
 
                 // Dynamically connect to the MongoDB database using businessOwnerId
                 await connectDB(businessOwnerId); // Pass the employeeId to the connectDB function

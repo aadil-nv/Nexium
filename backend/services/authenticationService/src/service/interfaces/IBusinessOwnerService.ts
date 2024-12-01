@@ -64,7 +64,7 @@ export interface IPaymentIntentResponse {
 export default interface IBusinessOwnerService {
 
   login(email: string, password: string): Promise<ITokenResponse>;
-  register(businessOwnerData: Partial<IBusinessOwner>): Promise<{ success?: boolean; message?: string; email?: string }>;
+  register(businessOwnerData: Partial<IBusinessOwner>): Promise<ITokenResponse>;
   sendOtp(email: string, otp: string): Promise<void>;
   validateOtp(email: string, otp: string): Promise<any>;
   createCheckoutSession(plan: any,amount: number,currency: string, email: string): Promise<IPaymentIntentResponse>;

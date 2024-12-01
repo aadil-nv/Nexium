@@ -12,6 +12,9 @@ export default class AttendanceService implements IAttendanceService {
      }
     async fetchAttendances(employeeId: string): Promise<any> {
         try {
+            const emolyeeData=await this.attendanceRepository.findEmployeeById({employeeId})
+            console.log(`=======================employeedatais =====================`.bgYellow,emolyeeData);
+            
             const attendances = await this.attendanceRepository.fetchAttendances(employeeId);
             return attendances
         } catch (error) {
@@ -86,7 +89,7 @@ export default class AttendanceService implements IAttendanceService {
                 employeeAttendance._id,
                 { 
                     attendance: employeeAttendance.attendance,
-                    currentStatus: "checkIn"
+                 
                 }
             );
     
@@ -119,9 +122,16 @@ export default class AttendanceService implements IAttendanceService {
     
     
     async markCheckout(attendanceData: any, employeeId: string): Promise<IAttendanceResponceDTO> {
+        console.log("calling marck checkout ============================");
+        console.log(`"calling marck checkout ============================"`.bgRed,attendanceData);
+
+        
+        
+        
         try {
             // Find the attendance record for the employee
             let employeeAttendance = await this.attendanceRepository.findAttendanceByEmployeeId(employeeId);
+            console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     
             if (!employeeAttendance) {
                 return {
@@ -130,20 +140,28 @@ export default class AttendanceService implements IAttendanceService {
                     message: "No attendance record found for this employee",
                 };
             }
-    
+                console.log("Employee attendance is --->",employeeAttendance);
+                
             // Ensure the employee's current status is 'checkIn' before proceeding
-            if (employeeAttendance.currentStatus !== "checkIn") {
+            if (employeeAttendance.attendance[0].status !== "Present") {
+                console.log("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
+                
                 return {
                     status: "error",
                     data: null,
                     message: "Check-out can only be marked after check-in",
                 };
             }
+
+            console.log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+        
     
             // Find the specific day's attendance entry
             const attendanceEntry = employeeAttendance.attendance.find(
                 (entry: IAttendanceEntry) => entry.date === attendanceData.date
             );
+            console.log("cccccccccccccccccccccccccccccccccccccccccccc");
+        
     
             if (!attendanceEntry) {
                 return {
@@ -152,9 +170,11 @@ export default class AttendanceService implements IAttendanceService {
                     message: "Attendance entry not found for the given date",
                 };
             }
-    
+            console.log("ddddddddddddddddddddddddddddddddddddddddddddd");
+            
             // If checkOutTime is empty or undefined, add the checkOutTime and calculate hours
             if (!attendanceEntry.checkOutTime) {
+                console.log("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
                 // Set the checkout time
                 attendanceEntry.checkOutTime = attendanceData.checkOutTime;
     
@@ -187,35 +207,37 @@ export default class AttendanceService implements IAttendanceService {
                 // Get the employee's work type and calculate work time thresholds
                 const workType = employeeAttendance.position; // assuming position indicates work type (Full-Time, Part-Time, etc.)
                 let workTimeThreshold: number;
-    
+                console.log("1111111111111111111111111111111111111");
+                
                 switch (workType) {
                     case "Full-Time":
                         workTimeThreshold = 8; // Full-time is 8 hours
                         break;
-                    case "Part-Time":
-                        workTimeThreshold = 4; // Part-time is 4 hours
-                        break;
-                    case "Contract":
-                        workTimeThreshold = 9; // Contract is 9 hours
-                        break;
-                    case "Temporary":
-                        workTimeThreshold = 7; // Temporary is 7 hours
-                        break;
-                    default:
-                        workTimeThreshold = 8; // Default to Full-Time if no specific type is found
-                }
-    
-                // Update status based on worked hours relative to work type
-                if (workedHours < workTimeThreshold / 2) {
-                    attendanceEntry.status = "Absent"; // Less than half of the required hours
-                } else if (workedHours >= workTimeThreshold / 2 && workedHours < workTimeThreshold) {
-                    attendanceEntry.status = "Halfday"; // More than half but less than full
-                } else {
-                    attendanceEntry.status = "Present"; // Full or more than required hours
-                }
-    
-                // Update currentStatus to 'marked' after successful check-out
-                employeeAttendance.currentStatus = "marked";
+                        case "Part-Time":
+                            workTimeThreshold = 4; // Part-time is 4 hours
+                            break;
+                            case "Contract":
+                                workTimeThreshold = 9; // Contract is 9 hours
+                                break;
+                                case "Temporary":
+                                    workTimeThreshold = 7; // Temporary is 7 hours
+                                    break;
+                                    default:
+                                        workTimeThreshold = 8; // Default to Full-Time if no specific type is found
+                                    }
+                                    
+                                    // Update status based on worked hours relative to work type
+                                    if (workedHours < workTimeThreshold / 2) {
+                                        attendanceEntry.status = "Absent"; // Less than half of the required hours
+                                    } else if (workedHours >= workTimeThreshold / 2 && workedHours < workTimeThreshold) {
+                                        attendanceEntry.status = "Halfday"; // More than half but less than full
+                                    } else {
+                                        attendanceEntry.status = "Present"; // Full or more than required hours
+                                    }
+                                    
+                                    // Update currentStatus to 'marked' after successful check-out
+                                    attendanceEntry.isCompleted = true;
+                                    console.log("2222222222222222222222222222222222222");
             } else {
                 return {
                     status: "error",
@@ -223,13 +245,17 @@ export default class AttendanceService implements IAttendanceService {
                     message: "Check-out time has already been marked for this date",
                 };
             }
-    
+            
             // Save the updated attendance record
+            console.log("3333333333333333333333333333333333333");
             const updatedAttendance = await this.attendanceRepository.updateAttendance(
                 employeeAttendance._id,
-                { attendance: employeeAttendance.attendance, currentStatus: employeeAttendance.currentStatus }
+                { attendance: employeeAttendance.attendance }
             );
-    
+
+            console.log("4444444444444444444444444444444444444");
+            
+            
             if (!updatedAttendance) {
                 return {
                     status: "error",
@@ -237,6 +263,7 @@ export default class AttendanceService implements IAttendanceService {
                     message: "Failed to update attendance record",
                 };
             }
+            console.log("5555555555555555555555555555555555555");
     
             return {
                 status: "success",

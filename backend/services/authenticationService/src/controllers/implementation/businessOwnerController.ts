@@ -13,11 +13,10 @@ export default class BusinessOwnerController implements IBusinessOwnerController
 
   constructor(
     @inject("IBusinessOwnerService") businessOwnerService: IBusinessOwnerService
-  ) {
-    this._businessOwnerService = businessOwnerService;
-  }
+  ) {this._businessOwnerService = businessOwnerService}
 
   async login(req: Request, res: Response): Promise<Response> {
+    console.log("hitttiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
     
     try {
       const { email, password } = req.body;
@@ -32,7 +31,6 @@ export default class BusinessOwnerController implements IBusinessOwnerController
         }
       }
     
-// dfssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
       res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
          maxAge:7 * 24 * 60 * 60 * 1000 });
       res.cookie('accessToken', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
@@ -84,8 +82,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
 
     try {
       const result = await this._businessOwnerService.createCheckoutSession(plan, amount, currency, email);
-        console.log("result----------------------......-.....>",result);
-        
+
       res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
          maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
       res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',

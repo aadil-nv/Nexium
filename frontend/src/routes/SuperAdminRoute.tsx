@@ -10,6 +10,7 @@ import Announcements from "../components/global/Announcements";
 import Notifications from "../components/global/Notifications";
 import SuperAdminPrivateRoute from "../routes/SuperAdminPrivateRoute"; // Import the private route
 import Profile from "../components/global/Profile";
+import CustomerSupport from "../components/global/CustomerSupport";
 
 const SuperAdminRoutes = () => {
   return (
@@ -18,7 +19,7 @@ const SuperAdminRoutes = () => {
         <Route path="dashboard" element={<AdminDashBoard />} />
         <Route path="businessowners" element={<BusinessOwnersList />} />
         <Route path="plans" element={<AllPlans />} />
-        <Route path="service-requests" element={<CustomerCare />} />
+        <Route path="service-requests" element={<CustomerSupport />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<Profile />} />

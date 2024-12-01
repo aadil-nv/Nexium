@@ -70,7 +70,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         }
     }
     
-    async register(businessOwnerData: Partial<IBusinessOwner>): Promise<{ success?: boolean; message?: string; email?: string }> {
+    async register(businessOwnerData: Partial<IBusinessOwner>): Promise<ITokenResponse> {
         console.log(`businessOwner data ---`, businessOwnerData);
       
         try {

@@ -7,13 +7,13 @@ import { IAttendanceEntry,IEmployeeAttendance} from '../entities/attendanceEntit
 // Create the schema for a single day's attendance
 const AttendanceEntrySchema: Schema = new Schema({
   date: { type: String },
-  status: { type: String, enum: ['Present', 'Leave', 'Absent'] ,default: "Absent"},
+  status: { type: String, enum: ['Present', 'Leave', 'Absent' ,"marked"] ,default: "Absent"},
   checkInTime: { type: Date ,default: null},
   checkOutTime: { type: Date ,default: null},
   hours: { type: Number ,default: 0},
   leaveType: { type: String, default: null },
   reason: { type: String, default: null },
-  fullDay: { type: Boolean ,default: false},
+  isCompleted: { type: Boolean ,default: false},
   
 });
 
@@ -21,7 +21,6 @@ const AttendanceEntrySchema: Schema = new Schema({
 const EmployeeAttendanceSchema: Schema = new Schema({
   employeeId: { type: mongoose.Types.ObjectId, ref: 'Employee', required: true }, // Reference to the employee
   attendance: { type: [AttendanceEntrySchema] }, // Array of attendance records
-  currentStatus: { type: String, enum :["checkIn", "checkOut","marked","notMarked"] , default: "notMarked"},
 });
 
 // Create the Employee Attendance model
