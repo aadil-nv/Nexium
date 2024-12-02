@@ -27,6 +27,7 @@ export interface IDepartment {
     isActive: boolean; // New prop to track the active status
     isVerified: boolean; // New prop for verification status
     isBlocked: boolean; // New prop to check if the manager is blocked
+    managerId: string;
   }
 
   

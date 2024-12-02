@@ -30,10 +30,10 @@ export default class ManagerService implements IManagerService {
         const rabbitMQMessager = new RabbitMQMessager();
         await rabbitMQMessager.init();
 
-        // Validate the incoming manager data
+
         this.validateManagerData(data);
 
-        // Fetch the business owner data to verify existence and get company details
+ 
         const businessOwnerData = await this._managerRepository.findById(businessOwnerId);
         if (!businessOwnerData) throw new Error("Business owner not found");
 
@@ -173,4 +173,15 @@ export default class ManagerService implements IManagerService {
       throw error;
     }
   }
+
+  async blockManager(businessOwnerId: string, managerData: any): Promise<any> {
+    try {
+      // Pass managerData as-is to the repository, allowing it to handle the toggling
+      return await this._managerRepository.blockManager(businessOwnerId, managerData);
+    } catch (error) {
+      console.error("Error toggling manager block status:", error);
+      throw error;
+    }
+  }
+  
 }

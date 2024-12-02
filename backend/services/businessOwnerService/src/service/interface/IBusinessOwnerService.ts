@@ -7,11 +7,12 @@ export default interface IBusinessOwnerService {
     setNewAccessToken(decoded: any): Promise<string>;
     addSubscription(subscriptionData: any): Promise<any>;
     
-    getPersonalDetails(refreshToken:string):Promise<IPersonalDetailsDTO>
-    getCompanyDetails(refreshToken:string):Promise<ICompanyDetailsDTO>
-    getAddress(refreshToken:string):Promise<IAddressDTO>
-    getDocuments(refreshToken:string):Promise<IDocumentsDTO>
-    updatePersonalDetails(refreshToken: string, data: any): Promise<IResponseDTO>;
-    uploadImages(refreshToken: string, file: any): Promise<IResponseDTO>;
+    getPersonalDetails(businessOwnerId:string):Promise<IPersonalDetailsDTO>
+    getCompanyDetails(businessOwnerId:string):Promise<ICompanyDetailsDTO>
+    getAddress(businessOwnerId:string):Promise<IAddressDTO>
+    getDocuments(businessOwnerId:string):Promise<IDocumentsDTO>
+    updatePersonalDetails(businessOwnerId: string, data: any): Promise<IResponseDTO>;
+    uploadImages(businessOwnerId: string, file: any): Promise<IResponseDTO>;
+    uploadLogo(businessOwnerId: string, file: any): Promise<IResponseDTO>;
 
 }

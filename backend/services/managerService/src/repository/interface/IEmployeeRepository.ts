@@ -1,4 +1,4 @@
-import IEmployee from "entities/employeeEntities";
+import IEmployee from "../../entities/employeeEntities";
 import BaseRepository from "../../repository/implementation/baseRepository";
 import { IEmployeesDTO } from "dto/IEmployeesDTO";
 

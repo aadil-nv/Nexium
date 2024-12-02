@@ -114,6 +114,28 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
       throw new Error('Could not update personal details.');
     }
   }
+
+  async uploadLogo(businessOwnerId: string, filePath: string): Promise<IBusinessOwnerDocument> {
+    console.log("Data received:-->>>>>>", filePath);
+    
+    try {
+      const result = await this._businessOwnerModel.findByIdAndUpdate(
+        businessOwnerId,
+        { $set: { 'companyDetails.companyLogo': filePath } }, // Save the file path
+        { new: true }
+      );
+  
+      if (!result) {
+        throw new Error(`No business owner found with ID: ${businessOwnerId}`);
+      }
+  
+      console.log("Updated personal details:", result);
+      return result;
+    } catch (error) {
+      console.error('Error updating personal details:', error);
+      throw new Error('Could not update personal details.');
+    }
+  }
   
  
 }

@@ -17,7 +17,7 @@ businessOwnerRouter.get('/get-Documents', authenticateToken, (req, res, next) =>
 
 
 businessOwnerRouter.post('/upload-images', authenticateToken,uploadMiddleware,  (req, res, next) => businessOwnerController.uploadImages(req, res));
-
+businessOwnerRouter.post('/upload-logo', authenticateToken,uploadMiddleware, (req, res, next) => businessOwnerController.uploadLogo(req, res));
 
 businessOwnerRouter.patch('/update-personaldetailes', authenticateToken, (req, res, next) => businessOwnerController.updatePersonalDetails(req, res));
 

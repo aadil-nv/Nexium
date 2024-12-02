@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import IEmployeeController from "../interface/IEmployeeController";
 import IEmployeeService from "../../service/interface/IEmployeeService";
 import { inject, injectable } from "inversify";
+import { CustomRequest } from "../../middlewares/authMiddleware";
 
 @injectable()
 export default class EmployeeController implements IEmployeeController {
@@ -11,10 +12,10 @@ export default class EmployeeController implements IEmployeeController {
     this._employeeService = employeeService;
   }
 
-  async getProfile(req: Request, res: Response): Promise<Response> {
+  async getProfile(req: CustomRequest, res: Response): Promise<Response> {
     try {
-      const companyId = (req as any).user?.updatedCompany._id;
-      const employeeId = (req as any).user?.updatedEmployee._id;
+      const companyId = req.user?.updatedCompany._id;
+      const employeeId = req.user?.updatedEmployee._id;
 
       await this._employeeService.getProfile(employeeId, companyId);
       return res.status(201).json({ message: "Attendance added successfully!" });

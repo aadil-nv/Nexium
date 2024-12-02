@@ -19,8 +19,7 @@ if (!fs.existsSync(logDirectory)) {
   fs.mkdirSync(logDirectory);
 }
 
-
-//dfoisdhfoisdhikofhosjikadhnfkksdjbfjkasbdkfasdasdsadasdasd
+// dasdasdasdasdaskofhosjik
 
 const accessLogStream = createStream('access.log', {
   interval: '1d',

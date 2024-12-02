@@ -1,29 +1,34 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { inject, injectable } from "inversify";
 import IBusinessOwnerController from "../interface/IBusinessOwnerController";
 import IBusinessOwnerService from "../../service/interface/IBusinessOwnerService";
+import { CustomRequest } from "../../middlewares/authMiddleware";
 
 @injectable()
 export default class BusinessOwnerController implements IBusinessOwnerController {
-  private _businessOwnerService: IBusinessOwnerService;
+  constructor(@inject("IBusinessOwnerService") private _businessOwnerService: IBusinessOwnerService) {}
 
-  constructor(@inject("IBusinessOwnerService") businessOwnerService: IBusinessOwnerService) {
-    this._businessOwnerService = businessOwnerService;
+  // Helper function to handle response
+  private handleResponse(res: Response, status: number, success: boolean, message: string, data?: any) {
+    if (success) {
+      return res.status(status).json({ success, data });
+    } else {
+      return res.status(status).json({ success, message });
+    }
   }
 
-  async setNewAccessToken(req: Request, res: Response): Promise<Response> {
-    console.log("hitting set new access token---------------------------");
-    
-    console.log("Received request body:", req.cookies);
-    
-    try {
-      const refreshToken = req.cookies.refreshToken;
-      console.log(`refreshToken: ${refreshToken}`);
-      
-      if (!refreshToken) return res.status(400).json({ message: 'Refresh token missing.' });
+  // Helper function to get businessOwnerId
+  private getBusinessOwnerId(req: CustomRequest) {
+    return req.user?.businessOwnerData?._id;
+  }
 
+  async setNewAccessToken(req: CustomRequest, res: Response): Promise<Response> {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return this.handleResponse(res, 400, false, 'Refresh token missing.');
+
+    try {
       const newAccessToken = await this._businessOwnerService.setNewAccessToken(refreshToken);
-      if (!newAccessToken) return res.status(401).json({ message: 'Failed to generate new access token.' });
+      if (!newAccessToken) return this.handleResponse(res, 401, false, 'Failed to generate new access token.');
 
       res.cookie('accessToken', newAccessToken, {
         httpOnly: true,
@@ -32,145 +37,99 @@ export default class BusinessOwnerController implements IBusinessOwnerController
         sameSite: 'strict',
       });
 
-      return res.status(200).json({ accessToken: newAccessToken });
-    } catch (error) {
-      return res.status(500).json({ error: 'Failed to generate new access token.' });
+      return this.handleResponse(res, 200, true, 'Access token generated', { accessToken: newAccessToken });
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to generate new access token.');
     }
   }
 
-  async logout(req: Request, res: Response): Promise<Response> {
+  async logout(req: CustomRequest, res: Response): Promise<Response> {
     try {
       res.clearCookie('accessToken');
       res.clearCookie('refreshToken');
-      return res.status(200).json({ message: 'Logout successful' });
-    } catch (error) {
-      return res.status(500).json({ error: 'Logout failed' });
+      return this.handleResponse(res, 200, true, 'Logout successful');
+    } catch {
+      return this.handleResponse(res, 500, false, 'Logout failed');
     }
   }
 
-  async getPersonalDetails(req: Request, res: Response): Promise<Response> {
+  async getPersonalDetails(req: CustomRequest, res: Response): Promise<Response> {
     try {
-      const refreshToken = req.cookies.refreshToken;
-  
-      if (!refreshToken) {
-        return res.status(400).json({ message: "Refresh token not provided" });
-      }
-  
-      const result = await this._businessOwnerService.getPersonalDetails(refreshToken);
-  
-      return res.status(200).json({ success: true, data: result });
-    } catch (error) {
-      console.error("Error in getPersonalDetails:", error);
-      return res.status(500).json({ success: false, message: "Failed to retrieve personal details" });
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.getPersonalDetails(businessOwnerId);
+      return this.handleResponse(res, 200, true, 'Personal details fetched', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to retrieve personal details');
     }
   }
 
-  async getCompanyDetails(req: Request, res: Response): Promise<Response> {
-   try {
-    const refreshToken = req.cookies.refreshToken;
-
-    if (!refreshToken) {
-      return res.status(400).json({ message: "Refresh token not provided" });
-    }
-
-    const result = await this._businessOwnerService.getCompanyDetails(refreshToken);
-
-    return res.status(200).json({ success: true, data: result });
-    
-   } catch (error) {
-    console.error("Error in getCompanyDetails:", error);
-    return res.status(500).json({ success: false, message: "Failed to retrieve company details" });
-   }
-  }
-
-  async getAddress(req: Request, res: Response): Promise<Response> {
+  async getCompanyDetails(req: CustomRequest, res: Response): Promise<Response> {
     try {
-      const refreshToken = req.cookies.refreshToken;
-
-      if (!refreshToken) {
-        return res.status(400).json({ message: "Refresh token not provided" });
-      }
-
-      const result = await this._businessOwnerService.getAddress(refreshToken);
-      return res.status(200).json({ success: true, data: result });
-
-    } catch (error) {
-      console.error("Error in getAddress:", error);
-      return res.status(500).json({ success: false, message: "Failed to retrieve address" });
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.getCompanyDetails(businessOwnerId);
+      return this.handleResponse(res, 200, true, 'Company details fetched', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to retrieve company details');
     }
-
   }
 
-  async getDocuments(req: Request, res: Response): Promise<Response> {
+  async getAddress(req: CustomRequest, res: Response): Promise<Response> {
     try {
-      const refreshToken = req.cookies.refreshToken;
-
-      if (!refreshToken) {
-        return res.status(400).json({ message: "Refresh token not provided" });
-      }
-
-      const result = await this._businessOwnerService.getDocuments(refreshToken);
-
-      return res.status(200).json({ success: true, data: result });
-    } catch (error) {
-      console.error("Error in getDocuments:", error);
-      return res.status(500).json({ success: false, message: "Failed to retrieve documents" });
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.getAddress(businessOwnerId);
+      return this.handleResponse(res, 200, true, 'Address fetched', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to retrieve address');
     }
   }
 
-  async updatePersonalDetails(req: Request, res: Response): Promise<Response> {
-  console.log("Received request body:", req.body);
-  console.log("<>+++++++++++++++++++++++++++++++++++++++++++++");
-  try {
-    const refreshToken = req.cookies.refreshToken;
-    const data =req.body
-    console.log("Data received:", data);
-    
-    if (!refreshToken) {
-      return res.status(400).json({ message: "Refresh token not provided" });
-    }
-
-    const result = await this._businessOwnerService.updatePersonalDetails(refreshToken, data);
-    console.log("Result:=================================>", result);
-    
-    return res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    console.error("Error in updatePersonalDetails:", error);
-    return res.status(500).json({ success: false, message: "Failed to update personal details" });
-  }
-  }
-  
-
-  async uploadImages(req: Request, res: Response): Promise<Response> {
+  async getDocuments(req: CustomRequest, res: Response): Promise<Response> {
     try {
-      const refreshToken = req.cookies.refreshToken;
-  
-      if (!refreshToken) {
-        console.error('No refresh token provided');
-        return res.status(400).json({ message: 'Refresh token not provided' });
-      }
-  
-      // Log the file information
-      console.log('Uploaded file:', req.file);
-  
-      if (!req.file) {
-        console.error('File is missing in request');
-        return res.status(400).json({ message: 'No file uploaded' });
-      }
-  
-      // Call the service to upload the file to S3
-      const result = await this._businessOwnerService.uploadImages(
-        refreshToken,
-        req.file // Pass the file object
-      );
-  
-      return res.status(200).json({ success: true, data: result });
-    } catch (error) {
-      console.error('Error in uploadImages:', error);
-      return res.status(500).json({ success: false, message: 'Failed to upload image' });
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.getDocuments(businessOwnerId);
+      return this.handleResponse(res, 200, true, 'Documents fetched', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to retrieve documents');
     }
   }
-  
 
-  
+  async updatePersonalDetails(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      const data = req.body;
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.updatePersonalDetails(businessOwnerId, data);
+      return this.handleResponse(res, 200, true, 'Personal details updated', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to update personal details');
+    }
+  }
+
+  async uploadImages(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      if (!req.file) return this.handleResponse(res, 400, false, 'No file uploaded');
+      const result = await this._businessOwnerService.uploadImages(businessOwnerId, req.file);
+      return this.handleResponse(res, 200, true, 'Image uploaded', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to upload image');
+    }
+  }
+
+  async uploadLogo(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      if (!req.file) return this.handleResponse(res, 400, false, 'No file uploaded');
+      const result = await this._businessOwnerService.uploadLogo(businessOwnerId, req.file);
+      return this.handleResponse(res, 200, true, 'Logo uploaded', result.data);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to upload logo');
+    }
+  }
 }

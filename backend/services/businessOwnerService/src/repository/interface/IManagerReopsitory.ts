@@ -7,4 +7,5 @@ export default interface IManagerRepository extends BaseRepository<IManager> {  
     getAllManagers(businessOwnerId: string): Promise<IManager[]>;
     findById(id: string): Promise<IBusinessOwnerDocument>;
     findByEmail(businessOwnerId: string,emailId: string,): Promise<IManager | null>;   
+    blockManager(businessOwnerId: string, managerData: IManager): Promise<any>;
 }

@@ -19,7 +19,7 @@ export default class BaseRepository<T extends Document> implements IBaseReposito
             console.log(`Repository calling ----------------`.bgBlue,filter.employeeId);
             console.log(`Repository calling ----------------`.bgYellow,this.model);
             
-            const document = await this.model.findOne({_id: filter.employeeId}).exec();
+            const document = await this.model.findOne({employeeId: filter.employeeId}).exec();
             console.log("DOCUMENTIS ",document);
             
             return document; 

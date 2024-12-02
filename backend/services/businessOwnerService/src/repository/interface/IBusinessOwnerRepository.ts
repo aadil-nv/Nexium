@@ -7,4 +7,5 @@ export default interface IBusinessOwnerRepository extends BaseRepository<IBusine
     getDetails(businessOwnerId: string): Promise<IBusinessOwnerDocument>
     updateDetails(businessOwnerId: string, data: any): Promise<IBusinessOwnerDocument>
     uploadImages(businessOwnerId: string, file: any): Promise<IBusinessOwnerDocument>
+    uploadLogo(businessOwnerId: string, file: any): Promise<IBusinessOwnerDocument>
 }

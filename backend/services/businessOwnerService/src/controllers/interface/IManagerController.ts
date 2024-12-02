@@ -1,8 +1,10 @@
 
 import { Request, Response } from "express";
+import { CustomRequest } from "../../middlewares/authMiddleware";
 
 export default interface IManagerController {
-  getAllManagers(req: Request, res: Response): Promise<any>;
-  addManagers(req: any, res: any): Promise<any>;
+  getAllManagers(req: CustomRequest, res: Response): Promise<any>;
+  addManagers(req: CustomRequest, res: Response): Promise<any>;
+  blockManager(req: CustomRequest, res: Response): Promise<any>;
 
 }

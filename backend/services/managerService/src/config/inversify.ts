@@ -26,6 +26,14 @@ import EmployeeService from "../service/implementation/employeeService";  // Ens
 import EmployeeController from "../controllers/implementation/employeeController";  // Ensure correct import
 import  EmployeeModel  from "../models/employeeModel";
 
+import IOnboardingController from "../controllers/interface/IOnboardingController";
+import IOnboardingService from "../service/interface/IOnboardingService";
+import IOnboardingRepository from "../repository/interface/IOnboardingRepository";
+import OnboardingRepository from "../repository/implementation/onboardingRepository";  // Ensure correct import
+import OnboardingService from "../service/implementation/onboardingService";  // Ensure correct import
+import OnboardingController from "../controllers/implementation/onboardingController";  // Ensure correct import
+
+
 
 
 const container = new Container();
@@ -47,6 +55,11 @@ container.bind<typeof DepartmentModel>("DepartmentModel").toConstantValue(Depart
 container.bind<IEmployeeController>("IEmployeeController").to(EmployeeController);
 container.bind<IEmployeeRepository>("IEmployeeRepository").to(EmployeeRepository);
 container.bind<IEmployeeService>("IEmployeeService").to(EmployeeService);
+
+
+container.bind<IOnboardingController>("IOnboardingController").to(OnboardingController);
+container.bind<IOnboardingRepository>("IOnboardingRepository").to(OnboardingRepository);
+container.bind<IOnboardingService>("IOnboardingService").to(OnboardingService);
 
 container.bind<typeof EmployeeModel>("EmployeeModel").toConstantValue(EmployeeModel);
 

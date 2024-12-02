@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { CustomRequest } from "../../middlewares/authMiddleware";
 export default interface IEmployeeController {
-    getProfile(req:Request, res:Response): Promise<any>;
+    getProfile(req:CustomRequest, res:Response): Promise<any>;
 }

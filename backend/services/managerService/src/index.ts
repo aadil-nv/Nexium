@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import managerRoutes from './routes/managerRouter';
 import departmentRoutes from './routes/departmentRouter';
 import employeeRoutes from './routes/employeeRouter';
+import onboardingRoutes from './routes/onboardingRouter';
 import "colors"
 
 const app = express();
@@ -27,6 +28,7 @@ app.get('/', (req, res) => {
 app.use('/api/manager', managerRoutes);
 app.use('/api/department', departmentRoutes);
 app.use('/api/employee', employeeRoutes);
+app.use('/api/onboarding', onboardingRoutes);
 
 app.listen(PORT, () => {
   console.log(`managerService on http://localhost:${PORT}`.bgBlue.bold);

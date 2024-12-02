@@ -4,4 +4,6 @@ export default interface IAttendanceController {
     fetchAttendance(req: Request, res: Response): Promise<Response>;
     markCheckin(req :CustomRequest, res: Response): Promise<Response>;
     markCheckout(req :CustomRequest, res: Response): Promise<Response>;
+    fetchApprovedLeaves(req :CustomRequest, res: Response): Promise<Response>;
+    applyLeave(req :CustomRequest, res: Response): Promise<Response>;
 }

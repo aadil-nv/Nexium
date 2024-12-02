@@ -13,7 +13,7 @@ const AttendanceEntrySchema: Schema = new Schema({
   hours: { type: Number ,default: 0},
   leaveType: { type: String, default: null },
   reason: { type: String, default: null },
-  isCompleted: { type: Boolean ,default: false},
+  leaveStatus: { type: String ,enum:["Pending","Approved","Rejected","null"] ,default: "null"},
   
 });
 

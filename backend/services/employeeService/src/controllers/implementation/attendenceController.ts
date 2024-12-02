@@ -65,6 +65,41 @@ export default class AttendenceController implements IAttendanceController{
         }
     }
 
+    async fetchApprovedLeaves(req: CustomRequest, res: Response): Promise<Response> {
+        try {
+            const employeeId = req.user?.employeeData?._id;
+            console.log("employee id from controller========>", employeeId);
+            console.log("req body from controller========>", req.body);
+            
+            if(!employeeId) return res.status(401).json({ message: "Access denied. No token provided" });
+            
+            const leaves = await this.attendanceService.fetchApprovedLeaves(employeeId);
+            return res.status(200).json(leaves);
+            
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: "Internal server error" });
+        }
+    }
+
+    async  applyLeave(req: CustomRequest, res: Response): Promise<Response> {
+        console.log(`"hitted add apply leave----------------------------------->>>"`.bgMagenta);
+        
+        try {
+            const employeeId = req.user?.employeeData?._id;
+            console.log("employee id from controller========>", employeeId);
+            console.log("req body from controller========>", req.body);
+            
+            if(!employeeId) return res.status(401).json({ message: "Access denied. No token provided" });
+            
+            const leaves = await this.attendanceService.applyLeave(req.body, employeeId);
+            return res.status(200).json(leaves);
+            
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({ error: "Internal server error" });
+        }
+    }
 
 
 }

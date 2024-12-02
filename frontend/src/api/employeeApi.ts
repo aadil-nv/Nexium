@@ -26,6 +26,7 @@ export const markCheckIn = async (checkInData) => {
 export const markCheckOut = async (checkOutData) => {
   try {
     const response = await employeeInstance.post("/employee/api/attendance/mark-checkout", checkOutData);
+    console.log("response==>=>=>",response.data);
     return response.data;
   } catch (error) {
     console.error("Error marking checkout:", error);

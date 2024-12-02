@@ -1,30 +1,28 @@
-import React, { useState, useEffect } from 'react'; 
-import { Form, Input, Skeleton, Button, Upload, Row, Col } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Input, Button, Upload, Row, Col, message, Spin } from 'antd';
 import { FiRefreshCcw } from "react-icons/fi";
 import { UploadOutlined } from '@ant-design/icons';
-import useTheme from '../../hooks/useTheme'; // Assuming this hook provides themeColor
+import useTheme from '../../hooks/useTheme'; 
 import useAuth from '../../hooks/useAuth';
-import { fetchCompanyDetails } from '../../api/businessOwnerApi'; // Import the API function
+import { fetchCompanyDetails } from '../../api/businessOwnerApi'; 
+import { businessOwnerInstance } from '../../services/businessOwnerInstance';
 
 export default function CompanyDetails() {
-  const [loading, setLoading] = useState(true);
-  const [companyDetails, setCompanyDetails] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true); // State for loading, with correct type
+  const [companyDetails, setCompanyDetails] = useState<any>(null); // State for company details
   const [logo, setLogo] = useState<string>('https://avatar.iran.liara.run/public/boy?username=Ash');
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [logoLoading, setLogoLoading] = useState<boolean>(false); // State for logo loading
   const { themeColor } = useTheme();
-  const { businessOwner, employee, manager, superAdmin } = useAuth();
+  const { businessOwner } = useAuth();
   const isBusinessOwner = businessOwner.isAuthenticated;
-  const isManager = manager.isAuthenticated;
-  const isEmployee = employee.isAuthenticated;
-  const isSuperAdmin = superAdmin.isAuthenticated;
-  const isActiveUser = isBusinessOwner || isManager || isEmployee || isSuperAdmin;
 
-  // Fetch company details from API
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await fetchCompanyDetails(isBusinessOwner);
-        
+
+        console.log("Company Details:", data);
         if (data) {
           setCompanyDetails(data);
           setLogo(data.companyLogoUrl);
@@ -36,24 +34,45 @@ export default function CompanyDetails() {
       }
     };
     fetchData();
-  }, [isBusinessOwner]); // Only re-fetch if isBusinessOwner changes
+  }, [isBusinessOwner]);
 
   const handleUpdate = (values: any) => {
     console.log("Updated Data:", values);
     setIsEditing(false);
   };
 
-  const handleLogoChange = (info: any) => {
-    if (info.fileList.length > 0) {
-      const file = info.fileList[0].originFileObj;
-      const reader = new FileReader();
-      reader.onloadend = () => setLogo(reader.result as string);
-      reader.readAsDataURL(file);
+  const handleLogoChange = async (file: File) => {
+    if (!file) {
+      message.error('No file selected.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      setLogoLoading(true); // Set logo loading state to true
+      const response = await businessOwnerInstance.post('/businessOwner/api/business-owner/upload-logo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (response.status === 200) {
+        console.log('Logo uploaded successfully:', response.data.data);
+        setLogo(response.data.data); // Update logo URL
+        message.success('Logo updated successfully!');
+      } else {
+        message.error('Failed to update logo.');
+      }
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      message.error('Error uploading logo.');
+    } finally {
+      setLogoLoading(false); // Set logo loading state to false
     }
   };
 
   if (loading) {
-    return <Skeleton active />;
+    return <Spin size="large" />;
   }
 
   if (!companyDetails) {
@@ -73,22 +92,27 @@ export default function CompanyDetails() {
         {/* Logo Section */}
         <Col xs={24} sm={6} md={6} lg={6}>
           <div style={{ textAlign: 'center' }}>
-            <img
-              src={logo}
-              alt="Company Logo"
-              style={{
-                width: '100%',
-                height: 'auto',
-                borderRadius: '50%',
-                objectFit: 'cover',
-                marginBottom: '10px',
-              }}
-            />
+            <Spin spinning={logoLoading} size="small">
+              <img
+                src={logo}
+                alt="Company Logo"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  borderRadius: '70%',
+                  objectFit: 'fill',
+                  marginBottom: '10px',
+                }}
+              />
+            </Spin>
             <Upload
-              customRequest={() => {}}
-              showUploadList={false}
-              onChange={handleLogoChange}
               accept="image/*"
+              listType="picture"
+              showUploadList={false}
+              beforeUpload={(file) => {
+                handleLogoChange(file);  // Correct file handling
+                return false;
+              }}
             >
               <Button
                 type="default"

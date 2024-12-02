@@ -18,11 +18,14 @@ type IAttendance = {
   leaveType?: string | null;
   reason?: string | null;
   isCompleted?: boolean;
+  leaveStatus?: string;
+  _id: string;
 };
 
 type ICurrentStatus = {
   attendance: IAttendance[];
   currentStatus: "notMarked" | "marked" | "checkIn" | "checkout";
+  employeeId: string;
 };
 
 export default function AttendanceCard() {
@@ -39,6 +42,7 @@ export default function AttendanceCard() {
   const [currentDayStatus, setCurrentDayStatus] = useState<ICurrentStatus>({
     attendance: [],
     currentStatus: "notMarked",
+    employeeId: "",
   });
 
   useEffect(() => {
@@ -49,7 +53,7 @@ export default function AttendanceCard() {
           setCurrentDayStatus(fetchedData);
           setAttendanceData(fetchedData.attendance);
         } else {
-          setCurrentDayStatus({ attendance: [], currentStatus: "notMarked" });
+          setCurrentDayStatus({ attendance: [], currentStatus: "notMarked", employeeId: "" });
           setAttendanceData([]);
         }
       } catch (error) {
@@ -133,6 +137,8 @@ export default function AttendanceCard() {
     (attendance) => attendance.date === new Date().toISOString().split("T")[0]
   );
   const currentStatus = currentAttendance?.status;
+  const employeeId = currentDayStatus?.employeeId;
+  console.log("xxxxxxxxxxxxxxx", employeeId);
 
   return (
     <motion.div className="p-6 bg-white shadow-lg rounded-lg mt-6 max-w-4xl mx-auto sm:p-4">
@@ -167,7 +173,10 @@ export default function AttendanceCard() {
       {attendanceData.length === 0 ? (
         <Empty description="No Data Found" />
       ) : (
-        <AttendanceHistory attendanceData={filteredData} />
+        <AttendanceHistory
+          attendanceData={filteredData}
+          updateAttendanceData={(data: IAttendance[]) => setAttendanceData(data)} // Pass the function to update attendance data
+        />
       )}
 
       <div className="flex justify-between mt-4">

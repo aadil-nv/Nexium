@@ -8,7 +8,7 @@ export interface IAttendanceEntry {
     hours: number;
     leaveType?: string | null;
     reason?: string | null;
-    isCompleted: boolean;
+    leaveStatus?: "Pending"|"Approved"|"Rejected"|"null"
 }
 
 export interface IEmployeeAttendance extends Document {

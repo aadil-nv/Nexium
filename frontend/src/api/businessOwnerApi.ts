@@ -76,7 +76,7 @@ export const fetchBusinessOwnerAddress = async () => {
 export const uploadProfileImage = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
-
+ 
   try {
     const { data } = await businessOwnerInstance.post(
       '/businessOwner/api/business-owner/upload-images',

@@ -8,6 +8,7 @@ const managerController = container.get<IManagerController>('IManagerController'
 
 managerRouter.post('/add-managers', authenticateToken, (req, res, next) => managerController.addManagers(req, res));
 managerRouter.get('/get-managers',authenticateToken, (req, res, next) => managerController.getAllManagers(req, res));
+managerRouter.patch('/block-manager', authenticateToken, (req, res, next) => managerController.blockManager(req, res));
 
 
 

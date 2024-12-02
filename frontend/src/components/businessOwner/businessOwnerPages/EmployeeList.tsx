@@ -109,6 +109,7 @@ export default function EmployeeList() {
                 isActive={manager.isActive}
                 isBlocked={manager.isBlocked}
                 isVerified={manager.isVerified}
+                managerId={manager._id}
               />
             </motion.div>
           ))

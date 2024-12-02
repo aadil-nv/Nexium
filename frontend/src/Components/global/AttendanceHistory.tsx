@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FaCheckCircle, FaClock, FaCalendarAlt } from "react-icons/fa";
-import { Empty, Modal, Input, Select } from "antd"; // Importing Modal, Input, and Select from Ant Design
+import { Empty } from "antd";
+import LeaveModal from "../ui/LeaveModal";
 
 type Attendance = {
   date: string;
@@ -11,46 +11,38 @@ type Attendance = {
   hours: number;
   leaveType?: string | null;
   reason?: string | null;
-  isCompleted?: boolean;
+  leaveStatus?: string;
+  _id: string;
 };
 
-type AttendanceHistoryProps = {
-  attendanceData: Attendance[];
-};
+type AttendanceHistoryProps = { attendanceData: Attendance[]; updateAttendanceData: (updatedData: Attendance[]) => void };
 
-const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ attendanceData }) => {
-  const [attendanceStatus, setAttendanceStatus] = useState<string[]>(attendanceData.map((att) => att.status));
+const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ attendanceData, updateAttendanceData }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedAttendance, setSelectedAttendance] = useState<Attendance | null>(null);
-  const [leaveType, setLeaveType] = useState<string | null>(null);
-  const [reason, setReason] = useState<string>("");
-
-  const handleMakeLeave = (index: number) => {
-    const updatedStatus = [...attendanceStatus];
-    updatedStatus[index] = "Leave"; // Mark as "Leave"
-    setAttendanceStatus(updatedStatus);
-    setSelectedAttendance(attendanceData[index]);
-    setModalVisible(true);
-  };
-
-  const handleLeaveSubmit = () => {
-    if (selectedAttendance) {
-      selectedAttendance.leaveType = leaveType;
-      selectedAttendance.reason = reason;
-      setModalVisible(false);
-      setLeaveType(null);
-      setReason("");
-    }
-  };
 
   const handleProgressBarWidth = (checkInTime: string | undefined, checkOutTime: string): string => {
     if (!checkInTime) return "0%";
     const checkIn = new Date(`1970-01-01T${checkInTime}:00`);
     const checkOut = new Date(`1970-01-01T${checkOutTime}:00`);
-    const totalTime = checkOut.getTime() - checkIn.getTime();
-    const currentTime = new Date().getTime() - checkIn.getTime();
-    const progress = (currentTime / totalTime) * 100;
-    return `${Math.min(progress, 100)}%`;
+    return `${Math.min(((new Date().getTime() - checkIn.getTime()) / (checkOut.getTime() - checkIn.getTime())) * 100, 100)}%`;
+  };
+
+  const handleMakeLeave = (index: number) => {
+    setSelectedAttendance(attendanceData[index]);
+    setModalVisible(true);
+  };
+
+  const handleLeaveSubmit = (leaveType: string, reason: string) => {
+    if (selectedAttendance) {
+      const updatedData = attendanceData.map(att =>
+        att._id === selectedAttendance._id ? { ...att, leaveType, reason, leaveStatus: "Pending" } : att
+      );
+      // Update attendanceData in parent component
+      updateAttendanceData(updatedData);
+      setSelectedAttendance(null);
+      setModalVisible(false);
+    }
   };
 
   return (
@@ -59,24 +51,10 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ attendanceData })
         <Empty description="No data found" />
       ) : (
         attendanceData.map((attendance, index) => (
-          <motion.div
-            key={index}
-            className="mb-3 p-3 bg-gray-100 rounded-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div key={index} className="mb-3 p-3 bg-gray-100 rounded-lg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
             <div className="flex flex-wrap justify-between mb-1 text-xs">
               <span className="text-gray-800">{attendance.date}</span>
-              <span
-                className={`text-xs ${
-                  attendance.status === "Present"
-                    ? "text-green-500"
-                    : attendance.status === "Absent"
-                    ? "text-red-500"
-                    : "text-yellow-500"
-                }`}
-              >
+              <span className={`text-xs ${attendance.status === "Present" ? "text-green-500" : attendance.status === "Absent" ? "text-red-500" : "text-yellow-500"}`}>
                 {attendance.status}
               </span>
             </div>
@@ -96,55 +74,36 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ attendanceData })
 
             {/* Time Progress Bar */}
             <div className="w-full bg-gray-300 h-2 rounded-full mt-2">
-              <div
-                className="h-2 bg-blue-500 rounded-full"
-                style={{ width: handleProgressBarWidth(attendance.checkInTime, attendance.checkOutTime) }}
-              ></div>
+              <div className="h-2 bg-blue-500 rounded-full" style={{ width: handleProgressBarWidth(attendance.checkInTime, attendance.checkOutTime) }}></div>
             </div>
 
-            {/* Button to mark as Leave if status is Absent */}
-            {attendance.status === "Absent" && (
-              <button
-                onClick={() => handleMakeLeave(index)}
-                className="mt-2 px-4 py-1 bg-yellow-500 text-white text-xs rounded-md hover:bg-yellow-400"
-              >
-                Mark as Leave
+            {/* Leave buttons */}
+            {attendance.status === "Absent" && attendance.leaveStatus === null && (
+              <button onClick={() => handleMakeLeave(index)} className="mt-2 px-4 py-1 bg-yellow-500 text-white text-xs rounded-md hover:bg-yellow-400">
+                <i className="fas fa-calendar-day mr-2"></i>Mark as Leave
+              </button>
+            )}
+
+            {attendance.leaveStatus && (
+              <button className={`mt-2 px-4 py-1 text-white text-xs rounded-md ${attendance.leaveStatus === "Pending" ? "bg-blue-500 hover:bg-blue-400" : attendance.leaveStatus === "Approved" ? "bg-green-500 hover:bg-green-400" : "bg-red-500 hover:bg-red-400"}`}>
+                <i className={`fas fa-${attendance.leaveStatus === "Approved" ? "check-circle" : attendance.leaveStatus === "Rejected" ? "times-circle" : "clock"} mr-2`}></i>
+                {attendance.leaveStatus === "Approved" ? "Leave Approved" : attendance.leaveStatus === "Rejected" ? "Leave Rejected" : "Leave Marked"}
               </button>
             )}
           </motion.div>
         ))
       )}
 
-      {/* Modal for Leave Details */}
-      <Modal
-        title={`Leave for ${selectedAttendance?.date}`}
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        onOk={handleLeaveSubmit}
-      >
-        <div className="flex flex-col gap-2">
-          <div className="text-sm">Date: {selectedAttendance?.date}</div>
-          <div className="text-sm">Attendance Status: {selectedAttendance?.status}</div>
-          
-          <Select
-            value={leaveType}
-            onChange={setLeaveType}
-            placeholder="Select Leave Type"
-            className="mb-2"
-          >
-            <Select.Option value="Sick">Sick</Select.Option>
-            <Select.Option value="Vacation">Vacation</Select.Option>
-            <Select.Option value="Other">Other</Select.Option>
-          </Select>
-
-          <Input
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Enter Reason"
-            className="mb-2"
-          />
-        </div>
-      </Modal>
+      {/* Leave Modal */}
+      {selectedAttendance && (
+        <LeaveModal
+          isVisible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onSubmit={handleLeaveSubmit}
+          attendanceId={selectedAttendance._id}
+          date={selectedAttendance.date}
+        />
+      )}
     </div>
   );
 };

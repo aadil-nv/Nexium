@@ -5,4 +5,5 @@ export default interface IManagerService {
     getAllManagers(businessOwnerId: string): Promise<any[]>
     addManagers(businessOwnerId: string, data: any): Promise<IResponseDTO>
     sendOfferLetter(managerName: string, managerCredentials: any ,managerEmail: string): Promise<any>
+    blockManager(businessOwnerId: string, data: any): Promise<IResponseDTO>
 }
