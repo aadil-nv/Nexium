@@ -57,10 +57,7 @@ export default class BusinessOwnerConsumer implements IConsumer {
   // Process business owner data
   private async _processBusinessOwnerData(data: any) {
     try {
-      if (data.businessOwnerData) {
-        await this._businessOwnerService.registerBusinessOwner(data.businessOwnerData);
-      }
-
+    
       if (data.subscriptionData) {
         await this._businessOwnerService.addSubscription(data.subscriptionData);
       }

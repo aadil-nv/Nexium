@@ -23,6 +23,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
 
     async updateIsBlocked(req: Request, res: Response): Promise<Response> {
+        
         const { id } = req.params;
         try {
             const updatedBusinessOwner = await this._businessOwnerService.updateIsBlocked(id);

@@ -7,6 +7,7 @@ export default interface IManagerService extends BaseRepository<IManager> {
     findOtpByEmail(email: string): Promise<any | null>;
     updateVerificationStatus(email: string): Promise<any>;
     updateOtp(email: string, otp: string): Promise<IUpdateOtpResult>;
+    blockManager( managerData: any): Promise<any>;
 }
 
 export interface IUpdateOtpResult {

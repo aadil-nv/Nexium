@@ -6,6 +6,10 @@ import generateOfferLetter from "../../utils/generateOfferLetter";
 import nodemailer from "nodemailer";
 import RabbitMQMessager from "../../events/rabbitmq/implementation/producer";
 import { IResponseDTO } from "dto/businessOwnerDTO";
+import { IManager } from "entities/managerEntity";
+import { uploadTosS3 } from '../../middlewares/multer-s3';
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -173,15 +177,138 @@ export default class ManagerService implements IManagerService {
       throw error;
     }
   }
-
-  async blockManager(businessOwnerId: string, managerData: any): Promise<any> {
+  async blockManager(businessOwnerId: string, managerData: any): Promise<IResponseDTO> {
     try {
-      // Pass managerData as-is to the repository, allowing it to handle the toggling
-      return await this._managerRepository.blockManager(businessOwnerId, managerData);
-    } catch (error) {
+      const rabbitMQMessager = new RabbitMQMessager();
+        await rabbitMQMessager.init();
+      
+      if (!businessOwnerId || !managerData) {
+        throw new Error("Invalid input: Business Owner ID or Manager Data is missing.");
+      }
+  
+      const response = await this._managerRepository.blockManager(businessOwnerId, managerData);
+      
+      if (!response) {
+        throw new Error("Failed to update manager status. Please try again.");
+      }
+  
+      console.log("Manager block status toggled:", response);
+      console.log("1111111111111111111111111111111111");
+      
+      
+      await rabbitMQMessager.sendToMultipleQueues({ isBlocked:managerData });
+      console.log("222222222222222222222222222222222222");
+  
+      return {
+        success: true,
+        message: "Manager block status toggled successfully!",
+      };
+    } catch (error: any) {
       console.error("Error toggling manager block status:", error);
+  
+      // Add specific error names for handling in the controller
+      if (error.message.includes("Invalid input")) {
+        error.name = "ValidationError";
+      } else if (error.message.includes("Failed to update")) {
+        error.name = "DatabaseError";
+      } else {
+        error.name = "InternalServerError";
+      }
+  
       throw error;
     }
+  }
+
+  async getManager(businessOwnerId: string, managerId: string): Promise<IManager> {
+    try {
+     const reult = await this._managerRepository.findManagerById(managerId ,businessOwnerId);
+     if(!reult){
+      throw new Error("Manager not found");
+     }
+     return reult;
+    } catch (error) {
+      console.error("Error fetching manager:", error);
+      throw error;
+    }
+  }
+
+  async updatePersonalInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager> {
+    try {
+     const result = await this._managerRepository.updatePersonalInfo(businessOwnerId, managerId, data);
+
+      console.log("Updated manager:======================", result);
+      
+     if(!result){
+      throw new Error("Manager not found");
+     }
+     return result;
+    } catch (error) {
+      console.error("Error updating manager:", error);
+      throw error;
+    }
+  }
+
+  async updateProfessionalInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager> {
+    try {
+     const result = await this._managerRepository.updateProfessionalInfo(businessOwnerId, managerId, data);
+     if(!result){
+      throw new Error("Manager not found");
+     }
+     return result;
+    } catch (error) {
+      console.error("Error updating manager:", error);
+      throw error;
+    }
+  }
+  
+  async updateAddressInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager> {
+    try {
+     const result = await this._managerRepository.updateAddressInfo(businessOwnerId, managerId, data);
+     if(!result){
+      throw new Error("Manager not found");
+     }
+
+     console.log("Updated manager:=======address===============", result);
+     
+     return result;
+    } catch (error) {
+      console.error("Error updating manager:", error);
+      throw error;
+    }
+  }
+
+  async uploadProfilePic(businessOwnerId: string, managerId: string, file: Express.Multer.File): Promise<IManager> {
+    try {
+      const imageUrl = await this.uploadFileToS3(businessOwnerId,managerId, file, "companyLogo");
+     const result = await this._managerRepository.uploadProfilePic(businessOwnerId, managerId, imageUrl);
+     if(!result){
+      throw new Error("Manager not found");
+     }
+     return result;
+    } catch (error) {
+      console.error("Error updating manager:", error);
+      throw error;
+    }
+  }
+
+  private async uploadFileToS3(businessOwnerId: string,managerId: string, file: Express.Multer.File, fileType: "profileImage" | "companyLogo") {
+    const result = await this.getDetails(businessOwnerId ,managerId);
+    const existingFile = fileType === "profileImage" ? result.personalDetails.profilePicture : result.companyDetails.companyLogo;
+
+    if (existingFile) {
+      const s3Client = new S3Client({ region: 'eu-north-1' });
+      await s3Client.send(new DeleteObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, Key: existingFile }));
+    }
+
+    const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
+    return `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileUrl}`;
+  }
+
+  private async getDetails(businessOwnerId: string , managerId : string) {
+    if (!businessOwnerId) throw new Error("Business owner ID not found");
+    const result = await this._managerRepository.getDetails(businessOwnerId ,managerId);
+    if (!result) throw new Error("Business owner not found");
+    return result;
   }
   
 }

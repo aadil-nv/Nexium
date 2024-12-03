@@ -109,5 +109,8 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
       throw new Error(error instanceof Error ? error.message : "Unknown error occurred.");
     }
   }
+
+  
+
   
 }  

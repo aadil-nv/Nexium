@@ -27,7 +27,8 @@ export default function LandingLoginPage() {
   
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+  
+    // Validate form inputs
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
       const errors = result.error.format();
@@ -37,31 +38,43 @@ export default function LandingLoginPage() {
       });
       return;
     }
-
+  
     setErrors({});
-
+    setCredentialError('');
+  
     try {
-      const data = await loginBusinessOwnerAPI(email, password); 
-      console.log("data ",data);
-      
-
+      const data = await loginBusinessOwnerAPI(email, password);
+      console.log("Login response data:", data);
+  
       if (data.success) {
+        // Successful login
         dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
         navigate('/business-owner/dashboard');
       } else {
-        setCredentialError(data.message || 'Invalid email or password');
+        // Handle specific cases for blocked or unverified accounts
+        if (data.message === "Account is blocked. Please contact admin") {
+          setCredentialError(data.message); // Display block message
+        } else if (data.isVerified === false && data.email) {
+          // Navigate to OTP page if account is unverified
+          navigate('/otp', { state: { email: data.email } });
+        } else {
+          // General error message
+          setCredentialError(data.message || 'Invalid email or password');
+        }
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'Invalid email or password';
-      setCredentialError(errorMessage);
-
-      if (error.response?.data?.email) {
+      const errorMessage = error.response?.data?.message || 'Something went wrong during login';
+      console.error("Error during login:", error);
+  
+      if (error.response?.data?.email && error.response?.data?.isVerified === false) {
+        // Navigate to OTP page if unverified and email is provided
         navigate('/otp', { state: { email: error.response.data.email } });
       } else {
-        console.error('Error during login:', error);
+        setCredentialError(errorMessage); // Display any other server error message
       }
     }
   };
+  
 
   const inputBorderStyle = (field: string) => {
     if (errors[field]) return 'border-red-500';

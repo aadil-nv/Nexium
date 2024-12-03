@@ -47,6 +47,22 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
           return null;
         }
       }
+
+      async findIsBlocked(managerId: string): Promise<boolean | null> {
+
+        console.log("Finding manager by ID in repository layer:", managerId);
+        
+        try {
+          const manager = await managerModel.findById(managerId);
+          if (!manager) {
+            return null; // Return null if no manager is found
+          }
+          return manager.isBlocked ?? null; // Return isBlocked status or null if not available
+        } catch (error) {
+          console.error("Error finding manager by ID:", error);
+          return null; // Return null in case of any error
+        }
+      }
       
       
 }

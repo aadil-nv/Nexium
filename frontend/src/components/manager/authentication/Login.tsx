@@ -26,11 +26,17 @@ export default function ManagerLogin() {
     try {
       const responseData = await managerLogin(data);
       console.log("responseData", responseData);
+
+      if(responseData.success === false ) {
+        setLoginError(responseData.message);
+        return
+      }
       
-      if (responseData.success === false) {
+      if (responseData.success === false &&  responseData.isVerified === false) {
         navigate("/manager-otpvalidation", { state: { email: responseData.email, message: responseData.message } });
         return;
       }
+
       // If verified, proceed to dashboard
       dispatch(login({ role: "manager", isAuthenticated: true }));
             navigate("/manager/dashboard");
@@ -59,7 +65,7 @@ export default function ManagerLogin() {
               <div className="w-24 h-1 bg-green-500 mx-auto mt-4 mb-4"></div>
             </div>
 
-            <form onSubmit={handleSubmit(handleLogin)} className="flex flex-col items-center w-full max-w-xs">
+            <form onSubmit={handleSubmit(handleLogin)} className="flex flex-col items-center w-full max-w-xs ml-20">
               {/* Email Input */}
               <motion.div
                 className={`bg-gray-100 w-full p-2 flex items-center mb-3 rounded-md border-2

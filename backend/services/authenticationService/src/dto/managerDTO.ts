@@ -14,3 +14,9 @@ export  interface ILoginDTO{
     email?:string;
     isVerified?:boolean
 }
+
+export interface IResponseDTO{
+    success: boolean;
+    message: string;
+    data?: any;
+  }

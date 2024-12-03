@@ -40,12 +40,13 @@ export const updatePlanStatus = async (planId: string, newStatus: boolean) => {
 export const fetchBusinessOwners = async (): Promise<IBusinessOwner[]> => {
   try {
     const { data: responseData } = await superAdminInstance.get("/superAdmin/api/businessowner/find-all-companies");
+    console.log("responce data is =========>",responseData.businessOwners);
     return responseData.businessOwners.map((owner: any) => ({
       id: owner._id,
-      name: owner.name,
-      email: owner.email,
-      phone: owner.phone,
-      registrationNumber: owner.registrationNumber,
+      name: owner.companyDetails.companyName,
+      email: owner.personalDetails.email,
+      phone: owner.personalDetails.phone,
+   
       subscriptionStatus: owner.subscription?.status || "N/A",
       isBlocked: owner.isBlocked,
     }));

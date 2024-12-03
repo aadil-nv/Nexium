@@ -11,4 +11,5 @@ superAdminRouter.post("/refresh-token",authenticateToken,(req,res,next)=>superAd
 superAdminRouter.post('/logout',authenticateToken,(req,res,next)=>superAdminController.logout(req,res));
 
 
+
 export default superAdminRouter;

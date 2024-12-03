@@ -6,4 +6,9 @@ export default interface IManagerService {
     addManagers(businessOwnerId: string, data: any): Promise<IResponseDTO>
     sendOfferLetter(managerName: string, managerCredentials: any ,managerEmail: string): Promise<any>
     blockManager(businessOwnerId: string, data: any): Promise<IResponseDTO>
+    getManager(businessOwnerId: string, managerId: string): Promise<IManager>
+    updatePersonalInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager>
+    updateProfessionalInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager>
+    updateAddressInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager>
+    uploadProfilePic(businessOwnerId: string, managerId: string, file: any): Promise<IManager>
 }

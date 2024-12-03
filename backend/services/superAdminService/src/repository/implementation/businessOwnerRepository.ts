@@ -14,15 +14,7 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
     }
   }
 
-  async registerBusinessOwner(businessOwnerData: string): Promise<any> {
-    try {
-      const newBusinessOwner = new businessOwnerModel(businessOwnerData);
-      return await newBusinessOwner.save();
-    } catch (error) {
-      console.error("Error registering business owner:", error);
-      throw new Error("Could not register business owner.");
-    }
-  }
+
 
   async updateIsBlocked(id: string): Promise<any> {
     try {

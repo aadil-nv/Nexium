@@ -15,7 +15,6 @@ const BusinessOwnersList: React.FC = () => {
     { accessorKey: "name", header: "Name" },
     { accessorKey: "email", header: "Email" },
     { accessorKey: "phone", header: "Phone" },
-    { accessorKey: "registrationNumber", header: "Registration Number" },
     { accessorKey: "subscriptionStatus", header: "Subscription Status" },
     {
       id: "action",

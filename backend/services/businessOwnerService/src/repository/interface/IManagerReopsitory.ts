@@ -8,4 +8,10 @@ export default interface IManagerRepository extends BaseRepository<IManager> {  
     findById(id: string): Promise<IBusinessOwnerDocument>;
     findByEmail(businessOwnerId: string,emailId: string,): Promise<IManager | null>;   
     blockManager(businessOwnerId: string, managerData: IManager): Promise<any>;
+    findManagerById(managerId: string, businessOwnerId: string): Promise<IManager |null>;
+    updatePersonalInfo(businessOwnerId: string, managerId: string, data: IManager): Promise<IManager | null>;
+    updateProfessionalInfo(businessOwnerId: string, managerId: string, data: IManager): Promise<IManager | null>;
+    updateAddressInfo(businessOwnerId: string, managerId: string, data: IManager): Promise<IManager | null>;
+    getDetails(businessOwnerId: string ,managerId : string): Promise<IManager>;
+    uploadProfilePic(businessOwnerId: string,managerId: string, filePath: string ): Promise<IManager>;
 }

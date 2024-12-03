@@ -10,13 +10,7 @@ import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 export default class BusinessOwnerService implements IBusinessOwnerService {
   constructor(@inject("IBusinessOwnerRepository") private _businessOwnerRepository: IBusinessOwnerRepository) {}
 
-  async registerBusinessOwner(businessOwnerData: string): Promise<any> {
-    try {
-      return await this._businessOwnerRepository.registerBusinessOwner(businessOwnerData);
-    } catch (error) {
-      throw new Error("Error while registering business owner");
-    }
-  }
+ 
 
   async setNewAccessToken(refreshToken: string): Promise<string> {
     try {
@@ -51,6 +45,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       const profileImageUrl = result.personalDetails.profileImage
         ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result.personalDetails.profileImage}`
         : "";
+
+
       return {
         businessOwnerName: result.personalDetails.businessOwnerName,
         email: result.personalDetails.email,
@@ -101,6 +97,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
   }
 
   async updatePersonalDetails(businessOwnerId: string, data: any): Promise<IResponseDTO> {
+
     try {
       await this._businessOwnerRepository.updateDetails(businessOwnerId, data);
       return { success: true, message: "Personal details updated successfully!" };
@@ -119,14 +116,19 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
 
     const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
-    return `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileUrl}`;
+    console.log("==============fileUrl======================", fileUrl);
+    
+    return fileUrl
   }
 
   async uploadImages(businessOwnerId: string, file: Express.Multer.File): Promise<any> {
     try {
       const imageUrl = await this.uploadFileToS3(businessOwnerId, file, "profileImage");
+
+      console.log("==============imageUrl======================", imageUrl);
+      
       await this._businessOwnerRepository.uploadImages(businessOwnerId, imageUrl);
-      return { success: true, message: 'Image uploaded successfully!', data: { imageUrl } };
+      return { success: true, message: 'Image uploaded successfully!', data: { imageUrl:`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${imageUrl}` } };
     } catch (error:any) {
       throw new Error(error.message || 'Error while uploading image');
     }
@@ -141,4 +143,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       throw new Error(error.message || 'Error while uploading logo');
     }
   }
+
+  
 }

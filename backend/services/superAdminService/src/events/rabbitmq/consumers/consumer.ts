@@ -37,7 +37,7 @@ export default class BusinessOwnerConsumer implements IConsumer {
         if (msg !== null) {
           try {
             const data = JSON.parse(msg.content.toString());
-            console.log('Received businessOwner data:', data);
+            console.log('rebiit data sented in fanout:', data);
 
 
             // if (data.businessOwnerData) {

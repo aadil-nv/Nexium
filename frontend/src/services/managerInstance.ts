@@ -79,6 +79,10 @@ managerInstance.interceptors.response.use(
       originalRequest._retry = true;
       return handleTokenRefresh(originalRequest);
     }
+    if (error.response?.status === 403 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      return handleTokenError(error);
+    }
 
     return Promise.reject(error);
   }

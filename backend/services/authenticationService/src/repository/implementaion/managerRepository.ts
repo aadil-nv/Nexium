@@ -86,6 +86,54 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
           };
         }
       }
+
+
+      async blockManager(managerData: any): Promise<any> {
+        try {
+          console.log("ManagerData received:", managerData);
+      
+          // Validate that managerData contains an email and isBlocked property
+          if (!managerData.managerId || managerData.isBlocked === undefined) {
+            throw new Error("Invalid input: email or isBlocked status is missing.");
+          }
+      console.log("11111111111111111111111111111111");
+    
+      
+          // Find the manager by email
+          const existingManager = await this._managerModel.findOne({ _id: managerData.managerId });
+          console.log("22222222222222222222222222");
+     
+          if (!existingManager) {
+            console.error("Manager not found:", managerData.managerId);
+            throw new Error("Manager not found.");
+          }
+          console.log("333333333333333333333333333333333333333");
+      
+      
+          // Log current and desired isBlocked status
+          console.log("Current isBlocked status:", existingManager.isBlocked);
+          console.log("Requested isBlocked status:", managerData.isBlocked);
+      
+          // Update the isBlocked status in the database
+          const updateResult = await this._managerModel.updateOne(
+            { _id: managerData.managerId },
+            { $set: { isBlocked: managerData.isBlocked } }
+          );
+          console.log("4444444444444444444444444444444");
+       
+      
+          // Log the update result
+          console.log("Update result:", updateResult);
+      
+          return updateResult;
+          console.log("555555555555555555555555555555");
+     
+        } catch (error) {
+          // Log error for debugging
+          console.error("Error updating manager block status:", error);
+          throw error;
+        }
+      }
       
       
 }

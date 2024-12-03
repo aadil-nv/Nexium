@@ -6,4 +6,5 @@ export default interface IManagerService {
     sendOtp(email: string, otp: string): Promise<void>;
     validateOtp(email: string, otp: string): Promise<any>;
     resendOtp(email: string): Promise<IValidateOtpDTO>;
+    blockManager(managerData: any): Promise<any>;
 }

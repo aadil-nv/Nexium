@@ -17,6 +17,7 @@ import businessOwnerModel from "../../model/businessOwnerModel";
 
 
 
+
 const stripe = new Stripe(process.env.STRIP_SECRET_KEY as string);
 
 const transporter = nodemailer.createTransport({
@@ -34,41 +35,63 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
 
     async login(email: string, password: string): Promise<ITokenResponse> {
-        console.log("hitttttttttttttttttttttttttttttttttttttttttttttt");
-        
+        console.log("Login service called...");
+      
         try {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
-
-            if (!emailRegex.test(email)) return { success: false, message: "Invalid email format" };
-            if (!passwordRegex.test(password)) return { success: false, message: "Password must be at least 6 characters, 1 uppercase letter, 1 number, and 1 special character" };
-    
-            const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
-            console.log("businessOwnerData-->", businessOwnerData);
-            
-            if (!businessOwnerData || !(await bcrypt.compare(password, businessOwnerData.personalDetails.password))) 
-                return { success: false, message: "Invalid email or password" };
-            if (!businessOwnerData.isVerified) {
-                const otp = generateOtp();
-                console.log("otp-->", otp);
-                
-                await this.sendOtp(businessOwnerData.personalDetails.email, otp);
-                console.log("email-->", businessOwnerData.personalDetails.email);
-                
-                return { success: false, message: "Account not verified. Check your email for OTP", isVerified:false, email: businessOwnerData.personalDetails.email };
-            }
-    
-            const accessToken = generateAccessToken({ businessOwnerData });
-            const refreshToken = generateRefreshToken({ businessOwnerData });
-             
-    
-            return { success: true, message: "Login successful", accessToken, refreshToken, isVerified: true, email: businessOwnerData.personalDetails.email };
-    
+          // Validate email and password format
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+      
+          if (!emailRegex.test(email)) return { success: false, message: "Invalid email format" };
+          if (!passwordRegex.test(password)) return { success: false, message: "Password must be at least 6 characters, 1 uppercase letter, 1 number, and 1 special character" };
+      
+          // Find the business owner by email
+          const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+          console.log("businessOwnerData-->", businessOwnerData);
+      
+          if (!businessOwnerData || !(await bcrypt.compare(password, businessOwnerData.personalDetails.password))) {
+            return { success: false, message: "Invalid email or password" };
+          }
+      
+          // Check if the account is blocked
+          if (businessOwnerData.isBlocked) {
+            console.log("Account is blocked");
+            return { success: false, message: "Account is blocked. Please contact admin", isVerified: false };
+          }
+      
+          // Check if the account is verified
+          if (!businessOwnerData.isVerified) {
+            console.log("Account is not verified");
+            const otp = generateOtp();
+            await this.sendOtp(businessOwnerData.personalDetails.email, otp);
+      
+            return { 
+              success: false, 
+              message: "Account not verified. Check your email for OTP", 
+              isVerified: false, 
+              email: businessOwnerData.personalDetails.email 
+            };
+          }
+      
+          // Generate and return tokens if login is successful
+          const accessToken = generateAccessToken({ businessOwnerData });
+          const refreshToken = generateRefreshToken({ businessOwnerData });
+      
+          return { 
+            success: true, 
+            message: "Login successful", 
+            accessToken, 
+            refreshToken, 
+            isVerified: true, 
+            email: businessOwnerData.personalDetails.email 
+          };
+      
         } catch (error) {
-            console.error("Login error:", error);
-            return { success: false, message: "An error occurred during login" };
+          console.error("Login error:", error);
+          return { success: false, message: "An error occurred during login" };
         }
-    }
+      }
+      
     
     async register(businessOwnerData: Partial<IBusinessOwner>): Promise<ITokenResponse> {
         console.log(`businessOwner data ---`, businessOwnerData);
@@ -341,7 +364,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             return { success: false, message: 'Failed to update password. Please try again later.' };
         }
     }
-    
+
+  
 }
 
 

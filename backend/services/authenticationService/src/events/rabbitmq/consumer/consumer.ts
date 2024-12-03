@@ -43,6 +43,9 @@ export default class Consumer implements IConsumer {
             if (data.managerData) {
               await this._managerService.addManager(data.managerData);
             }
+            if(data.isBlocked){
+              await this._managerService.blockManager(data.isBlocked);
+            }
 
             // Check for employeeData and send it to the employee service
             if (data.employeeData) {

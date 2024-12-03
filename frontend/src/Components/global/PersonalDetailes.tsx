@@ -26,13 +26,18 @@ export default function PersonalDetails() {
       setManagerLoading(true);
       fetchManagerPersonalInfo()
         .then((data) => {
+
+         
           setManagerInfo(data);
           setProfileImage(data.profileImage || '');
         })
+        
         .catch((error) => console.error('Error fetching manager personal info:', error))
         .finally(() => setManagerLoading(false));
     }
   }, [manager]);
+
+
 
   const handleProfilePictureChange = async (file: File) => {
     setImageLoading(true);
@@ -68,6 +73,9 @@ export default function PersonalDetails() {
   if (!displayDetails) {
     return <Empty description="No Personal Details Available" />;
   }
+
+  console.log("managerInfo",managerInfo)
+  console.log("profuleImage",profileImage)
 
   return (
     <div className="flex flex-col md:flex-row">

@@ -5,6 +5,7 @@ import ISuperAdminService from '../../service/interfaces/ISuperAdminService';
 import { inject, injectable } from "inversify";
 import { HttpStatusCode } from "../../utils/statusCodes";
 
+
 @injectable()
 export default class SuperAdminController implements ISuperAdminController {
     constructor(@inject("ISuperAdminService") private _adminService: ISuperAdminService) {}

@@ -3,7 +3,6 @@ import {IPersonalDetailsDTO ,ICompanyDetailsDTO,IAddressDTO,IDocumentsDTO,IRespo
 
 export default interface IBusinessOwnerService {
 
-    registerBusinessOwner(businessOwnerData: string): Promise<any>;
     setNewAccessToken(decoded: any): Promise<string>;
     addSubscription(subscriptionData: any): Promise<any>;
     

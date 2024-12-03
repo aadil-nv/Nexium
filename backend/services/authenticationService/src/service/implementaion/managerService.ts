@@ -6,7 +6,7 @@ import { generateAccessToken, generateRefreshToken } from "../../utils/businessO
 import generateOtp from "../../utils/otp";
 import nodemailer from "nodemailer";
 import OtpModel from "../../model/otpModel";
-import { ILoginDTO, IValidateOtpDTO } from "../../dto/managerDTO";
+import { ILoginDTO, IResponseDTO, IValidateOtpDTO } from "../../dto/managerDTO";
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -38,10 +38,21 @@ export default class ManagerService implements IManagerService {
 
       const managerData = await this._managerRepository.findByCredentialEmail(email);
     
+      console.log("managerData",managerData);
       
       if (!managerData || managerData.managerCredentials.companyPassword !== password) throw new Error('Invalid email or password');
+      console.log("11111111111111111111111111111111111111111");
+
+      
+
+      if(managerData.isBlocked) {
+        console.log("2222222222222222222222222222222222222");
+      
+        return {  message: "Account is blocked. Please contact admin", isVerified:false, email: managerData.personalDetails.email };
+      }
 
       if (!managerData.isVerified) {
+        console.log("333333333333333333333333333333333333");
         const otp = generateOtp();
         await this.sendOtp(managerData.personalDetails.email, otp);
 
@@ -52,7 +63,6 @@ export default class ManagerService implements IManagerService {
           email: managerData.personalDetails.email,
         };
       }
-        console.log("managerData",managerData);
         
       const accessToken = generateAccessToken({  managerData });
       const refreshToken = generateRefreshToken({ managerData });
@@ -162,4 +172,45 @@ export default class ManagerService implements IManagerService {
     await this.sendOtp(email, otp);
     return { success: true, message: 'OTP has been sent successfully.' };
 }
+
+async blockManager(managerData: any): Promise<IResponseDTO> {
+  try {
+ 
+    
+    if ( !managerData) {
+      throw new Error("Invalid input: Business Owner ID or Manager Data is missing.");
+    }
+
+    const response = await this._managerRepository.blockManager( managerData);
+    
+    if (!response) {
+      throw new Error("Failed to update manager status. Please try again.");
+    }
+
+    console.log("Manager block status toggled:", response);
+    console.log("1111111111111111111111111111111111");
+    
+  
+    console.log("222222222222222222222222222222222222");
+
+    return {
+      success: true,
+      message: "Manager block status toggled successfully!",
+    };
+  } catch (error: any) {
+    console.error("Error toggling manager block status:", error);
+
+    // Add specific error names for handling in the controller
+    if (error.message.includes("Invalid input")) {
+      error.name = "ValidationError";
+    } else if (error.message.includes("Failed to update")) {
+      error.name = "DatabaseError";
+    } else {
+      error.name = "InternalServerError";
+    }
+
+    throw error;
+  }
+}
+
 }

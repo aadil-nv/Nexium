@@ -14,18 +14,6 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     super(_businessOwnerModel);
   }
 
-  async registerBusinessOwner(businessOwnerData: any): Promise<IBusinessOwnerDocument> {
-    console.log(`businessowner data: ${businessOwnerData}`.bgWhite);
-    
-    try {
-      const newBusinessOwner = new this._businessOwnerModel(businessOwnerData);
-      return await newBusinessOwner.save();
-    } catch (error) {
-      console.error("Error registering business owner:", error);
-      throw new Error("Could not register business owner.");
-    }
-  }
-
   async addSubscription(subscriptionData: any): Promise<any> {
     try {
       const subscription = new SubscriptionModel(subscriptionData);
@@ -136,6 +124,20 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
       throw new Error('Could not update personal details.');
     }
   }
-  
+  async findIsBlocked(businessOwnerId: string): Promise<boolean | null> {
+
+    console.log("Finding businessOwner by ID in repository layer:", businessOwnerId);
+    
+    try {
+      const businessOwner = await this._businessOwnerModel.findById(businessOwnerId);
+      if (!businessOwner) {
+        return null; // Return null if no businessOwner is found
+      }
+      return businessOwner.isBlocked ?? null; // Return isBlocked status or null if not available
+    } catch (error) {
+      console.error("Error finding businessOwner by ID:", error);
+      return null; // Return null in case of any error
+    }
+  }
  
 }

@@ -5,7 +5,6 @@ export interface IBusinessOwner {
   name: string;
   email: string;
   phone: string;
-  registrationNumber: string;
   subscriptionStatus: string;
   isBlocked: boolean;
 }

@@ -19,13 +19,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
   }
 
-  async registerBusinessOwner(businessOwnerData: string): Promise<any> {
-    try {
-      return await this._businessOwnerRepository.registerBusinessOwner(businessOwnerData);
-    } catch (error) {
-      throw new Error("Error while registering business owner");
-    }
-  }
 
   async updateIsBlocked(id: string): Promise<any> {
     try {

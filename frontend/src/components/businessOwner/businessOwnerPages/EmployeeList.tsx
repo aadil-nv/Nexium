@@ -32,7 +32,7 @@ export default function EmployeeList() {
   }, []);
 
   const filteredManagers = managers.filter(manager =>
-    manager.personalDetails.managerName.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    (manager.personalDetails.managerName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) &&
     (roleFilter === 'All' || manager.role === roleFilter)
   );
 

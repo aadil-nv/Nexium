@@ -18,4 +18,5 @@ businessOwnerRouter.patch('/update-isblocked/:id', (req, res, next) => businessO
 businessOwnerRouter.post('/refresh-token', (req, res) => businessOwnerController.setNewAccessToken(req, res));
 
 
+
 export default businessOwnerRouter;
