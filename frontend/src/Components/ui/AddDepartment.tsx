@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button, Modal, Form, Input, Select } from 'antd';
 import { toast } from 'react-toastify'; // For notifications
 import axios from 'axios'; // Axios for API requests
+import { managerInstance } from '../../services/managerInstance';
 
 const { Option } = Select;
 
@@ -13,7 +14,7 @@ const AddDepartmentModal: React.FC<{
 }> = ({ isVisible, onClose, onAddDepartment, employees }) => {
   const [form] = Form.useForm();
   
-  console.log("employees", employees);
+  console.log("employees8888888888888888888", employees);
 
   const handleSubmit = async (values: any) => {
     console.log('Form values:', values);  // Log the form values to ensure it's correct
@@ -45,8 +46,8 @@ const AddDepartmentModal: React.FC<{
       }
 
       // Make the API call to add the department
-      const response = await axios.post(
-        'http://localhost:3000/manager/api/department/add-departments',
+      const response = await managerInstance.post(
+        '/manager/api/department/add-departments',
         {
           departmentName: values.departmentName,
           employees: employeesToAdd,

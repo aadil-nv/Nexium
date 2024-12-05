@@ -5,7 +5,6 @@ import axios from 'axios';
 const apiUrl = import.meta.env.VITE_API_KEY
 
 
-
 export const resendOtp = async (email: string) => {
   try {
     const response = await axios.post(`${apiUrl}/authentication/api/business-owner/resend-otp`, { email });

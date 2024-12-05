@@ -10,4 +10,6 @@ export default interface IManagerController {
     updateManagerPersonalInfo( req: CustomRequest, res: Response): Promise<Response>;
     setNewAccessToken(req: Request, res: Response): Promise<Response> 
     logout(req: Request, res: Response): Promise<Response>
+    updateManagerProfilePicture(req: CustomRequest, res: Response): Promise<Response>
+    getLeaveEmployees(req: CustomRequest, res: Response): Promise<Response>
 }

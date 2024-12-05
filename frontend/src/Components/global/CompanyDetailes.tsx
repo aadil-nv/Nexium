@@ -2,31 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Upload, Row, Col, message, Spin } from 'antd';
 import { FiRefreshCcw } from "react-icons/fi";
 import { UploadOutlined } from '@ant-design/icons';
-import useTheme from '../../hooks/useTheme'; 
+import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
-import { fetchCompanyDetails } from '../../api/businessOwnerApi'; 
+import { fetchCompanyDetails } from '../../api/businessOwnerApi';
 import { businessOwnerInstance } from '../../services/businessOwnerInstance';
 
-export default function CompanyDetails() {
-  const [loading, setLoading] = useState<boolean>(true); // State for loading, with correct type
-  const [companyDetails, setCompanyDetails] = useState<any>(null); // State for company details
-  const [logo, setLogo] = useState<string>('https://avatar.iran.liara.run/public/boy?username=Ash');
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [logoLoading, setLogoLoading] = useState<boolean>(false); // State for logo loading
+// Define the structure of company details
+interface CompanyDetailsType {
+  companyName: string;
+  companyLogo: string;
+  companyRegistrationNumber: string;
+  companyEmail: string;
+  companyWebsite: string;
+
+}
+
+const CompanyDetails = () => {
+  const [loading, setLoading] = useState(true);
+  const [companyDetails, setCompanyDetails] = useState<CompanyDetailsType | null>(null); // Specify the type here
+  const [logo, setLogo] = useState('https://avatar.iran.liara.run/public/boy?username=Ash');
+  const [isEditing, setIsEditing] = useState(false);
+  const [logoLoading, setLogoLoading] = useState(false);
   const { themeColor } = useTheme();
   const { businessOwner } = useAuth();
-  const isBusinessOwner = businessOwner.isAuthenticated;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchCompanyDetails(isBusinessOwner);
+        const data = await fetchCompanyDetails(businessOwner.isAuthenticated);
 
-        console.log("Company Details:", data);
-        if (data) {
-          setCompanyDetails(data);
-          setLogo(data.companyLogoUrl);
-        }
+        setCompanyDetails(data);
+        setLogo(data?.companyLogo);
       } catch (error) {
         console.error('Error fetching company details:', error);
       } finally {
@@ -34,50 +40,54 @@ export default function CompanyDetails() {
       }
     };
     fetchData();
-  }, [isBusinessOwner]);
-
-  const handleUpdate = (values: any) => {
-    console.log("Updated Data:", values);
-    setIsEditing(false);
-  };
+  }, [businessOwner.isAuthenticated]);
 
   const handleLogoChange = async (file: File) => {
-    if (!file) {
-      message.error('No file selected.');
-      return;
-    }
+    if (!file) return message.error('No file selected.');
 
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      setLogoLoading(true); // Set logo loading state to true
+      setLogoLoading(true);
       const response = await businessOwnerInstance.post('/businessOwner/api/business-owner/upload-logo', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       if (response.status === 200) {
-        console.log('Logo uploaded successfully:', response.data.data);
-        setLogo(response.data.data); // Update logo URL
+        setLogo(response.data.data);
         message.success('Logo updated successfully!');
       } else {
         message.error('Failed to update logo.');
       }
     } catch (error) {
-      console.error('Error uploading logo:', error);
       message.error('Error uploading logo.');
     } finally {
-      setLogoLoading(false); // Set logo loading state to false
+      setLogoLoading(false);
     }
   };
 
-  if (loading) {
-    return <Spin size="large" />;
-  }
+  // Function to handle form submission
+  const handleSubmit = async (values: any) => {
+    try {
+      const response = await businessOwnerInstance.patch(
+        '/businessOwner/api/business-owner/update-companydetailes',
+        values
+      );
 
-  if (!companyDetails) {
-    return <div>No data</div>;
-  }
+      if (response.status === 200) {
+        setCompanyDetails(values); // Update state with new company details
+        message.success('Company details updated successfully!');
+      } else {
+        message.error('Failed to update company details.');
+      }
+    } catch (error) {
+      message.error('Error updating company details.');
+    }
+  };
+
+  if (loading) return <Spin size="large" />;
+  if (!companyDetails) return <div>No data</div>;
 
   const fields = [
     { label: 'Company Name', name: 'companyName' },
@@ -110,7 +120,7 @@ export default function CompanyDetails() {
               listType="picture"
               showUploadList={false}
               beforeUpload={(file) => {
-                handleLogoChange(file);  // Correct file handling
+                handleLogoChange(file);
                 return false;
               }}
             >
@@ -127,14 +137,13 @@ export default function CompanyDetails() {
 
         {/* Form to Update Company Details */}
         <Col xs={24} sm={18} md={18} lg={18}>
-          <Form layout="vertical" initialValues={companyDetails} onFinish={handleUpdate}>
+          <Form layout="vertical" initialValues={companyDetails} onFinish={handleSubmit}>
             {fields.map((field) => (
               <Form.Item label={field.label} name={field.name} key={field.name}>
                 <Input
                   defaultValue={isEditing ? companyDetails[field.name] : ""}
                   disabled={!isEditing}
-                  placeholder={!isEditing ? (companyDetails[field.name] || `Enter ${field.label}`) : ""}
-                  className="text-black"
+                  placeholder={!isEditing ? companyDetails[field.name] : ""}
                 />
               </Form.Item>
             ))}
@@ -160,4 +169,6 @@ export default function CompanyDetails() {
       </Row>
     </div>
   );
-}
+};
+
+export default CompanyDetails;

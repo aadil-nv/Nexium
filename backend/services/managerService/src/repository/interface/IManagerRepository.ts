@@ -5,4 +5,7 @@ export default interface IManagerRepository extends BaseRepository<IManager>  {
     getManagers(): Promise<IManager[]>
     updateManagerPersonalInfo(managerId: string, data: any): Promise<IManager | null>
     findIsBlocked(managerId: string): Promise<boolean | null>
+    getDetails(managerId: string): Promise<any>
+    uploadProfilePicture(managerId: string, file: any): Promise<IManager>
+    getLeaveEmployees(managerId: string): Promise<any>
 }

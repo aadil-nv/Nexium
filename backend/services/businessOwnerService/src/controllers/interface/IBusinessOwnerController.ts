@@ -9,6 +9,10 @@ export default interface IBusinessOwnerController {
     getAddress(req:CustomRequest ,res:Response):Promise<Response>
     getDocuments(req:CustomRequest ,res:Response):Promise<Response>
     updatePersonalDetails(req:CustomRequest ,res:Response):Promise<Response>
+    updateCompanyDetails(req:CustomRequest ,res:Response):Promise<Response>
     uploadImages(req:CustomRequest ,res:Response):Promise<Response>
     uploadLogo(req:CustomRequest ,res:Response):Promise<Response>
+    updateAddress(req:CustomRequest ,res:Response):Promise<Response>
+    uploadDocuments(req:CustomRequest ,res:Response):Promise<Response>
+
 }

@@ -24,11 +24,11 @@ export interface ICardProps {
 
  export  interface IEmployee {
     id: string;
-    photo: string;
     name: string;
     email: string;
     position: string;
     isOnline: boolean;
+    profilePicture: string;
   }
   
 export  interface IDepartmentCardProps {

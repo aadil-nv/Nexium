@@ -39,7 +39,7 @@ const managerSchema: Schema<IManager> = new Schema(
     documents: [
       {
         documentName: { type: String, default: "HR Document" },
-        documentUrl: { type: String, match: /^(http|https):\/\/[^ "]+$/ },
+        documentUrl: { type: String },
         uploadedAt: { type: Date, default: Date.now },
       },
     ],

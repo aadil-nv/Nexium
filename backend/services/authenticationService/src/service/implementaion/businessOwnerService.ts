@@ -130,13 +130,23 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
               companyRegistrationNumber: "",
               companyEmail: "",
               companyWebsite: "",
-              documents: {
-                companyIncorporationDocument: "other", // Default to "Other"
-                businessOwnerIdProof: "other", // Default to "Other"
-              },
             },
+            documents: {
+              companyCertificate: [{
+                  documentName: "Company Certificate",
+                  documentUrl: "", // Document URL can be updated later
+                  documentSize: 0, // Placeholder size
+                  uploadedAt: new Date(),
+              }],
+              businessOwnerId: [{
+                  documentName: "Business Owner ID",
+                  documentUrl: "", // Document URL can be updated later
+                  documentSize: 0, // Placeholder size
+                  uploadedAt: new Date(),
+              }],
+          },
             address: {
-              streetAddress:"",
+              street:"",
               city: "",
               state: "",
               postalCode: "",

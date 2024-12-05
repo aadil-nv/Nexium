@@ -5,11 +5,12 @@ import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
 import { fetchBusinessOwnerAddress } from '../../api/businessOwnerApi';
 import { fetchManagerAddress } from '../../api/managerApi';
+import { businessOwnerInstance } from '../../services/businessOwnerInstance';
 
 const Address = () => {
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
-  const [address, setAddress] = useState({street: '', city: '', state: '', country: '', zip: ''});
+  const [address, setAddress] = useState({street: '', city: '', state: '', country: '', postalCode: ''});
 
   const { themeColor } = useTheme();
   const { businessOwner, manager, employee, superAdmin } = useAuth();
@@ -19,8 +20,8 @@ const Address = () => {
     if (businessOwner.isAuthenticated) {
       (async () => {
         try {
-          const { streetAddress, city, state, country, postalCode } = await fetchBusinessOwnerAddress();
-          const mappedData = { street: streetAddress, city, state, country, zip: postalCode };
+          const { street, city, state, country, postalCode } = await fetchBusinessOwnerAddress();
+          const mappedData = { street: street, city, state, country,  postalCode };
           setAddress(mappedData);
           form.setFieldsValue(mappedData);
         } catch (error) {
@@ -30,8 +31,8 @@ const Address = () => {
     }else if(manager.isAuthenticated){
       (async () => {
         try {
-          const { street, city, state, country, zip } = await fetchManagerAddress();
-          const mappedData = { street: street, city, state, country, zip };
+          const { street, city, state, country, postalCode } = await fetchManagerAddress();
+          const mappedData = { street: street, city, state, country, postalCode };
           setAddress(mappedData);
           form.setFieldsValue(mappedData);
         } catch (error) {
@@ -41,12 +42,27 @@ const Address = () => {
     }
   }, [businessOwner.isAuthenticated,manager.isAuthenticated, form]);
 
-  const onFinish = (values: any) => console.log('Form values:', values);
+  const onFinish = async (values: any) => {
+    console.log('Form values:', values);
+    if (businessOwner.isAuthenticated) {
+      try {
+        const response = await businessOwnerInstance.post(
+          "/businessOwner/api/business-owner/update-address",
+          values
+        );
+        console.log('Address updated successfully:', response.data);
+        setIsEditing(false); // Exit edit mode
+        setAddress(values); // Update state with new values
+      } catch (error) {
+        console.error('Error updating address:', error.response?.data || error.message);
+      }
+    }
+  };
 
   return (
     <div className="mt-6">
       <Form form={form} onFinish={onFinish} layout="vertical" className="mt-4">
-        {['street', 'city', 'state', 'country', 'zip'].map(field => (
+        {['street', 'city', 'state', 'country', 'postalCode'].map(field => (
           <Form.Item
             key={field}
             name={field}

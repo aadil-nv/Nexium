@@ -28,15 +28,26 @@ import IConsumer from "../events/rabbitmq/interface/IConsumer";
 import BusinessOwnerConsumer from "../events/rabbitmq/implementation/consumer";
 import businessOwnerModel from "../models/businessOwnerModel";
 import managerModel from "../models/managerModel";
+import  ISubscription  from "../entities/subscriptionEntity";
 
+import subscriptionModel from "../models/subscriptionModel";
+
+import ISubscriptionController from "../controllers/interface/ISubscriptionController";
+import ISubscriptionService from "../service/interface/ISubscriptionService";
+import ISubscriptionRepository from "../repository/interface/ISubscriptionRepository";
+import SubscriptionService from "../service/implementation/subscriptionService";
+import SubscriptionController from "../controllers/implementation/subscriptionController";
+import SubscriptionRepository from "../repository/implementation/subscriptionRepository";
 
 const container =new Container()
 
 container.bind<IBusinessOwnerController>("IBusinessOwnerController").to(BusinessOwnerController)
 container.bind<IBusinessOwnerService>("IBusinessOwnerService").to(BusinessOwnerService)
 container.bind<IBusinessOwnerRepository>("IBusinessOwnerRepository").to(BusinessOwnerRepository)
+
 container.bind<typeof businessOwnerModel>("BusinessOwnerModel").toConstantValue(businessOwnerModel);
 container.bind<typeof managerModel>("managerModel").toConstantValue(managerModel);
+container.bind<typeof subscriptionModel>("subscriptionModel").toConstantValue(subscriptionModel);
 
 
 
@@ -53,6 +64,8 @@ container.bind<IEmployeeRepository>("IEmployeeRepository").to(EmployeeRepository
 container.bind<BusinessOwnerConsumer>("IConsumer").to(BusinessOwnerConsumer);
 
 
-
+container.bind<ISubscriptionController>("ISubscriptionController").to(SubscriptionController);
+container.bind<ISubscriptionService>("ISubscriptionService").to(SubscriptionService);
+container.bind<ISubscriptionRepository>("ISubscriptionRepository").to(SubscriptionRepository);
 
 export default container;

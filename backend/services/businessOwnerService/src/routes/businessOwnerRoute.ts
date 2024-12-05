@@ -13,17 +13,19 @@ const businessOwnerController = container.get<IBusinessOwnerController>("IBusine
 businessOwnerRouter.get('/get-personaldetailes', authenticateToken, (req, res, next) => businessOwnerController.getPersonalDetails(req, res));
 businessOwnerRouter.get('/get-companydetailes', authenticateToken, (req, res, next) => businessOwnerController.getCompanyDetails(req, res));
 businessOwnerRouter.get('/get-address', authenticateToken, (req, res, next) => businessOwnerController.getAddress(req, res));
-businessOwnerRouter.get('/get-Documents', authenticateToken, (req, res, next) => businessOwnerController.getDocuments(req, res));
+businessOwnerRouter.get('/get-documents', authenticateToken, (req, res, next) => businessOwnerController.getDocuments(req, res));
 
 
 businessOwnerRouter.post('/upload-images', authenticateToken,uploadMiddleware,  (req, res, next) => businessOwnerController.uploadImages(req, res));
 businessOwnerRouter.post('/upload-logo', authenticateToken,uploadMiddleware, (req, res, next) => businessOwnerController.uploadLogo(req, res));
-
-businessOwnerRouter.patch('/update-personaldetailes', authenticateToken, (req, res, next) => businessOwnerController.updatePersonalDetails(req, res));
-
-
+businessOwnerRouter.post('/update-address', authenticateToken, (req, res, next) => businessOwnerController.updateAddress(req, res));
+businessOwnerRouter.post('/upload-documents', authenticateToken,uploadMiddleware, (req, res, next) => businessOwnerController.uploadDocuments(req, res));
 businessOwnerRouter.post('/refresh-token',(req, res, next) => businessOwnerController.setNewAccessToken(req, res));
 businessOwnerRouter.post('/logout', (req, res, next) => businessOwnerController.logout(req, res));
+
+businessOwnerRouter.patch('/update-personaldetailes', authenticateToken,uploadMiddleware, (req, res, next) => businessOwnerController.updatePersonalDetails(req, res));
+businessOwnerRouter.patch('/update-companydetailes', authenticateToken, (req, res, next) => businessOwnerController.updateCompanyDetails(req, res));
+
 
 
 export default businessOwnerRouter;

@@ -27,16 +27,25 @@ export default function ManagerLogin() {
       const responseData = await managerLogin(data);
       console.log("responseData", responseData);
 
-      if(responseData.success === false ) {
+      console.log("111111111111111111111111111111111111")
+
+      if(responseData.success === false && responseData.message == "Account is blocked. Please contact admin") {
+        console.log("2222222222222222222222222222222")
+
         setLoginError(responseData.message);
         return
       }
+   
+  
+     
       
       if (responseData.success === false &&  responseData.isVerified === false) {
+        console.log("33333333333333333333333333333333333")
+     
         navigate("/manager-otpvalidation", { state: { email: responseData.email, message: responseData.message } });
         return;
       }
-
+      console.log("444444444444444444444444444444444444")
       // If verified, proceed to dashboard
       dispatch(login({ role: "manager", isAuthenticated: true }));
             navigate("/manager/dashboard");

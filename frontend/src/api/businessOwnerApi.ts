@@ -15,44 +15,42 @@ export const fetchManagers = async () => {
   }
 };
 
-export const usePersonalDetails = (isAuthenticated: boolean) => {
-  const [loading, setLoading] = useState(true);
-  const [personalDetails, setPersonalDetails] = useState<any>(null);
+export const fetchBusinessOwnerPersonalInfo =async () => {
+ console.log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+ try {
+   const response = await businessOwnerInstance.get('/businessOwner/api/business-owner/get-personaldetailes', {
+     headers: {
+       "Content-Type": "application/json",
+      },
+    });
+    console.log("ccccccccccccccccccccccccccccccccccccccccccccc")
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      const fetchPersonalDetails = async () => {
-        try {
-          const response = await businessOwnerInstance.get(
-            '/businessOwner/api/business-owner/get-personaldetailes'
-          );
-          setPersonalDetails(response.data.data);
+
+
+          console.log('Business owner personal details:', response.data.data);
+          return response.data.data
         } catch (error) {
           console.error('Error fetching business owner personal details:', error);
-        } finally {
-          setLoading(false);
         }
-      };
-      fetchPersonalDetails();
-    } else {
-      setLoading(false);
-    }
-  }, [isAuthenticated]);
 
-  return { loading, personalDetails };
-};
+      };
+     
+ 
+
+
+
 export const fetchCompanyDetails = async (isBusinessOwner) => {
   if (isBusinessOwner) {
     try {
       const response = await businessOwnerInstance.get('/businessOwner/api/business-owner/get-companydetailes');
       const data = response.data.data;
       return {
-        companyName: data.companyName || '',
-        companyLogo: data.companyLogo || 'https://example.com/default-logo.png',
+        companyName: data.companyName ,
+        companyLogo: data.companyLogo ,
         companyRegistrationNumber: data.companyRegistrationNumber || '',
         companyEmail: data.companyEmail || '',
         companyWebsite: data.companyWebsite || '',
-        companyLogoUrl: data.companyLogo || 'https://example.com/default-logo.png',
+     
       };
     } catch (error) {
       console.error('Error fetching company details:', error);
@@ -66,6 +64,7 @@ export const fetchCompanyDetails = async (isBusinessOwner) => {
 export const fetchBusinessOwnerAddress = async () => {
   try {
     const response = await businessOwnerInstance.get('/businessOwner/api/business-owner/get-address');
+     console.log("address is from API ==",response)
     return response.data.data;
   } catch (error) {
     console.error('Error fetching business owner address:', error);
@@ -73,7 +72,7 @@ export const fetchBusinessOwnerAddress = async () => {
   }
 };
 
-export const uploadProfileImage = async (file: File): Promise<string> => {
+export const uploadBusinessOwnerProfileImage = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
  

@@ -146,7 +146,7 @@ export default class ManagerController implements IManagerController {
 }
 
   
-async setNewAccessToken(req: Request, res: Response): Promise<Response> {
+  async setNewAccessToken(req: Request, res: Response): Promise<Response> {
   console.log("hitted setNewAccessToken-----------------------------------");
   
   console.log("Cookies received in request:", req.cookies); // Log all cookies
@@ -159,7 +159,7 @@ async setNewAccessToken(req: Request, res: Response): Promise<Response> {
     if (!refreshToken) {
       console.error("Refresh token is missing from cookies.");
       return res.status(400).json({ message: 'Refresh token missing.' });
-    }
+    } 
 
     const newAccessToken = await this._managerService.setNewAccessToken(refreshToken);
     
@@ -184,8 +184,7 @@ async setNewAccessToken(req: Request, res: Response): Promise<Response> {
   }
 }
 
-
-async logout(req: Request, res: Response): Promise<Response> {
+  async logout(req: Request, res: Response): Promise<Response> {
   console.log("hitted logout-----------------------------------");
   
   try {
@@ -197,5 +196,47 @@ async logout(req: Request, res: Response): Promise<Response> {
   }
 }
 
+
+ async updateManagerProfilePicture(req: CustomRequest, res: Response): Promise<Response> {
+
+  console.log(`"***************************************** htted updateManagerProfilePicture"`.bgRed);
+  
+    try {
+      const managerId = req?.user?.managerData?._id;
+      if (!managerId) {
+        return res
+          .status(400)
+          .json({ message: "Business owner ID not provided in cookies" });
+      }
+      const result = await this._managerService.updateManagerProfilePicture(managerId, req.file as Express.Multer.File);
+      return res.status(200).json(result);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to get manager personal info",
+        error,
+      });
+    }
+  }
+
+ async getLeaveEmployees(req: CustomRequest, res: Response): Promise<Response> {
+
+  console.log(`"***************************************** htted getLeaveEmployees"`.bgRed);
+  
+    try {
+      const managerId = req?.user?.managerData?._id;
+      if (!managerId) {
+        return res
+          .status(400)
+          .json({ message: "Business owner ID not provided in cookies" });
+      }
+      const result = await this._managerService.getLeaveEmployees(managerId);
+      return res.status(200).json(result);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to get manager personal info",
+        error,
+      });
+    }
+  }
   
 }

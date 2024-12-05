@@ -10,7 +10,7 @@ export interface ISubscription {
   }
   
 export interface IAddress {
-  streetAddress: string;
+  street: string;
   city: string;
   state: string;
   postalCode: string;
@@ -18,8 +18,15 @@ export interface IAddress {
 }
 
 export interface IDocument {
-  companyIncorporationDocument: CompanyIncorporationDocType;
-  businessOwnerIdProof: BusinessOwnerIDProofType;
+  documentName: string;
+  documentUrl: string;
+  documentSize: number;
+  uploadedAt: Date;
+}
+
+export interface IDocuments {
+  companyCertificate: IDocument[];  // Array of company certificate documents
+  businessOwnerId: IDocument[];     // Array of business owner ID documents
 }
 
 export interface IPersonalDetails {
@@ -44,6 +51,7 @@ export interface IBusinessOwnerDocument extends Document {  // <-- Ensure this e
   _id: Types.ObjectId;
   personalDetails: IPersonalDetails;
   companyDetails: ICompanyDetails;
+  documents: IDocuments[];
   address: IAddress;
   isVerified: boolean;
   isBlocked: boolean;

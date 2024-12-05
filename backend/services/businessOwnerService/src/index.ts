@@ -7,6 +7,7 @@ import connectDB from './config/connectDB';
 import businessOwnerRoutes from './routes/businessOwnerRoute';
 import managerRoutes from './routes/managerRoute';
 import employeeRoutes from './routes/employeeRoute';
+import subscriptionRoutes from './routes/subscriptionRoute';
 import 'colors' ;
 import {connectConsumer} from "./events/rabbitmq/connectConsumer"
 import cookieParser from 'cookie-parser';
@@ -32,6 +33,7 @@ app.get('/', (req, res) => {
 app.use('/api/business-owner', businessOwnerRoutes); 
 app.use('/api/manager', managerRoutes); 
 app.use('/api/employee', employeeRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 connectConsumer();
 

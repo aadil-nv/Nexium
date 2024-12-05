@@ -8,7 +8,7 @@ import { CustomRequest } from "../../middlewares/authMiddleware";
 export default class BusinessOwnerController implements IBusinessOwnerController {
   constructor(@inject("IBusinessOwnerService") private _businessOwnerService: IBusinessOwnerService) {}
 
-  // Helper function to handle response
+
   private handleResponse(res: Response, status: number, success: boolean, message: string, data?: any) {
     if (success) {
       return res.status(status).json({ success, data });
@@ -17,33 +17,40 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
   }
 
-  // Helper function to get businessOwnerId
   private getBusinessOwnerId(req: CustomRequest) {
     return req.user?.businessOwnerData?._id;
   }
 
   async setNewAccessToken(req: CustomRequest, res: Response): Promise<Response> {
+    console.log(`"-----------setNewAccessToken======`.bgRed);
+    
     const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return this.handleResponse(res, 400, false, 'Refresh token missing.');
+
 
     try {
       const newAccessToken = await this._businessOwnerService.setNewAccessToken(refreshToken);
+      console.log("444444444444444444444444444444");
       if (!newAccessToken) return this.handleResponse(res, 401, false, 'Failed to generate new access token.');
+      console.log("5555555555555555555555555555555");
+      console.log("66666666666666666666666666666", newAccessToken.accessToken);
 
-      res.cookie('accessToken', newAccessToken, {
+
+      res.cookie('accessToken', newAccessToken.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         maxAge: 3600000,
         sameSite: 'strict',
       });
 
-      return this.handleResponse(res, 200, true, 'Access token generated', { accessToken: newAccessToken });
+      return this.handleResponse(res, 200, true, 'Access token generated', { accessToken: newAccessToken.accessToken });
     } catch {
       return this.handleResponse(res, 500, false, 'Failed to generate new access token.');
     }
   }
 
   async logout(req: CustomRequest, res: Response): Promise<Response> {
+    console.log(`"-----------logout======`.bgGreen);
+    
     try {
       res.clearCookie('accessToken');
       res.clearCookie('refreshToken');
@@ -109,6 +116,32 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
   }
 
+  async updateCompanyDetails(req: CustomRequest, res: Response): Promise<Response> {
+    console.log("updateCompanyDetails======%%%%%%%%%%%%%%%%%%%%%%");
+    
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      const data = req.body;
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.updateCompanyDetails(businessOwnerId, data);
+      return this.handleResponse(res, 200, true, 'Company details updated', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to update company details');
+    }
+  }
+
+  async updateAddress(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      const data = req.body;
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.updateAddress(businessOwnerId, data);
+      return this.handleResponse(res, 200, true, 'Address updated', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to update address');
+    }
+  }
+
   async uploadImages(req: CustomRequest, res: Response): Promise<Response> {
     try {
       const businessOwnerId = this.getBusinessOwnerId(req);
@@ -132,4 +165,20 @@ export default class BusinessOwnerController implements IBusinessOwnerController
       return this.handleResponse(res, 500, false, 'Failed to upload logo');
     }
   }
+
+  async uploadDocuments(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      const { documentType } = req.body;
+  
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      if (!req.file || !documentType) return this.handleResponse(res, 400, false, 'File or document type missing.');
+  
+      const result = await this._businessOwnerService.uploadDocuments(businessOwnerId, req.file, documentType);
+      return this.handleResponse(res, 200, true, 'Document uploaded successfully', result);
+    } catch (error) {
+      return this.handleResponse(res, 500, false, 'Failed to upload documents');
+    }
+  }
+  
 }

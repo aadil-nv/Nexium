@@ -10,6 +10,7 @@ export interface CustomRequest extends Request {
     businessOwnerData?: {
       _id: string;
       employeeId: string;
+      subscription?: { subscriptionId: string; };
     };
   };
 }

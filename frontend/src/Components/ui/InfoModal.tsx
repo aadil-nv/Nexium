@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Modal, Tabs, Form, Input, Button, message, Spin } from "antd";
 import { EditOutlined } from "@ant-design/icons";
+import axios from "axios";
 import { businessOwnerInstance } from "../../services/businessOwnerInstance";
 
 const { TabPane } = Tabs;
@@ -9,7 +10,7 @@ interface InfoModalProps {
   visible: boolean;
   onClose: () => void;
   managerId: string | null;
-  managerDetails: any;
+  managerDetails: any; // Accept manager details as a prop
 }
 
 const tabConfigurations = [
@@ -34,47 +35,65 @@ const tabConfigurations = [
       { label: "Joining Date", name: "dateOfJoin", placeholder: "Enter your joining date", type: "text" },
     ],
   },
+  {
+    key: "3",
+    tab: "Address",
+    fields: [
+      { label: "Street", name: "street", placeholder: "Enter your street address", type: "text" },
+      { label: "City", name: "city", placeholder: "Enter your city", type: "text" },
+      { label: "Postal Code", name: "postalCode", placeholder: "Enter your postal code", type: "text" },
+      { label: "Country", name: "country", placeholder: "Enter your country", type: "text" },
+      { label: "State", name: "state", placeholder: "Enter your state", type: "text" },
+    ],
+  },
+  {
+    key: "4",
+    tab: "Documents",
+    fields: [
+      { label: "Upload ID", name: "uploadId", placeholder: "", type: "file" },
+      { label: "Upload Proof of Address", name: "uploadAddressProof", placeholder: "", type: "file" },
+    ],
+  },
+  {
+    key: "5",
+    tab: "Security",
+    fields: [
+      { label: "Company Email", name: "companyEmail", placeholder: "Enter old password", type: "text" },
+      { label: "Company Password", name: "companyPassword", placeholder: "Enter new password", type: "password" },
+    ],
+  }
+  // Other tabs here...
 ];
 
 const InfoModal: React.FC<InfoModalProps> = ({ visible, onClose, managerId, managerDetails }) => {
   const [loading, setLoading] = useState(false);
 
-  const handleImageUpload = async (file: File) => {
-      console.log("File is ====================:", file);
-      const formData = new FormData();
-    formData.append("profilePicture", file);
-
-    console.log("Form Data:", formData);
-
-    try {
-      const response = await businessOwnerInstance.patch(
-        `/businessOwner/api/manager/update-profile-pic/${managerId}`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
-      if (response?.data?.success) {
-        message.success("Profile picture updated successfully!");
-        // Optionally, refresh the manager details here
-      } else {
-        message.error("Failed to update profile picture.");
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      message.error("Failed to update profile picture.");
-    }
-  };
-
   const handleSubmit = async (values: any) => {
     setLoading(true);
     try {
-      const response = await businessOwnerInstance.put(
-        `/businessOwner/api/manager/update-personal-info/${managerId}`,
-        values
-      );
-      message.success("Manager details updated successfully!");
+      let response;
+
+      if (values.street || values.city || values.postalCode || values.country || values.state) {
+        response = await businessOwnerInstance.put(
+          `/businessOwner/api/manager/update-address-info/${managerId}`,
+          values
+        );
+        message.success("Address details updated successfully!");
+      } else {
+        if (values.jobTitle || values.workTime || values.salary || values.dateOfJoin) {
+          response = await businessOwnerInstance.put(
+            `/businessOwner/api/manager/update-professional-info/${managerId}`,
+            values
+          );
+        } else {
+          response = await businessOwnerInstance.put(
+            `/businessOwner/api/manager/update-personal-info/${managerId}`,
+            values
+          );
+        }
+        message.success("Manager details updated successfully!");
+      }
+
       onClose();
     } catch (error) {
       message.error("Failed to update manager details.");
@@ -84,7 +103,13 @@ const InfoModal: React.FC<InfoModalProps> = ({ visible, onClose, managerId, mana
   };
 
   return (
-    <Modal title="Information Modal" visible={visible} onCancel={onClose} footer={null} width={800}>
+    <Modal
+      title="Information Modal"
+      visible={visible}
+      onCancel={onClose}
+      footer={null}
+      width={800}
+    >
       <p>Manager ID: {managerId}</p>
       <Spin spinning={loading}>
         <Tabs defaultActiveKey="1">
@@ -103,14 +128,24 @@ const InfoModal: React.FC<InfoModalProps> = ({ visible, onClose, managerId, mana
                   dateOfJoin: managerDetails?.professionalDetails?.joiningDate
                     ? new Date(managerDetails?.professionalDetails?.joiningDate).toLocaleDateString()
                     : "",
+                  street: managerDetails?.address?.street,
+                  city: managerDetails?.address?.city,
+                  postalCode: managerDetails?.address?.zip,
+                  country: managerDetails?.address?.country,
+                  state: managerDetails?.address?.state,
+                  companyEmail: managerDetails?.managerCredentials?.companyEmail,
+                  companyPassword: managerDetails?.managerCredentials?.companyPassword,
                 }}
                 onFinish={handleSubmit}
               >
                 {tab.fields.map((field) => (
                   <Form.Item key={field.name} label={field.label} name={field.name}>
                     {field.type === "text" && <Input placeholder={field.placeholder} />}
-                    {field.type === "file" && (
+                    {field.type === "file" && <Input type="file" />}
+                    {field.type === "password" && <Input.Password placeholder={field.placeholder} />}
+                    {field.name === "profilePicture" && (
                       <div>
+                        {/* Display profile picture in a circle if exists */}
                         {managerDetails?.personalDetails?.profilePicture && (
                           <div style={{ marginBottom: 10 }}>
                             <img
@@ -125,22 +160,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ visible, onClose, managerId, mana
                             />
                           </div>
                         )}
-                        <input
-                          type="file"
-                          id="file-input"
-                          style={{ display: "none" }}
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleImageUpload(file);
-                          }}
-                        />
-                        <Button
-                          icon={field.icon}
-                          onClick={() => document.getElementById("file-input")?.click()}
-                        >
-                          Upload Image
-                        </Button>
+                        <Button icon={field.icon} style={{ marginTop: 10 }} />
                       </div>
                     )}
                   </Form.Item>

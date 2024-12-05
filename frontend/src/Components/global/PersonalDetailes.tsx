@@ -3,46 +3,97 @@ import { Form, Input, Button, Upload, Skeleton, Empty, Spin } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
-import { usePersonalDetails } from '../../api/businessOwnerApi';
-import { uploadProfileImage, updateBusinessOwnerPersonalInfo } from '../../api/businessOwnerApi';
-import { fetchManagerPersonalInfo , updateManagerPersonalInfo } from '../../api/managerApi';
+import {
+  fetchBusinessOwnerPersonalInfo,
+  uploadBusinessOwnerProfileImage,
+  updateBusinessOwnerPersonalInfo,
+} from '../../api/businessOwnerApi';
+import { fetchManagerPersonalInfo, updateManagerPersonalInfo } from '../../api/managerApi';
+import { managerInstance } from '../../services/managerInstance';
+
+// Define interfaces for the data structures
+interface ManagerInfo {
+  managerName: string;
+  email: string;
+  phone: string;
+  profileImage?: string;
+  personalWebsite?: string;
+}
+
+interface BusinessOwnerInfo {
+  businessOwnerName: string;
+  email: string;
+  phone: string;
+  profileImage?: string;
+  personalWebsite?: string;
+}
 
 export default function PersonalDetails() {
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState('');
   const [imageLoading, setImageLoading] = useState(false);
-  const [managerInfo, setManagerInfo] = useState(null);
+  const [managerInfo, setManagerInfo] = useState<ManagerInfo | null>(null); // Explicit type
+  const [businessOwnerInfo, setBusinessOwnerInfo] = useState<BusinessOwnerInfo | null>(null); // Explicit type
+  const [businessOwnerLoading, setBusinessOwnerLoading] = useState(false);
+  const [managerLoading, setManagerLoading] = useState(false);
+
   const { themeColor } = useTheme();
   const { businessOwner, manager } = useAuth();
 
-  // Fetch business owner personal details
-  const { loading: ownerLoading, personalDetails } = usePersonalDetails(businessOwner?.isAuthenticated);
-
-  // Fetch manager personal details
-  const [managerLoading, setManagerLoading] = useState(false);
   useEffect(() => {
     if (manager?.isAuthenticated) {
       setManagerLoading(true);
       fetchManagerPersonalInfo()
-        .then((data) => {
-
-         
+        .then((data: ManagerInfo) => {
           setManagerInfo(data);
-          setProfileImage(data.profileImage || '');
+          setProfileImage(data?.profileImage || '');
         })
-        
-        .catch((error) => console.error('Error fetching manager personal info:', error))
-        .finally(() => setManagerLoading(false));
+        .catch((error) => {
+          console.error('Error fetching manager info:', error);
+        })
+        .finally(() => {
+          setManagerLoading(false);
+        });
+    } else if (businessOwner?.isAuthenticated) {
+      setBusinessOwnerLoading(true);
+      fetchBusinessOwnerPersonalInfo()
+        .then((data: BusinessOwnerInfo) => {
+          setBusinessOwnerInfo(data);
+          setProfileImage(data?.profileImage || '');
+        })
+        .catch((error) => {
+          console.error('Error fetching business owner info:', error);
+        })
+        .finally(() => {
+          setBusinessOwnerLoading(false);
+        });
     }
-  }, [manager]);
-
-
+  }, [businessOwner, manager]);
 
   const handleProfilePictureChange = async (file: File) => {
     setImageLoading(true);
     try {
-      const imageUrl = await uploadProfileImage(file);
+      let imageUrl;
+
+      if (manager?.isAuthenticated) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await managerInstance.patch(
+          '/manager/api/manager/update-profile-picture',
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+        imageUrl = response.data.data.profilePicture;
+      } else {
+        imageUrl = await uploadBusinessOwnerProfileImage(file);
+      }
+
       setProfileImage(imageUrl);
     } catch (error) {
       console.error('Error uploading profile image:', error.message);
@@ -52,14 +103,11 @@ export default function PersonalDetails() {
   };
 
   const onFinish = async (values: any) => {
-    const updatedDetails = { ...values };
-    console.log('Form values:', updatedDetails);
     try {
-      if(businessOwner?.isAuthenticated){
-        await updateBusinessOwnerPersonalInfo(updatedDetails);
-        
-      }else if(manager?.isAuthenticated){
-        await updateManagerPersonalInfo(updatedDetails);
+      if (businessOwner?.isAuthenticated) {
+        await updateBusinessOwnerPersonalInfo(values);
+      } else if (manager?.isAuthenticated) {
+        await updateManagerPersonalInfo(values);
       }
       setIsEditing(false);
     } catch (error) {
@@ -67,15 +115,17 @@ export default function PersonalDetails() {
     }
   };
 
-  if (ownerLoading || managerLoading) return <Skeleton active />;
-  const displayDetails = businessOwner?.isAuthenticated ? personalDetails : managerInfo;
+  if (businessOwnerLoading || managerLoading) {
+    return <Skeleton active />;
+  }
+
+  const displayDetails: ManagerInfo | BusinessOwnerInfo | null = businessOwner?.isAuthenticated
+    ? businessOwnerInfo
+    : managerInfo;
 
   if (!displayDetails) {
     return <Empty description="No Personal Details Available" />;
   }
-
-  console.log("managerInfo",managerInfo)
-  console.log("profuleImage",profileImage)
 
   return (
     <div className="flex flex-col md:flex-row">
@@ -83,7 +133,7 @@ export default function PersonalDetails() {
         <div className="space-y-6 w-[80%]">
           <div className="relative mb-2 flex flex-col items-center pt-4 h-[40%]">
             <img
-              src={profileImage || displayDetails.profileImage}
+              src={profileImage || displayDetails?.profileImage}
               alt="Profile"
               className="w-24 h-24 rounded-full object-cover mx-auto"
             />
@@ -119,10 +169,13 @@ export default function PersonalDetails() {
           onFinish={onFinish}
           layout="vertical"
           initialValues={{
-            businessOwnerName: displayDetails?.businessOwnerName || displayDetails?.managerName,
-            email: displayDetails?.email || displayDetails.email,
-            personalWebsite: displayDetails?.personalWebsite,
-            phone: displayDetails?.phone,
+            businessOwnerName:
+              'businessOwnerName' in displayDetails
+                ? displayDetails.businessOwnerName
+                : (displayDetails as ManagerInfo).managerName,
+            email: displayDetails.email,
+            personalWebsite: displayDetails.personalWebsite,
+            phone: displayDetails.phone,
           }}
           className="mt-6"
         >

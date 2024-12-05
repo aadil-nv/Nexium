@@ -2,7 +2,7 @@ import IBusinessOwnerService from "service/interface/IBusinessOwnerService";
 import IBusinessOwnerRepository from "../../repository/interface/IBusinessOwnerRepository";
 import { inject, injectable } from "inversify";
 import { verifyRefreshToken, generateAccessToken } from "../../utils/jwt";
-import { IPersonalDetailsDTO, ICompanyDetailsDTO, IAddressDTO, IDocumentsDTO, IResponseDTO } from '../../dto/businessOwnerDTO';
+import { IPersonalDetailsDTO, ICompanyDetailsDTO, IAddressDTO, IDocumentsDTO, IResponseDTO, IDocumentDTO } from '../../dto/businessOwnerDTO';
 import { uploadTosS3 } from '../../middlewares/multer-s3';
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
@@ -10,20 +10,81 @@ import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 export default class BusinessOwnerService implements IBusinessOwnerService {
   constructor(@inject("IBusinessOwnerRepository") private _businessOwnerRepository: IBusinessOwnerRepository) {}
 
- 
+  private async getDetails(businessOwnerId: string) {
+    if (!businessOwnerId) throw new Error("Business owner ID not found");
+    const result = await this._businessOwnerRepository.getDetails(businessOwnerId);
+    if (!result) throw new Error("Business owner not found");
+    return result;
+  }
 
-  async setNewAccessToken(refreshToken: string): Promise<string> {
+  private async uploadFileToS3(
+    businessOwnerId: string,
+    file: Express.Multer.File,
+    fileType: "profileImage" | "companyLogo" | "documents"
+  ) {
+    const result = await this.getDetails(businessOwnerId);
+    const existingFile =
+      fileType === "profileImage"
+        ? result.personalDetails.profileImage
+        : fileType === "documents"
+        ? result.documents
+        : result.companyDetails.companyLogo;
+  
+    if (existingFile) {
+      const s3Client = new S3Client({ region: 'eu-north-1' });
+  
+      // Handle case where `existingFile` is not a string
+      let existingFileKey: string | undefined;
+  
+      if (typeof existingFile === "string") {
+        existingFileKey = existingFile; // Use as-is if it's a string
+      } else if (typeof existingFile === "object") {
+        // Map `existingFile` to a string identifier
+        existingFileKey = (existingFile as any).fileName || (existingFile as any).url || undefined;
+      }
+  
+      if (existingFileKey) {
+        await s3Client.send(
+          new DeleteObjectCommand({
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: existingFileKey,
+          })
+        );
+      }
+    }
+  
+    const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
+    console.log("==============fileUrl======================", fileUrl);
+  
+    return fileUrl;
+  }
+  
+
+  async setNewAccessToken(refreshToken: string): Promise<IResponseDTO> {
+    console.log("==============refreshToken======================", refreshToken);
+    
+    
+    
     try {
       const decoded = verifyRefreshToken(refreshToken);
+      console.log("11111111111111111111111111111");
+   
       const businessOwnerData = decoded?.businessOwnerData;
+      console.log("222222222222222222222");
+    
       if (!decoded || !businessOwnerData) throw new Error("Invalid or expired refresh token");
-      return generateAccessToken({ businessOwnerData });
+      console.log("33333333333333333333333333333");
+     
+      const accessToken = generateAccessToken({ businessOwnerData });
+      console.log("access token from service", accessToken);
+      
+      return {accessToken};
     } catch (error) {
       throw new Error("Error generating new access token: " + error);
     }
   }
 
-  async addSubscription(subscriptionData: any): Promise<any> {
+  async addSubscription(subscriptionData: any): Promise<IResponseDTO> {
     try {
       const newSubscription = await this._businessOwnerRepository.addSubscription(subscriptionData);
       return { success: true, message: "Subscription added successfully!", subscription: newSubscription };
@@ -32,12 +93,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
   }
 
-  private async getDetails(businessOwnerId: string) {
-    if (!businessOwnerId) throw new Error("Business owner ID not found");
-    const result = await this._businessOwnerRepository.getDetails(businessOwnerId);
-    if (!result) throw new Error("Business owner not found");
-    return result;
-  }
 
   async getPersonalDetails(businessOwnerId: string): Promise<IPersonalDetailsDTO> {
     try {
@@ -63,9 +118,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     try {
       const result = await this.getDetails(businessOwnerId);
       const { companyDetails } = result;
-      const companyLogoUrl = companyDetails.companyLogo
-        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${companyDetails.companyLogo}`
-        : "";
+      const companyLogoUrl =  `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${companyDetails.companyLogo}`
+       
       return {
         companyName: companyDetails.companyName,
         companyWebsite: companyDetails.companyWebsite,
@@ -81,20 +135,72 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
   async getAddress(businessOwnerId: string): Promise<IAddressDTO> {
     try {
       const result = await this.getDetails(businessOwnerId);
-      return result.address;
+      return {
+        street: result.address.street,
+        city: result.address.city,
+        state: result.address.state,
+        country: result.address.country,
+        postalCode: result.address.postalCode
+      }
     } catch {
       throw new Error("Error while getting address");
     }
   }
 
-  async getDocuments(businessOwnerId: string): Promise<IDocumentsDTO> {
+  async getDocuments(businessOwnerId: string): Promise<any> {
     try {
-      const result = await this.getDetails(businessOwnerId);
-      return result.companyDetails.documents;
-    } catch {
-      throw new Error("Error while getting documents");
+      // Log for debugging purposes
+      console.log("Fetching document details for businessOwnerId:", businessOwnerId);
+  
+      // Fetch document details from the repository
+      const documentData = await this._businessOwnerRepository.getDetails(businessOwnerId);
+  
+      // Log the fetched document data for debugging
+      console.log("Fetched document data:", documentData);
+  
+      // Ensure that documentData and documents are valid
+      if (!documentData) {
+        console.error("No data found for this business owner");
+        throw new Error("No data found for this business owner");
+      }
+  
+      // Check if documents exist and is an array
+      if (!documentData.documents || !Array.isArray(documentData.documents)) {
+        console.error("Documents field is either missing or not an array");
+        throw new Error("Documents field is either missing or not an array");
+      }
+  
+      // Ensure that documents are not empty
+      if (documentData.documents.length === 0) {
+        console.error("No documents found in the documents array");
+        throw new Error("No documents found for this business owner");
+      }
+  
+      // Assuming documents is an array, and we take the first document
+      const documents = documentData.documents[0];  // Get the first document in the array
+  
+      // Check if the document contains required fields
+      if (!documents.companyCertificate || !documents.businessOwnerId) {
+        console.error("Required fields are missing in the document");
+        throw new Error("Required fields are missing in the document");
+      }
+  
+      // Log extracted documents for debugging
+      console.log("Extracted documents:", documents);
+  
+      // Extract companyCertificate and businessOwnerId from the first document
+      const companyCertificates = documents.companyCertificate;
+      const businessOwnerIds = documents.businessOwnerId;
+  
+      // Return the document details
+      return { companyCertificates, businessOwnerIds };
+    } catch (error: any) {
+      // Log the error and throw a new error with a detailed message
+      console.error("Error while fetching documents:", error);
+      throw new Error("Error while getting documents: " + error.message);
     }
   }
+  
 
   async updatePersonalDetails(businessOwnerId: string, data: any): Promise<IResponseDTO> {
 
@@ -106,22 +212,32 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
   }
 
-  private async uploadFileToS3(businessOwnerId: string, file: Express.Multer.File, fileType: "profileImage" | "companyLogo") {
-    const result = await this.getDetails(businessOwnerId);
-    const existingFile = fileType === "profileImage" ? result.personalDetails.profileImage : result.companyDetails.companyLogo;
-
-    if (existingFile) {
-      const s3Client = new S3Client({ region: 'eu-north-1' });
-      await s3Client.send(new DeleteObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, Key: existingFile }));
+  async updateCompanyDetails(businessOwnerId: string, data: any): Promise<ICompanyDetailsDTO> {
+    try {
+     const result = await this._businessOwnerRepository.updateCompanyDetails(businessOwnerId, data);
+     
+     if(!result) throw new Error("Error while updating company details");
+      return {
+        companyName: result.companyDetails.companyName,
+        companyLogo: result.companyDetails.companyLogo,
+        companyRegistrationNumber: result.companyDetails.companyRegistrationNumber,
+        companyEmail: result.companyDetails.companyEmail,
+        companyWebsite: result.companyDetails.companyWebsite
+      }
+    } catch (error:any) {
+      throw new Error(error.message || "Error while updating company details");
     }
-
-    const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
-    console.log("==============fileUrl======================", fileUrl);
-    
-    return fileUrl
   }
 
-  async uploadImages(businessOwnerId: string, file: Express.Multer.File): Promise<any> {
+  async updateAddress(businessOwnerId: string, data: any): Promise<IResponseDTO> {
+    try {
+      await this._businessOwnerRepository.updateAddress(businessOwnerId, data);
+      return { success: true, message: "Address updated successfully!" };
+    } catch (error:any) {
+      throw new Error(error.message || "Error while updating address");
+  }
+  }
+  async uploadImages(businessOwnerId: string, file: Express.Multer.File): Promise<IResponseDTO> {
     try {
       const imageUrl = await this.uploadFileToS3(businessOwnerId, file, "profileImage");
 
@@ -134,15 +250,50 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
   }
 
-  async uploadLogo(businessOwnerId: string, file: Express.Multer.File): Promise<any> {
+  async uploadLogo(businessOwnerId: string, file: Express.Multer.File): Promise<IResponseDTO> {
     try {
       const imageUrl = await this.uploadFileToS3(businessOwnerId, file, "companyLogo");
       await this._businessOwnerRepository.uploadLogo(businessOwnerId, imageUrl);
-      return { success: true, message: 'Logo uploaded successfully!', data: imageUrl };
+
+      return { success: true, message: 'Logo uploaded successfully!', data: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${imageUrl}` 
+     };
     } catch (error:any) {
       throw new Error(error.message || 'Error while uploading logo');
     }
   }
+
+
+  async uploadDocuments(
+    businessOwnerId: string,
+    file: Express.Multer.File,
+    documentType: string
+  ): Promise<any> {
+    try {
+      // Upload file to S3
+      const fileKey = await this.uploadFileToS3(businessOwnerId, file, "documents");
+      const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
+  
+      const documentData = {
+        documentName: documentType,
+        documentUrl: fileUrl,
+        documentSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+        uploadedAt: new Date(),
+      };
+  
+      const updatedBusinessOwner = await this._businessOwnerRepository.uploadDocuments(businessOwnerId,documentType,documentData);
+  
+      return {
+        documentName: documentType,
+        documentUrl: fileUrl,
+        documentSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+        uploadedAt: new Date(),
+      };
+    } catch (error) {
+      console.error("Error while uploading document:", error);
+      throw new Error('Could not upload document.');
+    }
+  }
+  
 
   
 }

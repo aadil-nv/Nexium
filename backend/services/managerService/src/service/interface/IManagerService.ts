@@ -1,3 +1,5 @@
+import  IEmployee  from "../../entities/employeeEntities"
+
 export default interface IManagerService {
     getManagers(): Promise<any>
     getManagerPersonalInfo(managerId: string): Promise<any>
@@ -7,4 +9,6 @@ export default interface IManagerService {
     getManagerDocuments(managerId: string): Promise<any>
     updateManagerPersonalInfo(managerId: string , data: any): Promise<any>
     setNewAccessToken(refreshToken: string): Promise<string>
+    updateManagerProfilePicture(businessOwnerId: string, file: Express.Multer.File): Promise<any>
+    getLeaveEmployees(managerId: string): Promise<IEmployee>
 }

@@ -1,19 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { IBusinessOwnerDocument } from "../entities/businessOwnerEntities"; // Adjust the import path as needed
 
-// Enum for company incorporation document type
-enum CompanyIncorporationDocType {
-  CERTIFICATE_OF_INCORPORATION = "Certificate of Incorporation",
-  OTHER = "other"
-}
 
-// Enum for business owner ID proof type
-enum BusinessOwnerIDProofType {
-  PASSPORT = "Passport",
-  DRIVER_LICENSE = "Driver License",
-  NATIONAL_ID = "National ID",
-  OTHER = "other"
-}
 
 const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
   {
@@ -36,7 +24,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       profileImage: {
         type: String,
-        default: "https://avatar.iran.liara.run/public/boy?username=Ash",
+        default: "https://example.com/default-profile-image.png",
       },
     },
 
@@ -46,7 +34,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       companyLogo: {
         type: String,
-        default: "https://example.com/default-logo.png",
+        default: "https://avatar.iran.liara.run/public/boy?username=Ash",
       },
       companyRegistrationNumber: {
         type: String,
@@ -59,20 +47,28 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       
       // Documents Object
-      documents: {
-        companyIncorporationDocument: {
-          type: String,
-          enum: Object.values(CompanyIncorporationDocType),
+    },
+    documents: {
+      companyCertificate: [
+        {
+          documentName: { type: String, default: "Company Certificate" },
+          documentUrl: { type: String },
+          documentSize: { type: String },
+          uploadedAt: { type: Date, default: Date.now },
         },
-        businessOwnerIdProof: {
-          type: String,
-          enum: Object.values(BusinessOwnerIDProofType),
+      ],
+      businessOwnerId: [
+        {
+          documentName: { type: String, default: "Business Owner ID" },
+          documentUrl: { type: String },
+          documentSize: { type: String },
+          uploadedAt: { type: Date, default: Date.now },
         },
-      },
+      ],
     },
 
     address: {
-      streetAddress: {
+      street: {
         type: String,
       },
       city: {

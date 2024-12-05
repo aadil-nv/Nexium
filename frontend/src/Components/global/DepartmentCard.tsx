@@ -17,6 +17,8 @@ export default function DepartmentCard({
   onRemoveDepartment,
   departmentId,
 }: IDepartmentCardProps) {
+
+  console.log("employees333333333333333333",employees)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false); // For toggling modal visibility
   const { isActiveMenu, themeMode } = useTheme();
@@ -88,7 +90,7 @@ export default function DepartmentCard({
             <div className="flex items-center space-x-3">
               <div className="relative">
                 <img
-                  src={employee.photo}
+                  src={employee.profilePicture}
                   alt={employee.name}
                   className="w-12 h-12 rounded-full object-cover"
                 />

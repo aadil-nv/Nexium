@@ -17,6 +17,7 @@ export default function Departments() {
     fetchDepartmentsAPI().then(setDepartments).catch(console.error);
   }, []);
 
+console.log("employees444444444444444444444444",employees)
   const handleAddNewDepartment = (newDepartment: IDepartment) =>
     setDepartments((prev) => [newDepartment, ...prev]);
 
@@ -48,11 +49,13 @@ export default function Departments() {
           <DepartmentCard
             key={_id}
             departmentName={departmentName}
+            
             employees={employees.map(({ id, name, position, profilePicture, email, isActive }) => ({
+              
               id,
               name,
               position,
-              photo: profilePicture,
+              profilePicture ,
               email: email || '',
               isOnline: isActive || false,
             }))}

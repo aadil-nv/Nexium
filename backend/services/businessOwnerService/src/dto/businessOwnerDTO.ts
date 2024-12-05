@@ -17,20 +17,37 @@ export interface IPersonalDetailsDTO {
   }
 
   export interface IAddressDTO {
-    streetAddress: string;
+    street: string;
     city: string;
     state: string;
-    country: string;
     postalCode: string;
+    country: string;
   }
 
   export interface IDocumentsDTO {
-    companyIncorporationDocument: string;  // Refers to the company incorporation document type
-    businessOwnerIdProof: string;          // Refers to the business owner's ID proof
+    documentName: string;
+    documentUrl: string;
+    documentSize: string;
+    uploadedAt: Date;       // Refers to the business owner's ID proof
   }
+
+
   
   export interface IResponseDTO{
-    success: boolean;
-    message: string;
+    success?: boolean;
+    message?: string;
     data?: any;
+    subscription?: string;
+    accessToken?:string;
   }
+
+
+  export interface IDocumentDTO {
+      documentName: String;
+      documentUrl: String;
+      documentSize: String;
+      uploadedAt: Date;
+
+    }
+
+ 

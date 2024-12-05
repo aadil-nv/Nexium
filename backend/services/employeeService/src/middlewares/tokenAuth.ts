@@ -25,12 +25,12 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
             return res.status(401).json({ message: "Access denied. No token provided" });
         }
 
-        const secret = process.env.ACCESS_TOKEN_SECRET; // Get the secret from environment variables
+        const secret = process.env.ACCESS_TOKEN_SECRET; 
  
         
         if (!secret) {
             console.error('Access token secret is not defined');
-            return res.status(500).json({ message: 'Internal server error' }); // Return a 500 error if the secret is not defined
+            return res.status(500).json({ message: 'Internal server error' }); 
         }
 
         // Verify the token
@@ -50,8 +50,8 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
             if (employeeData && employeeData.businessOwnerId) {
                 const businessOwnerId = employeeData.businessOwnerId.toString();
 
-                // Dynamically connect to the MongoDB database using businessOwnerId
-                await connectDB(businessOwnerId); // Pass the employeeId to the connectDB function
+             
+                await connectDB(businessOwnerId); 
             } else {
                 return res.status(401).json({ message: "Business owner ID not found in manager data" });
             }

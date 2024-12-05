@@ -5,6 +5,7 @@ import {IManager} from "../../entities/managerEntities";
 import BaseRepository from "../../repository/implementation/baseRepository";
 import { Model } from "mongoose";
 import managerModel from "../../models/managerModel";
+import attendanceModel from "../../models/attendanceModel";
 
 
 @injectable()
@@ -64,5 +65,77 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         }
       }
       
+
+      async getDetails(managerId: string): Promise<any> {
+        try {
+            const manager = await managerModel.findById(managerId);
+            return manager;
+        } catch (error) {
+            console.error("Error finding manager by ID:", error);
+            return null;
+        }
+    }
+
+    async uploadProfilePicture(managerId: string, filePath: string): Promise<IManager> {
+      console.log("Data received:-->>>>>>", filePath);
+      
+      try {
+        const result = await managerModel.findByIdAndUpdate(
+          managerId,
+          { $set: { 'personalDetails.profilePicture': filePath } }, // Save the file path
+          { new: true }
+        );
+    
+        if (!result) {
+          throw new Error(`No business owner found with ID: ${managerId}`);
+        }
+    
+        return result;
+      } catch (error) {
+        console.error('Error updating personal details:', error);
+        throw new Error('Could not update personal details.');
+      }
+    }
+
+    async getLeaveEmployees(managerId: string): Promise<any> {
+      try {
+        // Use aggregation to find employees with non-null leaveStatus
+        const result = await attendanceModel.aggregate([
+          {
+            $match: {
+              'attendance.leaveStatus': { $ne: "null" }, // Filter attendance entries with leaveStatus !== "null"
+            },
+          },
+          {
+            $lookup: {
+              from: 'employees', // Reference to the Employee collection
+              localField: 'employeeId',
+              foreignField: '_id',
+              as: 'employeeDetails', // Attach employee details
+            },
+          },
+          {
+            $project: {
+              employeeId: 1,
+              employeeDetails: { name: 1, email: 1 }, // Customize fields if needed
+              attendance: {
+                $filter: {
+                  input: '$attendance',
+                  as: 'entry',
+                  cond: { $ne: ['$$entry.leaveStatus', "null"] },
+                },
+              },
+            },
+          },
+        ]);
+    
+        return result;
+      } catch (error:any) {
+        console.error("Error in getLeaveEmployees:", error.message);
+        throw new Error("Error retrieving leave employees");
+      }
+    }
+ 
+    
       
 }

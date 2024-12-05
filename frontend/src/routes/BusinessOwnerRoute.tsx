@@ -4,7 +4,7 @@ import BusinessOwnerPrivateRoute from "./BusinessOwnerPrivateRoute"; // Adjust t
 import BusinessOwnerDashboard from "../components/businessOwner/BusinessOwnerPages/Dashboard";
 
 import BusinessOwnerDashBoardLayout from "../pages/businessOwnerPages/DashboardLayout";
-import Subscriptions from "../components/businessOwner/BusinessOwnerPages/Subscriptions";
+import Subscriptions from "../components/businessOwner/businessOwnerPages/Subscriptions";
 import ServiceRequests from "../components/businessOwner/BusinessOwnerPages/ServiceRequests";
 import EmployeeList from "../components/businessOwner/businessOwnerPages/EmployeeList";
 import Notifications from "../components/global/Notifications";

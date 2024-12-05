@@ -2,7 +2,11 @@ import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
 import IManagerRepository from "../../repository/interface/IManagerRepository";
 import IManagerService from "../interface/IManagerService";
 import { inject, injectable } from "inversify";
-import mongoose from "mongoose";
+
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { uploadTosS3 } from "../../middlewares/multer-s3";
+import IManagerProfileDTO from "../../dto/IManagerDTO";
+import IEmployee from "../../entities/employeeEntities";
 
 @injectable()
 export default class ManagerService implements IManagerService {
@@ -21,7 +25,7 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async getManagerPersonalInfo(managerId: string): Promise<any> {
+  async getManagerPersonalInfo(managerId: string): Promise<IManagerProfileDTO> {
 
     try {
    
@@ -31,7 +35,16 @@ export default class ManagerService implements IManagerService {
       }
     
       const managerProfile = await this._managerRepository.findOne({managerId});
-      return managerProfile;
+      const profileImageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ managerProfile?.personalDetails?.profilePicture}`
+          console.log(`profileImageUrl: ${profileImageUrl}`);
+          
+      return {
+
+        managerName: managerProfile?.personalDetails?.managerName,
+        email: managerProfile?.personalDetails.email,
+        personalWebsite: managerProfile?.personalDetails?.personalWebsite,
+        profilePicture: profileImageUrl
+      }
 
     } catch (error) {
       console.error("Error adding manager:", error);
@@ -174,6 +187,52 @@ export default class ManagerService implements IManagerService {
     }
   }
 
+  private async getDetails(managerId: string) {
+    if (!managerId) throw new Error("Business owner ID not found");
+    const result = await this._managerRepository.getDetails(managerId);
+    if (!result) throw new Error("Business owner not found");
+    return result;
+  }
+
+  private async uploadFileToS3(managerId: string, file: Express.Multer.File, fileType: "profileImage" | "companyLogo") {
+    const result = await this.getDetails(managerId);
+    const existingFile = fileType === "profileImage" ? result.personalDetails.profileImage : result.companyDetails.companyLogo;
+
+    if (existingFile) {
+      const s3Client = new S3Client({ region: 'eu-north-1' });
+      await s3Client.send(new DeleteObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, Key: existingFile }));
+    }
+
+    const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
+    console.log("==============fileUrl======================", fileUrl);
+    
+    return fileUrl
+  }
+
+  async updateManagerProfilePicture(managerId: string, file: Express.Multer.File): Promise<any> {
+    try {
+      const imageUrl = await this.uploadFileToS3(managerId, file, "profileImage");
+
+      console.log("==============imageUrl======================", imageUrl);
+      
+      await this._managerRepository.uploadProfilePicture(managerId, imageUrl);
+      return { success: true, message: 'Image uploaded successfully!', data: { imageUrl:`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${imageUrl}` } };
+    } catch (error:any) {
+      throw new Error(error.message || 'Error while uploading image');
+    }
+  }
   
+  async getLeaveEmployees(managerId: string): Promise<IEmployee> {
+    try {
+      if (!managerId) {
+        throw new Error("Business owner ID not found");
+      }
   
+      const result = await this._managerRepository.getLeaveEmployees(managerId);
+      return result;
+    } catch (error :any) {
+      console.error("Error in getLeaveEmployees:", error.message);
+      throw new Error("Error retrieving leave employees");
+    }
+  }
 }

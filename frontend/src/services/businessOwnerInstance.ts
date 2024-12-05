@@ -27,7 +27,7 @@ const handleTokenRefresh = async (originalRequest: any) => {
   try {
     console.log("Attempting token refresh...");
     const { data } = await businessOwnerInstance.post("/businessOwner/api/business-owner/refresh-token");
-
+    console.log("Token refresh successful:", data);
     notifySubscribers(data.accessToken);
     originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
     return businessOwnerInstance(originalRequest);
@@ -56,6 +56,8 @@ export const businessOwnerInstance = axios.create({
   baseURL: "http://localhost:3000",
   withCredentials: true,
 });
+
+
 
 businessOwnerInstance.interceptors.response.use(
   (response) => response,

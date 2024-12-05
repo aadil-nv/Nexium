@@ -140,4 +140,70 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     }
   }
  
+  async updateAddress(businessOwnerId: string, data: any): Promise<IBusinessOwnerDocument> {
+    try {
+      const result = await this._businessOwnerModel.findByIdAndUpdate(
+        businessOwnerId,
+        { $set: { 'address': data } }, // Save the file path
+        { new: true }
+      );
+  
+      if (!result) {
+        throw new Error(`No business owner found with ID: ${businessOwnerId}`);
+      }
+  
+      console.log("Updated personal details:", result);
+      return result;
+    } catch (error) {
+      console.error('Error updating personal details:', error);
+      throw new Error('Could not update personal details.');
+    }
+  }
+
+  async updateCompanyDetails(businessOwnerId: string, data: any): Promise<IBusinessOwnerDocument> {
+    try {
+      const result = await this._businessOwnerModel.findByIdAndUpdate(
+        businessOwnerId,
+        { $set: { 'companyDetails': data } }, // Save the file path
+        { new: true }
+      );
+  
+      if (!result) {
+        throw new Error(`No business owner found with ID: ${businessOwnerId}`);
+      }
+  
+      console.log("Updated personal details:", result);
+      return result;
+    } catch (error) {
+      console.error('Error updating personal details:', error);
+      throw new Error('Could not update personal details.');
+    }
+  }
+
+  async uploadDocuments(businessOwnerId: string, documentType: string, documentData: Object): Promise<IBusinessOwnerDocument> {
+    const fieldMapping: Record<string, string> = {
+      "Company Document": "documents.companyCertificate",
+      "Business Owner ID Proof": "documents.businessOwnerId",
+    };
+  
+    const documentField = fieldMapping[documentType];
+    if (!documentField) throw new Error(`Invalid document type: ${documentType}`);
+  
+    try {
+      const result = await this._businessOwnerModel.findByIdAndUpdate(
+        businessOwnerId,
+        {
+          $set: { [documentField]: documentData },  // Using $set to directly set the array
+        },
+        { new: true }
+      );
+  
+      if (!result) throw new Error(`No business owner found with ID: ${businessOwnerId}`);
+      return result;
+    } catch (error) {
+      console.error('Error updating documents:', error);
+      throw new Error('Could not update documents.');
+    }
+  }
+  
 }

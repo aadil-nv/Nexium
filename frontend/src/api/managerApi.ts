@@ -55,12 +55,12 @@ export const validateOtp = async (otp: string ,email: string) => {
 
 export const fetchEmployeesAPI = async () => {
     const response = await managerInstance.get('/manager/api/employee/get-employees');
-    console.log("response",response.data)
     return response.data;
-};
+  };
   
-export const fetchDepartmentsAPI = async () => {
-    const response = await axios.get('http://localhost:3000/manager/api/department/get-departments');
+  export const fetchDepartmentsAPI = async () => {
+    const response = await managerInstance.get('/manager/api/department/get-departments');
+    console.log("response1111111111111111",response.data)
     return response.data;
 };
   
@@ -147,14 +147,14 @@ export const addEmployee = async (employeeData: any) => {
 
   
       try {
-          const response = await managerInstance.get(`${baseURL}manager/get-managerpersonalinfo`, {
+          const response = await managerInstance.get(`/manager/api/manager/get-managerpersonalinfo`, {
               headers: {
                   "Content-Type": "application/json",
               },
           });
-          console.log("Manager personal info:", response.data.personalDetails);
+          console.log("Manager personal info:", response);
           
-          return response.data.personalDetails;
+          return response.data;
       } catch (error) {
           console.error("Error fetching manager personal info:", error);
           throw error;

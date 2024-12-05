@@ -16,6 +16,9 @@ export interface IDepartment {
     departmentName: string;
     employees: IEmployee[];
     departmentId: string;
+    isActive: boolean;
+    profilePicture: string;
+    email: string;
   }  
 
   export interface IManagerCardProps {
