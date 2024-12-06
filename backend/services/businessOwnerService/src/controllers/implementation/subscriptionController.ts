@@ -12,10 +12,10 @@ export default class SubscriptionController implements ISubscriptionController {
         console.log("Controller: getSubscription =========================");
         
         try {
-            const subscriptionId = req?.user?.businessOwnerData?.subscription?.subscriptionId
+            const businessOwnerId = req?.user?.businessOwnerData?._id;
             console.log("subscriptionId============%%%%====&&&&==========",  req?.user);
             
-            const response = await this._subscriptionService.getSubscription(subscriptionId as string);
+            const response = await this._subscriptionService.getSubscription(businessOwnerId as string);
             console.log("response==========================", response);
             
             return res.status(200).json(response);

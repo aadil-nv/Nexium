@@ -22,7 +22,7 @@ if (!fs.existsSync(logDirectory)) {
 // dasdasdasdasdaskofhosjik
 
 const accessLogStream = createStream('access.log', {
-  interval: '1d',
+  interval: '7d',
   path: logDirectory,
 });
 
@@ -40,14 +40,20 @@ const targets = {
   superAdmin: process.env.SUPER_ADMIN_API_BASE_URL,
   manager: process.env.MANAGER_API_BASE_URL,
   employee: process.env.EMPLOYEE_API_BASE_URL,
+  payment: process.env.PAYMENT_API_BASE_URL
 };
 
-// fgklijdfhgkljnhdfkgjbdfdsafsdfsdfsdafdfgdfgdfsdfsadfsfdsafasdfssdffasdafasdfsdfsdffsadfasdfs
+console.log("Targets: ", targets.payment);
+
+// fghnikfgnjihnofiughnlikrfdhjb
+
+// fgklijdfhgkljnhdfkgjbdfdsafsdfsdfsdafdfgdfgdfs;'lfgdsgdfsgfdfsadfsfdsafasd
 app.use('/authentication', createProxyMiddleware({ target: targets.authentication, changeOrigin: true }));
 app.use('/businessOwner', createProxyMiddleware({ target: targets.businessOwner, changeOrigin: true }));
 app.use('/superAdmin', createProxyMiddleware({ target: targets.superAdmin, changeOrigin: true }));
 app.use('/manager', createProxyMiddleware({ target: targets.manager, changeOrigin: true }));
 app.use('/employee', createProxyMiddleware({ target: targets.employee, changeOrigin: true }));
+app.use('/payment', createProxyMiddleware({ target: targets.payment, changeOrigin: true }));
 
-const port = process.env.GATEWAY_PORT || 3000;
+const port = process.env.GATEWAY_PORT 
 app.listen(port, () => console.log(`Gateway server running on http://localhost:${port}`.bgMagenta.bold));

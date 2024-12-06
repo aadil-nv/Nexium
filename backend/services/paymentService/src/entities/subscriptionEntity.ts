@@ -1,6 +1,6 @@
-import { Types } from "mongoose";
 
-export interface ISubscriptionDTO {
+import{ Document, Types } from "mongoose";
+export  default interface ISubscription extends Document {
     _id:Types.ObjectId;
     planName: string;
     description: string;
@@ -9,4 +9,4 @@ export interface ISubscriptionDTO {
     durationInMonths: number;
     features: string[]; 
     isActive: boolean; 
-}
+  }
