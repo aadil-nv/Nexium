@@ -22,7 +22,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       personalWebsite: {
         type: String,
       },
-      profileImage: {
+      profilePicture: {
         type: String,
         default: "https://example.com/default-profile-image.png",
       },

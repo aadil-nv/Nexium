@@ -12,4 +12,5 @@ export default interface IManagerController {
     logout(req: Request, res: Response): Promise<Response>
     updateManagerProfilePicture(req: CustomRequest, res: Response): Promise<Response>
     getLeaveEmployees(req: CustomRequest, res: Response): Promise<Response>
+    updateManagerAddress(req: CustomRequest, res: Response): Promise<Response>
 }

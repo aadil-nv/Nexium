@@ -88,7 +88,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     try {
       const result = await this._businessOwnerModel.findByIdAndUpdate(
         businessOwnerId,
-        { $set: { 'personalDetails.profileImage': filePath } }, // Save the file path
+        { $set: { 'personalDetails.profilePicture': filePath } }, // Save the file path
         { new: true }
       );
   

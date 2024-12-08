@@ -42,12 +42,13 @@ const PlanSelection: React.FC = () => {
 
       const data = await createCheckoutSession(email, selectedPlan);
 
-      if (data.planName === 'Trial') {
-        dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
-        navigate('/business-owner/dashboard');
-      } else {
-        const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
+      if (data) {
+        console.log('Payment session created:', data);
+        console.log('Payment session ID:', data.session.id);
+        const { error } = await stripe.redirectToCheckout({ sessionId: data.session.id   });
         if (error) console.error('Payment error:', error.message);
+        // dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
+        // navigate('/business-owner/dashboard');
       }
     } catch (error) {
       console.error('Error processing payment:', error);

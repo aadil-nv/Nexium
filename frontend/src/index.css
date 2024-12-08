@@ -100,4 +100,114 @@
   scrollbar-width: none;  /* Firefox */
 }
 
+/*dfssssssssssssssssssssssssssssssssssssssssssssssssssss kfbgvhjd */
 
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Ensure the modal is on top */
+}
+
+/* Modal Container */
+.modal-container {
+  background-color: white;
+  border-radius: 10px;
+  padding: 30px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-30px);
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+/* Checkmark Icon Style */
+.checkmark-icon {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center; /* Center the icon */
+  align-items: center; /* Center the icon vertically */
+}
+
+/* Title Style */
+h1 {
+  font-size: 24px;
+  color: #333;
+  margin: 15px 0;
+  font-weight: bold;
+}
+
+/* Message Style */
+p {
+  font-size: 16px;
+  color: #555;
+  margin: 15px 0;
+  line-height: 1.5;
+}
+
+/* Close Button Style */
+.close-button {
+  background-color: #6772E5;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.close-button:hover {
+  background-color: #555;
+}
+
+/* Loading Spinner Style */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  margin-bottom: 20px; /* Space for other content */
+}
+
+/* Slide-up Animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .modal-container {
+    padding: 20px;
+    max-width: 90%;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  p {
+    font-size: 14px;
+  }
+
+  .close-button {
+    padding: 10px 25px;
+  }
+}

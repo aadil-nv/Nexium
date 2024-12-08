@@ -23,6 +23,7 @@ managerRouter.post('/logout', (req, res) => managerController.logout(req, res));
 
 managerRouter.patch("/update-personalinfo",authenticateToken,(req,res)=>managerController.updateManagerPersonalInfo(req,res))
 managerRouter.patch('/update-profile-picture',authenticateToken,uploadMiddleware,(req,res)=>managerController.updateManagerProfilePicture(req,res))
+managerRouter.patch('/update-address',authenticateToken,(req,res)=>managerController.updateManagerAddress(req,res))
 
 
 

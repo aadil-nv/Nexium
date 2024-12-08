@@ -16,10 +16,10 @@ export interface CustomRequest extends Request {
 
 const authenticateToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
   try {
-    const token = req.cookies?.accessToken;
+    const token = req.cookies.accessToken;
 
     if (!token) {
-      return res.status(401).json({ message: "Access denied. No token provided" });
+      return res.status(401).json({ message: "Access denied from middleware. No token provided" });
     }
 
     const secret = process.env.ACCESS_TOKEN_SECRET; 
@@ -51,7 +51,6 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
       const managerRepo = new ManagerRepository(managerModel); 
 
       const isBlocked = await managerRepo.findIsBlocked(managerId); 
-      console.log("isBlocked===================?>", isBlocked);
       
       if (isBlocked === null) {
         return res.status(404).json({ message: "Manager not found" });

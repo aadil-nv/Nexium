@@ -20,12 +20,12 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
   private async uploadFileToS3(
     businessOwnerId: string,
     file: Express.Multer.File,
-    fileType: "profileImage" | "companyLogo" | "documents"
+    fileType: "profilePicture" | "companyLogo" | "documents"
   ) {
     const result = await this.getDetails(businessOwnerId);
     const existingFile =
-      fileType === "profileImage"
-        ? result.personalDetails.profileImage
+      fileType === "profilePicture"
+        ? result.personalDetails.profilePicture
         : fileType === "documents"
         ? result.documents
         : result.companyDetails.companyLogo;
@@ -97,8 +97,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
   async getPersonalDetails(businessOwnerId: string): Promise<IPersonalDetailsDTO> {
     try {
       const result = await this.getDetails(businessOwnerId);
-      const profileImageUrl = result.personalDetails.profileImage
-        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result.personalDetails.profileImage}`
+      const profileImageUrl = result.personalDetails.profilePicture
+        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result.personalDetails.profilePicture}`
         : "";
 
 
@@ -107,7 +107,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         email: result.personalDetails.email,
         phone: result.personalDetails.phone,
         personalWebsite: result.personalDetails.personalWebsite,
-        profileImage: profileImageUrl,
+        profilePicture: profileImageUrl,
       };
     } catch {
       throw new Error("Error while getting personal details");
@@ -239,7 +239,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
   }
   async uploadImages(businessOwnerId: string, file: Express.Multer.File): Promise<IResponseDTO> {
     try {
-      const imageUrl = await this.uploadFileToS3(businessOwnerId, file, "profileImage");
+      const imageUrl = await this.uploadFileToS3(businessOwnerId, file, "profilePicture");
 
       console.log("==============imageUrl======================", imageUrl);
       

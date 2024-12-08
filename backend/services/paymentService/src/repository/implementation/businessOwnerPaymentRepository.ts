@@ -1,31 +1,26 @@
 import { inject, injectable } from "inversify";
+import mongoose from "mongoose";
+import BaseRepository from "./baseRepository";
 import IBusinessOwnerPaymentRepository from "../interface/IBusinessOwnerPaymentRepository";
 import ISubscription from "../../entities/subscriptionEntity";
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntity";
-import mongoose from "mongoose";
-import BaseRepository from "./baseRepository";
-import subscriptionModel from "../../models/subscriptionModel";
-import businessOwnerModel from "../../models/businessOwnerModel";
 
 @injectable()
 export default class BusinessOwnerPaymentRepository
-  extends BaseRepository<ISubscription> 
+  extends BaseRepository<ISubscription>
   implements IBusinessOwnerPaymentRepository
 {
   constructor(
-    @inject("SubscriptionModel") private _subscriptionModel: mongoose.Model<ISubscription>,  // Primary model
-    @inject("BusinessOwnerModel") private _businessOwnerModel: mongoose.Model<IBusinessOwnerDocument>  // Used for business owner operations
+    @inject("SubscriptionModel") private subscriptionModel: mongoose.Model<ISubscription>,
+    @inject("BusinessOwnerModel") private businessOwnerModel: mongoose.Model<IBusinessOwnerDocument>
   ) {
-    super(_subscriptionModel);  // Super constructor with subscription model
+    super(subscriptionModel);
   }
 
-  // Existing method to get all payments from the subscription model
-  async getAllPayments(): Promise<ISubscription[]> {
+  async getAllSubscriptionPlans(): Promise<ISubscription[]> {
     try {
-      const payments = await this._subscriptionModel.find();  // Returns an array of ISubscription
-      if (!payments || payments.length === 0) {
-        throw new Error("No payments found");
-      }
+      const payments = await this.subscriptionModel.find();
+      if (!payments.length) throw new Error("No payments found");
       return payments;
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -33,58 +28,54 @@ export default class BusinessOwnerPaymentRepository
     }
   }
 
-  // New method to find a business owner by their ID
-  async findBusinessOwner(businessOwnerId: string): Promise<any> {
+  async findBusinessOwner(businessOwnerId: string): Promise<IBusinessOwnerDocument> {
     try {
-      const businessOwner = await this._businessOwnerModel.findById(businessOwnerId).exec();
-
-      if (!businessOwner) {
-        throw new Error("Business owner not found");
-      }
-
+      const businessOwner = await this.businessOwnerModel.findById(businessOwnerId).exec();
+      if (!businessOwner) throw new Error("Business owner not found");
       return businessOwner;
     } catch (error) {
       console.error("Error fetching business owner:", error);
       throw error;
     }
   }
-
-  // Method to upgrade a business owner's plan (still uses businessOwnerModel)
-  async upgradePlan(plan: string, amount: number, currency: string, email: string): Promise<any> {
-
-    
+  async findBusinessOwnerByEmail(email: string): Promise<IBusinessOwnerDocument> {
     try {
-      // Update the subscription details for the business owner
-      const result = await this._businessOwnerModel.updateOne(
-        { email }, // Filter by email
-        {
-          $set: { // Update these fields
-            "subscription.planName": plan,
-            "subscription.price": amount,
-            "subscription.currency": currency,
-            "subscription.isActive": true,
-            "subscription.updatedAt": new Date() // Update timestamp
-          },
-        }
-      ).exec();
-      console.log('Result from upgradePlan service:', result);
-      
-  
-      return result; // Return the update result
+      const businessOwner = await this.businessOwnerModel.findOne({ "personalDetails.email": email }).exec();
+      if (!businessOwner) throw new Error("Business owner not found");
+      return businessOwner;
     } catch (error) {
-      console.error("Error upgrading plan:", error);
-      throw new Error("Failed to upgrade the plan. Please try again later.");
+      console.error("Error fetching business owner:", error);
+      throw error;
     }
   }
   
 
-  // Find a business owner by email
+  async upgradePlan(plan: string, amount: number, currency: string, email: string): Promise<any> {
+    try {
+      const result = await this.businessOwnerModel.updateOne(
+        { email },
+        {
+          $set: {
+            "subscription.planName": plan,
+            "subscription.price": amount,
+            "subscription.currency": currency,
+            "subscription.isActive": true,
+            "subscription.updatedAt": new Date(),
+          },
+        }
+      ).exec();
+      if (!result.modifiedCount) throw new Error("Failed to upgrade the plan");
+      return result;
+    } catch (error) {
+      console.error("Error upgrading plan:", error);
+      throw error;
+    }
+  }
+
   async findByEmail(email: string): Promise<IBusinessOwnerDocument> {
     try {
-      const businessOwner = await this._businessOwnerModel.findOne({ "personalDetails.email":email }).exec();
-      if (!businessOwner) {
-        throw new Error("Business owner not found");
-      }
+      const businessOwner = await this.businessOwnerModel.findOne({ "personalDetails.email": email }).exec();
+      if (!businessOwner) throw new Error("Business owner not found");
       return businessOwner;
     } catch (error) {
       console.error("Error finding business owner by email:", error);
@@ -92,30 +83,28 @@ export default class BusinessOwnerPaymentRepository
     }
   }
 
-  // Update subscription information by email
-  async updateSubscriptionByEmail(businessOwnerId: string, subscription: any): Promise<any> {
-    console.log(`Inside updateSubscriptionByEmail service====================================`.bgRed);
-    console.log("Business Owner ID:", businessOwnerId);
-    console.log("Subscription:", subscription);
-  
+  async updateSubscriptionByEmail(email: string, subscription: any): Promise<any> {
     try {
-      // Ensure the correct field name is used in the filter
-      const result = await this._businessOwnerModel.updateOne(
-        { _id: businessOwnerId }, // Use the correct field name (_id for ObjectId)
-        { $set: { subscription } } // Use $set to update the subscription field
+      const result = await this.businessOwnerModel.updateOne(
+        { "personalDetails.email": email },
+        { $set: { subscription } }
       ).exec();
-  
-      console.log("Result from updateSubscriptionByEmail service:", result);
-  
-      if (result.modifiedCount === 0) {
-        throw new Error("Subscription not updated");
-      }
-  
+      if (!result.modifiedCount) throw new Error("Subscription not updated");
       return result;
     } catch (error) {
       console.error("Error updating subscription by email:", error);
-      throw new Error("Failed to update subscription. Please try again.");
+      throw error;
     }
   }
-  
+
+  async findNewSubscriptionPlan(planId: string): Promise<ISubscription[]> {
+    try {
+      const subscriptions = await this.subscriptionModel.find({ _id: planId }).exec();
+      if (!subscriptions.length) throw new Error("No subscriptions found");
+      return subscriptions;
+    } catch (error) {
+      console.error("Error fetching subscription plans:", error);
+      throw error;
+    }
+  }
 }

@@ -45,9 +45,7 @@ const targets = {
 
 console.log("Targets: ", targets.payment);
 
-// fghnikfgnjihnofiughnlikrfdhjb
 
-// fgklijdfhgkljnhdfkgjbdfdsafsdfsdfsdafdfgdfgdfs;'lfgdsgdfsgfdfsadfsfdsafasd
 app.use('/authentication', createProxyMiddleware({ target: targets.authentication, changeOrigin: true }));
 app.use('/businessOwner', createProxyMiddleware({ target: targets.businessOwner, changeOrigin: true }));
 app.use('/superAdmin', createProxyMiddleware({ target: targets.superAdmin, changeOrigin: true }));

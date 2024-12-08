@@ -55,6 +55,8 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         
         try {
           const manager = await managerModel.findById(managerId);
+          console.log("manager===", manager);
+          
           if (!manager) {
             return null; // Return null if no manager is found
           }
@@ -135,7 +137,22 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         throw new Error("Error retrieving leave employees");
       }
     }
- 
+  
+    async updateManagerAddress(managerId: string, data: any): Promise<any> {
+
+      console.log("Updating manager address in repository layer:", managerId, data);
+      try {
+        const result = await managerModel.findOneAndUpdate({_id: managerId }, { $set: { address: data } }, { new: true });
+        
+        if (!result) {
+          throw new Error(`No manager found with ID: ${managerId}`);
+        }
+        return result;
+      } catch (error :any) {
+        console.error("Error in updateManagerAddress:", error.message);
+        throw new Error("Error updating manager address");
+      }
+    }
     
       
 }

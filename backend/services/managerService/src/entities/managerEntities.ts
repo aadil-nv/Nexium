@@ -6,6 +6,7 @@ export interface IManager extends Document {
     personalWebsite?: string;
     email: string;
     profilePicture?: string;
+    phone: string;
   };
   professionalDetails: {
     managerType: "HumanResourceManager" | "GeneralManager" | "ProjectManager" | "SalesManager";
@@ -18,7 +19,7 @@ export interface IManager extends Document {
     street?: string;
     city?: string;
     state?: string;
-    zip?: string;
+    postalCode?: string;
     country?: string;
   };
   companyDetails: {

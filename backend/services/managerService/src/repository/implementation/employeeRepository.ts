@@ -45,4 +45,17 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
             return null;
         }
     }
+
+    async getEmployeeInformation(employeeId: string): Promise<IEmployee> {
+        try {
+            const employee = await this.employeeModel.findById(employeeId);
+            if (!employee) {
+                throw new Error("Employee not found");
+            }
+            return employee;
+        } catch (error) {
+            console.error("Error finding employee by ID:", error);
+            throw new Error("Failed to fetch employee information");
+        }
+    }
 }

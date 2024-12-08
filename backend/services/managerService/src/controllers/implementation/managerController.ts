@@ -11,6 +11,8 @@ export default class ManagerController implements IManagerController {
   ) {}
 
   async getManagers(req: Request, res: Response): Promise<Response> {
+    console.log("hitted getManagers--------------controller---------------------");
+    
     try {
       const managers = await this._managerService.getManagers();
       return res.status(200).json(managers);
@@ -199,7 +201,7 @@ export default class ManagerController implements IManagerController {
 
  async updateManagerProfilePicture(req: CustomRequest, res: Response): Promise<Response> {
 
-  console.log(`"***************************************** htted updateManagerProfilePicture"`.bgRed);
+
   
     try {
       const managerId = req?.user?.managerData?._id;
@@ -238,5 +240,26 @@ export default class ManagerController implements IManagerController {
       });
     }
   }
+
+ async updateManagerAddress(req: CustomRequest, res: Response): Promise<Response> {
+
+  console.log(`"***************************************** htted updateManagerAddress"`.bgRed);
+  
+    try {
+      const managerId = req?.user?.managerData?._id;
+      if (!managerId) {
+        return res
+          .status(400)
+          .json({ message: "Business owner ID not provided in cookies" });
+      }
+      const result = await this._managerService.updateManagerAddress(managerId, req.body);
+      return res.status(200).json(result);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to get manager personal info",
+        error,
+      });
+    }
+ } 
   
 }

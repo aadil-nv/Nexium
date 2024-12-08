@@ -6,3 +6,12 @@ export default interface IManagerProfileDTO {
     profilePicture?: string;
  
 }
+
+export interface IManaagerProfessionalInfoDTO {
+    managerType?: "HumanResourceManager" | "GeneralManager" | "ProjectManager" | "SalesManager";
+    workTime?: "Full-Time" | "Part-Time" | "Contract" | "Temporary";
+    joiningDate?: Date;
+    designation?: string;
+    salary?: number;
+}
+

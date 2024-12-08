@@ -18,7 +18,7 @@ export interface IManager extends Document {
     street?: string;
     city?: string;
     state?: string;
-    zip?: string;
+    postalCode?: string;
     country?: string;
   };
   companyDetails: {

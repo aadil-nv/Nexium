@@ -36,6 +36,7 @@ export const getAllManagers = async () => {
         const response = await managerInstance.get('/manager/api/manager/get-managers', {
             withCredentials: true, 
         });
+        console.log("response==========",response.data)
         return response.data;
     } catch (error) {
         throw error;
@@ -183,6 +184,20 @@ export const addEmployee = async (employeeData: any) => {
       message.success('Details updated successfully!');
     } catch (error) {
       message.error('Failed to update details.');
+      throw error;
+    }
+  };
+
+  export const updateManagerAddress = async (address) => {
+    try {
+      const response = await managerInstance.patch(
+        "/manager/api/manager/update-address",
+        address
+      );
+      console.log("Manager address updated successfully:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating manager address:', error.response?.data || error.message);
       throw error;
     }
   };

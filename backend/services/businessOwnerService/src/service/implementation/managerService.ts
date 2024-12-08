@@ -59,7 +59,7 @@ export default class ManagerService implements IManagerService {
                 managerName: data.name,
                 email: data.email,
                 personalWebsite: '', // Default value
-                profilePicture: data.profileImage || "",
+                profilePicture: data.profilePicture || "",
                 phone: data.phoneNumber,
             },
             professionalDetails: {
@@ -70,7 +70,7 @@ export default class ManagerService implements IManagerService {
             },
             companyDetails: {
                 companyName: businessOwnerData.companyDetails.companyName,
-                companyLogo: data.companyLogo || undefined,
+                companyLogo: businessOwnerData.companyDetails.companyLogo,
             },
             managerCredentials: {
                 companyEmail: managerCredentials.managerCredentials.email,
@@ -80,7 +80,7 @@ export default class ManagerService implements IManagerService {
               street: "",
               city: "",
               state: "",
-              zip: "",
+              postalCode: "",
               country:"",
             },
             documents: [
@@ -113,7 +113,7 @@ export default class ManagerService implements IManagerService {
         console.error("Error adding HR Manager:", error.message.bgRed);
         throw new Error(error.message || "Error adding HR Manager");
     }
-}
+ }
 
   
   private validateManagerData(data: any): void {
@@ -150,7 +150,6 @@ export default class ManagerService implements IManagerService {
   }
   
   
-
   async sendOfferLetter(managerName: string, managerCredentials: any, managerEmail: string): Promise<void> {
     try {
       const offerLetterContent = generateOfferLetter(managerName, managerCredentials);
@@ -291,9 +290,9 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  private async uploadFileToS3(businessOwnerId: string,managerId: string, file: Express.Multer.File, fileType: "profileImage" | "companyLogo") {
+  private async uploadFileToS3(businessOwnerId: string,managerId: string, file: Express.Multer.File, fileType: "profilePicture" | "companyLogo") {
     const result = await this.getDetails(businessOwnerId ,managerId);
-    const existingFile = fileType === "profileImage" ? result.personalDetails.profilePicture : result.companyDetails.companyLogo;
+    const existingFile = fileType === "profilePicture" ? result.personalDetails.profilePicture : result.companyDetails.companyLogo;
 
     if (existingFile) {
       const s3Client = new S3Client({ region: 'eu-north-1' });

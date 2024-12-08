@@ -214,7 +214,7 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
           city: data.city,
           state: data.state,
           country: data.country,
-          zip: data.postalCode,
+          postalCode: data.postalCode,
         }
       };
   

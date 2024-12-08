@@ -11,4 +11,5 @@ export default interface IManagerService {
     setNewAccessToken(refreshToken: string): Promise<string>
     updateManagerProfilePicture(businessOwnerId: string, file: Express.Multer.File): Promise<any>
     getLeaveEmployees(managerId: string): Promise<IEmployee>
+    updateManagerAddress(managerId: string, data: any): Promise<any>
 }

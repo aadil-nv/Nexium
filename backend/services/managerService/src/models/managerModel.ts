@@ -8,6 +8,7 @@ const managerSchema: Schema<IManager> = new Schema(
       personalWebsite: { type: String },
       email: { type: String },
       profilePicture: { type: String, default: "https://avatar.iran.liara.run/public/boy?username=Ash" },
+      phone: { type: String },
     },
     professionalDetails: {
       managerType: {
@@ -26,7 +27,7 @@ const managerSchema: Schema<IManager> = new Schema(
       street: { type: String },
       city: { type: String },
       state: { type: String },
-      zip: { type: String },
+      postalCode: { type: String },
       country: { type: String },
     },
     companyDetails: {
@@ -38,7 +39,7 @@ const managerSchema: Schema<IManager> = new Schema(
     documents: [
       {
         documentName: { type: String, default: "HR Document" },
-        documentUrl: { type: String, match: /^(http|https):\/\/[^ "]+$/ },
+        documentUrl: { type: String },
         uploadedAt: { type: Date, default: Date.now },
       },
     ],

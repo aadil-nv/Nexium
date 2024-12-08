@@ -14,13 +14,7 @@ export default class EmployeeController implements IEmployeeController {
         try {
             const { employeedata } = req.body;
             const managerData= req?.user?.managerData;
-            console.log(`"*****************************************"`.bgRed);
-            console.log(employeedata);
-            console.log();
-            console.log();
-            console.log(managerData);
-            
-            console.log(`"*****************************************"`.bgRed);
+
             
 
             const result = await this._employeeService.addEmployees(employeedata, managerData);
@@ -47,4 +41,27 @@ export default class EmployeeController implements IEmployeeController {
             res.status(500).json({ message: "Failed to get employees", error });
         }
     }
+
+    async getEmployeePersonalInformation(req: CustomRequest, res: Response): Promise<void> {
+        try {
+            const employeeId = req.params.id;
+            const result = await this._employeeService.getEmployeePersonalInformation(employeeId);
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error fetching employee information:", error);
+            res.status(500).json({ message: "Failed to get employee information", error });
+        }
+    }
+
+    async getEmployeeAddress(req: CustomRequest, res: Response): Promise<void> {
+        try {
+            const employeeId = req.params.id;
+            const result = await this._employeeService.getEmployeeAddress(employeeId);
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error fetching employee address:", error);
+            res.status(500).json({ message: "Failed to get employee address", error });
+        }
+    }
+
 }

@@ -21,7 +21,7 @@ const employeeSchema = new Schema<IEmployee>({
     city: { type: String },
     state: { type: String },
     country: { type: String },
-    zipCode: { type: String },
+    postalCode: { type: String },
   },
   
   professionalDetails: {

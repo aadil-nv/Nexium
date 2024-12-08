@@ -5,7 +5,7 @@ export interface IPersonalDetailsDTO {
     email: string; 
     phone: string; 
     personalWebsite?: string; 
-    profileImage: string; 
+    profilePicture?: string; 
   }
   
   export interface ICompanyDetailsDTO {

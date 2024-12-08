@@ -7,6 +7,9 @@ import useAuth from '../../../hooks/useAuth';
 import { motion } from 'framer-motion';
 import { FaEdit, FaUserLock, FaSignOutAlt } from 'react-icons/fa';
 import { fetchEmployees } from '../../../api/managerApi';
+import EmployeesList from './EmployeesTable';
+import {  FaPlus } from "react-icons/fa";
+import AddEmployeeModal from '../../global/AddEmployeeModal';
 
 export default function Employees() {
   const [employeeData, setEmployeeData] = useState<IEmployee[]>([]);
@@ -14,12 +17,13 @@ export default function Employees() {
   const { themeColor } = useTheme();
   const { manager } = useAuth();
   const isManager = manager?.isAuthenticated;
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     fetchEmployees()
       .then(setEmployeeData)
       .catch((error) => console.error('Error fetching employee data:', error));
-  }, []); // Re-fetch when `updateTrigger` changes
+  }, [updateTrigger]); // Re-fetch when `updateTrigger` changes
 
   const handleEdit = (employeeId: string) => console.log(`Edit employee with ID: ${employeeId}`);
   const handleRemove = (employeeId: string) => {
@@ -31,72 +35,61 @@ export default function Employees() {
     setUpdateTrigger((prev) => prev + 1); // Trigger re-fetch
   };
 
-  const columns: ColumnDef<IEmployee>[] = [
-    { id: 'ID', accessorKey: 'id' },
-    { header: 'Name', accessorKey: 'name' },
-    { header: 'Position', accessorKey: 'position' },
-    { header: 'Email', accessorKey: 'email' },
-    {
-      header: 'Status',
-      accessorKey: 'isOnline',
-      cell: ({ row }) => (
-        <span className={row.getValue('isOnline') ? 'text-green-500' : 'text-red-500'}>
-          {row.getValue('isOnline') ? 'Online' : 'Offline'}
-        </span>
-      ),
-    },
-    {
-      header: 'Actions',
-      cell: ({ row }) => (
-        <div className="flex space-x-3 justify-center items-center">
-          {isManager && (
-            <>
-              <motion.button
-                onClick={() => handleEdit(row.id)}
-                style={{ backgroundColor: themeColor }}
-                className="text-white px-4 py-2 rounded-md flex items-center space-x-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <FaEdit className="text-lg" />
-                <span>Edit</span>
-              </motion.button>
+ const columns: ColumnDef<IEmployee>[] = [
+  { id: 'ID', accessorKey: '_id' },
+  { header: 'Name', accessorKey: 'employeeName' },
+  { header: 'Position', accessorKey: 'position' },
+  { header: 'Email', accessorKey: 'email' },
+  {
+    header: 'Status',
+    accessorKey: 'isActive',
+    cell: ({ row }) => (
+      <span className={row.getValue('isActive') ? 'text-green-500' : 'text-red-500'}>
+        {row.getValue('isActive') ? 'Active' : 'Inactive'}
+      </span>
+    ),
+  },
+];
 
-              <motion.button
-                onClick={() => handleBlock(row.id)}
-                className="text-white bg-yellow-500 px-4 py-2 rounded-md flex items-center space-x-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <FaUserLock className="text-lg" />
-                <span>Block</span>
-              </motion.button>
-
-              <motion.button
-                onClick={() => handleRemove(row.id)}
-                className="text-white bg-red-500 px-4 py-2 rounded-md flex items-center space-x-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <FaSignOutAlt className="text-lg" />
-                <span>Fire</span>
-              </motion.button>
-            </>
-          )}
-        </div>
-      ),
-    },
-  ];
 
   return (
-    <div>
-      <h1 className="text-2xl text-red-800">Employees</h1>
-      <Table
-        data={employeeData}
-        columns={columns}
-        loading={!employeeData.length}
-        error={null}
-      />
+    <div className="relative p-6 space-y-6">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-red-800">Employees</h1>
+  
+        {/* Add Employee Button */}
+        <motion.button
+          onClick={() => setIsModalVisible(true)}
+          style={{ backgroundColor: themeColor }}
+          className="flex items-center text-white px-4 py-2 rounded-md transition duration-300"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <FaPlus className="mr-2" /> Add Employee
+        </motion.button>
+      </div>
+  
+      {/* Employees List */}
+      <div className="mt-4">
+        <EmployeesList 
+          data={employeeData} 
+
+          loading={!employeeData.length} 
+          error={null} 
+        />
+      </div>
+  
+      {/* Add Employee Modal */}
+      {manager.isAuthenticated && (
+        <AddEmployeeModal 
+          isVisible={isModalVisible} 
+          onClose={() => setIsModalVisible(false)} 
+          onManagerAdded={() => setUpdateTrigger((prev) => prev + 1)} 
+        />
+      )}
     </div>
   );
+  
+  
 }

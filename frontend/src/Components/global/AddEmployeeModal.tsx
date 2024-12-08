@@ -1,76 +1,24 @@
-// AddManagerModal.tsx
-
-import React, { useState } from 'react'; 
+import React, { useState } from 'react';
 import { Button, Modal, Form, Input, Select, DatePicker } from 'antd';
-import { createStyles, useTheme } from 'antd-style';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../redux/store/store';
-import { addEmployee } from '../../api/managerApi'; 
-import { addEmployeeSchema } from '../../config/validationSchema'; 
 import { useForm } from 'antd/lib/form/Form';
+import { RootState } from '../../redux/store/store';
+import { addEmployee } from '../../api/managerApi';
+import { addEmployeeSchema } from '../../config/validationSchema';
 
 const { Option } = Select;
 
-const useStyle = createStyles(({ token }) => ({
-  'my-modal-mask': {
-    boxShadow: `inset 0 0 15px #fff`,
-  },
-  'my-modal-header': {
-    borderBottom: `1px dotted ${token.colorPrimary}`,
-  },
-  'my-modal-footer': {
-    color: token.colorPrimary,
-  },
-  'my-modal-content': {
-    border: '1px solid #333',
-  },
-}));
-
-const AddManagerModal: React.FC<{
+const AddEmployeeModal: React.FC<{
   isVisible: boolean;
   onClose: () => void;
-  onManagerAdded: (newManager: any) => void; // Add this line to accept onManagerAdded prop
+  onManagerAdded: (newManager: any) => void;
 }> = ({ isVisible, onClose, onManagerAdded }) => {
-  const { styles } = useStyle();
-  const token = useTheme();
   const themeColor = useSelector((state: RootState) => state.menu.themeColor);
-
   const [formData, setFormData] = useState({
-    name: '',
-    position: '',
-    email: '',
-    phoneNumber: '',
-    joiningDate: '',
-    salary: 0,
-    workTime: '',
+    name: '', position: '', email: '', phoneNumber: '',
+    joiningDate: '', salary: 0, workTime: '',
   });
-
-  const [form] = useForm(); 
-
-  const classNames = {
-    body: styles['my-modal-body'],
-    mask: styles['my-modal-mask'],
-    header: styles['my-modal-header'],
-    footer: styles['my-modal-footer'],
-    content: styles['my-modal-content'],
-  };
-
-  const modalStyles = {
-    header: {
-      borderLeft: `5px solid ${token.colorPrimary}`,
-      borderRadius: 0,
-      paddingInlineStart: 5,
-    },
-    mask: {
-      backdropFilter: 'blur(10px)',
-    },
-    footer: {
-      borderTop: '1px solid #333',
-    },
-    content: {
-      boxShadow: '0 0 30px #999',
-    },
-  };
+  const [form] = useForm();
 
   const fields = [
     { id: 'name', label: 'Employee Name', type: 'text' },
@@ -87,29 +35,12 @@ const AddManagerModal: React.FC<{
     const validation = addEmployeeSchema.safeParse(formValues);
 
     if (validation.success) {
-      const employeeData = {
-        name: formValues.name,
-        position: formValues.position,
-        email: formValues.email,
-        phoneNumber: formValues.phoneNumber,
-        salary: Number(formValues.salary),
-        workTime: formValues.workTime,
-        joiningDate: formValues.joiningDate,
-      };
-
+      const employeeData = { ...formValues, salary: Number(formValues.salary) };
       try {
-        const success = await addEmployee(employeeData); 
+        const success = await addEmployee(employeeData);
         if (success) {
-          setFormData({
-            name: '',
-            position: '',
-            email: '',
-            phoneNumber: '',
-            joiningDate: '',
-            salary: 0,
-            workTime: '',
-          });
-          onManagerAdded(success); // Call onManagerAdded to notify the parent
+          setFormData({ name: '', position: '', email: '', phoneNumber: '', joiningDate: '', salary: 0, workTime: '' });
+          onManagerAdded(success);
           onClose();
         }
       } catch (error) {
@@ -117,63 +48,36 @@ const AddManagerModal: React.FC<{
       }
     } else {
       form.setFields(
-        validation.error.errors.map((err) => ({
-          name: err.path[0],
-          errors: [err.message],
-        }))
+        validation.error.errors.map(err => ({ name: err.path[0], errors: [err.message] }))
       );
     }
   };
 
   return (
-    <Modal
-      title="Add Employee"
-      open={isVisible}
-      onOk={onClose}
-      onCancel={onClose}
-      footer={null}
-      classNames={classNames}
-      styles={modalStyles}
-    >
-      <Form
-        layout="horizontal"
-        form={form}
-        onFinish={handleSubmit}
-        onFinishFailed={(errorInfo) => console.log('Failed:', errorInfo)}
-      >
-        {fields.map((field) => (
+    <Modal title="Add Employee" open={isVisible} onOk={onClose} onCancel={onClose} footer={null}>
+      <Form form={form} onFinish={handleSubmit}>
+        {fields.map(({ id, label, type, options }) => (
           <Form.Item
-            key={field.id}
-            label={field.label}
-            name={field.id}
-            rules={[{ required: true, message: `Please input ${field.label.toLowerCase()}!` }]}>
-
-            {field.type === 'select' ? (
-              <Select
-                placeholder={`Select ${field.label}`}
-                onChange={(value) => setFormData({ ...formData, [field.id]: value })}
-              >
-                {field.options?.map((option) => (
+            key={id}
+            label={label}
+            name={id}
+            rules={[{ required: true, message: `Please input ${label.toLowerCase()}!` }]}
+          >
+            {type === 'select' ? (
+              <Select placeholder={`Select ${label}`} onChange={value => setFormData({ ...formData, [id]: value })}>
+                {options?.map(option => (
                   <Option key={option} value={option}>
                     {option}
                   </Option>
                 ))}
               </Select>
-            ) : field.type === 'date' ? (
-              <DatePicker
-                style={{ width: '100%' }}
-                onChange={(date) => setFormData({ ...formData, [field.id]: date })}
-              />
-            ) : field.type === 'number' ? (
-              <Input
-                type="number"
-                placeholder={`Enter ${field.label}`}
-                onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-              />
+            ) : type === 'date' ? (
+              <DatePicker style={{ width: '100%' }} onChange={date => setFormData({ ...formData, [id]: date })} />
             ) : (
               <Input
-                placeholder={`Enter ${field.label}`}
-                onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                type={type}
+                placeholder={`Enter ${label}`}
+                onChange={e => setFormData({ ...formData, [id]: e.target.value })}
               />
             )}
           </Form.Item>
@@ -188,4 +92,4 @@ const AddManagerModal: React.FC<{
   );
 };
 
-export default AddManagerModal;
+export default AddEmployeeModal;

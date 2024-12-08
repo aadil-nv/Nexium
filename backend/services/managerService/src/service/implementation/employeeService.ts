@@ -5,7 +5,7 @@ import { generateEmail } from "../../utils/generateEmail";
 import { generatePassword } from "../../utils/generatePassword";
 import nodemailer from "nodemailer";
 import { generateOfferLetter } from "../../utils/generateOfferLetter";
-import { IEmployeesDTO } from "../../dto/IEmployeesDTO";
+import { IEmployeeAddressDTO, IEmployeePersonalInformationDTO, IEmployeesDTO } from "../../dto/IEmployeesDTO";
 import RabbitMQMessager from "../../events/implementation/producer";
 
 
@@ -126,7 +126,7 @@ export default class EmployeeService implements IEmployeeService {
         street: "",
         city: "",
         state: "",
-        zipCode: "",
+        postalCode: "",
       },
       professionalDetails: {
         position: employeeData.position,
@@ -185,5 +185,48 @@ export default class EmployeeService implements IEmployeeService {
         throw new Error("Failed to fetch employees data");
     }
 }
+
+async getEmployeePersonalInformation(employeeId: string ) : Promise<IEmployeePersonalInformationDTO> {
+    try {
+        const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId);
+
+        if (!employeeData) {
+            throw new Error("Employee not found");
+        }
+
+       return {
+           employeeName: employeeData.personalDetails.employeeName,
+           phone: employeeData.personalDetails.phone,
+           profilePicture: employeeData.personalDetails.profilePicture || "",
+           email: employeeData.personalDetails.email
+       }
+    } catch (error) {
+        console.error("Error in service layer:", error);
+        throw new Error("Failed to fetch employee information");
+    }
+  }
+
+  async getEmployeeAddress(employeeId: string): Promise<IEmployeeAddressDTO> {
+    try {
+        const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId);
+
+        if (!employeeData) {
+            throw new Error("Employee not found");
+        }
+
+        return {
+            street: employeeData.personalDetails.street,
+            city: employeeData.personalDetails.city,
+            state: employeeData.personalDetails.state,
+            postalCode: employeeData.personalDetails.postalCode,
+            country: employeeData.personalDetails.country
+        }
+    } catch (error) {
+        console.error("Error in service layer:", error);
+        throw new Error("Failed to fetch employee address");
+    }
+   }
+
+   
 
 }

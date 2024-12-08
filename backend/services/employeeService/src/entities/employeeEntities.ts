@@ -18,7 +18,7 @@ export default interface IEmployee extends Document {
     city:  String ,
     state:  String ,
     country:  String ,
-    zipCode:  String ,
+    postalCode:  String ,
   }
   professionalDetails: {
     position: "Team Lead" | "Senior Software Engineer" | "Junior Software Engineer" ;

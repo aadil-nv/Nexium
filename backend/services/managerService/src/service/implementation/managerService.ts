@@ -18,7 +18,13 @@ export default class ManagerService implements IManagerService {
 
   async getManagers(): Promise<any> {
     try {
-      return await this._managerRepository.findAll();
+     const managers = await this._managerRepository.findAll();
+     console.log("managers", managers);
+     
+     if (!managers) {
+       throw new Error("No managers found");
+     }
+     return managers;
     } catch (error) {
       console.error("Error fetching managers:", error);
       throw new Error("Error fetching managers");
@@ -233,6 +239,22 @@ export default class ManagerService implements IManagerService {
     } catch (error :any) {
       console.error("Error in getLeaveEmployees:", error.message);
       throw new Error("Error retrieving leave employees");
+    }
+  }
+
+  async updateManagerAddress(managerId: string, data: any): Promise<any> {
+    try {
+      if (!managerId) {
+        throw new Error("Business owner ID not found");
+      }
+  
+      const result = await this._managerRepository.updateManagerAddress(managerId, data);
+        console.log("result", result);
+        
+      return result;
+    } catch (error :any) {
+      console.error("Error in updateManagerAddress:", error.message);
+      throw new Error("Error updating manager address");
     }
   }
 }

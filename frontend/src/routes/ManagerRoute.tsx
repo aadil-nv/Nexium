@@ -5,6 +5,7 @@ import Dashboard from "../components/manager/dashboard/Dashboard";
 import Employees from "../components/manager/dashboard/Employees";
 import Departments from "../components/manager/dashboard/Departments";
 import Attendance from "../components/manager/dashboard/Attendance";
+
 import Payroll from "../components/manager/dashboard/Payroll";
 import Leaves from "../components/manager/dashboard/Leaves";
 import Announcements from "../components/global/Announcements";

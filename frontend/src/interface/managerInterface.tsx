@@ -1,14 +1,14 @@
 
 
 export interface IEmployee {  //! Part of Department 
-    id: string;
-    photo: string;
-    name: string;
-    email: string;
-    position: string;
-    isOnline: boolean;
-    profilePicture: string;
-    isActive: boolean;
+    id?: string;
+    photo?: string;
+    name?: string;
+    email?: string;
+    position?: string;
+    isOnline?: boolean;
+    profilePicture?: string;
+    isActive?: boolean;
   }
 
 export interface IDepartment {

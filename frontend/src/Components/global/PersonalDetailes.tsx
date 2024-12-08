@@ -16,7 +16,7 @@ interface ManagerInfo {
   managerName: string;
   email: string;
   phone: string;
-  profileImage?: string;
+  profilePicture?: string;
   personalWebsite?: string;
 }
 
@@ -24,7 +24,7 @@ interface BusinessOwnerInfo {
   businessOwnerName: string;
   email: string;
   phone: string;
-  profileImage?: string;
+  profilePicture?: string;
   personalWebsite?: string;
 }
 
@@ -47,7 +47,7 @@ export default function PersonalDetails() {
       fetchManagerPersonalInfo()
         .then((data: ManagerInfo) => {
           setManagerInfo(data);
-          setProfileImage(data?.profileImage || '');
+          setProfileImage(data?.profilePicture || '');
         })
         .catch((error) => {
           console.error('Error fetching manager info:', error);
@@ -60,7 +60,7 @@ export default function PersonalDetails() {
       fetchBusinessOwnerPersonalInfo()
         .then((data: BusinessOwnerInfo) => {
           setBusinessOwnerInfo(data);
-          setProfileImage(data?.profileImage || '');
+          setProfileImage(data?.profilePicture || '');
         })
         .catch((error) => {
           console.error('Error fetching business owner info:', error);
@@ -89,7 +89,8 @@ export default function PersonalDetails() {
             },
           }
         );
-        imageUrl = response.data.data.profilePicture;
+        console.log("res====================",response);
+        imageUrl = response.data.data.imageUrl;
       } else {
         imageUrl = await uploadBusinessOwnerProfileImage(file);
       }
@@ -133,7 +134,7 @@ export default function PersonalDetails() {
         <div className="space-y-6 w-[80%]">
           <div className="relative mb-2 flex flex-col items-center pt-4 h-[40%]">
             <img
-              src={profileImage || displayDetails?.profileImage}
+              src={profileImage || displayDetails?.profilePicture } 
               alt="Profile"
               className="w-24 h-24 rounded-full object-cover mx-auto"
             />

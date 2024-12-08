@@ -36,7 +36,7 @@ export interface IPersonalDetails {
   password: string;
   phone: string;
   personalWebsite?: string;
-  profileImage?: string;
+  profilePicture?: string;
 }
 
 export interface ICompanyDetails {

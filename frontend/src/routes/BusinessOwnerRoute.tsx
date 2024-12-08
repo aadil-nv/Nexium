@@ -15,27 +15,37 @@ import PersonalDetailes from "../components/global/PersonalDetailes";
 import Address from "../components/global/Address";
 import Documents from "../components/global/Documents";
 import Securitie from "../components/global/Securitie";
+import SuccessPage from "../components/ui/SuccessPage";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 
 const BusinessOwnerRoutes = () => {
+  const navigate = useNavigate(); // Initialize navigate
 
+  // Function to close the success page and redirect or perform an action
+  const handleSuccessClose = () => {
+    navigate("/business-owner/subscriptions"); // Redirect to dashboard or another route
+  };
 
   return (
     <Routes>
-      <Route element={<BusinessOwnerPrivateRoute />}> 
+      <Route element={<BusinessOwnerPrivateRoute />}>
         <Route element={<BusinessOwnerDashBoardLayout />}>
           <Route path="dashboard" element={<BusinessOwnerDashboard />} />
-          <Route path="employees"element={<EmployeeList />}/>
+          <Route path="employees" element={<EmployeeList />} />
           <Route path="subscriptions" element={<Subscriptions />} />
           <Route path="service-requests" element={<ServiceRequests />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="announcements" element={<Announcements />} />
           <Route path="demo" element={<DemoTable />} />
-          
           <Route path="profile" element={<Profile />} />
-          <Route path="personaldetails" element={<PersonalDetailes  />} />
+          <Route path="personaldetails" element={<PersonalDetailes />} />
           <Route path="address" element={<Address />} />
           <Route path="documents" element={<Documents />} />
           <Route path="security" element={<Securitie />} />
+          <Route
+            path="success"
+            element={<SuccessPage message="Success" onClose={handleSuccessClose} />}
+          />
         </Route>
       </Route>
     </Routes>

@@ -10,3 +10,20 @@ export interface ISubscriptionDTO {
     features: string[]; 
     isActive: boolean; 
 }
+
+export interface UpgradePlanResponseDTO {
+    sessionId: string | null;
+    success: boolean;
+    planName: string;
+  }
+  
+  export interface ProcessPaidPlanDTO {
+    session: any;
+    success: boolean;
+    planName: string;
+  }
+  
+  export interface HandleWebhookResponseDTO {
+    success: boolean;
+    updatedBusinessOwner: any;
+  }
