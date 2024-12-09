@@ -19,7 +19,7 @@ export default class ManagerService implements IManagerService {
   async getManagers(): Promise<any> {
     try {
      const managers = await this._managerRepository.findAll();
-     console.log("managers", managers);
+
      
      if (!managers) {
        throw new Error("No managers found");
@@ -175,11 +175,11 @@ export default class ManagerService implements IManagerService {
   
 
   async setNewAccessToken(refreshToken: string): Promise<string> {
-    console.log("refresh token in manager service", refreshToken);
+
     
     try {
       const decoded = verifyRefreshToken(refreshToken);
-      console.log("decoded==================>", decoded);
+  
       
       const managerData = decoded?.managerData;
 

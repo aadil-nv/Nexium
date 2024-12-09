@@ -51,11 +51,11 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
 
       async findIsBlocked(managerId: string): Promise<boolean | null> {
 
-        console.log("Finding manager by ID in repository layer:", managerId);
+  
         
         try {
           const manager = await managerModel.findById(managerId);
-          console.log("manager===", manager);
+      
           
           if (!manager) {
             return null; // Return null if no manager is found

@@ -7,6 +7,9 @@ export default interface IEmployeeRepository extends BaseRepository<any>  {
     addEmployee(employeeData:any ):Promise <any>
     findByEmail(email: string): Promise<IEmployee | null>
     getEmployeeInformation(employeeId: string): Promise<any>
+    updateEmployeePersonalInformation(employeeId: string ,personalInformation: any): Promise<any>
+    updateAddress(employeeId: string ,address: any): Promise<any>
+    updateEmployeeProfessionalInfo(employeeId: string ,professionalInfo: any): Promise<any>
  
 
 }

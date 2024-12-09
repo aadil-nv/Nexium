@@ -1,272 +1,131 @@
-import React, { useState, useEffect } from "react";
-import { Modal, Tabs, Input, DatePicker, Button, Upload } from "antd";
-import { FaEdit } from "react-icons/fa";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { Modal, Tabs, Form, Input, Button, message, Spin, Card } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import axios from "axios";
+import { IEmployeeData } from "../../interface/managerInterface";
+import { managerInstance } from "../../services/managerInstance";
 
 const { TabPane } = Tabs;
 
-interface IEmployee {
-  personalDetails: {
-    employeeName: string;
-    email: string;
-    phone: string;
-    profilePicture: string;
-  };
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    postalCode: string;
-  };
-  professionalDetails: {
-    position: "Team Lead" | "Senior Software Engineer" | "Junior Software Engineer";
-    department: string;
-    workTime: "Full-Time" | "Part-Time" | "Contract" | "Temporary";
-    joiningDate: Date;
-    currentStatus: string;
-    companyName: string;
-    salary: number;
-    skills: string[];
-  };
-  employeeCredentials: {
-    companyEmail: string;
-    companyPassword: string;
-  };
-  documents: {
-    resume: string;
-    idProof: string;
-  };
+interface InfoModalProps {
+  employeeData: IEmployeeData;
+  visible: boolean;
+  onClose: () => void;
 }
 
-const EmployeeModal = ({ isVisible, employeeId, onCancel }: { isVisible: boolean, employeeId: string, onCancel: () => void }) => {
-  const [formData, setFormData] = useState<IEmployee | null>(null);
+const tabConfigurations = [
+  { key: "1", tab: "Personal Details", fields: ["profilePicture", "employeeName", "email", "phone"] },
+  { key: "2", tab: "Professional Details", fields: ["jobTitle", "workTime", "salary", "dateOfJoin", "department", "currentStatus", "companyName"] },
+  { key: "3", tab: "Address", fields: ["street", "city", "postalCode", "country", "state"] },
+  { key: "4", tab: "Documents", fields: ["uploadId", "uploadResume"] },
+  { key: "5", tab: "Security", fields: ["companyEmail", "companyPassword"] },
+];
 
-  console.log("================================")
-  console.log("")
-  console.log("employeeId: ", employeeId)
-  console.log("")
-  console.log("================================")
+const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose, employeeData }) => {
+  const [loading, setLoading] = useState(false);
 
-  // Simulate fetching employee data
-  useEffect(() => {
-    if (employeeId && isVisible) {
+  const handleSubmit = async (tabKey: string, values: any) => {
+    setLoading(true);
+    try {
+      let endpoint = "";
 
-      const fetchEmployeeData = async () => {
+      if (tabKey === "1") {
+        endpoint = `/manager/api/employee/update-personalinformation/${employeeData._id}`;
+      } else if (tabKey === "2") {
+        endpoint = `/manager/api/employee/update-professionalinformation/${employeeData._id}`;
+      } else if (tabKey === "3") {
+        endpoint = `/manager/api/employee/update-address/${employeeData._id}`;
+      } else if (tabKey === "4") {
+        endpoint = `/manager/api/employee/update-documents/${employeeData._id}`;
+      } else if (tabKey === "5") {
+        endpoint = `/manager/api/employee/update-security/${employeeData._id}`;
+      }
 
-        const data: IEmployee = {
-          personalDetails: {
-            employeeName: "John Doe",
-            email: "john@example.com",
-            phone: "123-456-7890",
-            profilePicture: "",
-          },
-          address: {
-            street: "123 Main St",
-            city: "New York",
-            state: "NY",
-            country: "USA",
-            postalCode: "10001",
-          },
-          professionalDetails: {
-            position: "Senior Software Engineer",
-            department: "Engineering",
-            workTime: "Full-Time",
-            joiningDate: new Date("2020-01-01"),
-            currentStatus: "Active",
-            companyName: "Tech Corp",
-            salary: 80000,
-            skills: ["JavaScript", "React", "Node.js"],
-          },
-          employeeCredentials: {
-            companyEmail: "john@techcorp.com",
-            companyPassword: "password123",
-          },
-          documents: {
-            resume: "resume_url",
-            idProof: "id_proof_url",
-          },
-        };
-
-        setFormData(data);
-      };
-
-      fetchEmployeeData();
-    }
-  }, [employeeId, isVisible]);
-
-  const handleEditChange = (field: string, value: any) => {
-    if (formData) {
-      setFormData({
-        ...formData,
-        [field]: value,
-      });
+      await managerInstance
+      .post(endpoint, values);
+      message.success("Details updated successfully!");
+      onClose();
+    } catch (error) {
+      message.error("Failed to update details.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!formData) {
-    return null; // Optionally, you can display a loading state until the data is fetched
-  }
+  const handleDocumentUpload = (field: string) => {
+    console.log(`Upload ${field}`);
+  };
 
   return (
     <Modal
-      title="Edit Employee"
-      visible={isVisible}
-      onCancel={onCancel}
+      title="Employee Information"
+      visible={visible}
+      onCancel={onClose}
       footer={null}
-      width={1000}
+      width={700}
     >
-      <Tabs defaultActiveKey="1">
-        {/* Personal Details Tab */}
-        <TabPane tab="Personal Details" key="1">
-          <div className="space-y-4">
-            <Input
-              value={formData.personalDetails.employeeName}
-              onChange={(e) => handleEditChange("personalDetails.employeeName", e.target.value)}
-              placeholder="Employee Name"
-            />
-            <Input
-              value={formData.personalDetails.email}
-              onChange={(e) => handleEditChange("personalDetails.email", e.target.value)}
-              placeholder="Email"
-            />
-            <Input
-              value={formData.personalDetails.phone}
-              onChange={(e) => handleEditChange("personalDetails.phone", e.target.value)}
-              placeholder="Phone"
-            />
-            <Upload
-              showUploadList={false}
-              onChange={(info) => handleEditChange("personalDetails.profilePicture", info.fileList[0]?.url || "")}
-            >
-              <Button>Upload Profile Picture</Button>
-            </Upload>
-          </div>
-        </TabPane>
-
-        {/* Address Tab */}
-        <TabPane tab="Address" key="2">
-          <div className="space-y-4">
-            <Input
-              value={formData.address.street}
-              onChange={(e) => handleEditChange("address.street", e.target.value)}
-              placeholder="Street"
-            />
-            <Input
-              value={formData.address.city}
-              onChange={(e) => handleEditChange("address.city", e.target.value)}
-              placeholder="City"
-            />
-            <Input
-              value={formData.address.state}
-              onChange={(e) => handleEditChange("address.state", e.target.value)}
-              placeholder="State"
-            />
-            <Input
-              value={formData.address.country}
-              onChange={(e) => handleEditChange("address.country", e.target.value)}
-              placeholder="Country"
-            />
-            <Input
-              value={formData.address.postalCode}
-              onChange={(e) => handleEditChange("address.postalCode", e.target.value)}
-              placeholder="Postal Code"
-            />
-          </div>
-        </TabPane>
-
-        {/* Professional Details Tab */}
-        <TabPane tab="Professional Details" key="3">
-          <div className="space-y-4">
-            <Input
-              value={formData.professionalDetails.position}
-              onChange={(e) => handleEditChange("professionalDetails.position", e.target.value)}
-              placeholder="Position"
-            />
-            <Input
-              value={formData.professionalDetails.department}
-              onChange={(e) => handleEditChange("professionalDetails.department", e.target.value)}
-              placeholder="Department"
-            />
-            <Input
-              value={formData.professionalDetails.workTime}
-              onChange={(e) => handleEditChange("professionalDetails.workTime", e.target.value)}
-              placeholder="Work Time"
-            />
-            <DatePicker
-              onChange={(date) => handleEditChange("professionalDetails.joiningDate", date)}
-              placeholder="Joining Date"
-            />
-            <Input
-              value={formData.professionalDetails.currentStatus}
-              onChange={(e) => handleEditChange("professionalDetails.currentStatus", e.target.value)}
-              placeholder="Current Status"
-            />
-            <Input
-              value={formData.professionalDetails.companyName}
-              onChange={(e) => handleEditChange("professionalDetails.companyName", e.target.value)}
-              placeholder="Company Name"
-            />
-            <Input
-              value={formData.professionalDetails.salary}
-              onChange={(e) => handleEditChange("professionalDetails.salary", e.target.value)}
-              placeholder="Salary"
-            />
-            <Input
-              value={formData.professionalDetails.skills.join(", ")}
-              onChange={(e) => handleEditChange("professionalDetails.skills", e.target.value.split(", "))}
-              placeholder="Skills (comma separated)"
-            />
-          </div>
-        </TabPane>
-
-        {/* Employee Credentials Tab */}
-        <TabPane tab="Employee Credentials" key="4">
-          <div className="space-y-4">
-            <Input
-              value={formData.employeeCredentials.companyEmail}
-              onChange={(e) => handleEditChange("employeeCredentials.companyEmail", e.target.value)}
-              placeholder="Company Email"
-            />
-            <Input.Password
-              value={formData.employeeCredentials.companyPassword}
-              onChange={(e) => handleEditChange("employeeCredentials.companyPassword", e.target.value)}
-              placeholder="Company Password"
-            />
-          </div>
-        </TabPane>
-
-        {/* Documents Tab */}
-        <TabPane tab="Documents" key="5">
-          <div className="space-y-4">
-            <Upload
-              showUploadList={false}
-              onChange={(info) => handleEditChange("documents.resume", info.fileList[0]?.url || "")}
-            >
-              <Button>Upload Resume</Button>
-            </Upload>
-            <Upload
-              showUploadList={false}
-              onChange={(info) => handleEditChange("documents.idProof", info.fileList[0]?.url || "")}
-            >
-              <Button>Upload ID Proof</Button>
-            </Upload>
-          </div>
-        </TabPane>
-      </Tabs>
-
-      <div className="mt-4 flex justify-end">
-        <motion.button
-          className="bg-blue-500 text-white px-6 py-2 rounded-md"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onCancel}
-        >
-          Save Changes
-        </motion.button>
-      </div>
+      <Spin spinning={loading}>
+        <Tabs defaultActiveKey="1">
+          {tabConfigurations.map((tab) => (
+            <TabPane tab={tab.tab} key={tab.key}>
+              <Form
+                layout="vertical"
+                initialValues={{
+                  employeeName: employeeData?.personalDetails?.employeeName,
+                  email: employeeData?.personalDetails?.email,
+                  phone: employeeData?.personalDetails?.phone,
+                  jobTitle: employeeData?.professionalDetails?.position,
+                  workTime: employeeData?.professionalDetails?.workTime,
+                  department: employeeData?.professionalDetails?.department,
+                  currentStatus: employeeData?.professionalDetails?.workTime,
+                  companyName: employeeData?.professionalDetails?.companyName,
+                  skills: employeeData?.professionalDetails?.skills,
+                  salary: employeeData?.professionalDetails?.salary,
+                  dateOfJoin: employeeData?.professionalDetails?.joiningDate ? 
+                    new Date(employeeData?.professionalDetails?.joiningDate).toLocaleDateString() : "",
+                  street: employeeData?.address?.street,
+                  city: employeeData?.address?.city,
+                  postalCode: employeeData?.address?.postalCode,
+                  country: employeeData?.address?.country,
+                  state: employeeData?.address?.state,
+                  companyEmail: employeeData?.employeeCredentials?.companyEmail,
+                  companyPassword: employeeData?.employeeCredentials?.companyPassword,
+                }}
+                onFinish={(values) => handleSubmit(tab.key, values)}
+              >
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
+                  {tab.fields.map((field) => (
+                    <div key={field} style={{ flex: "1 0 48%" }}>
+                      <Form.Item label={field} name={field}>
+                        {field.includes("upload") ? (
+                          <Button
+                            icon={<UploadOutlined />}
+                            onClick={() => handleDocumentUpload(field)}
+                          >
+                            Upload {field === "uploadId" ? "ID Proof" : "Resume"}
+                          </Button>
+                        ) : (
+                          <Input
+                            placeholder={`Enter your ${field}`}
+                            type={field.includes("Password") ? "password" : "text"}
+                          />
+                        )}
+                      </Form.Item>
+                    </div>
+                  ))}
+                </div>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit" block>
+                    Save Changes
+                  </Button>
+                </Form.Item>
+              </Form>
+            </TabPane>
+          ))}
+        </Tabs>
+      </Spin>
     </Modal>
   );
 };
 
-export default EmployeeModal;
+export default EmployeeInfoModal;

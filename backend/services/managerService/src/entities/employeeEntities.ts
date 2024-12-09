@@ -6,6 +6,7 @@ export default interface IEmployee extends Document {
   isActive: boolean;
   isVerified: boolean;
   isBlocked: boolean;
+
   personalDetails: {
     employeeName: string;
     email: string;
@@ -22,7 +23,7 @@ export default interface IEmployee extends Document {
   }
   professionalDetails: {
     position: "Team Lead" | "Senior Software Engineer" | "Junior Software Engineer" ;
-    department: string;
+    department: mongoose.Schema.Types.ObjectId;
     workTime: "Full-Time" | "Part-Time" | "Contract" | "Temporary";
     joiningDate: Date;
     currentStatus: string;
@@ -36,9 +37,20 @@ export default interface IEmployee extends Document {
     companyPassword: string;
   };
   documents: {
-    resume: string;
-    idProof: string;
+  resume: {
+    documentName: string;
+    documentUrl: string;
+    documentSize: number; // Size of the document in bytes
+    uploadedAt: Date;
   };
+  employeeIdProof: {
+    documentName: string;
+    documentUrl: string;
+    documentSize: number; // Size of the document in bytes
+    uploadedAt: Date;
+  };
+};
+
 
   leaves: {
     casualLeave: number;

@@ -18,8 +18,7 @@ export default class EmployeeController implements IEmployeeController {
             
 
             const result = await this._employeeService.addEmployees(employeedata, managerData);
-            console.log("result from controller", result);
-            
+          
 
             if (result.success) {
                 res.status(200).json({ message: 'Employee added successfully', data: result.data });
@@ -42,10 +41,15 @@ export default class EmployeeController implements IEmployeeController {
         }
     }
 
-    async getEmployeePersonalInformation(req: CustomRequest, res: Response): Promise<void> {
+    async updateEmployeePersonalInformation(req: CustomRequest, res: Response): Promise<void> {
+      
+    
         try {
             const employeeId = req.params.id;
-            const result = await this._employeeService.getEmployeePersonalInformation(employeeId);
+         
+            const personalInformation = req.body;
+     
+            const result = await this._employeeService.updateEmployeePersonalInformation(employeeId ,personalInformation);
             res.status(200).json(result);
         } catch (error) {
             console.error("Error fetching employee information:", error);
@@ -53,14 +57,75 @@ export default class EmployeeController implements IEmployeeController {
         }
     }
 
-    async getEmployeeAddress(req: CustomRequest, res: Response): Promise<void> {
+    async updateAddress(req: CustomRequest, res: Response): Promise<void> {
+
+        
         try {
             const employeeId = req.params.id;
-            const result = await this._employeeService.getEmployeeAddress(employeeId);
+            
+            const address = req.body;
+            const result = await this._employeeService.updateAddress(employeeId ,address);
             res.status(200).json(result);
         } catch (error) {
             console.error("Error fetching employee address:", error);
             res.status(500).json({ message: "Failed to get employee address", error });
+        }
+    }
+
+    async updateEmployeeProfessionalInfo(req: CustomRequest, res: Response): Promise<void> {
+        console.log("hitting update employee professional info==================");
+        
+        console.log("req.body", req.body);
+        
+        try {
+            const employeeId = req.params.id;
+            console.log("employeeId--------------------------", employeeId);
+            
+            const professionalInfo = req.body;
+            const result = await this._employeeService.updateEmployeeProfessionalInfo(employeeId ,professionalInfo);
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error fetching employee professional information:", error);
+            res.status(500).json({ message: "Failed to get employee professional information", error });
+        }
+    }
+
+    async getEmployeeCredentials(req: CustomRequest, res: Response): Promise<void> {
+        try {
+            const employeeId = req.params.id;
+            const result = await this._employeeService.getEmployeeCredentials(employeeId);
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error fetching employee credentials:", error);
+            res.status(500).json({ message: "Failed to get employee credentials", error });
+        }
+    }
+
+    async getEmployeeDocuments(req: CustomRequest, res: Response): Promise<void> {
+        try {
+            const employeeId = req.params.id;
+            const result = await this._employeeService.getEmployeeDocuments(employeeId);
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error fetching employee documents:", error);
+            res.status(500).json({ message: "Failed to get employee documents", error });
+        }
+    }
+
+    async getEmployee(req: CustomRequest, res: Response): Promise<void>{
+        console.log(`get employee controleris ======`.bgYellow);
+        
+        try {
+            const employeeId = req.params.id;
+            console.log("employee id--------------------", employeeId);
+            
+            const result = await this._employeeService.getEmployee(employeeId);
+         
+            
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error fetching employee:", error);
+            res.status(500).json({ message: "Failed to get employee", error });
         }
     }
 

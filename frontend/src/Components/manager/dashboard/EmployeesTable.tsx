@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { flexRender, useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel } from "@tanstack/react-table";
 import { CSVLink } from "react-csv";
 import * as XLSX from "xlsx";
@@ -8,21 +8,25 @@ import DebouncedInput from "../../ui/DebouncedInput";
 import useTheme from "../../../hooks/useTheme";
 import { Skeleton } from "antd";
 import { IEmployee } from "../../../interface/managerInterface";
-import EditEmployeeModal from "../../ui/EmployeeInfo"
+import EmployeeInfoModal from "../../ui/EmployeeInfo";
+import axios from "axios";
+import { managerInstance } from "../../../services/managerInstance";
 
 function EmployeesTable({ data, loading, error }: { data: IEmployee[]; loading: boolean; error: string | null }) {
   const { themeColor } = useTheme();
   const [globalFilter, setGlobalFilter] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editEmployeeId, setEditEmployeeId] = useState<string | null>(null);
+  const [employeeData, setEmployeeData] = useState<any>(null);
+    
+  console.log("sending data------------------", data);
 
-  console.log("data", data);
-  console.log("editted employee id ", editEmployeeId);
+
 
   const table = useReactTable({
     data,
     columns: [
-       { id: "id", header: "ID", accessorKey: "id" }, 
+      { id: "_id", header: "ID", accessorKey: "_id" },
       { id: "name", header: "Name", accessorKey: "name" },
       { id: "position", header: "Position", accessorKey: "position" },
       { id: "email", header: "Email", accessorKey: "email" },
@@ -41,7 +45,7 @@ function EmployeesTable({ data, loading, error }: { data: IEmployee[]; loading: 
         cell: ({ row }) => (
           <div className="flex space-x-3 justify-center items-center">
             <motion.button
-              onClick={() => handleEditClick(row.getValue("id"))}
+              onClick={() => handleEditClick(row.getValue("_id"))}
               style={{ backgroundColor: themeColor }}
               className="text-white px-4 py-2 rounded-md flex items-center space-x-2"
               whileHover={{ scale: 1.05 }}
@@ -87,13 +91,23 @@ function EmployeesTable({ data, loading, error }: { data: IEmployee[]; loading: 
     XLSX.writeFile(workbook, "Data.xlsx");
   };
 
-  const handleEditClick = (employeeId: string) => {
+  const handleEditClick = async (employeeId: string) => {
     setEditEmployeeId(employeeId); // Set the employee ID for editing
-    setIsModalVisible(true); // Show the modal
+    try {
+      // Fetch the employee data from your API
+      const response = await managerInstance.get(`/manager/api/employee/get-employee/${employeeId}`);
+
+      console.log("responce data ius ===================",response.data);
+      setEmployeeData(response.data); // Set the employee data for editing
+      setIsModalVisible(true); // Show the modal
+    } catch (error) {
+      console.error("Error fetching employee data:", error);
+    }
   };
 
   const handleCancel = () => {
     setIsModalVisible(false); // Close the modal
+    setEmployeeData(null); // Reset employee data
   };
 
   return (
@@ -188,11 +202,11 @@ function EmployeesTable({ data, loading, error }: { data: IEmployee[]; loading: 
       </div>
 
       {/* Edit Employee Modal */}
-      <EditEmployeeModal
-     employeeId={editEmployeeId || ""}  // Default to an empty string if null
-    isVisible={isModalVisible}
-     onCancel={handleCancel}
-     />
+      <EmployeeInfoModal
+  employeeData={employeeData} // Pass the fetched employee data
+  visible={isModalVisible}
+  onClose={handleCancel}
+/>
 
     </div>
   );

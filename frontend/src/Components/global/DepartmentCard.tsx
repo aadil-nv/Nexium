@@ -86,7 +86,7 @@ export default function DepartmentCard({
 
       <ul className="space-y-4 overflow-y-auto" style={{ maxHeight: '300px' }}>
         {employees.map((employee) => (
-          <li key={employee.id} className="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
+          <li key={employee._id} className="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
             <div className="flex items-center space-x-3">
               <div className="relative">
                 <img
@@ -108,21 +108,21 @@ export default function DepartmentCard({
             <div className="relative">
               <button
                 className="text-gray-500 hover:text-gray-700"
-                onClick={() => toggleMenu(employee.id)}
+                onClick={() => toggleMenu(employee._id)}
               >
                 <FaEllipsisV />
               </button>
-              {openMenuId === employee.id && (
+              {openMenuId === employee._id && ( 
                 <div className="absolute right-0 mt-2 bg-white shadow-lg rounded-lg py-2 w-32 z-20">
                   <button
                     className="w-full text-left px-4 py-2 text-sm text-blue-500 hover:bg-gray-100"
-                    onClick={() => onEditEmployee(employee.id)}
+                    onClick={() => onEditEmployee(employee._id)}
                   >
                     Edit
                   </button>
                   <button
                     className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
-                    onClick={() => handleRemoveEmployeeClick(employee.id)}
+                    onClick={() => handleRemoveEmployeeClick(employee._id)}
                   >
                     Remove
                   </button>

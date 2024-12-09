@@ -5,7 +5,7 @@ export let dbInstance: Mongoose;
 let isConnected = false;  // Flag to check if the DB is already connected
 
 const connectDB = async (businessOwnerId: string): Promise<void> => {
-        console.log(`"Business Owner ID:"`.bgCyan, businessOwnerId);
+   
         
     if (isConnected) {
         console.log('Already connected to the database');

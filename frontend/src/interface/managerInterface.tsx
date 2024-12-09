@@ -1,7 +1,8 @@
 
 
 export interface IEmployee {  //! Part of Department 
-    id?: string;
+
+    _id?: string;
     photo?: string;
     name?: string;
     email?: string;
@@ -33,4 +34,49 @@ export interface IDepartment {
     managerId: string;
   }
 
+
+  export interface IEmployeeData {
+    _id: string;
+    personalDetails: {
+      employeeName: string;
+      email: string;
+      phone: string;
+      profilePicture: string;
+    };
+    address: {
+      street: string;
+      city: string;
+      state: string;
+      country: string;
+      postalCode: string;
+    };
+    professionalDetails: {
+      position: "Team Lead" | "Senior Software Engineer" | "Junior Software Engineer";
+      department: string;
+      workTime: "Full-Time" | "Part-Time" | "Contract" | "Temporary";
+      joiningDate: Date;
+      currentStatus: string;
+      companyName: string;
+      salary: number;
+      skills: string[];
+    };
+    employeeCredentials: {
+      companyEmail: string;
+      companyPassword: string;
+    };
+    documents: {
+      resume: {
+        documentName: string;
+        documentUrl: string;
+        documentSize: number; // Size of the document in bytes
+        uploadedAt: Date;
+      };
+      employeeIdProof: {
+        documentName: string;
+        documentUrl: string;
+        documentSize: number; // Size of the document in bytes
+        uploadedAt: Date;
+      };
+    };
+  }
   

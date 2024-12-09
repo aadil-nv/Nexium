@@ -21,3 +21,31 @@ export interface IEmployeeAddressDTO {
     country: string;
     postalCode: string;
 }
+
+export interface IEmployeeProfessionalInfoDTO {
+    position: string
+    department: string;
+    workTime: string;
+    joiningDate: Date;
+    currentStatus: string;
+    companyName: string;
+    salary: number;
+    skills: string[];
+}
+
+export interface IEmployeeCredentialsDTO {
+    companyEmail: string;
+    companyPassword: string;
+}
+
+export interface IDocumentDTO {
+    documentName: string;
+    documentUrl: string;
+    documentSize: number; // Size of the document in bytes
+    uploadedAt: Date;
+  }
+  
+export interface IEmployeeDocumentsDTO {
+    resume: IDocumentDTO;
+    employeeIdProof: IDocumentDTO;
+  }

@@ -15,37 +15,46 @@ export default class DepartmentRepository extends BaseRepository<any> implements
     }
 
     async addDepartments(departmentName: string, employees: any[]): Promise<any> {
-        console.log('"hitting addDepartments repository=------------------"'.bgRed);
-        try {
-            console.log(`departmentName is ${departmentName}`.bgGreen);
-            console.log(`employees is ${JSON.stringify(employees)}`.bgGreen);
-            
-            // Validate that employees is an array of objects
-            if (!Array.isArray(employees) || employees.length === 0) {
-                throw new Error('Employees must be a non-empty array');
-            }
-    
-            // Validate each employee object has the expected structure
-            employees.forEach((emp: any) => {
-                if (!emp.id || !emp.name || typeof emp.id !== 'string' || typeof emp.name !== 'string') {
-                    console.log(`Invalid employee object: ${JSON.stringify(emp)}`.bgRed);
-                    throw new Error(`Invalid employee object: ${JSON.stringify(emp)}`);
-                }
-                // Trim whitespace from name fields 
-                emp.name = emp.name.trim();
-            });
-    
-            // Now create the department with the employees
-            const department = await this._departmentModel.create({ departmentName, employees });
-    
-            console.log("Department added successfully:", department);
-            return department;
-        } catch (error) {
-            console.error('Error in addDepartments repository:', error);
-            throw error; // Rethrow to ensure caller is aware of the error
-        }
-    }
-    
+      console.log('"hitting addDepartments repository=------------------"'.bgRed);
+      try {
+          console.log(`departmentName is ${departmentName}`.bgGreen);
+          console.log(`employees is ${JSON.stringify(employees)}`.bgGreen);
+  
+          if (!Array.isArray(employees) || employees.length === 0) {
+              throw new Error('Employees must be a non-empty array');
+          }
+  
+          employees.forEach((emp: any) => {
+              if (!emp.id || !emp.name || typeof emp.id !== 'string' || typeof emp.name !== 'string') {
+                  console.log(`Invalid employee object: ${JSON.stringify(emp)}`.bgRed);
+                  throw new Error(`Invalid employee object: ${JSON.stringify(emp)}`);
+              }
+              emp.name = emp.name.trim();
+          });
+  
+          // Create the department
+          const department = await this._departmentModel.create({ departmentName, employees });
+          console.log("Department added successfully:", department);
+  
+          // Update each employee's departmentId in professionalDetails
+          const departmentId = department._id;
+          const updatePromises = employees.map((emp) => {
+              return employeeModel.findByIdAndUpdate(
+                  emp.id, 
+                  { 'professionalDetails.department': departmentId }, // Corrected path
+                  { new: true }
+              );
+          });
+          await Promise.all(updatePromises);
+  
+          console.log("Employees updated with departmentId successfully.");
+          return department;
+      } catch (error) {
+          console.error('Error in addDepartments repository:', error);
+          throw error;
+      }
+  }
+  
     async findDepartment(departmentId: string): Promise<any> {
         try {
           return await this._departmentModel.findById(departmentId); // Use your ORM/Database query
@@ -103,6 +112,7 @@ export default class DepartmentRepository extends BaseRepository<any> implements
       
     async addEmployeeToDepartment(departmentId: string, employee: any): Promise<any> {
       try {
+          // Find the department by ID
           const department = await this._departmentModel.findById(departmentId);
           if (!department) {
               throw new Error('Department not found.');
@@ -113,18 +123,35 @@ export default class DepartmentRepository extends BaseRepository<any> implements
               throw new Error('Employee is already in the department.');
           }
   
-          // Add the employee to the department
+          // Add the employee to the department's employee list
           department.employees.push(employee);
   
           // Save the updated department
           await department.save();
   
-          return department;
+          // Update the employee's department field in professionalDetails
+          const updatedEmployee = await employeeModel.findByIdAndUpdate(
+              employee.id,
+              { 'professionalDetails.department': departmentId },
+              { new: true }
+          );
+  
+          if (!updatedEmployee) {
+              throw new Error('Employee not found while updating department field.');
+          }
+  
+          console.log("Updated employee's department successfully:", updatedEmployee);
+  
+          return {
+              department,
+              updatedEmployee,
+          };
       } catch (error) {
           console.error('Error in Repository (addEmployeeToDepartment):', error);
           throw error;
       }
   }
+  
   
       
       

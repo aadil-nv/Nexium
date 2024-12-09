@@ -5,6 +5,7 @@ import Address from '../components/global/Address';
 import Documents from '../components/global/Documents';
 import Securitie from '../components/global/Securitie';
 import CompanyDetails from '../components/global/CompanyDetailes';
+import { EditOutlined } from "@ant-design/icons";
 
 interface LinkItem {
   title: string;
@@ -93,3 +94,58 @@ export const employeeTabs = [
 ];
 
 
+
+export const tabConfigurations = [
+  {
+    key: "1",
+    tab: "Personal Details",
+    fields: [
+      { label: "Profile Picture", name: "profilePicture", placeholder: "Upload your profile picture", type: "file", icon: <EditOutlined /> },
+      { label: "Full Name", name: "fullName", placeholder: "Enter your full name", type: "text" },
+      { label: "Email", name: "email", placeholder: "Enter your email", type: "text" },
+      { label: "Phone", name: "phone", placeholder: "Enter your phone", type: "text" },
+    ],
+  },
+  {
+    key: "2",
+    tab: "Professional Details",
+    fields: [
+      { label: "Position", name: "jobTitle", placeholder: "Enter your Position", type: "text" },
+      { label: "Work Time", name: "workTime", placeholder: "Enter your workTime", type: "text" },
+      { label: "Salary", name: "salary", placeholder: "Enter your salary", type: "text" },
+      { label: "Joining Date", name: "dateOfJoin", placeholder: "Enter your joining date", type: "text" },
+      { label: "Department", name: "department", placeholder: "Enter your department", type: "text" },
+      { label: "Current Status", name: "currentStatus", placeholder: "Enter your current status", type: "text" },
+      { label: "Company Name", name: "companyName", placeholder: "Enter your company name", type: "text" },
+      { label: "Skills", name: "skills", placeholder: "Enter your skills", type: "text" },
+    ],
+  },
+  {
+    key: "3",
+    tab: "Address",
+    fields: [
+      { label: "Street", name: "street", placeholder: "Enter your street address", type: "text" },
+      { label: "City", name: "city", placeholder: "Enter your city", type: "text" },
+      { label: "Postal Code", name: "postalCode", placeholder: "Enter your postal code", type: "text" },
+      { label: "Country", name: "country", placeholder: "Enter your country", type: "text" },
+      { label: "State", name: "state", placeholder: "Enter your state", type: "text" },
+    ],
+  },
+  {
+    key: "4",
+    tab: "Documents",
+    fields: [
+      { label: "Upload ID", name: "uploadId", placeholder: "", type: "file" },
+      { label: "Upload Resume", name: "uploadAddressProof", placeholder: "", type: "file" },
+    ],
+  },
+  {
+    key: "5",
+    tab: "Security",
+    fields: [
+      { label: "Company Email", name: "companyEmail", placeholder: "Enter old password", type: "text" },
+      { label: "Company Password", name: "companyPassword", placeholder: "Enter new password", type: "password" },
+    ],
+  }
+  // Other tabs here...
+];

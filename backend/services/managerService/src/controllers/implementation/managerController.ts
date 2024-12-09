@@ -11,7 +11,7 @@ export default class ManagerController implements IManagerController {
   ) {}
 
   async getManagers(req: Request, res: Response): Promise<Response> {
-    console.log("hitted getManagers--------------controller---------------------");
+  
     
     try {
       const managers = await this._managerService.getManagers();
@@ -149,13 +149,11 @@ export default class ManagerController implements IManagerController {
 
   
   async setNewAccessToken(req: Request, res: Response): Promise<Response> {
-  console.log("hitted setNewAccessToken-----------------------------------");
-  
-  console.log("Cookies received in request:", req.cookies); // Log all cookies
+
   
   const refreshToken = req.cookies?.refreshToken; // Use optional chaining
   
-  console.log(`Extracted refresh token: ${refreshToken}`);
+
   
   try {
     if (!refreshToken) {
@@ -170,7 +168,7 @@ export default class ManagerController implements IManagerController {
       return res.status(401).json({ message: 'Failed to generate new access token.' });
     }
 
-    console.log(`Generated new access token: ${newAccessToken}`);
+
 
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true,

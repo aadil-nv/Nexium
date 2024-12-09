@@ -100,8 +100,14 @@ export default class DepartmentController implements IDepartmentController {
     
 
     async addEmployeeToDepartment(req: Request, res: Response): Promise<Response> {
+        console.log("hitting add employee to department controller");
+        
         try {
             const { employeeId, departmentId } = req.body;
+            console.log("req.body", req.body);
+            console.log("employeeId", employeeId);
+            console.log("departmentId", departmentId);
+            
     
             // Validate input
             if (!employeeId || !departmentId) {

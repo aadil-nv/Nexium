@@ -79,7 +79,7 @@ export const fetchEmployees = async (): Promise<IEmployee[]> => {
 
       // Adjusting the mapping to match the provided data structure
       return response.data.map((employee: any) => ({
-          id: employee._id, // Directly from employee._id
+          _id: employee._id, // Directly from employee._id
           name: employee.employeeName || '', // Directly from employee.employeeName
           position: employee.position || '', // Directly from employee.position
           profilePicture: employee.profilePicture || '', // Directly from employee.profilePicture
@@ -109,10 +109,13 @@ export const fetchDepartments = async () => {
   };
   
 export const addEmployee = async (employeeData: any) => {
+  console.log("employeeData",employeeData)
     try {
-      const response = await managerInstance.post('/manager/api/employee/add-employees', { employeedata: employeeData }, {
+      const response = await managerInstance.post('/manager/api/department/add-employee', { employeedata: employeeData }, {
         withCredentials: true,
       });
+
+      console.log("response111111111111111111111111",response)
   
       if (response.status === 200) {
         toast.success('Employee added successfully!');

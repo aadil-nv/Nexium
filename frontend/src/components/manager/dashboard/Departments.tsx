@@ -4,7 +4,8 @@ import DepartmentCard from '../../global/DepartmentCard';
 import useTheme from '../../../hooks/useTheme';
 import AddDepartmentModal from '../../ui/AddDepartment';
 import { fetchEmployeesAPI, fetchDepartmentsAPI, removeDepartmentAPI } from '../../../api/managerApi';
-import { IEmployee, IDepartment } from '../../../interface/managerInterface';
+import { IDepartment } from '../../../interface/managerInterface';
+import { IEmployee } from '../../../interface/GlobalInterface';
 
 export default function Departments() {
   const { themeColor } = useTheme();
@@ -17,7 +18,8 @@ export default function Departments() {
     fetchDepartmentsAPI().then(setDepartments).catch(console.error);
   }, []);
 
-console.log("employees444444444444444444444444",employees)
+  console.log("employees444444444444444444444444", employees);
+
   const handleAddNewDepartment = (newDepartment: IDepartment) =>
     setDepartments((prev) => [newDepartment, ...prev]);
 
@@ -49,15 +51,13 @@ console.log("employees444444444444444444444444",employees)
           <DepartmentCard
             key={_id}
             departmentName={departmentName}
-            
-            employees={employees.map(({ id, name, position, profilePicture, email, isActive }) => ({
-              
-              id,
-              name,
-              position,
-              profilePicture ,
-              email: email || '',
-              isOnline: isActive || false,
+            employees={employees.map(({ _id, name, position, profilePicture, email, isActive }) => ({
+              _id: _id || '', // Ensure _id is not undefined
+              name: name || '', // Ensure name is not undefined
+              position: position || '', // Ensure position is not undefined
+              profilePicture: profilePicture || '', // Ensure profilePicture is not undefined
+              email: email || '', // Ensure email is not undefined
+              isOnline: isActive ?? false, // Ensure isOnline is not undefined
             }))}
             themeColor={themeColor}
             departmentId={_id}
@@ -66,7 +66,7 @@ console.log("employees444444444444444444444444",employees)
               setDepartments((prev) =>
                 prev.map((dept) =>
                   dept._id === _id
-                    ? { ...dept, employees: dept.employees.filter((emp) => emp.id !== employeeId) }
+                    ? { ...dept, employees: dept.employees.filter((emp) => emp._id !== employeeId) }
                     : dept
                 )
               )

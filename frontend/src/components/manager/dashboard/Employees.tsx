@@ -25,6 +25,8 @@ export default function Employees() {
       .catch((error) => console.error('Error fetching employee data:', error));
   }, [updateTrigger]); // Re-fetch when `updateTrigger` changes
 
+  console.log("employeeData*****************", employeeData);
+
   const handleEdit = (employeeId: string) => console.log(`Edit employee with ID: ${employeeId}`);
   const handleRemove = (employeeId: string) => {
     console.log(`Employee with ID: ${employeeId} left`);
@@ -74,7 +76,6 @@ export default function Employees() {
       <div className="mt-4">
         <EmployeesList 
           data={employeeData} 
-
           loading={!employeeData.length} 
           error={null} 
         />

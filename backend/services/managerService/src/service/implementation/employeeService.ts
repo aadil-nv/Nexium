@@ -5,8 +5,9 @@ import { generateEmail } from "../../utils/generateEmail";
 import { generatePassword } from "../../utils/generatePassword";
 import nodemailer from "nodemailer";
 import { generateOfferLetter } from "../../utils/generateOfferLetter";
-import { IEmployeeAddressDTO, IEmployeePersonalInformationDTO, IEmployeesDTO } from "../../dto/IEmployeesDTO";
+import { IEmployeeAddressDTO, IEmployeeCredentialsDTO, IEmployeeDocumentsDTO, IEmployeePersonalInformationDTO, IEmployeeProfessionalInfoDTO, IEmployeesDTO } from "../../dto/IEmployeesDTO";
 import RabbitMQMessager from "../../events/implementation/producer";
+import IEmployee from "entities/employeeEntities";
 
 
 
@@ -186,9 +187,9 @@ export default class EmployeeService implements IEmployeeService {
     }
 }
 
-async getEmployeePersonalInformation(employeeId: string ) : Promise<IEmployeePersonalInformationDTO> {
+async updateEmployeePersonalInformation(employeeId: string ,personalInformation: any) : Promise<IEmployeePersonalInformationDTO> {
     try {
-        const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId);
+        const employeeData = await this._employeeRepository.updateEmployeePersonalInformation(employeeId ,personalInformation);
 
         if (!employeeData) {
             throw new Error("Employee not found");
@@ -206,9 +207,9 @@ async getEmployeePersonalInformation(employeeId: string ) : Promise<IEmployeePer
     }
   }
 
-  async getEmployeeAddress(employeeId: string): Promise<IEmployeeAddressDTO> {
+  async updateAddress(employeeId: string ,address: any): Promise<IEmployeeAddressDTO> {
     try {
-        const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId);
+        const employeeData = await this._employeeRepository.updateAddress(employeeId ,address);
 
         if (!employeeData) {
             throw new Error("Employee not found");
@@ -227,6 +228,84 @@ async getEmployeePersonalInformation(employeeId: string ) : Promise<IEmployeePer
     }
    }
 
+   async updateEmployeeProfessionalInfo(employeeId: string ,professionalInfo: any): Promise<IEmployeeProfessionalInfoDTO> {
+    try {
+        const employeeData = await this._employeeRepository.updateEmployeeProfessionalInfo(employeeId,professionalInfo);
+
+        if (!employeeData) {
+            throw new Error("Employee not found");
+        }
+
+        return {
+            position: employeeData.professionalDetails.position,
+            workTime: employeeData.professionalDetails.workTime,
+            department: employeeData.professionalDetails.department,
+            joiningDate: employeeData.professionalDetails.joiningDate,
+            currentStatus: employeeData.professionalDetails.currentStatus,
+            companyName: employeeData.professionalDetails.companyName,
+            salary: employeeData.professionalDetails.salary,
+            skills: employeeData.professionalDetails.skills
+        }
+    } catch (error) {
+        console.error("Error in service layer:", error);
+        throw new Error("Failed to fetch employee professional information");
+    }
+     }
    
+     async getEmployeeCredentials(employeeId: string): Promise<IEmployeeCredentialsDTO> {
+        try {
+            const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId);
+    
+            if (!employeeData) {
+                throw new Error("Employee not found");
+            }
+    
+            return {
+                companyEmail: employeeData.employeeCredentials.companyEmail,
+                companyPassword: employeeData.employeeCredentials.companyPassword
+            }
+        } catch (error) {
+            console.error("Error in service layer:", error);
+            throw new Error("Failed to fetch employee credentials");
+        }
+     }
+
+     async getEmployeeDocuments(employeeId: string): Promise<IEmployeeDocumentsDTO> {
+        try {
+            const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId);
+    
+            if (!employeeData) {
+                throw new Error("Employee not found");
+            }
+    
+            return {
+              resume: {
+                documentName: employeeData.document.resume.documentName,
+                documentUrl: employeeData.document.resume.documentUrl,
+                documentSize: employeeData.document.resume.documentSize,
+                uploadedAt: employeeData.document.resume.uploadedAt,
+              },
+              employeeIdProof: {
+                documentName: employeeData.document.employeeIdProof.documentName,
+                documentUrl: employeeData.document.employeeIdProof.documentUrl,
+                documentSize: employeeData.document.employeeIdProof.documentSize,
+                uploadedAt: employeeData.document.employeeIdProof.uploadedAt,
+              },
+            };
+        } catch (error) {
+            console.error("Error in service layer:", error);
+            throw new Error("Failed to fetch employee employeeData");
+        }
+     }
+
+     async getEmployee(employeeId: string): Promise<IEmployee> {
+        console.log("Employee ID:", employeeId);
+        try {
+            return await this._employeeRepository.getEmployeeInformation(employeeId);
+        } catch (error) {
+            console.error("Error in service layer:", error);
+            throw new Error("Failed to fetch employee information");
+        }
+     }
 
 }
