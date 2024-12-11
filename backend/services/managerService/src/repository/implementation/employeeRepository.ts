@@ -3,15 +3,19 @@ import { inject, injectable } from "inversify";
 import IEmployee from "../../entities/employeeEntities";
 import { Model } from "mongoose";
 import BaseRepository from "./baseRepository";
+import departmentModal from "../../models/departmentModel";
+import IDepartment from "../../entities/departmentEntities";
 
 
 @injectable()
 export default class EmployeeRepository extends BaseRepository<IEmployee> implements IEmployeeRepository {
     private readonly employeeModel: Model<IEmployee>;
+    private readonly departmentModel: Model<IDepartment>;
 
     constructor(@inject("EmployeeModel") _employeeModel: Model<IEmployee>) {
         super(_employeeModel);
         this.employeeModel = _employeeModel;
+        this.departmentModel = departmentModal
     }
 
     async getEmployees(): Promise<IEmployee[]> {
@@ -135,6 +139,102 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
             throw new Error("Failed to update employee professional information");
         }
     }
+    
+    async getDepartmentName(departmentId: string): Promise<any> {
+        try {
+            const department = await this.departmentModel.findById(departmentId);
+            if (!department) {
+               return null;
+            }
+            return department.departmentName;
+        } catch (error) {
+            console.error("Error finding department by ID:", error);
+            throw new Error("Failed to fetch department name");
+        }
+    }
+
+    async updateProfilePicture(employeeId: string ,profilePicture: any): Promise<any> {
+        try {
+            const employee = await this.employeeModel.findById(employeeId);
+            if (!employee) {
+                throw new Error("Employee not found");
+            }
+            employee.personalDetails.profilePicture = profilePicture;
+            const updatedEmployee = await employee.save();
+            return updatedEmployee.personalDetails.profilePicture;
+        } catch (error) {
+            console.error("Error updating employee profile picture:", error);
+            throw new Error("Failed to update employee profile picture");
+        }
+    }
+
+    async updateResume(employeeId: string, documentMetadata: any): Promise<any> {
+        try {
+            const employee = await this.employeeModel.findById(employeeId);
+            if (!employee) {
+                throw new Error("Employee not found");
+            }
+    
+            // Update the resume details in the `documents` section
+            employee.documents.resume = {
+                ...documentMetadata,
+            };
+    
+            await employee.save();
+    
+            return employee.documents.resume;
+        } catch (error) {
+            console.error("Error in updateResume repository:", error);
+            throw new Error("Failed to update resume in the database");
+        }
+    }
+
+    async updateIdProof(employeeId: string, documentMetadata: any): Promise<any> {
+        try {
+            const employee = await this.employeeModel.findById(employeeId);
+            if (!employee) {
+                throw new Error("Employee not found");
+            }
+    
+            // Update the ID proof details in the `documents` section
+            employee.documents.idProof = {
+                ...documentMetadata,
+            };
+    
+            await employee.save();
+    
+            return employee.documents.idProof;
+        } catch (error) {
+            console.error("Error in updateIdProof repository:", error);
+            throw new Error("Failed to update ID proof in the database");
+        }
+    }
+
+    async updateBlocking(employeeId: string, blocking: any): Promise<any> {
+        console.log("blocking object received:", blocking);
+      
+        try {
+          // Find the employee by ID
+          const employee = await this.employeeModel.findById(employeeId);
+          if (!employee) {
+            throw new Error("Employee not found");
+          }
+      
+          // Toggling the isBlocked value based on current state
+          const newBlocking = !employee.isBlocked;
+      
+          return await this.employeeModel.updateOne(
+            { _id: employeeId },
+            { $set: { isBlocked: newBlocking } }
+          );
+      
+          // Returning the updated isBlocked value
+        } catch (error) {
+          console.error("Error in updateBlocking repository:", error);
+          throw new Error("Failed to update blocking in the database");
+        }
+      }
+      
     
     
 }

@@ -1,10 +1,10 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, mongo, Schema } from 'mongoose';
 import IDepartment from '../entities/departmentEntities';
 
 // Employee Schema
 const employeeSchema: Schema = new Schema({
-  id: { 
-    type: String, 
+  _id: { 
+    type: mongoose.Schema.Types.ObjectId,ref: 'Employee', 
     required: true,  // Ensure id is required and a string
   },
   name: { 

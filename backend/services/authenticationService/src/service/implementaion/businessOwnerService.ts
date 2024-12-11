@@ -35,8 +35,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
 
     async login(email: string, password: string): Promise<ITokenResponse> {
-        console.log("Login service called...");
-      
+    
         try {
           // Validate email and password format
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

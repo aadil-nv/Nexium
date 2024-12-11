@@ -4,6 +4,8 @@ import { managerInstance } from "../services/managerInstance";
 import { IEmployee } from "../interface/managerInterface";
 import { toast } from 'react-toastify';
 import { message } from 'antd';
+import { fetchLeaveEmployeesRequest ,fetchLeaveEmployeesFailure,fetchLeaveEmployeesSuccess} from "../redux/slices/leaveSlice";
+import { Dispatch } from 'redux';
 
 const baseURL= "/manager/api/"
 export const managerLogin = async (formData: LoginFormData) => {
@@ -66,7 +68,7 @@ export const fetchEmployeesAPI = async () => {
 };
   
 export const removeDepartmentAPI = async (departmentId: string) => {
-    await axios.delete('http://localhost:3000/manager/api/department/delete-department', {
+    await managerInstance.delete('/manager/api/department/delete-department', {
       data: { departmentId },
     });
 };
@@ -77,14 +79,15 @@ export const fetchEmployees = async (): Promise<IEmployee[]> => {
 
       console.log("===============response============", response.data);
 
-      // Adjusting the mapping to match the provided data structure
+     
       return response.data.map((employee: any) => ({
           _id: employee._id, // Directly from employee._id
           name: employee.employeeName || '', // Directly from employee.employeeName
           position: employee.position || '', // Directly from employee.position
           profilePicture: employee.profilePicture || '', // Directly from employee.profilePicture
           isOnline: employee.isActive || false, // Directly from employee.isActive
-          email:employee.email
+          email:employee.email,
+          isBlocked: employee.isBlocked || false
       }));
   } catch (error) {
       console.error('Error fetching employee data:', error);
@@ -111,7 +114,7 @@ export const fetchDepartments = async () => {
 export const addEmployee = async (employeeData: any) => {
   console.log("employeeData",employeeData)
     try {
-      const response = await managerInstance.post('/manager/api/department/add-employee', { employeedata: employeeData }, {
+      const response = await managerInstance.post('/manager/api/employee/add-employees', { employeedata: employeeData }, {
         withCredentials: true,
       });
 
@@ -131,10 +134,33 @@ export const addEmployee = async (employeeData: any) => {
     }
   };
 
+  export const addEmployeeToDepartment = async (employeeData: any ,departmentId: string) => {
+    console.log("employeeData777777777777777777777777777",employeeData)
+      try {
+        const response = await managerInstance.post('/manager/api/department/add-employee', { employeeData , departmentId }, {
+          withCredentials: true,
+        });
+  
+        console.log("response111111111111111111111111",response)
+    
+        if (response.status === 200) {
+          toast.success('Employee added successfully!');
+          return true;
+        } else {
+          toast.error('Failed to add the employee!');
+          return false;
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'An error occurred!');
+        console.error('Error:', error);
+        throw error;
+      }
+    };
+
   export const removeEmployee = async (employeeId: string, departmentId: string) => {
     try {
-      const response = await axios.patch(
-        'http://localhost:3000/manager/api/department/remove-employee',
+      const response = await managerInstance.patch(
+        '/manager/api/department/remove-employee',
         {
           employeeId, // employee ID to be removed
           departmentId, // department ID
@@ -202,5 +228,60 @@ export const addEmployee = async (employeeData: any) => {
     } catch (error) {
       console.error('Error updating manager address:', error.response?.data || error.message);
       throw error;
+    }
+  };
+
+  export const fetchLeaveEmployees = async () => {
+    try {
+      const { data } = await managerInstance.get('/manager/api/leave/get-all-leave-employees');
+      console.log("data==========================", data);
+  
+      // Ensure data is an array and map over it to return an array of LeaveData objects
+      return data.map((item: any) => ({
+        employeeId: item.employeeId, // Fix for property name
+        leaveType: item.leaveType || 'N/A',
+        leaveDate: item.date ? new Date(item.date) : null, // Ensure leaveDate is a Date object
+        leaveStatus: item.leaveStatus || 'Pending', // Adjust leaveStatus accordingly
+        reason: item.reason || 'No reason provided',
+        hours: item.hours || 0,
+        status: item.status || 'Pending',
+      }));
+    } catch (error) {
+      throw new Error('Failed to fetch leave employees');
+    }
+  };
+  
+  
+
+  export const fetchLeaveEmployeesOne = () => async (dispatch: Dispatch) => {
+    try {
+      dispatch(fetchLeaveEmployeesRequest()); // Set loading state before fetching
+  
+      const { data } = await managerInstance.get('/manager/api/manager/get-leave-employees');
+      const leaveData = data.map((item: any) => ({
+        employeeName: item._id,
+        leaveType: item.attendance[0]?.leaveType || 'N/A',
+        leaveDate: item.attendance[0]?.date || 'N/A',
+        status: item.attendance[0]?.leaveStatus || 'Pending',
+        reason: item.attendance[0]?.reason || 'No reason provided',
+      }));
+  
+      dispatch(fetchLeaveEmployeesSuccess(leaveData)); // Dispatch success action with fetched data
+    } catch (err) {
+      dispatch(fetchLeaveEmployeesFailure('Failed to fetch leave data')); // Dispatch failure action on error
+    }
+  }; 
+
+
+
+  export const updateLeaveApproval = async (employeeId, data) => {
+
+    console.log("data!!!!!!!!!!!!!!!!!!!!!!!!!!!!",data)
+    console.log("employeeId!!!!!!!!!!!!!!!!!!!!!!",employeeId)
+    try {
+      const response = await managerInstance.patch(`/manager/api/leave/update-leave-approval/${employeeId}`, data);
+      return response.data; // Ensure the backend returns a `success` property to validate in the UI.
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to update leave approval');
     }
   };

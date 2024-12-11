@@ -10,6 +10,7 @@ export interface IEmployee {  //! Part of Department
     isOnline?: boolean;
     profilePicture?: string;
     isActive?: boolean;
+    isBlocked?: boolean;
   }
 
 export interface IDepartment {

@@ -117,7 +117,7 @@ export default class EmployeeController implements IEmployeeController {
         
         try {
             const employeeId = req.params.id;
-            console.log("employee id--------------------", employeeId);
+           
             
             const result = await this._employeeService.getEmployee(employeeId);
          
@@ -126,6 +126,82 @@ export default class EmployeeController implements IEmployeeController {
         } catch (error) {
             console.error("Error fetching employee:", error);
             res.status(500).json({ message: "Failed to get employee", error });
+        }
+    }
+
+    async updateProfilePicture(req: CustomRequest, res: Response): Promise<void> {
+    
+        try {
+            const employeeId = req.params.id;
+
+          
+            const result = await this._employeeService.updateProfilePicture(employeeId, req.file as Express.Multer.File);
+            console.log("result", result);
+            
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error updating profile picture:", error);
+            res.status(500).json({ message: "Failed to update profile picture", error });
+        }
+    }
+
+    async updateResume(req: CustomRequest, res: Response): Promise<void> {
+        console.log("hitting update resume==================");
+        
+        try {
+            const employeeId = req.params.id;
+            console.log("employeeId--------------------------", employeeId);
+
+            console.log("req.file", req.file);
+            
+            
+            const result = await this._employeeService.updateResume(employeeId, req.file as Express.Multer.File);
+            console.log("result", result);
+            
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error updating resume:", error);
+            res.status(500).json({ message: "Failed to update resume", error });
+        }
+    }
+
+    async updateIdProof(req: CustomRequest, res: Response): Promise<void> {
+        console.log("hitting update id proof==================");
+        
+        try {
+            const employeeId = req.params.id;
+            console.log("employeeId--------------------------", employeeId);
+            
+            const idProof = req.file;
+            console.log("idProof--------------------------", req.body);
+            
+            const result = await this._employeeService.updateIdProof(employeeId ,req.file as Express.Multer.File);
+            console.log("result", result);
+            
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error updating id proof:", error);
+            res.status(500).json({ message: "Failed to update id proof", error });
+        }
+    }
+
+    async updateBlocking(req: CustomRequest, res: Response): Promise<void> {
+        console.log("hitting update blocking==================");
+        
+        try {
+            const employeeId = req.params.id;
+            console.log("employeeId--------------------------", employeeId);
+            
+            const blocking = req.body;
+            console.log("blocking--------------------------", blocking);
+            
+            const result = await this._employeeService.updateBlocking(employeeId ,blocking);
+            console.log("result", result);
+            
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error updating blocking:", error);
+            res.status(500).json({ message: "Failed to update blocking", error });
         }
     }
 

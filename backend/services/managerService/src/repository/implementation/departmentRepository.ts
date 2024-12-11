@@ -19,28 +19,38 @@ export default class DepartmentRepository extends BaseRepository<any> implements
       try {
           console.log(`departmentName is ${departmentName}`.bgGreen);
           console.log(`employees is ${JSON.stringify(employees)}`.bgGreen);
+
+          console.log("1111111111111111111111111111111111111111111111111");
+         
+
+          
+          
+          
   
           if (!Array.isArray(employees) || employees.length === 0) {
               throw new Error('Employees must be a non-empty array');
           }
-  
+          console.log("22222222222222222222222222222222222222222222222222");
+     
           employees.forEach((emp: any) => {
-              if (!emp.id || !emp.name || typeof emp.id !== 'string' || typeof emp.name !== 'string') {
+              if (!emp._id || !emp.name || typeof emp._id !== 'string' || typeof emp.name !== 'string') {
                   console.log(`Invalid employee object: ${JSON.stringify(emp)}`.bgRed);
                   throw new Error(`Invalid employee object: ${JSON.stringify(emp)}`);
               }
               emp.name = emp.name.trim();
           });
+          console.log("3333333333333333333333333333333333333333333333333");
+      
   
           // Create the department
           const department = await this._departmentModel.create({ departmentName, employees });
           console.log("Department added successfully:", department);
-  
+          console.log("44444444444444444444444444444444444444444444444444");
           // Update each employee's departmentId in professionalDetails
           const departmentId = department._id;
           const updatePromises = employees.map((emp) => {
               return employeeModel.findByIdAndUpdate(
-                  emp.id, 
+                  emp._id, 
                   { 'professionalDetails.department': departmentId }, // Corrected path
                   { new: true }
               );
@@ -109,32 +119,47 @@ export default class DepartmentRepository extends BaseRepository<any> implements
         }
     }
     
+    async addEmployeesToDepartment(departmentId: string, employee: any): Promise<any> {
+      console.log('"hitting addEmployeeToDepartment repository=------------------"'.bgRed);
+      console.log("departmentId--------------------", departmentId);
+      console.log("employee----------------------------", employee);
       
-    async addEmployeeToDepartment(departmentId: string, employee: any): Promise<any> {
+      
       try {
           // Find the department by ID
           const department = await this._departmentModel.findById(departmentId);
+          console.log("department---------------------------", department);
+          
           if (!department) {
               throw new Error('Department not found.');
           }
-  
+            console.log("1111111111111111111111111111111111111111111111111");
+        
           // Check if the employee is already part of the department
-          if (department.employees.some((emp: any) => emp.id === employee.id)) {
-              throw new Error('Employee is already in the department.');
+          if (department.employees.some((emp: any) => emp._id === employee._id)) {
+              throw new Error(`Employee ${employee.name} is already in the department.`);
           }
+          console.log("22222222222222222222222222222222222222222222222222");
+     
+          
   
           // Add the employee to the department's employee list
           department.employees.push(employee);
-  
+          console.log("3333333333333333333333333333333333333333333333333");
+       
           // Save the updated department
           await department.save();
+          console.log("4444444444444444444444444444444444444444444444444");
   
-          // Update the employee's department field in professionalDetails
+  
+          // Update the employee's department field
           const updatedEmployee = await employeeModel.findByIdAndUpdate(
-              employee.id,
+              employee._id,
               { 'professionalDetails.department': departmentId },
               { new: true }
           );
+          console.log("updatedEmployee------------------------", updatedEmployee);
+          
   
           if (!updatedEmployee) {
               throw new Error('Employee not found while updating department field.');
@@ -146,11 +171,12 @@ export default class DepartmentRepository extends BaseRepository<any> implements
               department,
               updatedEmployee,
           };
-      } catch (error) {
-          console.error('Error in Repository (addEmployeeToDepartment):', error);
+      } catch (error:any) {
+          console.error('Error in Repository (addEmployeeToDepartment):', error.message);
           throw error;
       }
   }
+  
   
   
       

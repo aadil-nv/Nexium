@@ -16,7 +16,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   ) {this._businessOwnerService = businessOwnerService}
 
   async login(req: Request, res: Response): Promise<Response> {
-    console.log("Login attempt...");
+  
   
     try {
       const { email, password } = req.body;

@@ -8,5 +8,6 @@ export default interface IDepartmentRepository extends BaseRepository<any> {
         deleteDepartment(departmentId: string): Promise<any>
         saveDepartment(department: any): Promise<any>
         findEmployee(employeeId: string): Promise<any>
-        addEmployeeToDepartment(departmentId: string, employeeId: string): Promise<any>
+        addEmployeesToDepartment(departmentId: string, employeeId: string): Promise<any>
+       
 }

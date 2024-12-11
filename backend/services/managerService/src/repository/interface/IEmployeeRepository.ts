@@ -10,6 +10,9 @@ export default interface IEmployeeRepository extends BaseRepository<any>  {
     updateEmployeePersonalInformation(employeeId: string ,personalInformation: any): Promise<any>
     updateAddress(employeeId: string ,address: any): Promise<any>
     updateEmployeeProfessionalInfo(employeeId: string ,professionalInfo: any): Promise<any>
- 
-
+    getDepartmentName(departmentId: string): Promise<string>
+    updateProfilePicture(employeeId: string ,profilePicture: any): Promise<any>
+    updateResume(employeeId: string, documentMetadata: any): Promise<any>
+    updateIdProof(employeeId: string, documentMetadata: any): Promise<any>
+    updateBlocking(employeeId: string, blocking: any): Promise<any>
 }

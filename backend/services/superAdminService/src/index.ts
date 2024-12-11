@@ -10,10 +10,30 @@ import superAdminRoutes from './routes/superAdminRoute';
 import 'colors';
 import { connectConsumer } from './events/connectCosumer';
 import cookieParser from 'cookie-parser';
+import { createStream } from 'rotating-file-stream';
+import path from 'path';
+import fs from 'fs';
+import morgan from 'morgan';
+
 
 const app = express();
 app.use(cookieParser());
 const PORT = process.env.PORT || 3000;
+
+const logDirectory = path.resolve(__dirname, './logs');
+if (!fs.existsSync(logDirectory)) {
+  fs.mkdirSync(logDirectory);
+}
+
+
+// Set up log file rotation
+const accessLogStream = createStream('access.log', {
+    interval: '7d',
+    path: logDirectory,
+  });
+
+app.use(morgan('combined', { stream: accessLogStream }));
+app.use(morgan('dev'));
 connectDB();
 
 const corsOptions = {

@@ -33,6 +33,15 @@ import OnboardingRepository from "../repository/implementation/onboardingReposit
 import OnboardingService from "../service/implementation/onboardingService";  // Ensure correct import
 import OnboardingController from "../controllers/implementation/onboardingController";  // Ensure correct import
 
+import ILeaveController from "../controllers/interface/ILeaveController";
+import ILeaveService from "../service/interface/ILeaveService";
+import ILeaveRepository from "../repository/interface/ILeaveRepository";
+import LeaveRepository from "../repository/implementation/leaveRepository";  // Ensure correct import
+import LeaveService from "../service/implementation/leaveService";  // Ensure correct import
+import LeaveController from "../controllers/implementation/leaveController";  // Ensure correct import
+import EmployeeAttendance from "../models/attendanceModel";
+
+
 
 
 
@@ -62,5 +71,12 @@ container.bind<IOnboardingRepository>("IOnboardingRepository").to(OnboardingRepo
 container.bind<IOnboardingService>("IOnboardingService").to(OnboardingService);
 
 container.bind<typeof EmployeeModel>("EmployeeModel").toConstantValue(EmployeeModel);
+
+
+container.bind<ILeaveController>("ILeaveController").to(LeaveController);
+container.bind<ILeaveRepository>("ILeaveRepository").to(LeaveRepository);
+container.bind<ILeaveService>("ILeaveService").to(LeaveService);
+
+container.bind<typeof EmployeeAttendance>("IEmployeeAttendance").toConstantValue(EmployeeAttendance);
 
 export default container;

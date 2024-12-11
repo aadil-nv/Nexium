@@ -5,9 +5,12 @@ import { generateEmail } from "../../utils/generateEmail";
 import { generatePassword } from "../../utils/generatePassword";
 import nodemailer from "nodemailer";
 import { generateOfferLetter } from "../../utils/generateOfferLetter";
-import { IEmployeeAddressDTO, IEmployeeCredentialsDTO, IEmployeeDocumentsDTO, IEmployeePersonalInformationDTO, IEmployeeProfessionalInfoDTO, IEmployeesDTO } from "../../dto/IEmployeesDTO";
+import { IEmployeeAddressDTO, IEmployeeCredentialsDTO, IEmployeeDocumentsDTO,
+   IEmployeePersonalInformationDTO, IEmployeeProfessionalInfoDTO, IEmployeesDTO ,IEmployeeFullDataDTO } from "../../dto/IEmployeesDTO";
 import RabbitMQMessager from "../../events/implementation/producer";
-import IEmployee from "entities/employeeEntities";
+import IEmployee from "../../entities/employeeEntities";
+import { uploadTosS3 } from "../../middlewares/multer-s3";
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 
 
@@ -59,7 +62,7 @@ export default class EmployeeService implements IEmployeeService {
         mappedEmployeeData.professionalDetails.salary = employeeData.salary;
         mappedEmployeeData.professionalDetails.workTime = employeeData.workTime;
         mappedEmployeeData.professionalDetails.joiningDate = employeeData.joiningDate;
-        mappedEmployeeData.professionalDetails.department = "";
+        mappedEmployeeData.professionalDetails.department = null;
         mappedEmployeeData.professionalDetails.position = employeeData.position;
         mappedEmployeeData.professionalDetails.companyName = managerData.companyDetails.companyName;
 
@@ -80,9 +83,6 @@ export default class EmployeeService implements IEmployeeService {
         return { success: false, message: "Failed to add employee" };
     }
 }
-
-
-
 
   private validateEmployeeData(employeeData: any): { success: boolean; message: string } {
     if (!employeeData.name || employeeData.name.trim().length < 3) {
@@ -177,7 +177,8 @@ export default class EmployeeService implements IEmployeeService {
             isActive: employee.isActive,
             profilePicture: employee.personalDetails.profilePicture || "", // Provide a fallback for optional fields
             email: employee.personalDetails.email,
-            _id: employee._id
+            _id: employee._id,
+            isBlocked: employee.isBlocked
         }));
 
         return employeesDTO;
@@ -228,29 +229,41 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
     }
    }
 
-   async updateEmployeeProfessionalInfo(employeeId: string ,professionalInfo: any): Promise<IEmployeeProfessionalInfoDTO> {
+   async updateEmployeeProfessionalInfo(employeeId: string, professionalInfo: any): Promise<IEmployeeProfessionalInfoDTO> {
     try {
-        const employeeData = await this._employeeRepository.updateEmployeeProfessionalInfo(employeeId,professionalInfo);
+        // Check if department is not added, then set it as null
+        if (!professionalInfo.department || professionalInfo.department === 'Not added') {
+            professionalInfo.department = null;  // Assign null if department is not added
+        }
+
+        // Update employee professional information
+        const employeeData = await this._employeeRepository.updateEmployeeProfessionalInfo(employeeId, professionalInfo);
 
         if (!employeeData) {
             throw new Error("Employee not found");
         }
 
+        // Retrieve department name after update
+        const departmentName = await this._employeeRepository.getDepartmentName(employeeData.professionalDetails.department);
+        console.log("******************departmentName************", departmentName);
+
+        // Return the updated professional information
         return {
             position: employeeData.professionalDetails.position,
             workTime: employeeData.professionalDetails.workTime,
-            department: employeeData.professionalDetails.department,
+            department: departmentName || '',  // If departmentName is null, return an empty string
             joiningDate: employeeData.professionalDetails.joiningDate,
             currentStatus: employeeData.professionalDetails.currentStatus,
             companyName: employeeData.professionalDetails.companyName,
             salary: employeeData.professionalDetails.salary,
-            skills: employeeData.professionalDetails.skills
-        }
+            skills: employeeData.professionalDetails.skills,
+        };
     } catch (error) {
         console.error("Error in service layer:", error);
         throw new Error("Failed to fetch employee professional information");
     }
-     }
+}
+
    
      async getEmployeeCredentials(employeeId: string): Promise<IEmployeeCredentialsDTO> {
         try {
@@ -285,7 +298,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
                 documentSize: employeeData.document.resume.documentSize,
                 uploadedAt: employeeData.document.resume.uploadedAt,
               },
-              employeeIdProof: {
+              idProof: {
                 documentName: employeeData.document.employeeIdProof.documentName,
                 documentUrl: employeeData.document.employeeIdProof.documentUrl,
                 documentSize: employeeData.document.employeeIdProof.documentSize,
@@ -298,14 +311,206 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
         }
      }
 
-     async getEmployee(employeeId: string): Promise<IEmployee> {
-        console.log("Employee ID:", employeeId);
+     async getEmployee(employeeId: string): Promise<IEmployeeFullDataDTO> {
+
+      try {
+          const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId);
+  
+          if (!employeeData) {
+              throw new Error("Employee not found");
+          }
+  
+          let departmentName: string | null = await this._employeeRepository.getDepartmentName(employeeData.professionalDetails.department);
+          const profilePicture =`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ employeeData.personalDetails.profilePicture}`
+          const resumeUrl =`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ employeeData.documents.resume.documentUrl}`
+          const idProofUrl =`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ employeeData.documents.idProof.documentUrl}`
+
+  
+          if (!departmentName) {
+              departmentName = null;
+          }
+
+  
+          return {
+              _id: employeeData._id.toString(),
+              managerId: employeeData.managerId?.toString() || '',
+              businessOwnerId: employeeData.businessOwnerId?.toString() || '',
+              isActive: employeeData.isActive,
+              isVerified: employeeData.isVerified,
+              isBlocked: employeeData.isBlocked,
+  
+              personalDetails: {
+                  employeeName: employeeData.personalDetails.employeeName,
+                  email: employeeData.personalDetails.email,
+                  phone: employeeData.personalDetails.phone,
+                  profilePicture: profilePicture,
+              },
+  
+              address: {
+                  street: employeeData.address.street,
+                  city: employeeData.address.city,
+                  state: employeeData.address.state,
+                  country: employeeData.address.country,
+                  postalCode: employeeData.address.postalCode,
+              },
+  
+              professionalDetails: {
+                  position: employeeData.professionalDetails.position,
+                  department: departmentName,  // Now allows null
+                  workTime: employeeData.professionalDetails.workTime,
+                  joiningDate: employeeData.professionalDetails.joiningDate,
+                  currentStatus: employeeData.professionalDetails.currentStatus,
+                  companyName: employeeData.professionalDetails.companyName,
+                  salary: employeeData.professionalDetails.salary,
+                  skills: employeeData.professionalDetails.skills,
+              },
+  
+              employeeCredentials: {
+                  companyEmail: employeeData.employeeCredentials.companyEmail,
+                  companyPassword: employeeData.employeeCredentials.companyPassword,
+              },
+  
+              documents: {
+                resume: {
+                      documentName: employeeData.documents.resume?.documentName || '',
+                      documentUrl:resumeUrl,
+                      documentSize: employeeData.documents.resume?.documentSize || '',
+                      uploadedAt: employeeData.documents.resume?.uploadedAt || '',
+                  },
+               idProof: {
+                      documentName: employeeData.documents.idProof?.documentName || '',
+                      documentUrl:idProofUrl ,
+                      documentSize: employeeData.documents.idProof?.documentSize || '',
+                      uploadedAt: employeeData.documents.idProof?.uploadedAt || '',
+                  },
+              },
+  
+              leaves: {
+                  casualLeave: employeeData.leaves.casualLeave,
+                  sickLeave: employeeData.leaves.sickLeave,
+                  paidLeave: employeeData.leaves.paidLeave,
+                  unpaidLeave: employeeData.leaves.unpaidLeave,
+              },
+          };
+  
+      } catch (error) {
+          console.error("Error in service layer:", error);
+          throw new Error("Failed to fetch employee information");
+      }
+  }
+
+  async updateProfilePicture(employeeId: string ,file: Express.Multer.File): Promise<any> {
+    try {
+      const imageUrl = await this.uploadFileToS3(employeeId, file, "profilePicture");
+
+       const result = await this._employeeRepository.updateProfilePicture(employeeId, imageUrl);
+       return { success: true, message: 'Image uploaded successfully!', data: { imageUrl:`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result}` } };
+    } catch (error) {
+        console.error("Error in service layer:", error);
+        throw new Error("Failed to update profile picture");
+    }
+  }
+
+  private async uploadFileToS3(employeeId: string, file: Express.Multer.File, fileType: "profilePicture" | "resume" | "idProof"): Promise<string> {
+    // Fetch the employee data
+    const result = await this._employeeRepository.getEmployeeInformation(employeeId);
+
+    // Determine the existing file based on the file type
+    const existingFile = fileType === "profilePicture"
+        ? result.personalDetails.profilePicture // Corrected to `profilePicture`
+        : result.companyDetails ? result.companyDetails.companyLogo : null; // Check if `companyDetails` exists
+
+    if (existingFile) {
+        const s3Client = new S3Client({ region: 'eu-north-1' });
         try {
-            return await this._employeeRepository.getEmployeeInformation(employeeId);
-        } catch (error) {
-            console.error("Error in service layer:", error);
-            throw new Error("Failed to fetch employee information");
+            // Delete the existing file from S3
+            await s3Client.send(new DeleteObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, Key: existingFile }));
+        } catch (deleteError) {
+            console.error("Error deleting file from S3:", deleteError);
         }
-     }
+    }
+
+    // Upload the new file to S3
+    const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
+    console.log("==============fileUrl======================", fileUrl);
+    
+    return fileUrl;
+}
+
+
+  async updateResume(employeeId: string, file: Express.Multer.File): Promise<any> {
+    try {
+        // Generate the document URL (Assuming S3 upload is handled by `uploadFileToS3`)
+        const documentUrl = await this.uploadFileToS3(employeeId, file, "resume");
+
+        console.log("documentUrl", documentUrl);
+
+        // Prepare resume metadata
+        const documentMetadata = {
+            documentName: file.originalname,
+            documentUrl,
+            documentSize: file.size,
+            uploadedAt: new Date(),
+        };
+
+        // Update employee document details in the repository
+        const result = await this._employeeRepository.updateResume(employeeId, documentMetadata);
+
+        return {
+            success: true,
+            message: "Resume uploaded successfully!",
+            data: {
+                documentUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${documentUrl}`,
+                documentMetadata: result,
+            },
+        };
+    } catch (error) {
+        console.error("Error in updateResume service:", error);
+        throw new Error("Failed to update resume");
+    }
+}
+
+async updateIdProof(employeeId: string, file: Express.Multer.File): Promise<any> {
+  try {
+    // Generate the document URL (Assuming S3 upload is handled by `uploadFileToS3`)
+    const documentUrl = await this.uploadFileToS3(employeeId, file, "idProof");
+
+    // Prepare resume metadata
+    const documentMetadata = {
+        documentName: file.originalname,
+        documentUrl,
+        documentSize: file.size,
+        uploadedAt: new Date(),
+    };
+
+    // Update employee document details in the repository
+    const result = await this._employeeRepository.updateIdProof(employeeId, documentMetadata);
+
+    return {
+        success: true,
+        message: "Id proof uploaded successfully!",
+        data: {
+            documentUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${documentUrl}`,
+            documentMetadata: result,
+        },
+    };
+} catch (error) {
+    console.error("Error in updateID proof service:", error);
+    throw new Error("Failed to update id proof");
+}
+}
+  
+
+async updateBlocking(employeeId: string, blocking: any): Promise<any> {
+  try {
+      const result = await this._employeeRepository.updateBlocking(employeeId, blocking);
+      console.log("result#######################################", result);
+      
+      return result;
+  } catch (error) {
+      console.error("Error in updateBlocking service:", error);
+      throw new Error("Failed to update blocking");
+  }
+}
 
 }

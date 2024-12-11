@@ -5,6 +5,7 @@ export interface IEmployeesDTO {
     profilePicture: string;
     _id: string
     email: string
+    isBlocked: boolean
 }
 
 export interface IEmployeePersonalInformationDTO {
@@ -47,5 +48,68 @@ export interface IDocumentDTO {
   
 export interface IEmployeeDocumentsDTO {
     resume: IDocumentDTO;
-    employeeIdProof: IDocumentDTO;
+    idProof: IDocumentDTO;
   }
+
+  export interface IEmployeeFullDataDTO {
+      _id: string
+    managerId: string; // Reference to HR as ObjectId in string format
+    businessOwnerId: string; // Reference to Business Owner as ObjectId in string format
+    isActive: boolean;
+    isVerified: boolean;
+    isBlocked: boolean;
+  
+    personalDetails: {
+      employeeName: string;
+      email: string;
+      phone: string;
+      profilePicture: string;
+    };
+  
+    address: {
+      street: string;
+      city: string;
+      state: string;
+      country: string;
+      postalCode: string;
+    };
+  
+    professionalDetails: {
+      position: "Team Lead" | "Senior Software Engineer" | "Junior Software Engineer";
+      department?: string | null; 
+      workTime: "Full-Time" | "Part-Time" | "Contract" | "Temporary";
+      joiningDate: Date;
+      currentStatus: string;
+      companyName: string;
+      salary: number;
+      skills: string[];
+    };
+  
+    employeeCredentials: {
+      companyEmail: string;
+      companyPassword: string;
+    };
+  
+    documents: {
+      resume: {
+        documentName?: string;
+        documentUrl?: string;
+        documentSize?: number; // Size in bytes
+        uploadedAt?: Date;
+      };
+      idProof: {
+        documentName?: string;
+        documentUrl?: string;
+        documentSize?: number; // Size in bytes
+        uploadedAt?: Date;
+      };
+    };
+  
+    leaves: {
+      casualLeave: number;
+      sickLeave: number;
+      paidLeave: number;
+      unpaidLeave: number;
+    };
+  }
+  

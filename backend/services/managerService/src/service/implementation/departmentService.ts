@@ -11,6 +11,11 @@ export default class DepartmentService implements IDepartmentService {
   ) {}
 
   async addDepartments(departmentName: string, employees: any): Promise<any> {
+    console.log('"hitting addDepartments service=------------------"'.bgMagenta);
+    console.log("departmentName", departmentName);
+    console.log("employees********************************************", employees);
+    
+    
     try {
       const department = await this._departmentRepository.addDepartments(departmentName, employees);
       return department;
@@ -56,6 +61,8 @@ export default class DepartmentService implements IDepartmentService {
   }
 
   async deleteDepartment(departmentId: string): Promise<any> {
+    console.log("departmentId%%%%%%%%%%%%%%%%%%%%%%%%", departmentId);
+    
     try {
       const department = await this._departmentRepository.findDepartment(departmentId);
 
@@ -99,7 +106,7 @@ export default class DepartmentService implements IDepartmentService {
     }
 }
 
-async addEmployeeToDepartment(employeeId: string, departmentId: string) {
+async addEmployeesToDepartment(employeeData: any[], departmentId: string): Promise<any> {
   try {
       // Fetch the department
       const department = await this._departmentRepository.findDepartment(departmentId);
@@ -107,26 +114,27 @@ async addEmployeeToDepartment(employeeId: string, departmentId: string) {
           throw new Error('Department not found.');
       }
 
-      // Fetch the employee
-      const employee = await this._departmentRepository.findEmployee(employeeId);
-      if (!employee) {
-          throw new Error('Employee not found.');
+      // Process each employee
+      const results = [];
+      for (const employee of employeeData) {
+          const updatedInfo = await this._departmentRepository.addEmployeesToDepartment(departmentId, employee);
+          results.push(updatedInfo);
       }
 
-      // Add the employee to the department
-      const updatedDepartment = await this._departmentRepository.addEmployeeToDepartment(departmentId, employee);
-
       return {
-          departmentId: updatedDepartment._id,
-          departmentName: updatedDepartment.departmentName,
-          employeeId: employee.id,
-          employeeName: employee.name,
+          departmentId: department._id,
+          departmentName: department.departmentName,
+          employeesAdded: results.map((result) => ({
+              employeeId: result.updatedEmployee._id,
+              employeeName: result.updatedEmployee.name,
+          })),
       };
   } catch (error: any) {
-      console.error('Error in service layer:', error.message);
+      console.error('Error in service layer (addEmployeesToDepartment):', error.message);
       throw error;
   }
 }
+
 
 
  

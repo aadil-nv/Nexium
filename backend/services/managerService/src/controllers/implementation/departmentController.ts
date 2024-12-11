@@ -13,6 +13,10 @@ export default class DepartmentController implements IDepartmentController {
         try {
             const { departmentName, employees } = req.body;
 
+            console.log("departmentName", departmentName);
+            console.log("employees#############################", employees);
+            
+
             if (!Array.isArray(employees)) {
                 res.status(400).json({ message: 'Employees must be an array of objects' });
                 return;
@@ -99,23 +103,25 @@ export default class DepartmentController implements IDepartmentController {
     }
     
 
-    async addEmployeeToDepartment(req: Request, res: Response): Promise<Response> {
+    async addEmployeesToDepartment(req: Request, res: Response): Promise<Response> {
         console.log("hitting add employee to department controller");
         
         try {
-            const { employeeId, departmentId } = req.body;
+            const { departmentId, employeeData } = req.body;
+           
+      
+
             console.log("req.body", req.body);
-            console.log("employeeId", employeeId);
-            console.log("departmentId", departmentId);
+           
             
     
             // Validate input
-            if (!employeeId || !departmentId) {
+            if (!employeeData) {
                 return res.status(400).json({ message: 'Employee ID and Department ID are required.' });
             }
     
             // Call the service layer
-            const result = await this._departmentService.addEmployeeToDepartment(employeeId, departmentId);
+            const result = await this._departmentService.addEmployeesToDepartment(employeeData ,departmentId);
     
             return res.status(200).json({ 
                 message: 'Employee added to department successfully.', 

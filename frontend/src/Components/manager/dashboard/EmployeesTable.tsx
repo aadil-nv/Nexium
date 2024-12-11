@@ -1,141 +1,69 @@
-import React, { useState, useEffect } from "react";
-import { flexRender, useReactTable, getCoreRowModel, getFilteredRowModel, getPaginationRowModel } from "@tanstack/react-table";
+import React, { useState } from "react";
+import { FaSearch, FaFileCsv, FaFileExcel, FaEdit, FaLock, FaUnlock, FaSignOutAlt } from "react-icons/fa";
+import { motion } from "framer-motion";
 import { CSVLink } from "react-csv";
 import * as XLSX from "xlsx";
-import { FaSearch, FaFileCsv, FaFileExcel, FaEdit, FaUserLock, FaSignOutAlt } from "react-icons/fa";
-import { motion } from "framer-motion";
 import DebouncedInput from "../../ui/DebouncedInput";
-import useTheme from "../../../hooks/useTheme";
 import { Skeleton } from "antd";
-import { IEmployee } from "../../../interface/managerInterface";
 import EmployeeInfoModal from "../../ui/EmployeeInfo";
-import axios from "axios";
 import { managerInstance } from "../../../services/managerInstance";
+import { useDispatch } from "react-redux";
+import { setEmployeeDatas, clearEmployeeData } from "../../../redux/slices/managerSlice";
+import { IEmployee } from "../../../interface/managerInterface";
 
-function EmployeesTable({ data, loading, error }: { data: IEmployee[]; loading: boolean; error: string | null }) {
-  const { themeColor } = useTheme();
+const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[]; loading: boolean; error: string | null; onUpdate: () => void }) => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editEmployeeId, setEditEmployeeId] = useState<string | null>(null);
-  const [employeeData, setEmployeeData] = useState<any>(null);
-    
-  console.log("sending data------------------", data);
-
-
-
-  const table = useReactTable({
-    data,
-    columns: [
-      { id: "_id", header: "ID", accessorKey: "_id" },
-      { id: "name", header: "Name", accessorKey: "name" },
-      { id: "position", header: "Position", accessorKey: "position" },
-      { id: "email", header: "Email", accessorKey: "email" },
-      {
-        id: "status",
-        header: "Status",
-        cell: ({ row }) => (
-          <span className={row.getValue("isActive") ? "text-green-500" : "text-red-500"}>
-            {row.getValue("isActive") ? "Active" : "Inactive"}
-          </span>
-        ),
-      },
-      {
-        id: "actions",
-        header: "Actions",
-        cell: ({ row }) => (
-          <div className="flex space-x-3 justify-center items-center">
-            <motion.button
-              onClick={() => handleEditClick(row.getValue("_id"))}
-              style={{ backgroundColor: themeColor }}
-              className="text-white px-4 py-2 rounded-md flex items-center space-x-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <FaEdit className="text-lg" />
-              <span>Edit</span>
-            </motion.button>
-            {/* Other action buttons */}
-
-            <motion.button
-              onClick={() => console.log(`Block ${row.getValue("id")}`)}
-              className="text-white bg-yellow-500 px-4 py-2 rounded-md flex items-center space-x-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <FaUserLock className="text-lg" />
-              <span>Block</span>
-            </motion.button>
-            <motion.button
-              onClick={() => console.log(`Delete ${row.getValue("id")}`)}
-              className="text-white bg-red-500 px-4 py-2 rounded-md flex items-center space-x-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <FaSignOutAlt className="text-lg" />
-              <span>Delete</span>
-            </motion.button>
-          </div>
-        ),
-      },
-    ],
-    state: { globalFilter },
-    getFilteredRowModel: getFilteredRowModel(),
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-  });
+  const dispatch = useDispatch();
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(data), "Data");
     XLSX.writeFile(workbook, "Data.xlsx");
   };
 
-  const handleEditClick = async (employeeId: string) => {
-    setEditEmployeeId(employeeId); // Set the employee ID for editing
+  const handleClick = async (action: 'edit' | 'block', employeeId: any, isBlocked?: boolean) => {
     try {
-      // Fetch the employee data from your API
-      const response = await managerInstance.get(`/manager/api/employee/get-employee/${employeeId}`);
-
-      console.log("responce data ius ===================",response.data);
-      setEmployeeData(response.data); // Set the employee data for editing
-      setIsModalVisible(true); // Show the modal
+      let response;
+      if (action === 'edit') {
+        response = await managerInstance.get(`/manager/api/employee/get-employee/${employeeId}`);
+        dispatch(clearEmployeeData());
+        dispatch(setEmployeeDatas({ employeeData: response.data }));
+        setIsModalVisible(true);
+      } else if (action === 'block') {
+        response = await managerInstance.post(`/manager/api/employee/update-blocking/${employeeId}`, { isBlocked: !isBlocked });
+        dispatch(setEmployeeDatas({ employeeData: data.map((e) => e._id === employeeId ? { ...e, isBlocked: !isBlocked } : e) }));
+      }
+      onUpdate(); // Notify parent to trigger data re-fetch
     } catch (error) {
-      console.error("Error fetching employee data:", error);
+      console.error("Error:", error);
     }
   };
 
   const handleCancel = () => {
-    setIsModalVisible(false); // Close the modal
-    setEmployeeData(null); // Reset employee data
+    dispatch(clearEmployeeData());
+    setIsModalVisible(false);
   };
 
   return (
     <div className="p-5 max-w-6xl mx-auto bg-white text-gray-800 rounded-lg shadow-lg">
-      {/* Filters and Export */}
-      <div className="flex flex-col lg:flex-row justify-between items-center mb-4 space-y-4 lg:space-y-0 lg:space-x-4">
+      <div className="flex flex-col lg:flex-row justify-between items-center mb-4">
         <div className="w-full lg:w-1/2 flex items-center space-x-2">
           <FaSearch className="text-gray-400" />
-          <DebouncedInput
-            value={globalFilter}
-            onChange={(value) => setGlobalFilter(String(value))}
-            className="p-2 border-b-2 border-gray-600 focus:border-indigo-500 outline-none bg-gray-100 text-gray-800 w-full transition-all"
-            placeholder="Search..."
-          />
+          <DebouncedInput value={globalFilter} onChange={setGlobalFilter} className="p-2 border-b-2 border-gray-600 bg-gray-100 w-full" placeholder="Search..." />
         </div>
         <div className="flex space-x-3">
           <CSVLink data={data} filename={"Data.csv"}>
-            <motion.button className="flex items-center bg-green-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-green-700">
+            <motion.button className="flex items-center bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
               <FaFileCsv className="mr-2" /> CSV
             </motion.button>
           </CSVLink>
-          <motion.button onClick={exportToExcel} className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-blue-700">
+          <motion.button onClick={exportToExcel} className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
             <FaFileExcel className="mr-2" /> Excel
           </motion.button>
         </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => (
@@ -149,67 +77,46 @@ function EmployeesTable({ data, loading, error }: { data: IEmployee[]; loading: 
           <div className="text-red-500">{error}</div>
         ) : (
           <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
-            <thead style={{ backgroundColor: themeColor }} className="text-white">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id} className="px-4 py-2 text-xs sm:text-sm text-left">
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </th>
-                  ))}
-                </tr>
-              ))}
+            <thead className="bg-blue-600 text-white">
+              <tr>
+                {["ID", "Name", "Position", "Email", "Status", "Actions"].map((header) => (
+                  <th key={header} className="px-4 py-2 text-xs sm:text-sm text-left">{header}</th>
+                ))}
+              </tr>
             </thead>
             <tbody>
-              {table.getRowModel().rows.map((row, i) => (
-                <motion.tr
-                  key={row.id}
-                  className={`bg-gray-${i % 2 === 0 ? "100" : "200"} hover:bg-gray-300 transition-all`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-2 text-xs sm:text-sm text-gray-800">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
+              {data.filter((e) => e.name?.toLowerCase().includes(globalFilter.toLowerCase())).map((employee, i) => (
+                <motion.tr key={employee._id} className={`bg-gray-${i % 2 === 0 ? "100" : "200"} hover:bg-gray-300`}>
+                  {["_id", "name", "position", "email"].map((key) => (
+                    <td key={key} className="px-4 py-2 text-xs sm:text-sm">{employee[key as keyof IEmployee] || "N/A"}</td>
                   ))}
+                  <td className="px-4 py-2 text-xs sm:text-sm">
+                    <span className={employee.isBlocked ? "text-red-500" : "text-green-500"}>{employee.isBlocked ? "Blocked" : "Active"}</span>
+                  </td>
+                  <td className="px-4 py-2 text-xs sm:text-sm">
+                    <div className="flex space-x-3 justify-center">
+                      <motion.button onClick={() => handleClick('edit', employee._id)} className="text-white w-24 bg-blue-500 hover:bg-blue-600 flex items-center justify-center rounded-md">
+                        <FaEdit className="mr-2" /> Edit
+                      </motion.button>
+                      <motion.button onClick={() => handleClick('block', employee._id, employee.isBlocked)} className={`text-white w-24 flex items-center justify-center rounded-md ${employee.isBlocked ? "bg-red-500" : "bg-green-500"}`}>
+                        {employee.isBlocked ? <><FaUnlock className="mr-2" /> Unblock</> : <><FaLock className="mr-2" /> Block</>}
+                      </motion.button>
+                      <motion.button onClick={() => console.log(`Delete ${employee._id}`)} className="text-white w-24 bg-red-500 flex items-center justify-center rounded-md">
+                        <FaSignOutAlt className="mr-2" /> Remove
+                      </motion.button>
+                    </div>
+                  </td>
                 </motion.tr>
               ))}
-              {!table.getRowModel().rows.length && (
-                <tr>
-                  <td colSpan={6} className="text-center py-4">
-                    No data available
-                  </td>
-                </tr>
-              )}
+              {!data.length && <tr><td colSpan={6} className="text-center py-4">No data available</td></tr>}
             </tbody>
           </table>
         )}
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-between items-center mt-4">
-        <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="px-4 py-2 bg-gray-200 text-gray-600 rounded disabled:opacity-50">
-          Previous
-        </button>
-        <span>
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-        </span>
-        <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="px-4 py-2 bg-gray-200 text-gray-600 rounded disabled:opacity-50">
-          Next
-        </button>
-      </div>
-
-      {/* Edit Employee Modal */}
-      <EmployeeInfoModal
-  employeeData={employeeData} // Pass the fetched employee data
-  visible={isModalVisible}
-  onClose={handleCancel}
-/>
-
+      <EmployeeInfoModal visible={isModalVisible} onClose={handleCancel} />
     </div>
   );
-}
+};
 
 export default EmployeesTable;

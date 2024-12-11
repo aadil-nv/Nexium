@@ -3,17 +3,37 @@ import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config(); 
 import cors from 'cors';
-// import connectDB from './config/connectDB';
 import cookieParser from 'cookie-parser';
 import attendanceRoutes from './routes/attendanceRoute';
 import employeeRoutes from './routes/employeeRoute';
 import payrollRoutes from './routes/payrollRoute';
 import 'colors' ;
+import morgan from 'morgan'; // Import morgan
+import { createStream } from 'rotating-file-stream';
+import path from 'path';
+import fs from 'fs';
+
 
 
 
 const app = express(); 
 const PORT = process.env.PORT || 3000;
+
+const logDirectory = path.resolve(__dirname, './logs');
+if (!fs.existsSync(logDirectory)) {
+  fs.mkdirSync(logDirectory);
+}
+
+
+// Set up log file rotation
+const accessLogStream = createStream('access.log', {
+    interval: '7d',
+    path: logDirectory,
+  });
+
+
+app.use(morgan('combined', { stream: accessLogStream }));
+app.use(morgan('dev'));
 // connectDB(); 
 
 app.use(cors({

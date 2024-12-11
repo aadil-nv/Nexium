@@ -9,11 +9,11 @@ const departmentRouter = Router();
 const departmentController = container.get<IDepartmentController>("IDepartmentController");
 
 
-departmentRouter.post("/add-departments", (req, res) => departmentController.addDepartments(req, res));
-departmentRouter.get('/get-departments',(req, res) => departmentController.getDepartments(req, res))
-departmentRouter.patch('/remove-employee',(req,res)=>departmentController.removeEmployee(req,res))
-departmentRouter.patch('/update-deparmentname',(req,res)=>departmentController.updateDepartmentName(req,res))
-departmentRouter.post('/add-employee',(req,res)=>departmentController.addEmployeeToDepartment(req,res))
-departmentRouter.delete('/delete-department', (req, res) => departmentController.deleteDepartment(req, res));
+departmentRouter.post("/add-departments",authenticateToken, (req, res) => departmentController.addDepartments(req, res));
+departmentRouter.get('/get-departments',authenticateToken,(req, res) => departmentController.getDepartments(req, res))
+departmentRouter.patch('/remove-employee',authenticateToken,(req,res)=>departmentController.removeEmployee(req,res))
+departmentRouter.patch('/update-deparmentname',authenticateToken,(req,res)=>departmentController.updateDepartmentName(req,res))
+departmentRouter.post('/add-employee',authenticateToken,(req,res)=>departmentController.addEmployeesToDepartment(req,res))
+departmentRouter.delete('/delete-department',authenticateToken, (req, res) => departmentController.deleteDepartment(req, res));
 
 export default departmentRouter

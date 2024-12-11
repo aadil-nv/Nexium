@@ -11,12 +11,32 @@ import subscriptionRoutes from './routes/subscriptionRoute';
 import 'colors' ;
 import {connectConsumer} from "./events/rabbitmq/connectConsumer"
 import cookieParser from 'cookie-parser';
+import morgan from 'morgan'; // Import morgan
+import { createStream } from 'rotating-file-stream';
+import path from 'path';
+import fs from 'fs';
 
 
 
 const app = express(); 
 const PORT = process.env.PORT || 3000;
 connectDB(); 
+
+const logDirectory = path.resolve(__dirname, './logs');
+if (!fs.existsSync(logDirectory)) {
+  fs.mkdirSync(logDirectory);
+}
+
+
+// Set up log file rotation
+const accessLogStream = createStream('access.log', {
+    interval: '7d',
+    path: logDirectory,
+  });
+
+
+app.use(morgan('combined', { stream: accessLogStream }));
+app.use(morgan('dev'));
 
 app.use(cors({
   origin: 'http://localhost:5173', // replace with your frontend domain

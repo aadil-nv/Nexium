@@ -26,7 +26,7 @@ const employeeSchema = new Schema<IEmployee>({
   professionalDetails: {
     position: { type: String, enum: ["Team Lead", "Senior Software Engineer", "Junior Software Engineer"] },
     workTime: { type: String, enum: ["Full-Time", "Part-Time", "Contract", "Temporary"] },
-    department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
+    department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department', required: false },
     joiningDate: { type: Date },
     currentStatus: { type: String },
     companyName: { type: String },

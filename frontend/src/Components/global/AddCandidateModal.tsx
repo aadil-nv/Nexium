@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Select, Spin } from 'antd';
 import { toast } from 'react-toastify';
-import { fetchEmployees, addEmployee } from '../../api/managerApi';
+import { fetchEmployees, addEmployeeToDepartment } from '../../api/managerApi';
 
-const AddCandidateModal: React.FC<{ isVisible: boolean; onClose: () => void }> = ({ isVisible, onClose }) => {
+const AddCandidateModal: React.FC<{ isVisible: boolean; onClose: () => void ;  departmentId: string }> = ({ isVisible, onClose,departmentId }) => {
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]); // Track selected employee IDs
+
+  console.log("departmentId",departmentId)
 
   useEffect(() => {
     if (!isVisible) return;
@@ -27,7 +29,7 @@ const AddCandidateModal: React.FC<{ isVisible: boolean; onClose: () => void }> =
 
     try {
       // Assuming `addEmployee` API expects an array of employee objects or their IDs
-      const success = await addEmployee(selectedEmployees);
+      const success = await addEmployeeToDepartment(selectedEmployees ,departmentId);
       if (success) {
         toast.success(`${selectedEmployees.length} employee(s) added to the department!`);
       } else {

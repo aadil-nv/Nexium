@@ -7,14 +7,32 @@ import cookieParser from 'cookie-parser';
 import connectDB from './config/connectDB';
 import businessOwnerPaymentRoutes from './routes/businessOwnerPaymentRoute';
 import webhookRouter from './routes/webhookRoute';
-
 import "colors";
+import { createStream } from 'rotating-file-stream';
+import path from 'path';
+import fs from 'fs';
+import morgan from 'morgan';
 
 const app = express();
-const PORT = process.env.PORT || 5000; // Default to 5000 if PORT is not defined
+const PORT = process.env.PORT  
 
 // Connect to the database
 connectDB();
+
+const logDirectory = path.resolve(__dirname, './logs');
+if (!fs.existsSync(logDirectory)) {
+  fs.mkdirSync(logDirectory);
+}
+
+
+// Set up log file rotation
+const accessLogStream = createStream('access.log', {
+    interval: '7d',
+    path: logDirectory,
+  });
+
+app.use(morgan('combined', { stream: accessLogStream }));
+app.use(morgan('dev'));
 
 // Enable CORS
 app.use(cors({

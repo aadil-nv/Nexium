@@ -4,5 +4,5 @@ export default interface IDepartmentService {
     removeEmployee(employeeId:string , departmentId:string):Promise<any>
     deleteDepartment(departmentId: string): Promise<any>
     updateDepartmentName(departmentId: string, newDepartmentName: string): Promise<any>
-    addEmployeeToDepartment(employeeId: string, departmentId: string):Promise<any>
+    addEmployeesToDepartment(employeeData: any[] , departmentId: string ):Promise<any>
 }

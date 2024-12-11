@@ -43,7 +43,7 @@ export default interface IEmployee extends Document {
     documentSize: number; // Size of the document in bytes
     uploadedAt: Date;
   };
-  employeeIdProof: {
+  idProof: {
     documentName: string;
     documentUrl: string;
     documentSize: number; // Size of the document in bytes

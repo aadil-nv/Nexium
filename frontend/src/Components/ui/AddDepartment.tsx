@@ -31,7 +31,7 @@ const AddDepartmentModal: React.FC<{
           }
           // Return an object with employee id and name
           return { 
-            id: employee._id, 
+            _id: employee._id, 
             name: employee.employeeName || 'No Name', 
             position: employee.position || 'No Position', 
             isActive: employee.isActive, 

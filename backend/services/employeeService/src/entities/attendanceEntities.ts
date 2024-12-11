@@ -9,11 +9,13 @@ export interface IAttendanceEntry {
     leaveType?: string | null;
     reason?: string | null;
     leaveStatus?: "Pending"|"Approved"|"Rejected"|"null"
+    rejectionReason?: string | null;
 }
 
 export interface IEmployeeAttendance extends Document {
     employeeId: mongoose.Types.ObjectId; // Reference to the Employee
     attendance: IAttendanceEntry[]; // Array of daily attendance
+    
   }  
 
 

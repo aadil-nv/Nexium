@@ -1,4 +1,4 @@
-import { IEmployeePersonalInformationDTO, IEmployeesDTO } from "../../dto/IEmployeesDTO";
+import { IEmployeeFullDataDTO, IEmployeePersonalInformationDTO, IEmployeesDTO } from "../../dto/IEmployeesDTO";
 import IEmployee from "../../entities/employeeEntities";
 export default interface IEmployeeService {
     addEmployees(employeeData: any , managerData: any): Promise<any>;
@@ -11,5 +11,9 @@ export default interface IEmployeeService {
     updateEmployeeProfessionalInfo(employeeId: string ,professionalInfo: any): Promise<any>;
     getEmployeeCredentials(employeeId: string): Promise<any>;
     getEmployeeDocuments(employeeId: string): Promise<any>;
-    getEmployee(employeeId: string ,): Promise<IEmployee>;
+    getEmployee(employeeId: string ,): Promise<IEmployeeFullDataDTO >;
+    updateProfilePicture(employeeId: string ,file: Express.Multer.File): Promise<any>;
+    updateResume(employeeId: string ,file: Express.Multer.File): Promise<any>;
+    updateIdProof(employeeId: string ,file: Express.Multer.File): Promise<any>;
+    updateBlocking(employeeId: string ,blocking: any): Promise<any>;
 }

@@ -21,13 +21,3 @@ export interface IEmployeeAttendance extends Document {
 
 //!============================================================================
 
-export interface IAttendanceEntry {
-    date: string;
-    status: 'Present' | 'Leave' | 'Absent' |'marked';
-    checkInTime: string;
-    checkOutTime: string;
-    hours: number;
-    leaveType?: string | null;
-    reason?: string | null;
-    isCompleted: boolean;
-}

@@ -134,7 +134,7 @@ export default function DepartmentCard({
       </ul>
 
       {isModalVisible && (
-        <AddCandidateModal isVisible={isModalVisible} onClose={handleCloseModal} />
+        <AddCandidateModal isVisible={isModalVisible} onClose={handleCloseModal} departmentId={departmentId} />
       )}
     </motion.div>
   );

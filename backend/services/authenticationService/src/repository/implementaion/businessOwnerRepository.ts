@@ -10,12 +10,10 @@ import { IBusinessOwnerDocument,ISubscription } from "../../entities/businessOwn
 export default class BusinessOwnerRepository implements IBusinessOwnerRepository {
 
   async findByEmail(email: string): Promise<IBusinessOwnerDocument | null> {
-    console.log("hitting repo---",email);
-    console.log("hitting repo---",email);
-    
+
     try {
       const businessOwner = await businessOwnerModel.findOne({ "personalDetails.email": email  }).exec();
-      console.log("hitting businessOwner---",businessOwner);
+
       return businessOwner;
     } catch (error) {
       // Log the error for debugging purposes

@@ -50,7 +50,7 @@ export const managerLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/manager/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
   { title: 'Employees', route: '/manager/employees', icon: 'fi fi-tr-employees' },
   { title: 'Departments', route: '/manager/departments', icon: 'fi fi-tr-department-structure' },
-  { title: 'Attendance', route: '/manager/attendances', icon: 'fi fi-tr-skill' },
+
   { title: 'Payroll', route: '/manager/payroll', icon: 'fi fi-tr-payroll' },
   {title: 'Onboarding',route: '/manager/onboarding-employee-list',icon: 'fi fi-tr-onboarding',
     hasSubMenu: true,subLinks: [

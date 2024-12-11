@@ -40,8 +40,7 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
     }
     
     async findByEmail(email: string): Promise<IEmployeeDocument | null> {
-        console.log("hitting repo---",email);
-        console.log("hitting repo---",email);
+
         
         try {
           const employee = await this._employeeModel.findOne({ "personalDetails.email": email  }).exec();

@@ -30,7 +30,7 @@ const MangerRoutes = () => {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="employees" element={<Employees />} />
         <Route path="departments" element={<Departments />} />
-        <Route path="attendances" element={<Attendance />} />
+      
         <Route path="service-requests" element={<ServiceRequests />} />
         <Route path="payroll" element={<Payroll />} />
         <Route path="leaves" element={<Leaves />} />
