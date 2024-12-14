@@ -3,8 +3,9 @@ import IEmployee from "../entities/employeeEntity";
 
 
 const employeeSchema = new Schema<IEmployee>({
-
   managerId: { type: mongoose.Schema.Types.ObjectId, ref: 'manager' }, // Corrected reference type
+  businessOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessOwner' },
+
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
   isBlocked: { type: Boolean, default: false },
@@ -14,13 +15,14 @@ const employeeSchema = new Schema<IEmployee>({
     employeeName: { type: String },
     email: { type: String, required: true },
     phone: { type: String },
+    personalWebsite: { type: String },
   },
   address:{
     street: { type: String },
     city: { type: String },
     state: { type: String },
     country: { type: String },
-    zipCode: { type: String },
+    postalCode: { type: String },
   },
   
   professionalDetails: {
@@ -30,6 +32,7 @@ const employeeSchema = new Schema<IEmployee>({
     joiningDate: { type: Date },
     currentStatus: { type: String },
     companyName: { type: String },
+    companyLogo: { type: String,default:"bba3de636181da05d21cf3760f7fca26c1751e50a4186ebd8e8a6cf6887df243"},
     salary: { type: Number },
   },
   
@@ -39,8 +42,18 @@ const employeeSchema = new Schema<IEmployee>({
   },
 
   documents: {
-    resume: { type: String },
-    idProof: { type: String },
+    resume: {
+      documentName: { type: String, default: "Company Certificate" },
+      documentUrl: { type: String, required: true },
+      documentSize: { type: Number },
+      uploadedAt: { type: Date, default: Date.now },
+    },
+  },
+  leaves: {
+    casualLeave: { type: Number, default: 12 }, // Default 12 days of casual leave
+    sickLeave: { type: Number, default: 10 },   // Default 10 days of sick leave
+    paidLeave: { type: Number, default: 15 },   // Default 15 days of paid leave
+    unpaidLeave: { type: Number, default: 5 },  // Default 5 days of unpaid leave
   },
 });
 
@@ -48,3 +61,4 @@ const employeeSchema = new Schema<IEmployee>({
 const Employee = mongoose.model<IEmployee>('Employee', employeeSchema);
 
 export default Employee;
+

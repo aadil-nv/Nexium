@@ -1,6 +1,6 @@
 import { ILeaveResonseDTO,ILeaveDTO } from "../../dto/ILeaveDTO";
 
 export default interface ILeaveService {
-    updateLeaveApproval(employeeId: string, leaveId: string, leaveStatus: string): Promise<ILeaveResonseDTO>
+    updateLeaveApproval(employeeId: string, data:object): Promise<ILeaveResonseDTO>
     getAllLeaveEmployees(): Promise<ILeaveDTO[]>
 }

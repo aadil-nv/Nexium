@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAllManagers } from '../../../api/managerApi'; // Ensure the correct path to the API file
 import { motion } from 'framer-motion';
+import useAuth from '../../../hooks/useAuth';
 
 interface Manager {
   _id: string;
@@ -12,6 +13,7 @@ interface Manager {
 export default function Dashboard() {
   const [managers, setManagers] = useState<Manager[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const {manager} = useAuth()
 
   useEffect(() => {
     // Fetch managers when the component mounts
@@ -78,6 +80,17 @@ export default function Dashboard() {
           No managers available.
         </motion.p>
       )}
+
+
+      <div>
+        <p className="text-gray-600 mt-5">managerName :, {manager?.managerName}</p>
+        <p className="text-gray-600 mt-5">companyLogo :, {manager?.companyLogo}</p> 
+        <p className="text-gray-600 mt-5">companyName :, {manager?.companyName}</p> 
+        <p className="text-gray-600 mt-5">managerType :, {manager?.managerType}</p> 
+        <p className="text-gray-600 mt-5">managerProfilePicture :, {manager?.managerProfilePicture}</p> 
+
+
+      </div>
     </div>
   );
 }

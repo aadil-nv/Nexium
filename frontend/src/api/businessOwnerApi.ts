@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { businessOwnerInstance } from '../services/businessOwnerInstance';
 import { message } from 'antd';
+import toast from 'react-hot-toast';
 
 export const fetchManagers = async () => {
   try {
@@ -16,24 +17,20 @@ export const fetchManagers = async () => {
 };
 
 export const fetchBusinessOwnerPersonalInfo =async () => {
- console.log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
- try {
-   const response = await businessOwnerInstance.get('/businessOwner/api/business-owner/get-personaldetailes', {
-     headers: {
-       "Content-Type": "application/json",
-      },
-    });
-    console.log("ccccccccccccccccccccccccccccccccccccccccccccc")
 
+try {
+  const response = await businessOwnerInstance.get('/businessOwner/api/business-owner/get-personaldetailes', {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
+        return response.data.data
+      } catch (error) {
+        console.error('Error fetching business owner personal details:', error);
+      }
 
-          console.log('Business owner personal details:', response.data.data);
-          return response.data.data
-        } catch (error) {
-          console.error('Error fetching business owner personal details:', error);
-        }
-
-      };
+    };
      
  
 
@@ -72,6 +69,17 @@ export const fetchBusinessOwnerAddress = async () => {
   }
 };
 
+export const updateBusinessOwnerAddress = async (values:any) => {
+  try {
+    const response = await businessOwnerInstance.post("/businessOwner/api/business-owner/update-address",values);
+    console.log("Manager address updated successfully:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating manager address:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const uploadBusinessOwnerProfileImage = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append('file', file);
@@ -100,5 +108,32 @@ export const updateBusinessOwnerPersonalInfo = async (details: any): Promise<voi
   } catch (error) {
     message.error('Failed to update details.');
     throw error;
+  }
+};
+
+
+export const fetchBusinessOwnerDocument = async () => {
+  try {
+    const response = await businessOwnerInstance.get('/businessOwner/api/business-owner/get-documents');
+    return response.data.result;
+  } catch (error) {
+    throw new Error('Failed to fetch document.');
+  }
+};
+
+// Upload document function
+export const uploadBuisnessOwnerDocument   = async (file: File) => {
+  
+  try {
+    if (!file) {toast.error('No file selected.') ;return;}
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await businessOwnerInstance.post('/businessOwner/api/business-owner/upload-documents', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    toast.success('Document uploaded successfully!');
+    return response.data.result;
+  } catch (error) {
+    toast.error('Failed to upload document.');
   }
 };

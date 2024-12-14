@@ -3,17 +3,16 @@ import { Form, Input, Button } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
-import { fetchBusinessOwnerAddress } from '../../api/businessOwnerApi';
+import { fetchBusinessOwnerAddress,updateBusinessOwnerAddress } from '../../api/businessOwnerApi';
 import { fetchManagerAddress, updateManagerAddress } from '../../api/managerApi';
-import { businessOwnerInstance } from '../../services/businessOwnerInstance';
+import { fetchEmployeeAddress,updateEmployeeAddress } from '../../api/employeeApi';
 
 const Address = () => {
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
   const [address, setAddress] = useState({ street: '', city: '', state: '', country: '', postalCode: '' });
-
   const { themeColor } = useTheme();
-  const { businessOwner, manager } = useAuth();
+  const { businessOwner, manager, employee} = useAuth();
 
   useEffect(() => {
     const fetchAddress = async () => {
@@ -28,26 +27,27 @@ const Address = () => {
           const mappedData = { street, city, state, country, postalCode };
           setAddress(mappedData);
           form.setFieldsValue(mappedData);
+        } else if(employee.isAuthenticated){
+          const { street, city, state, country, postalCode } = await fetchEmployeeAddress();
+          const mappedData = { street, city, state, country, postalCode };
+          setAddress(mappedData);
+          form.setFieldsValue(mappedData);
         }
       } catch (error) {
         console.error('Error fetching address:', error);
       }
     };
     fetchAddress();
-  }, [businessOwner.isAuthenticated, manager.isAuthenticated, form]);
+  }, [businessOwner.isAuthenticated, manager.isAuthenticated,employee.isAuthenticated, form]);
 
   const onFinish = async (values: any) => {
-    console.log('Form values:', values);
     try {
       if (businessOwner.isAuthenticated) {
-        const response = await businessOwnerInstance.post(
-          "/businessOwner/api/business-owner/update-address",
-          values
-        );
-        console.log('Address updated successfully:', response.data);
+        const response = await updateBusinessOwnerAddress(values);
       } else if (manager.isAuthenticated) {
         const response = await updateManagerAddress(values);
-        console.log('Manager address updated successfully:', response);
+      } else if(employee.isAuthenticated){
+        const response = await updateEmployeeAddress(values);
       }
       setIsEditing(false); // Exit edit mode
       setAddress(values); // Update state with new values

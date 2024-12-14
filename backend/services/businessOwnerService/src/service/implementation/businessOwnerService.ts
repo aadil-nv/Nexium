@@ -2,9 +2,10 @@ import IBusinessOwnerService from "service/interface/IBusinessOwnerService";
 import IBusinessOwnerRepository from "../../repository/interface/IBusinessOwnerRepository";
 import { inject, injectable } from "inversify";
 import { verifyRefreshToken, generateAccessToken } from "../../utils/jwt";
-import { IPersonalDetailsDTO, ICompanyDetailsDTO, IAddressDTO, IDocumentsDTO, IResponseDTO, IDocumentDTO } from '../../dto/businessOwnerDTO';
+import { IPersonalDetailsDTO, ICompanyDetailsDTO, IAddressDTO, IResponseDTO, IDocumentDTO } from '../../dto/businessOwnerDTO';
 import { uploadTosS3 } from '../../middlewares/multer-s3';
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { ID } from "aws-sdk/clients/s3";
 
 @injectable()
 export default class BusinessOwnerService implements IBusinessOwnerService {
@@ -61,22 +62,11 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
   
 
   async setNewAccessToken(refreshToken: string): Promise<IResponseDTO> {
-    console.log("==============refreshToken======================", refreshToken);
-    
-    
-    
     try {
       const decoded = verifyRefreshToken(refreshToken);
-      console.log("11111111111111111111111111111");
-   
       const businessOwnerData = decoded?.businessOwnerData;
-      console.log("222222222222222222222");
-    
       if (!decoded || !businessOwnerData) throw new Error("Invalid or expired refresh token");
-      console.log("33333333333333333333333333333");
-     
       const accessToken = generateAccessToken({ businessOwnerData });
-      console.log("access token from service", accessToken);
       
       return {accessToken};
     } catch (error) {
@@ -147,59 +137,42 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
   }
 
-  async getDocuments(businessOwnerId: string): Promise<any> {
+  async getDocuments(businessOwnerId: string): Promise<IDocumentDTO> {
     try {
-      // Log for debugging purposes
-      console.log("Fetching document details for businessOwnerId:", businessOwnerId);
+ 
+
+     
+      
   
       // Fetch document details from the repository
       const documentData = await this._businessOwnerRepository.getDetails(businessOwnerId);
-  
-      // Log the fetched document data for debugging
-      console.log("Fetched document data:", documentData);
+
+ 
+ 
   
       // Ensure that documentData and documents are valid
-      if (!documentData) {
-        console.error("No data found for this business owner");
-        throw new Error("No data found for this business owner");
+      if (!documentData || !documentData.documents || !documentData.documents.companyCertificate) {
+ 
+    
+        console.error("No document data found for this business owner");
+        throw new Error("No document data found for this business owner");
       }
+      
   
-      // Check if documents exist and is an array
-      if (!documentData.documents || !Array.isArray(documentData.documents)) {
-        console.error("Documents field is either missing or not an array");
-        throw new Error("Documents field is either missing or not an array");
+      return {
+        documentName:documentData.documents.companyCertificate.documentName,
+        documentUrl:documentData.documents.companyCertificate.documentUrl,
+        documentSize:documentData.documents.companyCertificate.documentSize,
+        uploadedAt:documentData.documents.companyCertificate.uploadedAt,
+
       }
-  
-      // Ensure that documents are not empty
-      if (documentData.documents.length === 0) {
-        console.error("No documents found in the documents array");
-        throw new Error("No documents found for this business owner");
-      }
-  
-      // Assuming documents is an array, and we take the first document
-      const documents = documentData.documents[0];  // Get the first document in the array
-  
-      // Check if the document contains required fields
-      if (!documents.companyCertificate || !documents.businessOwnerId) {
-        console.error("Required fields are missing in the document");
-        throw new Error("Required fields are missing in the document");
-      }
-  
-      // Log extracted documents for debugging
-      console.log("Extracted documents:", documents);
-  
-      // Extract companyCertificate and businessOwnerId from the first document
-      const companyCertificates = documents.companyCertificate;
-      const businessOwnerIds = documents.businessOwnerId;
-  
-      // Return the document details
-      return { companyCertificates, businessOwnerIds };
     } catch (error: any) {
       // Log the error and throw a new error with a detailed message
       console.error("Error while fetching documents:", error);
       throw new Error("Error while getting documents: " + error.message);
     }
   }
+  
   
 
   async updatePersonalDetails(businessOwnerId: string, data: any): Promise<IResponseDTO> {
@@ -263,15 +236,28 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
   }
 
 
-  async uploadDocuments(
-    businessOwnerId: string,
-    file: Express.Multer.File,
-    documentType: string
-  ): Promise<any> {
+  async uploadDocuments(businessOwnerId: string,file: Express.Multer.File,documentType: string): Promise<any> {
+
+    console.log(`"Data received:-->>>>>> to the service ",`.bgMagenta);
+    console.log();
+    console.log();
+    console.log();
+    console.log("businessOwnerId", businessOwnerId);
+    console.log("documentType", documentType);
+    console.log("documentData", file);
+    console.log();
+    console.log();
+    console.log();
+    console.log(`"Data received:-->>>>>> to the service ",`.bgMagenta);
     try {
       // Upload file to S3
       const fileKey = await this.uploadFileToS3(businessOwnerId, file, "documents");
+
+      console.log("fileKey33333333333333333333333333333333333333", fileKey);
+      
       const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
+      console.log("fileUrl444444444444444444444444444444444444444444444", fileUrl);
+      
   
       const documentData = {
         documentName: documentType,
@@ -281,6 +267,10 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       };
   
       const updatedBusinessOwner = await this._businessOwnerRepository.uploadDocuments(businessOwnerId,documentType,documentData);
+
+
+      console.log("servuice -77777777777777777777777777777777", updatedBusinessOwner);
+      
   
       return {
         documentName: documentType,

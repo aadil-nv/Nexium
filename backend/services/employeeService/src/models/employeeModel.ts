@@ -9,12 +9,14 @@ const employeeSchema = new Schema<IEmployee>({
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
   isBlocked: { type: Boolean, default: false },
+  role:{ type: String, default: "employee" },
   
   personalDetails: {
     profilePicture:{ type: String ,default: "https://avatar.iran.liara.run/public/boy?username=Ash"},
     employeeName: { type: String },
     email: { type: String, required: true },
     phone: { type: String },
+    personalWebsite: { type: String },
   },
   address:{
     street: { type: String },
@@ -31,6 +33,7 @@ const employeeSchema = new Schema<IEmployee>({
     joiningDate: { type: Date },
     currentStatus: { type: String },
     companyName: { type: String },
+    companyLogo: { type: String,default:"bba3de636181da05d21cf3760f7fca26c1751e50a4186ebd8e8a6cf6887df243"},
     salary: { type: Number },
   },
   
@@ -40,8 +43,12 @@ const employeeSchema = new Schema<IEmployee>({
   },
 
   documents: {
-    resume: { type: String },
-    idProof: { type: String },
+    resume: {
+      documentName: { type: String},
+      documentUrl: { type: String },
+      documentSize: { type: String },
+      uploadedAt: { type: Date },
+    },
   },
   leaves: {
     casualLeave: { type: Number, default: 12 }, // Default 12 days of casual leave

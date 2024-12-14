@@ -51,4 +51,91 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
     }
 }
 
+async updateProfile(employeeId: string, data: any): Promise<IEmployee> {
+  try {
+      const { profilePicture, ...updateData } = data;
+
+      const employee = await this._employeeModel.findByIdAndUpdate(
+        employeeId,
+        { $set: { 
+            "personalDetails.businessOwnerName": data.employeeName,
+            "personalDetails.email": data.email,
+            "personalDetails.personalWebsite": data.personalWebsite,
+            "personalDetails.phone": data.phone
+          } },
+        { new: true } // Return the updated document
+      );
+  
+
+      if (!employee) {
+          throw new Error("Employee not found");
+      }
+
+      return employee;
+  } catch (error: any) {
+      throw new Error("Error updating employee profile: " + error.message);
+  }
+}
+
+
+async  updateProfilePicture(employeeId: string, file: string): Promise<IEmployee>{
+
+    
+    try {
+      const result = await this._employeeModel.findByIdAndUpdate(
+        employeeId,
+        { $set: { 'personalDetails.profilePicture': file } }, // Save the file path
+        { new: true }
+      );
+  
+      if (!result) {
+        throw new Error(`No business owner found with ID: ${employeeId}`);
+      }
+  
+      return result;
+    } catch (error) {
+      console.error('Error updating personal details:', error);
+      throw new Error('Could not update personal details.');
+    }
+  }
+  
+
+async updateAddress(employeeId: string, data: any): Promise<IEmployee> {
+  try {
+      const result = await this._employeeModel.findByIdAndUpdate(
+        employeeId,
+        { $set: { 'address': data } }, // Save the file path
+        { new: true }
+      );
+  
+      if (!result) {
+        throw new Error(`No business owner found with ID: ${employeeId}`);
+      }
+  
+      return result;
+    } catch (error) {
+      console.error('Error updating personal details:', error);
+      throw new Error('Could not update personal details.');
+    }
+  }
+
+  async uploadDocuments(employeeId: string, fileType: "resume", documentData: any): Promise<IEmployee> {
+    try {
+      const result = await this._employeeModel.findByIdAndUpdate(
+        employeeId,
+        { $set: { [`documents.${fileType}`]: documentData } }, // Save the file path
+        { new: true }
+      );
+  
+      if (!result) {
+        throw new Error(`No business owner found with ID: ${employeeId}`);
+      }
+  
+      return result;
+    } catch (error) {
+      console.error('Error updating personal details:', error);
+      throw new Error('Could not update personal details.');
+    }
+  }
+
 }

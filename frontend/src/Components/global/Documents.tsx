@@ -1,90 +1,146 @@
-import React, { useEffect, useState } from "react";
-import { Button } from "antd";
-
-interface DocumentType {
-  id: string;
-  title: string;
-  size: string;
-  date: string;
-  imageUrl: string;
-  type: string;
-}
+import React, { useState, useEffect } from 'react';
+import { Button, Upload, Card, notification, Skeleton } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import useAuth from '../../hooks/useAuth';
+import { fetchBusinessOwnerDocument, uploadBuisnessOwnerDocument } from "../../api/businessOwnerApi";
+import { fetchManagerDocument, updateManagerOwnerDocument } from "../../api/managerApi";
+import { fetchEmployeeDocument, updateEmployeeDocument } from "../../api/employeeApi";
+import { UploadChangeParam, UploadFile } from 'antd/es/upload/interface';
+import { motion } from 'framer-motion'; // Import motion for animations
+import { toast } from 'react-toastify';
+import { set } from 'zod';
 
 const Documents = () => {
-  const [documents, setDocuments] = useState<DocumentType[]>([]);
+  const [document, setDocument] = useState<any | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { businessOwner ,manager ,employee } = useAuth();
 
+  // Fetch the document when the component mounts or when authentication status changes
   useEffect(() => {
-    const fetchDocuments = async () => {
-      try {
-        const response = await fetch("/api/documents");
-        const data = await response.json();
-        setDocuments(data);
-      } catch (error) {
-        console.error("Error fetching documents:", error);
-      }
-    };
+    if (businessOwner.isAuthenticated) {
+      setLoading(true);
+      fetchBusinessOwnerDocument()
+        .then((data) => {
+          setDocument(data || null);
+        })
+        .catch((error) => {
+          console.error('Error fetching business owner document:', error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else if(manager.isAuthenticated){
+      setLoading(true);
+      fetchManagerDocument()
+        .then((data) => {
+          setDocument(data );
+        })
+        .catch((error) => {
+          console.error('Error fetching business owner document:', error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }else if(employee.isAuthenticated){
+      setLoading(true);
+      fetchEmployeeDocument()
+        .then((data) => {
+          setDocument(data );
+        })
+        .catch((error) => {
+          console.error('Error fetching business owner document:', error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
 
-    fetchDocuments();
-  }, []);
 
-  const handleDelete = (id: string) => console.log(`Deleting document with ID: ${id}`);
-  const handleView = (id: string) => console.log(`Viewing document with ID: ${id}`);
-  const handleUpload = (type: string) => console.log(`Upload document of type: ${type}`);
+    }
+  }, [businessOwner.isAuthenticated ,manager.isAuthenticated,employee.isAuthenticated]);
 
+  console.log("=========================================");
+  console.log("=========================================");
+  console.log("document",document);
+  
+  console.log("=========================================");
+  console.log("=========================================");
+  
+  
+  const handleUpload = async (info: UploadChangeParam<UploadFile<any>>) => {
+    const { file } = info;
+    setLoading(true);
+    const castedFile = file as unknown as File;
+  
+    // Only proceed if the user is authenticated
+    if (businessOwner.isAuthenticated) {
+          await uploadBuisnessOwnerDocument(castedFile);
+          const updatedDocument = await fetchBusinessOwnerDocument();
+          setDocument(updatedDocument || null);
+          setLoading(false);
+  }else if(manager.isAuthenticated){
+          await updateManagerOwnerDocument(castedFile);
+          const updatedDocument = await fetchManagerDocument();
+          setDocument(updatedDocument || null);
+          setLoading(false);
+  }else if(employee.isAuthenticated){
+          await updateEmployeeDocument(castedFile);
+          const updatedDocument = await fetchEmployeeDocument();
+          setDocument(updatedDocument || null);
+          setLoading(false);
+  }
+  };
+  
   return (
-    <div>
-      <h1>Documents</h1>
-      <div className="grid grid-cols-2 gap-4">
-        {/* Left card for uploading company certificate */}
-        <div className="flex border border-gray-300 p-4 rounded-lg shadow-md bg-white">
-          <div className="w-full flex flex-col items-center p-4">
-            <h2 className="text-lg font-semibold">Upload Company Certificate</h2>
-            <div className="w-full h-32 bg-gray-200 rounded-md mb-4"></div>
-            <Button onClick={() => handleUpload("companyCertificate")} type="primary">Upload</Button>
-          </div>
-        </div>
-
-        {/* Right card for uploading business ID proof */}
-        <div className="flex border border-gray-300 p-4 rounded-lg shadow-md bg-white">
-          <div className="w-full flex flex-col items-center p-4">
-            <h2 className="text-lg font-semibold">Upload Business ID Proof</h2>
-            <div className="w-full h-32 bg-gray-200 rounded-md mb-4"></div>
-            <Button onClick={() => handleUpload("businessIdProof")} type="primary">Upload</Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Display existing documents */}
-      <div className="grid grid-cols-2 gap-4 mt-4">
-        {documents.length === 0 ? (
-          <div className="flex border border-gray-300 p-4 rounded-lg shadow-md bg-white">
-            <div className="w-full flex flex-col items-center p-2">
-              <div className="w-full h-32 bg-gray-200 rounded-md mb-2"></div>
-              <div className="text-center">
-                <p className="font-semibold">No Document</p>
-                <p className="text-sm text-gray-600">Size: --</p>
-                <p className="text-sm text-gray-600">Uploaded: --</p>
+    <motion.div
+      className="document-card p-4 border border-gray-300 rounded-lg max-w-full mx-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div
+        className="w-full"
+        layout
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', stiffness: 150 }}
+      >
+        <Card
+          title={document ? document.documentName : 'Upload Document'}
+          bordered={false}
+        >
+          {/* Skeleton Placeholder when document is loading */}
+          {loading ? (
+            <Skeleton active />
+          ) : document ? (
+            <>
+              <div className="flex flex-col">
+                <p>Size: {document.documentSize}</p>
+                <p>Uploaded on: {new Date(document.uploadedAt).toLocaleString()}</p>
               </div>
+              {/* Check if document URL exists before displaying the image */}
+              {document.documentUrl ? (
+                <img 
+                  src={document.documentUrl} 
+                  alt="Uploaded Document" 
+                  className="max-w-full max-h-60 object-contain mt-4" 
+                />
+              ) : (
+                <p>No image available.</p>
+              )}
+              <Upload showUploadList={false} beforeUpload={() => false} onChange={handleUpload}>
+                <Button icon={<UploadOutlined />} className="mt-4">Update File</Button>
+              </Upload>
+            </>
+          ) : (
+            <div>
+              <p className="text-red-500">No document found. Please upload a document.</p>
+              <Upload showUploadList={false} beforeUpload={() => false} onChange={handleUpload}>
+                <Button icon={<UploadOutlined />} className="mt-4" type="primary">Upload Document</Button>
+              </Upload>
             </div>
-          </div>
-        ) : (
-          documents.map((document) => (
-            <div key={document.id} className="flex border border-gray-300 p-4 rounded-lg shadow-md bg-white">
-              <div className="w-full flex flex-col items-center p-4">
-                <img src={document.imageUrl} alt={document.title} className="w-32 h-32 object-cover rounded-md mb-4" />
-                <h2 className="text-lg font-semibold">{document.title}</h2>
-                <p className="text-sm text-gray-600">Size: {document.size}</p>
-                <p className="text-sm text-gray-600">Uploaded: {document.date}</p>
-                <div className="flex justify-end space-x-2 mt-4">
-                  <Button onClick={() => handleView(document.id)} type="primary">View</Button>
-                  <Button onClick={() => handleDelete(document.id)} type="default">Delete</Button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
+          )}
+        </Card>
+      </motion.div>
+    </motion.div>
   );
 };
 

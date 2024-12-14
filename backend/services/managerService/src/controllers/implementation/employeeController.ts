@@ -165,25 +165,6 @@ export default class EmployeeController implements IEmployeeController {
         }
     }
 
-    async updateIdProof(req: CustomRequest, res: Response): Promise<void> {
-        console.log("hitting update id proof==================");
-        
-        try {
-            const employeeId = req.params.id;
-            console.log("employeeId--------------------------", employeeId);
-            
-            const idProof = req.file;
-            console.log("idProof--------------------------", req.body);
-            
-            const result = await this._employeeService.updateIdProof(employeeId ,req.file as Express.Multer.File);
-            console.log("result", result);
-            
-            res.status(200).json(result);
-        } catch (error) {
-            console.error("Error updating id proof:", error);
-            res.status(500).json({ message: "Failed to update id proof", error });
-        }
-    }
 
     async updateBlocking(req: CustomRequest, res: Response): Promise<void> {
         console.log("hitting update blocking==================");

@@ -18,7 +18,7 @@ interface LinkItem {
 
 export const businessOwnerLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/business-owner/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
-  { title: 'Employees', route: '/business-owner/employees', icon: 'fi fi-tr-employees' },
+  { title: 'Managers', route: '/business-owner/employees', icon: 'fi fi-tr-employees' },
   { title: 'Subscriptions', route: '/business-owner/subscriptions', icon: 'fi fi-tr-benefit' },
   { title: 'Service Requests', route: '/business-owner/service-requests', icon: 'fi fi-tr-user-headset' },
   { title: 'Notifications', route: '/business-owner/notifications', icon: 'fi fi-tr-bells' },

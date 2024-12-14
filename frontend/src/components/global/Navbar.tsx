@@ -15,11 +15,13 @@ export default function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const userType = businessOwner.isAuthenticated
-    ? "Business Owner"
-    : superAdmin.isAuthenticated
-    ? "Super Admin"
-    : "User";
+  const userName = businessOwner.isAuthenticated? businessOwner?.companyName:
+                   superAdmin.isAuthenticated? "Super Admin": 
+                   manager.isAuthenticated? manager?.managerName: "Employee";
+
+  const profileImage = businessOwner.isAuthenticated? businessOwner?.businessOwnerProfilePicture: 
+                       superAdmin.isAuthenticated? "https://cdn-icons-png.flaticon.com/512/149/149071.png" :
+                       manager.isAuthenticated? manager?.managerProfilePicture: "https://cdn-icons-png.flaticon.com/512/149/149071.png" ;
 
   const toggleMenuFunc = () => toggleMenu(dispatch, isActiveMenu);
   const handleProfile = () => handleProfileClick({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employee, dispatch, navigate });
@@ -34,8 +36,8 @@ export default function Navbar() {
         <NavButton title="Notifications" customFunc={() => console.log("Notifications clicked")} icon={<i className="fi fi-tr-light-emergency-on" />} themeColor={themeColor} />
         <div className="relative">
           <button type="button" className="flex items-center gap-2 p-1 hover:bg-gray-300 rounded-lg" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-            <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Profile" className="rounded-full w-8 h-8 md:w-9 md:h-9" />
-            <span className="text-xs md:text-sm" style={{ color: themeColor }}>{userType}</span>
+            <img src={profileImage} alt="Profile" className="rounded-full w-8 h-8 md:w-9 md:h-9" />
+            <span className="text-xs md:text-sm" style={{ color: themeColor }}>{userName}</span>
             <MdKeyboardArrowDown className="text-lg md:text-xl" style={{ color: themeColor }} />
           </button>
 

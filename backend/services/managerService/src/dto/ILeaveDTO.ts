@@ -8,6 +8,7 @@ export interface ILeaveDTO {
     hours: number;  
     status: "Pending" | "Approved" | "Rejected" | "null";
     leaveStatus?: "Pending" | "Approved" | "Rejected" | "null";
+   
 }
 
 export interface ILeaveResonseDTO{

@@ -28,11 +28,14 @@ export interface IManager extends Document {
     companyRegistrationNumber: string;
     companyWebsite?: string;
   };
-  documents: Array<{
-    documentName: string;
-    documentUrl: string;
-    uploadedAt: Date;
-  }>;
+  documents: {
+    resume: {
+      documentName: string;
+      documentUrl: string;
+      documentSize: string; // Optional
+      uploadedAt: Date;
+    };
+  };
   managerCredentials: {
     companyEmail: string;
     companyPassword: string;

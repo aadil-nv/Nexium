@@ -46,7 +46,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       
           // Find the business owner by email
           const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
-          console.log("businessOwnerData-->", businessOwnerData);
       
           if (!businessOwnerData || !(await bcrypt.compare(password, businessOwnerData.personalDetails.password))) {
             return { success: false, message: "Invalid email or password" };
@@ -63,18 +62,21 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             console.log("Account is not verified");
             const otp = generateOtp();
             await this.sendOtp(businessOwnerData.personalDetails.email, otp);
-      
+             
             return { 
               success: false, 
               message: "Account not verified. Check your email for OTP", 
               isVerified: false, 
-              email: businessOwnerData.personalDetails.email 
+              email: businessOwnerData.personalDetails.email,
+           
             };
           }
       
           // Generate and return tokens if login is successful
           const accessToken = generateAccessToken({ businessOwnerData });
           const refreshToken = generateRefreshToken({ businessOwnerData });
+          const profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ businessOwnerData?.personalDetails?.profilePicture}`
+          const companyLogo = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ businessOwnerData?.companyDetails?.companyLogo}`
       
           return { 
             success: true, 
@@ -82,7 +84,10 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
             accessToken, 
             refreshToken, 
             isVerified: true, 
-            email: businessOwnerData.personalDetails.email 
+            email: businessOwnerData.personalDetails.email ,
+                companyName:businessOwnerData.companyDetails.companyName,
+                profilePicture:profilePicture,
+                companyLogo:companyLogo
           };
       
         } catch (error) {
@@ -121,29 +126,15 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
               password: businessOwnerData.password,
               phone: businessOwnerData.phone,
               personalWebsite: businessOwnerData.website ?? "",
-              profileImage: "https://avatar.iran.liara.run/public/boy?username=Ash", // Default image
+              profilePicture: "1415789e35e86b00de158652ccd6807a8c2eb4f9a32ba0f4635239123505e74e", // Default image
             },
             companyDetails: {
               companyName: businessOwnerData.companyName,
-              companyLogo: "https://avatar.iran.liara.run/public/boy?username=Ash", // Default logo
+              companyLogo: "811188cef8b1f8487a0c7cb19bf1ffa5a2fe5377703d1df6173f4fafea68b6bd", // Default logo
               companyRegistrationNumber: "",
               companyEmail: "",
               companyWebsite: "",
             },
-            documents: {
-              companyCertificate: [{
-                  documentName: "Company Certificate",
-                  documentUrl: "", // Document URL can be updated later
-                  documentSize: 0, // Placeholder size
-                  uploadedAt: new Date(),
-              }],
-              businessOwnerId: [{
-                  documentName: "Business Owner ID",
-                  documentUrl: "", // Document URL can be updated later
-                  documentSize: 0, // Placeholder size
-                  uploadedAt: new Date(),
-              }],
-          },
             address: {
               street:"",
               city: "",
@@ -169,7 +160,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
           const businessOwnerName = `${businessOwner._id}`;
           const businessOwnerDB = mongoose.connection.useDb(businessOwnerName);
       
-          await businessOwnerDB.createCollection("users");
+          (await businessOwnerDB.createCollection("companyDetails")).insertOne(businessOwner)
       
           // Generate OTP and send it
           const otp = generateOtp();

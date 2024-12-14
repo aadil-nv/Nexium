@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { loginSchema } from "../../../config/validationSchema"; // Import Zod schema
 import { useDispatch } from "react-redux";
 import images from "../../../images/images";
-import { login } from "../../../redux/slices/managerSlice";
+import { login ,setManagerData } from "../../../redux/slices/managerSlice";
 import { motion } from "framer-motion";
 import { LoginFormData } from "../../../utils/interfaces";
 import { managerLogin } from "../../../api/managerApi";
@@ -25,12 +25,12 @@ export default function ManagerLogin() {
 
     try {
       const responseData = await managerLogin(data);
-      console.log("responseData", responseData);
+      console.log("responseData from manager LOgin", responseData);
 
-      console.log("111111111111111111111111111111111111")
+
 
       if(responseData.success === false && responseData.message == "Account is blocked. Please contact admin") {
-        console.log("2222222222222222222222222222222")
+
 
         setLoginError(responseData.message);
         return
@@ -40,14 +40,20 @@ export default function ManagerLogin() {
      
       
       if (responseData.success === false &&  responseData.isVerified === false) {
-        console.log("33333333333333333333333333333333333")
+
      
         navigate("/manager-otpvalidation", { state: { email: responseData.email, message: responseData.message } });
         return;
       }
-      console.log("444444444444444444444444444444444444")
+
       // If verified, proceed to dashboard
       dispatch(login({ role: "manager", isAuthenticated: true }));
+      dispatch(setManagerData({
+        managerName: responseData.managerName,
+        managerProfilePicture: responseData.managerProfilePicture,
+        companyLogo: responseData.companyLogo,
+        companyName: responseData.companyName,
+        managerType: responseData.managerType,}));
             navigate("/manager/dashboard");
       setLoginError("Login failed. Please check your credentials.");
     } finally {

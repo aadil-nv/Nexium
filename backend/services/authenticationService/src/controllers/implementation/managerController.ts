@@ -42,6 +42,11 @@ export default class ManagerController implements IManagerController {
                 message: "Login successful",
                 data: result,
                 success: true,
+                managerName: result.managerName,
+                managerProfilePicture: result.managerProfilePicture,
+                companyLogo : result.companyLogo,
+                managerType: result.managerType,
+                companyName : result.companyName
             });
         } catch (error) {
             console.error("Login error:", error);

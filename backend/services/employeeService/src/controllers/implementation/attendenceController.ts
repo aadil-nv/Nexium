@@ -1,105 +1,75 @@
 import { Request, Response } from "express";
-import  IAttendanceService  from "../../service/interface/IAttendanceService";
+import IAttendanceService from "../../service/interface/IAttendanceService";
 import IAttendanceController from "../../controllers/interface/IAttendanceController";
 import { inject, injectable } from "inversify";
-import {CustomRequest} from "../../middlewares/tokenAuth";
-
+import { CustomRequest } from "../../middlewares/tokenAuth";
+import { HttpStatusCode } from "../../utils/enums"; 
 
 @injectable()
-export default class AttendenceController implements IAttendanceController{
-    private attendanceService: IAttendanceService;
+export default class AttendanceController implements IAttendanceController {
+    constructor(@inject("IAttendanceService") private attendanceService: IAttendanceService) {}
 
-    constructor(@inject("IAttendanceService") attendanceService: IAttendanceService) {
-        this.attendanceService = attendanceService ;
+    private handleError(res: Response, error: any): Response {
+        console.error(error);
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
     }
-    
+
+    private getEmployeeId(req: CustomRequest): string | null {
+        return req.user?.employeeData?._id || null;
+    }
+
     async fetchAttendance(req: CustomRequest, res: Response): Promise<Response> {
         try {
-            const employeeId = req.user?.employeeData?._id;
-            const attendances = await this.attendanceService.fetchAttendances(employeeId as string);
-            return res.status(200).json(attendances);
-            
+            const employeeId = this.getEmployeeId(req);
+            if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "No token provided" });
+            const attendances = await this.attendanceService.fetchAttendances(employeeId);
+            return res.status(HttpStatusCode.OK).json(attendances);
         } catch (error) {
-            console.error(error);
-            return res.status(500).json({ error: "Internal server error" });
-            
+            return this.handleError(res, error);
         }
     }
 
-    async markCheckin(req:CustomRequest , res: Response): Promise<Response> {
-        console.log("hitted add attendance----------------------------------->>>");
-        
+    async markCheckin(req: CustomRequest, res: Response): Promise<Response> {
         try {
-            const employeeId = req.user?.employeeData?._id;
-            console.log("employee id from controller========>", employeeId);
-            console.log("req body from controller========>", req.body);
-            
-
-            if(!employeeId) return res.status(401).json({ message: "Access denied. No token provided" });
-            
+            const employeeId = this.getEmployeeId(req);
+            if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
             const attendance = await this.attendanceService.markCheckin(req.body, employeeId);
-            return res.status(200).json(attendance);
-            
+            return res.status(HttpStatusCode.OK).json(attendance);
         } catch (error) {
-            console.error(error);
-            return res.status(500).json({ error: "Internal server error" });
-            
+            return this.handleError(res, error);
         }
     }
 
     async markCheckout(req: CustomRequest, res: Response): Promise<Response> {
         try {
-
-            const employeeId = req.user?.employeeData?._id;
-            console.log("employee id from controller========>", employeeId);
-            console.log("req body from controller========>", req.body);
-
-            if(!employeeId) return res.status(401).json({ message: "Access denied. No token provided" });
-            
+            const employeeId = this.getEmployeeId(req);
+            if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
             const attendance = await this.attendanceService.markCheckout(req.body, employeeId);
-            return res.status(200).json(attendance);
-            
+            return res.status(HttpStatusCode.OK).json(attendance);
         } catch (error) {
-            console.error(error);
-            return res.status(500).json({ error: "Internal server error" });
+            return this.handleError(res, error);
         }
     }
 
     async fetchApprovedLeaves(req: CustomRequest, res: Response): Promise<Response> {
         try {
-            const employeeId = req.user?.employeeData?._id;
-            console.log("employee id from controller========>", employeeId);
-            console.log("req body from controller========>", req.body);
-            
-            if(!employeeId) return res.status(401).json({ message: "Access denied. No token provided" });
-            
+            const employeeId = this.getEmployeeId(req);
+            if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
             const leaves = await this.attendanceService.fetchApprovedLeaves(employeeId);
-            return res.status(200).json(leaves);
-            
+            return res.status(HttpStatusCode.OK).json(leaves);
         } catch (error) {
-            console.error(error);
-            return res.status(500).json({ error: "Internal server error" });
+            return this.handleError(res, error);
         }
     }
 
-    async  applyLeave(req: CustomRequest, res: Response): Promise<Response> {
-        console.log(`"hitted add apply leave----------------------------------->>>"`.bgMagenta);
-        
+    async applyLeave(req: CustomRequest, res: Response): Promise<Response> {
         try {
-            const employeeId = req.user?.employeeData?._id;
-            console.log("employee id from controller========>", employeeId);
-            console.log("req body from controller========>", req.body);
-            
-            if(!employeeId) return res.status(401).json({ message: "Access denied. No token provided" });
-            
+            const employeeId = this.getEmployeeId(req);
+            if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
             const leaves = await this.attendanceService.applyLeave(req.body, employeeId);
-            return res.status(200).json(leaves);
-            
+            return res.status(HttpStatusCode.OK).json(leaves);
         } catch (error) {
-            console.error(error);
-            return res.status(500).json({ error: "Internal server error" });
+            return this.handleError(res, error);
         }
     }
-
-
 }

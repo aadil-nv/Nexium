@@ -3,6 +3,6 @@ import BaseRepository from "../implementation/baseRepository";
 
 
 export default interface ILeaveRepository extends BaseRepository<IEmployeeAttendance> {
-    updateLeaveApproval(employeeId: string, leaveId: string, leaveStatus: string): Promise<IEmployeeAttendance | null>;
+    updateLeaveApproval(employeeId: string, data:object): Promise<IEmployeeAttendance | null>;
     getAllLeaveEmployees(): Promise<IEmployeeAttendance[]>
 }

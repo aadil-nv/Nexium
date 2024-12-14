@@ -13,18 +13,16 @@ export default class LeaveController implements ILeaveController {
 
     async updateLeaveApproval(req: CustomRequest, res: Response): Promise<void> {
         console.log(`update leave approval controleris ======`.bgYellow);
-        console.log("req.body", req.body);
         
         
-       try {
-        const employeeId = req.params.id;
-        console.log("employeeId--------------------------", employeeId);
+        try {
+            const employeeId = req.params.id;
+            console.log("employeeId--------------------------", employeeId);
+            const data = req.body
+            console.log("req.body", req.body);
         
-        const leaveId = req.params.leaveId;
-        console.log("leaveId--------------------------", leaveId);
-        const leaveStatus = req.body.leaveStatus;
-        console.log("leaveStatus--------------------------", leaveStatus);
-        const result = await this._leaveService.updateLeaveApproval(employeeId, leaveId, leaveStatus);
+
+        const result = await this._leaveService.updateLeaveApproval(employeeId ,data);
         res.status(200).json(result);
         
        } catch (error) {

@@ -1,18 +1,18 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-
 export default interface IEmployee extends Document {
   managerId: mongoose.Schema.Types.ObjectId; // Correct reference to HR
   businessOwnerId: mongoose.Schema.Types.ObjectId;
   isActive: boolean;
   isVerified: boolean;
   isBlocked: boolean;
-
+  role: string;
   personalDetails: {
     employeeName: string;
     email: string;
     phone: string;
     profilePicture:string
+    personalWebsite: string;
    
   };
   address:{
@@ -24,11 +24,12 @@ export default interface IEmployee extends Document {
   }
   professionalDetails: {
     position: "Team Lead" | "Senior Software Engineer" | "Junior Software Engineer" ;
-    department: mongoose.Schema.Types.ObjectId;
+    department: string;
     workTime: "Full-Time" | "Part-Time" | "Contract" | "Temporary";
     joiningDate: Date;
     currentStatus: string;
     companyName: string;
+    companyLogo: string;
     salary: number;
     skills: string[];
     
@@ -37,26 +38,21 @@ export default interface IEmployee extends Document {
     companyEmail: string;
     companyPassword: string;
   };
+
   documents: {
-  resume: {
-    documentName: string;
-    documentUrl: string;
-    documentSize: number; // Size of the document in bytes
-    uploadedAt: Date;
+    resume: {
+      documentName: string;
+      documentUrl: string;
+      documentSize?: string;
+      uploadedAt: Date;
+    };
   };
-  idProof: {
-    documentName: string;
-    documentUrl: string;
-    documentSize: number; // Size of the document in bytes
-    uploadedAt: Date;
-  };
-};
-
-
   leaves: {
     casualLeave: number;
     sickLeave: number;
     paidLeave: number;
     unpaidLeave: number;
   };
+
+  
 }

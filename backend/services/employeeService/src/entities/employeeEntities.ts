@@ -6,11 +6,13 @@ export default interface IEmployee extends Document {
   isActive: boolean;
   isVerified: boolean;
   isBlocked: boolean;
+  role:string
   personalDetails: {
     employeeName: string;
     email: string;
     phone: string;
     profilePicture:string
+    personalWebsite: string;
    
   };
   address:{
@@ -27,6 +29,7 @@ export default interface IEmployee extends Document {
     joiningDate: Date;
     currentStatus: string;
     companyName: string;
+    companyLogo: string;
     salary: number;
     skills: string[];
     
@@ -35,9 +38,14 @@ export default interface IEmployee extends Document {
     companyEmail: string;
     companyPassword: string;
   };
+
   documents: {
-    resume: string;
-    idProof: string;
+    resume: {
+      documentName: string;
+      documentUrl: string;
+      documentSize: string; // Optional
+      uploadedAt: Date;
+    };
   };
   leaves: {
     casualLeave: number;

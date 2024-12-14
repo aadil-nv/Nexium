@@ -153,6 +153,35 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         throw new Error("Error updating manager address");
       }
     }
+
+    async uploadDocuments(managerId: string, documentType: string, documentData: Object): Promise<IManager> {
+
+  
+      try {
+        // Validate document type
+        if (documentType !== 'resume') {
+          throw new Error(`Invalid document type: ${documentType}`);
+        }
+    
+        // Construct the update data based on documentType
+        const updateData = {
+          [`documents.${documentType}`]: documentData
+        };
+    
+        const result = await managerModel.findByIdAndUpdate(
+          managerId,
+          updateData,
+          { new: true }
+        );
+    
+        if (!result) throw new Error(`No business owner found with ID: ${managerId}`);
+  
+        return result;
+      } catch (error) {
+        console.error('Error updating documents:', error);
+        throw new Error('Could not update documents.');
+      }
+    }
     
       
 }

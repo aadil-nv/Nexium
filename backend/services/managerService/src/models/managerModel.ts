@@ -36,13 +36,14 @@ const managerSchema: Schema<IManager> = new Schema(
       companyRegistrationNumber: { type: String },
       companyWebsite: { type: String },
     },
-    documents: [
-      {
-        documentName: { type: String, default: "HR Document" },
+    documents: {
+      resume: {
+        documentName: { type: String},
         documentUrl: { type: String },
-        uploadedAt: { type: Date, default: Date.now },
+        documentSize: { type: String },
+        uploadedAt: { type: Date },
       },
-    ],
+    },
     managerCredentials: {
       companyEmail: { type: String },
       companyPassword: { type: String },

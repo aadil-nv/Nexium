@@ -40,13 +40,24 @@ const Sidebar = () => {
           <div className="h-full flex flex-col">
             <div className="flex justify-between items-center p-4">
             <NavLink
-                to={`/${isAuthenticated(businessOwner) ? 'business-owner' : isAuthenticated(superAdmin) ? 'super-admin' : isAuthenticated(manager) ? 'manager' : 'employee'}/dashboard`}
-                className="text-xl font-extrabold text-gray-800"
-              >
-                {isAuthenticated(businessOwner) ? 'Business Owner' : isAuthenticated(superAdmin) ? 'Super Admin' : isAuthenticated(manager) ? 'Manager' : 'Employee'}
-              </NavLink>
+  to={`/${isAuthenticated(businessOwner) ? 'business-owner' : isAuthenticated(superAdmin) ? 'super-admin' : isAuthenticated(manager) ? 'manager' : 'employee'}/dashboard`}
+  className="text-xl font-extrabold text-gray-800 flex items-center space-x-2" // Added flex for inline layout and space between logo and name
+>
+  <img
+    src={isAuthenticated(businessOwner) ? businessOwner.companyLogo : isAuthenticated(superAdmin) ? 'Super Admin' : isAuthenticated(manager) ? manager.companyLogo : 'Employee'}
+    alt="Business Owner Logo"
+    className="w-auto h-auto max-w-[100px] max-h-[50px] object-contain" // Logo styling
+  />
+  
+  <span className="truncate max-w-[200px]">  {/* Truncate the company name if it's too long */}
+    {isAuthenticated(businessOwner) ? businessOwner.companyName : isAuthenticated(superAdmin) ? 'Super Admin' : isAuthenticated(manager) ? manager.companyName : 'Employee'}
+  </span>
+</NavLink>
+
             </div>
             <div className="flex-grow overflow-y-auto">
+
+          
               {links.map((item, index) => (
                 <div key={index}>
                   <NavLink

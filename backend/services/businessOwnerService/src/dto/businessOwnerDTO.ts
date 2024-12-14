@@ -24,13 +24,12 @@ export interface IPersonalDetailsDTO {
     country: string;
   }
 
-  export interface IDocumentsDTO {
-    documentName: string;
-    documentUrl: string;
-    documentSize: string;
-    uploadedAt: Date;       // Refers to the business owner's ID proof
+  export interface IDocumentDTO {
+    documentName: string;       
+    documentUrl: string;       
+    documentSize: string;     
+    uploadedAt: Date;       
   }
-
 
   
   export interface IResponseDTO{
@@ -42,12 +41,6 @@ export interface IPersonalDetailsDTO {
   }
 
 
-  export interface IDocumentDTO {
-      documentName: String;
-      documentUrl: String;
-      documentSize: String;
-      uploadedAt: Date;
 
-    }
 
  

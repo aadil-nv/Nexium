@@ -1,15 +1,19 @@
-
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface BusinessOwnerState {
   role: string | null;
-  isAuthenticated: boolean; // Add this line
+  isAuthenticated: boolean;
+  companyName: string;
+  businessOwnerProfilePicture: string;
+  companyLogo: string;
 }
 
 const initialState: BusinessOwnerState = {
   role: null,
-  isAuthenticated: false, // Add this line
+  isAuthenticated: false,
+  companyName: "",
+  businessOwnerProfilePicture: "",
+  companyLogo: "",
 };
 
 const businessOwnerSlice = createSlice({
@@ -18,16 +22,30 @@ const businessOwnerSlice = createSlice({
   reducers: {
     login: (state, action: PayloadAction<{ role: string; isAuthenticated: boolean }>) => {
       state.role = action.payload.role;
-      state.isAuthenticated = true; // Add this line
+      state.isAuthenticated = true;
     },
     logout: (state) => {
       state.role = null;
-   
-      state.isAuthenticated = false; // Add this line
+      state.isAuthenticated = false;
+      state.companyName = "";
+      state.businessOwnerProfilePicture = "";
+      state.companyLogo = "";
+    },
+    setBusinessOwnerData: (
+      state,
+      action: PayloadAction<{
+        companyName: string;
+        businessOwnerProfilePicture: string;
+        companyLogo: string;
+      }>
+    ) => {
+      state.companyName = action.payload.companyName;
+      state.businessOwnerProfilePicture = action.payload.businessOwnerProfilePicture;
+      state.companyLogo = action.payload.companyLogo;
     },
   },
 });
 
-export const { login, logout } = businessOwnerSlice.actions;
+export const { login, logout, setBusinessOwnerData } = businessOwnerSlice.actions;
 
 export default businessOwnerSlice.reducer;

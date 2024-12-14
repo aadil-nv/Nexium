@@ -41,18 +41,18 @@ export default class ManagerService implements IManagerService {
       console.log("managerData",managerData);
       
       if (!managerData || managerData.managerCredentials.companyPassword !== password) throw new Error('Invalid email or password');
-      console.log("11111111111111111111111111111111111111111");
+   
 
       
 
       if(managerData.isBlocked) {
-        console.log("2222222222222222222222222222222222222");
+
       
         return {  message: "Account is blocked. Please contact admin", isVerified:false, email: managerData.personalDetails.email };
       }
 
       if (!managerData.isVerified) {
-        console.log("333333333333333333333333333333333333");
+    
         const otp = generateOtp();
         await this.sendOtp(managerData.personalDetails.email, otp);
 
@@ -67,7 +67,13 @@ export default class ManagerService implements IManagerService {
       const accessToken = generateAccessToken({  managerData });
       const refreshToken = generateRefreshToken({ managerData });
 
-      return {accessToken,refreshToken,success: true,};
+      const managerName = managerData.personalDetails.managerName;
+      const managerProfilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ managerData.personalDetails.profilePicture}`
+      const companyLogo =  `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${managerData.companyDetails.companyLogo}`;
+      const managerType = managerData.professionalDetails.managerType;
+      const companyName = managerData.companyDetails.companyName;
+
+      return {accessToken,refreshToken,success: true,managerName,managerProfilePicture,companyLogo,managerType,companyName};
     } catch (error) {
       console.error('Error in managerLogin service:', error);
       throw error;

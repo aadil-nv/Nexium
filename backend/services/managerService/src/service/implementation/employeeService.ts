@@ -53,12 +53,11 @@ export default class EmployeeService implements IEmployeeService {
         const mappedEmployeeData = this.mapEmployeeData(managerId, employeeData);
 
         const managerName = managerData.name;
-        console.log(`===============================================`.bgRed);
-        console.log(`=====================managerData.businessOwnerId==========================`,managerData.businessOwnerId);
         
         mappedEmployeeData.businessOwnerId = managerData.businessOwnerId;
-        console.log(`===============================================`.bgRed);
+
         mappedEmployeeData.personalDetails.employeeName = employeeData.name;
+        mappedEmployeeData.personalDetails.personalWebsite = ''
         mappedEmployeeData.professionalDetails.salary = employeeData.salary;
         mappedEmployeeData.professionalDetails.workTime = employeeData.workTime;
         mappedEmployeeData.professionalDetails.joiningDate = employeeData.joiningDate;
@@ -298,12 +297,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
                 documentSize: employeeData.document.resume.documentSize,
                 uploadedAt: employeeData.document.resume.uploadedAt,
               },
-              idProof: {
-                documentName: employeeData.document.employeeIdProof.documentName,
-                documentUrl: employeeData.document.employeeIdProof.documentUrl,
-                documentSize: employeeData.document.employeeIdProof.documentSize,
-                uploadedAt: employeeData.document.employeeIdProof.uploadedAt,
-              },
+              
             };
         } catch (error) {
             console.error("Error in service layer:", error);
@@ -321,9 +315,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
           }
   
           let departmentName: string | null = await this._employeeRepository.getDepartmentName(employeeData.professionalDetails.department);
-          const profilePicture =`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ employeeData.personalDetails.profilePicture}`
-          const resumeUrl =`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ employeeData.documents.resume.documentUrl}`
-          const idProofUrl =`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ employeeData.documents.idProof.documentUrl}`
+        
 
   
           if (!departmentName) {
@@ -343,7 +335,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
                   employeeName: employeeData.personalDetails.employeeName,
                   email: employeeData.personalDetails.email,
                   phone: employeeData.personalDetails.phone,
-                  profilePicture: profilePicture,
+                  profilePicture: "1415789e35e86b00de158652ccd6807a8c2eb4f9a32ba0f4635239123505e74e",
               },
   
               address: {
@@ -368,21 +360,6 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
               employeeCredentials: {
                   companyEmail: employeeData.employeeCredentials.companyEmail,
                   companyPassword: employeeData.employeeCredentials.companyPassword,
-              },
-  
-              documents: {
-                resume: {
-                      documentName: employeeData.documents.resume?.documentName || '',
-                      documentUrl:resumeUrl,
-                      documentSize: employeeData.documents.resume?.documentSize || '',
-                      uploadedAt: employeeData.documents.resume?.uploadedAt || '',
-                  },
-               idProof: {
-                      documentName: employeeData.documents.idProof?.documentName || '',
-                      documentUrl:idProofUrl ,
-                      documentSize: employeeData.documents.idProof?.documentSize || '',
-                      uploadedAt: employeeData.documents.idProof?.uploadedAt || '',
-                  },
               },
   
               leaves: {
@@ -470,36 +447,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
     }
 }
 
-async updateIdProof(employeeId: string, file: Express.Multer.File): Promise<any> {
-  try {
-    // Generate the document URL (Assuming S3 upload is handled by `uploadFileToS3`)
-    const documentUrl = await this.uploadFileToS3(employeeId, file, "idProof");
 
-    // Prepare resume metadata
-    const documentMetadata = {
-        documentName: file.originalname,
-        documentUrl,
-        documentSize: file.size,
-        uploadedAt: new Date(),
-    };
-
-    // Update employee document details in the repository
-    const result = await this._employeeRepository.updateIdProof(employeeId, documentMetadata);
-
-    return {
-        success: true,
-        message: "Id proof uploaded successfully!",
-        data: {
-            documentUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${documentUrl}`,
-            documentMetadata: result,
-        },
-    };
-} catch (error) {
-    console.error("Error in updateID proof service:", error);
-    throw new Error("Failed to update id proof");
-}
-}
-  
 
 async updateBlocking(employeeId: string, blocking: any): Promise<any> {
   try {
@@ -512,5 +460,7 @@ async updateBlocking(employeeId: string, blocking: any): Promise<any> {
       throw new Error("Failed to update blocking");
   }
 }
+
+
 
 }

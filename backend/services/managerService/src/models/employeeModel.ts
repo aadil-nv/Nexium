@@ -5,6 +5,7 @@ import IEmployee from '../entities/employeeEntities';
 const employeeSchema = new Schema<IEmployee>({
   managerId: { type: mongoose.Schema.Types.ObjectId, ref: 'manager' }, // Corrected reference type
   businessOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessOwner' },
+
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
   isBlocked: { type: Boolean, default: false },
@@ -14,6 +15,7 @@ const employeeSchema = new Schema<IEmployee>({
     employeeName: { type: String },
     email: { type: String, required: true },
     phone: { type: String },
+    personalWebsite: { type: String },
   },
   address:{
     street: { type: String },
@@ -26,10 +28,11 @@ const employeeSchema = new Schema<IEmployee>({
   professionalDetails: {
     position: { type: String, enum: ["Team Lead", "Senior Software Engineer", "Junior Software Engineer"] },
     workTime: { type: String, enum: ["Full-Time", "Part-Time", "Contract", "Temporary"] },
-    department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department', required: false },
+    department: { type: String },
     joiningDate: { type: Date },
     currentStatus: { type: String },
     companyName: { type: String },
+    companyLogo: { type: String },
     salary: { type: Number },
   },
   
@@ -39,17 +42,11 @@ const employeeSchema = new Schema<IEmployee>({
   },
 
   documents: {
-    resume: { 
+    resume: {
       documentName: { type: String },
       documentUrl: { type: String },
       documentSize: { type: Number },
-      uploadedAt: { type: Date },
-    },
-    idProof: { 
-      documentName: { type: String },
-      documentUrl: { type: String },
-      documentSize: { type: Number },
-      uploadedAt: { type: Date },
+      uploadedAt: { type: Date, },
     },
   },
   leaves: {
@@ -58,7 +55,6 @@ const employeeSchema = new Schema<IEmployee>({
     paidLeave: { type: Number, default: 15 },   // Default 15 days of paid leave
     unpaidLeave: { type: Number, default: 5 },  // Default 5 days of unpaid leave
   },
-  
 });
 
 

@@ -66,7 +66,14 @@ export default class EmployeeService implements IEmployeeService {
               accessToken,
               refreshToken,
               workTime: employeeData.professionalDetails.workTime,
-              position: employeeData.professionalDetails.position
+              position: employeeData.professionalDetails.position,
+              
+
+              employeeName: employeeData.personalDetails.employeeName,
+              eployeeProfilePicture: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}` ,
+              companyLogo: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.professionalDetails.companyLogo}`,
+              employeePosition: employeeData.professionalDetails.position,
+              companyName: employeeData.professionalDetails.companyName
           };
   
       } catch (error) {

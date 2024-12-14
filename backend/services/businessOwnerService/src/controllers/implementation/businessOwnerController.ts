@@ -22,17 +22,15 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async setNewAccessToken(req: CustomRequest, res: Response): Promise<Response> {
-    console.log(`"-----------setNewAccessToken======`.bgRed);
     
     const refreshToken = req.cookies.refreshToken;
 
 
     try {
       const newAccessToken = await this._businessOwnerService.setNewAccessToken(refreshToken);
-      console.log("444444444444444444444444444444");
+
       if (!newAccessToken) return this.handleResponse(res, 401, false, 'Failed to generate new access token.');
-      console.log("5555555555555555555555555555555");
-      console.log("66666666666666666666666666666", newAccessToken.accessToken);
+
 
 
       res.cookie('accessToken', newAccessToken.accessToken, {
@@ -49,7 +47,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async logout(req: CustomRequest, res: Response): Promise<Response> {
-    console.log(`"-----------logout======`.bgGreen);
+
     
     try {
       res.clearCookie('accessToken');
@@ -94,11 +92,17 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async getDocuments(req: CustomRequest, res: Response): Promise<Response> {
+
+
+    
     try {
       const businessOwnerId = this.getBusinessOwnerId(req);
       if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
       const result = await this._businessOwnerService.getDocuments(businessOwnerId);
-      return this.handleResponse(res, 200, true, 'Documents fetched', result);
+
+      
+      if(!result) return this.handleResponse(res, 400, false, 'Documents not found.');
+      return res.status(200).json({ result });
     } catch {
       return this.handleResponse(res, 500, false, 'Failed to retrieve documents');
     }
@@ -169,12 +173,18 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   async uploadDocuments(req: CustomRequest, res: Response): Promise<Response> {
     try {
       const businessOwnerId = this.getBusinessOwnerId(req);
-      const { documentType } = req.body;
+      console.log("businessOwnerId", businessOwnerId);
+    
+
+      console.log("req.file", req.file);
   
       if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
-      if (!req.file || !documentType) return this.handleResponse(res, 400, false, 'File or document type missing.');
+      if (!req.file ) return this.handleResponse(res, 400, false, 'File or document type missing.');
   
-      const result = await this._businessOwnerService.uploadDocuments(businessOwnerId, req.file, documentType);
+      const result = await this._businessOwnerService.uploadDocuments(businessOwnerId, req.file, "companyCertificate");
+
+      console.log("result***********************************", result);
+      
       return this.handleResponse(res, 200, true, 'Document uploaded successfully', result);
     } catch (error) {
       return this.handleResponse(res, 500, false, 'Failed to upload documents');

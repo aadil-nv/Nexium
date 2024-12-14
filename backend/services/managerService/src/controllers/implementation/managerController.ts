@@ -93,6 +93,9 @@ export default class ManagerController implements IManagerController {
        }
 
       const managerDocuments = await this._managerService.getManagerDocuments(managerId);
+
+      console.log("managerDocuments%%%%%%%%%%%%%%%%%%%%%", managerDocuments);
+      
       return res.status(200).json(managerDocuments);
       
     } catch (error) {
@@ -103,6 +106,9 @@ export default class ManagerController implements IManagerController {
   }
 
   async getManagerCredentials(req: CustomRequest, res: Response): Promise<Response> {
+
+    console.log(`"***************************************** htted getManagerCredentials"`.bgRed);
+    
     try {
       const managerId = req?.user?.managerData?._id;
        if (!managerId) {
@@ -111,6 +117,8 @@ export default class ManagerController implements IManagerController {
            .json({ message: "Business owner ID not provided in cookies" });
        }
       const managerCredentials = await this._managerService.getManagerCredentials(managerId);
+      console.log("managerCredentials", managerCredentials);
+      
       return res.status(200).json(managerCredentials);
       
     } catch (error) {
@@ -259,5 +267,39 @@ export default class ManagerController implements IManagerController {
       });
     }
  } 
+
+ async updateDocuments(req: CustomRequest, res: Response): Promise<Response> {
+
+  console.log(`"***************************************** htted updateDocuments"`.bgRed);
+  
+  try {
+    const managerrId = req?.user?.managerData?._id;
+    console.log("managerrId", managerrId);
+  
+
+    console.log("req.file", req.file);
+
+    if(!managerrId){
+      return res.status(400).json({ message: "Business owner ID not provided in cookies" });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const result = await this._managerService.uploadDocuments(managerrId, req.file, "resume");
+
+    if(!result){
+      return res.status(400).json({ message: "Failed to upload documents" });
+    }
+    return res.status(200).json(result);
+    
+  
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to get manager personal info",
+      error,
+    });
+  }
+  }
   
 }

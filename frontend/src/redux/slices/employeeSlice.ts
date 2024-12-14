@@ -5,7 +5,12 @@ interface EmployeeState {
   isAuthenticated: boolean;
   position: string | null;
   workTime: string | null;
-  workTimer: number | null;  // New field to track work timer
+  workTimer: number | null; 
+  employeeName: string; // New field for employee name
+  employeeProfilePicture: string; 
+  companyLogo: string; // New field for company logo
+  employeeType: string; // New field for employee type
+  companyName: string; // New field for company name
 }
 
 const initialState: EmployeeState = {
@@ -14,6 +19,11 @@ const initialState: EmployeeState = {
   position: null,  // Default value
   workTime: null,  // Default value
   workTimer: null, // Default value for work timer (in seconds or milliseconds)
+  employeeName: "", // Initialize with default value
+  employeeProfilePicture: "", // Initialize with default value
+  companyLogo: "", // Initialize with default value
+  employeeType: "", // Initialize with default value
+  companyName: "", // Initialize with default value
 };
 
 const employeeSlice = createSlice({
@@ -39,9 +49,25 @@ const employeeSlice = createSlice({
       state.workTime = action.payload.workTime;
       state.workTimer = action.payload.workTimer;  // Update work timer
     },
+    setEmployeeData: (
+      state,
+      action: PayloadAction<{
+        employeeName: string;
+        employeeProfilePicture: string;
+        companyLogo: string;
+        employeeType: string;
+        companyName: string;
+      }>
+    ) => {
+      state.employeeName = action.payload.employeeName;
+      state.employeeProfilePicture = action.payload.employeeProfilePicture;
+      state.companyLogo = action.payload.companyLogo;
+      state.employeeType = action.payload.employeeType;
+      state.companyName = action.payload.companyName;
+    },
   },
 });
 
-export const { login, logout, updateWorkDetails } = employeeSlice.actions;
+export const { login, logout, updateWorkDetails, setEmployeeData } = employeeSlice.actions;
 
 export default employeeSlice.reducer;

@@ -42,13 +42,13 @@ export interface IEmployeeCredentialsDTO {
 export interface IDocumentDTO {
     documentName: string;
     documentUrl: string;
-    documentSize: number; // Size of the document in bytes
+    documentSize: string; // Size of the document in bytes
     uploadedAt: Date;
   }
   
 export interface IEmployeeDocumentsDTO {
     resume: IDocumentDTO;
-    idProof: IDocumentDTO;
+   
   }
 
   export interface IEmployeeFullDataDTO {
@@ -90,20 +90,6 @@ export interface IEmployeeDocumentsDTO {
       companyPassword: string;
     };
   
-    documents: {
-      resume: {
-        documentName?: string;
-        documentUrl?: string;
-        documentSize?: number; // Size in bytes
-        uploadedAt?: Date;
-      };
-      idProof: {
-        documentName?: string;
-        documentUrl?: string;
-        documentSize?: number; // Size in bytes
-        uploadedAt?: Date;
-      };
-    };
   
     leaves: {
       casualLeave: number;

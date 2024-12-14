@@ -3,17 +3,14 @@ import { Form, Input, Button, Upload, Skeleton, Empty, Spin } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
-import {
-  fetchBusinessOwnerPersonalInfo,
-  uploadBusinessOwnerProfileImage,
-  updateBusinessOwnerPersonalInfo,
-} from '../../api/businessOwnerApi';
-import { fetchManagerPersonalInfo, updateManagerPersonalInfo } from '../../api/managerApi';
-import { managerInstance } from '../../services/managerInstance';
+import { fetchBusinessOwnerPersonalInfo, uploadBusinessOwnerProfileImage, updateBusinessOwnerPersonalInfo } from '../../api/businessOwnerApi';
+import { fetchManagerPersonalInfo, updateManagerPersonalInfo, updateManagerProfilePicture } from '../../api/managerApi';
+import { fetchEmployeePersonalInfo , uploadEmployeeProfileImage ,updateEmployeePersonalInfo } from "../../api/employeeApi";
+import { login ,setBusinessOwnerData } from '../../redux/slices/businessOwnerSlice';
+import { useDispatch } from 'react-redux';
 
-// Define interfaces for the data structures
 interface ManagerInfo {
-  managerName: string;
+  managerName?: string;
   email: string;
   phone: string;
   profilePicture?: string;
@@ -28,18 +25,29 @@ interface BusinessOwnerInfo {
   personalWebsite?: string;
 }
 
+interface EmployeeInfo {
+  employeeName: string;
+  email: string;
+  phone: string;
+  profilePicture?: string;
+  personalWebsite?: string;
+}
+
 export default function PersonalDetails() {
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
   const [profileImage, setProfileImage] = useState('');
   const [imageLoading, setImageLoading] = useState(false);
-  const [managerInfo, setManagerInfo] = useState<ManagerInfo | null>(null); // Explicit type
-  const [businessOwnerInfo, setBusinessOwnerInfo] = useState<BusinessOwnerInfo | null>(null); // Explicit type
+  const [managerInfo, setManagerInfo] = useState<ManagerInfo | null>(null);
+  const [businessOwnerInfo, setBusinessOwnerInfo] = useState<BusinessOwnerInfo | null>(null);
+  const [employeeInfo, setEmployeeInfo] = useState<EmployeeInfo | null>(null);
   const [businessOwnerLoading, setBusinessOwnerLoading] = useState(false);
   const [managerLoading, setManagerLoading] = useState(false);
+  const [employeeLoading, setEmployeeLoading] = useState(false);
+  const dispatch = useDispatch();
 
   const { themeColor } = useTheme();
-  const { businessOwner, manager } = useAuth();
+  const { businessOwner, manager, employee } = useAuth();
 
   useEffect(() => {
     if (manager?.isAuthenticated) {
@@ -68,34 +76,43 @@ export default function PersonalDetails() {
         .finally(() => {
           setBusinessOwnerLoading(false);
         });
+    } else if (employee?.isAuthenticated) {
+      setEmployeeLoading(true);
+      fetchEmployeePersonalInfo()
+        .then((data: EmployeeInfo) => {
+          setEmployeeInfo(data);
+          setProfileImage(data?.profilePicture || '');
+        })
+        .catch((error) => {
+          console.error('Error fetching employee info:', error);
+        })
+        .finally(() => {
+          setEmployeeLoading(false);
+        });
     }
-  }, [businessOwner, manager]);
+  }, [businessOwner, manager, employee]);
 
   const handleProfilePictureChange = async (file: File) => {
     setImageLoading(true);
     try {
-      let imageUrl;
-
       if (manager?.isAuthenticated) {
-        const formData = new FormData();
-        formData.append('file', file);
+        const response = await updateManagerProfilePicture(file);
+        setProfileImage(response);
+      } else if (businessOwner?.isAuthenticated) {
+        const response = await uploadBusinessOwnerProfileImage(file);
 
-        const response = await managerInstance.patch(
-          '/manager/api/manager/update-profile-picture',
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          }
-        );
-        console.log("res====================",response);
-        imageUrl = response.data.data.imageUrl;
-      } else {
-        imageUrl = await uploadBusinessOwnerProfileImage(file);
+        dispatch(
+          setBusinessOwnerData({
+            companyName: businessOwner.companyName, // Keep existing company name
+            businessOwnerProfilePicture: response, // Update profile picture
+            companyLogo: businessOwner.companyLogo, // Keep existing company logo
+          })
+        );  
+        setProfileImage(response);
+      } else if (employee?.isAuthenticated) {
+        const response = await uploadEmployeeProfileImage(file); // Add a function for employee
+        setProfileImage(response);
       }
-
-      setProfileImage(imageUrl);
     } catch (error) {
       console.error('Error uploading profile image:', error.message);
     } finally {
@@ -109,6 +126,8 @@ export default function PersonalDetails() {
         await updateBusinessOwnerPersonalInfo(values);
       } else if (manager?.isAuthenticated) {
         await updateManagerPersonalInfo(values);
+      } else if (employee?.isAuthenticated) {
+        await updateEmployeePersonalInfo(values); // Add function for employee update
       }
       setIsEditing(false);
     } catch (error) {
@@ -116,13 +135,17 @@ export default function PersonalDetails() {
     }
   };
 
-  if (businessOwnerLoading || managerLoading) {
+  if (businessOwnerLoading || managerLoading || employeeLoading) {
     return <Skeleton active />;
   }
 
-  const displayDetails: ManagerInfo | BusinessOwnerInfo | null = businessOwner?.isAuthenticated
+  const displayDetails: ManagerInfo | BusinessOwnerInfo | EmployeeInfo | null = businessOwner?.isAuthenticated
     ? businessOwnerInfo
-    : managerInfo;
+    : manager?.isAuthenticated
+    ? managerInfo
+    : employee?.isAuthenticated
+    ? employeeInfo
+    : null;
 
   if (!displayDetails) {
     return <Empty description="No Personal Details Available" />;
@@ -134,7 +157,7 @@ export default function PersonalDetails() {
         <div className="space-y-6 w-[80%]">
           <div className="relative mb-2 flex flex-col items-center pt-4 h-[40%]">
             <img
-              src={profileImage || displayDetails?.profilePicture } 
+              src={profileImage}
               alt="Profile"
               className="w-24 h-24 rounded-full object-cover mx-auto"
             />
@@ -170,17 +193,21 @@ export default function PersonalDetails() {
           onFinish={onFinish}
           layout="vertical"
           initialValues={{
-            businessOwnerName:
-              'businessOwnerName' in displayDetails
-                ? displayDetails.businessOwnerName
-                : (displayDetails as ManagerInfo).managerName,
+            businessOwnerName: 'businessOwnerName' in displayDetails ? displayDetails.businessOwnerName : '',
+            managerName: 'managerName' in displayDetails ? displayDetails.managerName : '',
+            employeeName: 'employeeName' in displayDetails ? displayDetails.employeeName : '', // Added employeeName
             email: displayDetails.email,
             personalWebsite: displayDetails.personalWebsite,
             phone: displayDetails.phone,
           }}
           className="mt-6"
         >
-          {['businessOwnerName', 'email', 'phone', 'personalWebsite'].map((field) => (
+          {[
+            ...(businessOwner?.isAuthenticated ? ['businessOwnerName'] : manager?.isAuthenticated ? ['managerName'] : employee?.isAuthenticated ? ['employeeName'] : []),
+            'email',
+            'phone',
+            'personalWebsite',
+          ].map((field) => (
             <Form.Item
               key={field}
               name={field}

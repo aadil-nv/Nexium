@@ -7,7 +7,7 @@ const managerSchema: Schema<IManager> = new Schema(
       managerName: { type: String },
       personalWebsite: { type: String },
       email: { type: String },
-      profilePicture: { type: String, default: "https://avatar.iran.liara.run/public/boy?username=Ash" },
+      profilePicture: { type: String, default: "1415789e35e86b00de158652ccd6807a8c2eb4f9a32ba0f4635239123505e74e" },
       phone: { type: String },
     },
     professionalDetails: {
@@ -32,17 +32,19 @@ const managerSchema: Schema<IManager> = new Schema(
     },
     companyDetails: {
       companyName: { type: String },
-      companyLogo: { type: String },
+      companyLogo: { type: String  },
       companyRegistrationNumber: { type: String },
       companyWebsite: { type: String },
     },
-    documents: [
-      {
-        documentName: { type: String, default: "HR Document" },
-        documentUrl: { type: String, match: /^(http|https):\/\/[^ "]+$/ },
-        uploadedAt: { type: Date, default: Date.now },
-      },
-    ],
+    documents: {
+      resume: 
+        {
+          documentName: { type: String},
+          documentUrl: { type: String },
+          documentSize: { type: String },
+          uploadedAt: { type: Date},
+        },
+    },
     managerCredentials: {
       companyEmail: { type: String },
       companyPassword: { type: String },
@@ -67,3 +69,4 @@ const managerSchema: Schema<IManager> = new Schema(
 const managerModel = mongoose.model<IManager>("Manager", managerSchema);
 
 export default managerModel;
+

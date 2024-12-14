@@ -27,5 +27,5 @@ export interface IBusinessOwnerDocument extends Document {
   }[];
   subscription: ISubscription;
   companyLogo: string;
-  profileImage: string; 
+  profileImag: string; 
 }

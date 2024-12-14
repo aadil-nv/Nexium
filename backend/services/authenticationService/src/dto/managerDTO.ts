@@ -12,7 +12,12 @@ export  interface ILoginDTO{
     accessToken?:string;
     refreshToken?:string;
     email?:string;
-    isVerified?:boolean
+    isVerified?:boolean;
+    managerName?:string;
+    managerType?:string;
+    managerProfilePicture?:string;
+    companyLogo?:string;
+    companyName?:string;
 }
 
 export interface IResponseDTO{

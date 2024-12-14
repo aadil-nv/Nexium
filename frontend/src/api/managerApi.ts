@@ -7,6 +7,10 @@ import { message } from 'antd';
 import { fetchLeaveEmployeesRequest ,fetchLeaveEmployeesFailure,fetchLeaveEmployeesSuccess} from "../redux/slices/leaveSlice";
 import { Dispatch } from 'redux';
 
+
+
+
+
 const baseURL= "/manager/api/"
 export const managerLogin = async (formData: LoginFormData) => {
     try {
@@ -190,7 +194,24 @@ export const addEmployee = async (employeeData: any) => {
           throw error;
       }
   }
+  export async function updateManagerProfilePicture (file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const response = await managerInstance.patch(
+        '/manager/api/manager/update-profile-picture',
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
   
+      if (response.status === 200) {
+        toast.success('Manager profile picture updated successfully!');
+        return response.data.data.imageUrl;
+      }
+    } catch (error) {
+      toast.error('Failed to update manager profile picture.');
+    }
+  };
 
   export const fetchManagerAddress = async () => {
     try {
@@ -239,12 +260,12 @@ export const addEmployee = async (employeeData: any) => {
       // Ensure data is an array and map over it to return an array of LeaveData objects
       return data.map((item: any) => ({
         employeeId: item.employeeId, // Fix for property name
-        leaveType: item.leaveType || 'N/A',
+        leaveType: item.leaveType,
         leaveDate: item.date ? new Date(item.date) : null, // Ensure leaveDate is a Date object
-        leaveStatus: item.leaveStatus || 'Pending', // Adjust leaveStatus accordingly
-        reason: item.reason || 'No reason provided',
+        leaveStatus: item.leaveStatus, // Adjust leaveStatus accordingly
+        reason: item.reason ,
         hours: item.hours || 0,
-        status: item.status || 'Pending',
+        status: item.status ,
       }));
     } catch (error) {
       throw new Error('Failed to fetch leave employees');
@@ -276,12 +297,55 @@ export const addEmployee = async (employeeData: any) => {
 
   export const updateLeaveApproval = async (employeeId, data) => {
 
-    console.log("data!!!!!!!!!!!!!!!!!!!!!!!!!!!!",data)
-    console.log("employeeId!!!!!!!!!!!!!!!!!!!!!!",employeeId)
     try {
       const response = await managerInstance.patch(`/manager/api/leave/update-leave-approval/${employeeId}`, data);
-      return response.data; // Ensure the backend returns a `success` property to validate in the UI.
+      return response.data; 
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to update leave approval');
+    }
+  };
+
+ 
+
+  export const fetchManagerDocument = async () => {
+    try {
+      const response = await managerInstance.get('/manager/api/manager/get-managerdocuments');
+      console.log("responce is ==========&&&&========",response.data.resume)
+      return response.data.resume;
+    } catch (error) {
+      throw new Error('Failed to fetch document.');
+    }
+  };
+  
+  export const updateManagerOwnerDocument   = async (file: File) => {
+  
+    try {
+      if (!file) {toast.error('No file selected.') ;return;}
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await managerInstance.post('/manager/api/manager/update-documents', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      toast.success('Document uploaded successfully!');
+      return response.data.result;
+    } catch (error) {
+      toast.error('Failed to upload document.');
+    }
+  };
+  
+
+  export const fetchManagerCredential = async () => {
+    console.log("hitting 1111111111111111111111111111111111");
+    
+    try {
+      const response = await managerInstance.get(
+        '/manager/api/manager/get-managercredentials'
+      );
+      console.log("response==========",response);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching business owner credentials:', error);
+      throw new Error('Failed to fetch business owner credentials');
     }
   };

@@ -1,9 +1,14 @@
 export interface IEmoloyeeLoginDTO {
-    email: string;
-    message: string;
-    accessToken: string;
-    refreshToken: string;
-    success: boolean
+    email?: string;
+    message?: string;
+    accessToken?: string;
+    refreshToken?: string;
+    success?: boolean
+    employeeName?:string;
+    employeeType?:string;
+    employeerProfilePicture?:string;
+    companyLogo?:string;
+    companyName?:string;
 }
 
 export  interface IValidateOtpDTO{
@@ -15,3 +20,4 @@ export  interface IValidateOtpDTO{
     workTime?:string;
     position?:string;
 }
+

@@ -10,6 +10,7 @@ import { fetchEmployees } from '../../../api/managerApi';
 import EmployeesList from './EmployeesTable';
 import { FaPlus } from 'react-icons/fa';
 import AddEmployeeModal from '../../global/AddEmployeeModal';
+import { Empty } from 'antd';  // Import the Empty component
 
 export default function Employees() {
   const [employeeData, setEmployeeData] = useState<IEmployee[]>([]);
@@ -62,12 +63,17 @@ export default function Employees() {
 
       {/* Employees List */}
       <div className="mt-4">
-        <EmployeesList 
-          data={employeeData} 
-          loading={!employeeData.length} 
-          error={null} 
-          onUpdate={() => setUpdateTrigger((prev) => prev + 1)} // Trigger re-fetch after update
-        />
+        {/* Display "No Data" from Ant Design if there are no employees */}
+        {employeeData.length === 0 ? (
+          <Empty description="No employees found" />
+        ) : (
+          <EmployeesList 
+            data={employeeData} 
+            loading={!employeeData.length} 
+            error={null} 
+            onUpdate={() => setUpdateTrigger((prev) => prev + 1)} // Trigger re-fetch after update
+          />
+        )}
       </div>
 
       {/* Add Employee Modal */}

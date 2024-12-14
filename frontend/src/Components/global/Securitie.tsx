@@ -4,14 +4,17 @@ import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
 import axios from 'axios';
 import { managerInstance } from '../../services/managerInstance';
+import { employeeInstance } from '../../services/employeeInstance';
 
 const Securitie = () => {
   const [credentials, setCredentials] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { themeColor } = useTheme();
   const { employee, manager } = useAuth();
   const isManager = manager?.isAuthenticated;
   const isEmployee = employee?.isAuthenticated;
+  const instance = isManager ? managerInstance : employeeInstance;
 
   useEffect(() => {
     const fetchCredentials = async () => {
@@ -19,7 +22,7 @@ const Securitie = () => {
         const url = isManager
           ? '/manager/api/manager/get-managercredentials'
           : isEmployee
-          ? 'http://localhost:3000/employee/api/employeee/get-employeecredentials'
+          ? '/employee/api/employee/get-employeecredentials'
           : null;
 
         if (!url) {
@@ -27,9 +30,9 @@ const Securitie = () => {
           return;
         }
 
-        const response = await managerInstance.get(url);
+        const response = await instance.get(url);
         console.log('Fetched Credentials:', response.data);
-        setCredentials(response.data);
+        isManager ? setCredentials(response.data) : setCredentials(response.data);
       } catch (error) {
         console.error('Error fetching credentials:', error);
         message.error('Failed to fetch credentials');
@@ -49,38 +52,7 @@ const Securitie = () => {
   return (
     <div className="mt-6">
       <h2>Your Credentials</h2>
-      {credentials ? (
-        <div>
-          <List
-            bordered
-            dataSource={[credentials]}
-            renderItem={(cred) => (
-              <List.Item>
-                <div>
-                  <p>
-                    <strong>Company Email:</strong> {cred.companyEmail}
-                  </p>
-                  <p>
-                    <strong>Password:</strong> {cred.companyPassword}
-                  </p>
-                  {cred.documentUrl && (
-                    <div>
-                      <img
-                        src={cred.documentUrl}
-                        alt="Document"
-                        style={{ maxWidth: 100, display: 'block', margin: '10px 0' }}
-                      />
-                    </div>
-                  )}
-                </div>
-              </List.Item>
-            )}
-          />
-        </div>
-      ) : (
-        <p>Loading credentials...</p>
-      )}
-
+      
       <Form
         layout="vertical"
         onFinish={handleSubmit}
@@ -99,7 +71,7 @@ const Securitie = () => {
           ]}
         >
           <Input
-            placeholder="Enter company email"
+            placeholder={credentials?.companyEmail || 'Enter company email'}
             disabled={!isEditing}
             style={{ borderColor: themeColor }}
           />
@@ -114,38 +86,18 @@ const Securitie = () => {
           ]}
         >
           <Input.Password
-            placeholder="Enter your password"
+            placeholder={credentials?.companyPassword || 'Enter your password'}
             disabled={!isEditing}
             style={{ borderColor: themeColor }}
           />
         </Form.Item>
 
-        {isEditing && (
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              block
-              style={{ backgroundColor: themeColor, borderColor: themeColor }}
-            >
-              Save Changes
-            </Button>
-          </Form.Item>
-        )}
+       
       </Form>
 
-      <Button
-        onClick={() => setIsEditing(!isEditing)}
-        className="mt-3 text-white"
-        style={{ backgroundColor: themeColor, borderColor: themeColor }}
-      >
-        Edit Security Settings
-      </Button>
-
+      
       <div className="mt-6">
-        <Button type="link" onClick={handleForgotPassword} style={{ color: themeColor }}>
-          Forgot Password?
-        </Button>
+       
       </div>
     </div>
   );

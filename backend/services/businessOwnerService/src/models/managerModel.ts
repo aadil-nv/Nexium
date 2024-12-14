@@ -36,13 +36,15 @@ const managerSchema: Schema<IManager> = new Schema(
       companyRegistrationNumber: { type: String },
       companyWebsite: { type: String },
     },
-    documents: [
-      {
-        documentName: { type: String, default: "HR Document" },
-        documentUrl: { type: String },
-        uploadedAt: { type: Date, default: Date.now },
-      },
-    ],
+    documents: {
+      resume: 
+        {
+          documentName: { type: String},
+          documentUrl: { type: String },
+          documentSize: { type: String },
+          uploadedAt: { type: Date},
+        },
+    },
     managerCredentials: {
       companyEmail: { type: String },
       companyPassword: { type: String },
@@ -67,3 +69,4 @@ const managerSchema: Schema<IManager> = new Schema(
 const managerModel = mongoose.model<IManager>("Manager", managerSchema);
 
 export default managerModel;
+;

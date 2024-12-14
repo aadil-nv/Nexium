@@ -189,26 +189,7 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }
     }
 
-    async updateIdProof(employeeId: string, documentMetadata: any): Promise<any> {
-        try {
-            const employee = await this.employeeModel.findById(employeeId);
-            if (!employee) {
-                throw new Error("Employee not found");
-            }
-    
-            // Update the ID proof details in the `documents` section
-            employee.documents.idProof = {
-                ...documentMetadata,
-            };
-    
-            await employee.save();
-    
-            return employee.documents.idProof;
-        } catch (error) {
-            console.error("Error in updateIdProof repository:", error);
-            throw new Error("Failed to update ID proof in the database");
-        }
-    }
+ 
 
     async updateBlocking(employeeId: string, blocking: any): Promise<any> {
         console.log("blocking object received:", blocking);

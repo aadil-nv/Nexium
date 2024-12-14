@@ -1,5 +1,4 @@
 import { Document, Types } from "mongoose";
-import { CompanyIncorporationDocType, BusinessOwnerIDProofType } from "../utils/enums";
 
 
 export interface ISubscription {
@@ -20,13 +19,12 @@ export interface IAddress {
 export interface IDocument {
   documentName: string;
   documentUrl: string;
-  documentSize: number;
+  documentSize: string;
   uploadedAt: Date;
 }
 
 export interface IDocuments {
-  companyCertificate: IDocument[];  // Array of company certificate documents
-  businessOwnerId: IDocument[];     // Array of business owner ID documents
+  companyCertificate: IDocument;  
 }
 
 
@@ -52,7 +50,7 @@ export interface IBusinessOwnerDocument extends Document {  // <-- Ensure this e
   _id: Types.ObjectId;
   personalDetails: IPersonalDetails;
   companyDetails: ICompanyDetails;
-  documents: IDocuments[];
+  documents: IDocuments;
   address: IAddress;
   isVerified: boolean;
   isBlocked: boolean;

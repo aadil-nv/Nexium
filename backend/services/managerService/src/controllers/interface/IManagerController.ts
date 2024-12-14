@@ -13,4 +13,5 @@ export default interface IManagerController {
     updateManagerProfilePicture(req: CustomRequest, res: Response): Promise<Response>
     getLeaveEmployees(req: CustomRequest, res: Response): Promise<Response>
     updateManagerAddress(req: CustomRequest, res: Response): Promise<Response>
+    updateDocuments(req: CustomRequest, res: Response): Promise<Response>
 }

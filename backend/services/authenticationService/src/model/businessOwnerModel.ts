@@ -1,8 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { IBusinessOwnerDocument } from "../entities/businessOwnerEntities"; // Adjust the import path as needed
 
-
-
 const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
   {
   
@@ -22,9 +20,9 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       personalWebsite: {
         type: String,
       },
-      profileImage: {
+      profilePicture: {
         type: String,
-        default: "https://example.com/default-profile-image.png",
+        default: "1415789e35e86b00de158652ccd6807a8c2eb4f9a32ba0f4635239123505e74e",
       },
     },
 
@@ -34,7 +32,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       companyLogo: {
         type: String,
-        default: "https://avatar.iran.liara.run/public/boy?username=Ash",
+        default: "  ",
       },
       companyRegistrationNumber: {
         type: String,
@@ -49,22 +47,13 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       // Documents Object
     },
     documents: {
-      companyCertificate: [
+      companyCertificate: 
         {
-          documentName: { type: String, default: "Company Certificate" },
+          documentName: { type: String},
           documentUrl: { type: String },
           documentSize: { type: String },
-          uploadedAt: { type: Date, default: Date.now },
+          uploadedAt: { type: Date},
         },
-      ],
-      businessOwnerId: [
-        {
-          documentName: { type: String, default: "Business Owner ID" },
-          documentUrl: { type: String },
-          documentSize: { type: String },
-          uploadedAt: { type: Date, default: Date.now },
-        },
-      ],
     },
 
     address: {
@@ -126,3 +115,4 @@ const businessOwnerModel = mongoose.model<IBusinessOwnerDocument>(
 );
 
 export default businessOwnerModel;
+

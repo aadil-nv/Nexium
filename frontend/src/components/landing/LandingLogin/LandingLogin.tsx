@@ -6,7 +6,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { z } from 'zod';
-import { login } from '../../../redux/slices/businessOwnerSlice';
+import { login ,setBusinessOwnerData } from '../../../redux/slices/businessOwnerSlice';
 import { loginBusinessOwnerAPI } from '../../../api/authApi'; // Import the loginUser function
 
 // Zod schema for validation
@@ -49,6 +49,13 @@ export default function LandingLoginPage() {
       if (data.success) {
         // Successful login
         dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
+        dispatch(setBusinessOwnerData({
+          companyName: data.companyName,
+          businessOwnerProfilePicture: data.profilePicture,
+          companyLogo: data.companyLogo,
+        }));
+       
+      
         navigate('/business-owner/dashboard');
       } else {
         // Handle specific cases for blocked or unverified accounts

@@ -1,7 +1,6 @@
 import { Document, Types } from "mongoose";
 
 
-
 export interface ISubscription {
     subscriptionId: Types.ObjectId;
     startDate: Date;
@@ -20,13 +19,12 @@ export interface IAddress {
 export interface IDocument {
   documentName: string;
   documentUrl: string;
-  documentSize: number;
+  documentSize: string;
   uploadedAt: Date;
 }
 
 export interface IDocuments {
-  companyCertificate: IDocument[];  // Array of company certificate documents
-  businessOwnerId: IDocument[];     // Array of business owner ID documents
+  companyCertificate: IDocument;  
 }
 
 
@@ -36,7 +34,7 @@ export interface IPersonalDetails {
   password: string;
   phone: string;
   personalWebsite?: string;
-  profileImage?: string;
+  profilePicture?: string;
 }
 
 export interface ICompanyDetails {
@@ -52,7 +50,7 @@ export interface IBusinessOwnerDocument extends Document {  // <-- Ensure this e
   _id: Types.ObjectId;
   personalDetails: IPersonalDetails;
   companyDetails: ICompanyDetails;
-  documents: IDocuments[];
+  documents: IDocuments;
   address: IAddress;
   isVerified: boolean;
   isBlocked: boolean;

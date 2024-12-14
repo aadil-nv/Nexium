@@ -4,6 +4,7 @@ export default interface IManagerProfileDTO {
     personalWebsite?: string;
     email?: string;
     profilePicture?: string;
+    phone?: string;
  
 }
 

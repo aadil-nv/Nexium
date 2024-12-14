@@ -4,7 +4,7 @@ import axios from "axios";
 import image from "../../images/images";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { login } from "../../redux/slices/employeeSlice";
+import { login, setEmployeeData } from "../../redux/slices/employeeSlice";
 import { z } from "zod";
 import { Spin } from "antd";
 
@@ -44,9 +44,10 @@ const EmployeeLogin: React.FC = () => {
         { email, password },
         { withCredentials: true }
       );
-      console.log("Response data:", response.data);
+      console.log("Response data of employee :", response?.data);
       if (response.data.success === true) {
         dispatch(login({ role: "employee", isAuthenticated: true ,position: response.data.position, workTime: response.data.workTime,workTimer: response.data.workTimer }));
+        dispatch(setEmployeeData({ employeeName: response?.data?.name, employeeProfilePicture: response?.data?.profilePicture, companyLogo: response?.data?.companyLogo, employeeType: response?.data?.employeeType, companyName: response?.data?.companyName }));
         navigate("/employee/dashboard");
       }
     } catch (err) {

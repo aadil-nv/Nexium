@@ -31,6 +31,8 @@ export default class EmployeeController implements IEmployeeController {
             }
 
             this.setCookies(res, result.accessToken, result.refreshToken);
+
+            console.log("result is ==>",result);
             return res.status(HttpStatusCode.Accepted).json(result);
         } catch (error: any) {
             console.error('Error during employee login:', error.message);

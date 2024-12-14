@@ -9,4 +9,5 @@ export default interface IManagerRepository extends BaseRepository<IManager>  {
     uploadProfilePicture(managerId: string, file: any): Promise<IManager>
     getLeaveEmployees(managerId: string): Promise<any>
     updateManagerAddress(managerId: string, data: any): Promise<any>
+    uploadDocuments(managerId: string, documentType: string, documentData: Object): Promise<IManager>
 }

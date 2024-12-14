@@ -42,6 +42,9 @@ export interface ITokenResponse {
   accessToken?: string;
   refreshToken?: string;
   isVerified?: boolean;
+  companyName?:string
+  profilePicture?:string;
+  companyLogo?:string
 }
 
 

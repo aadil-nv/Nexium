@@ -7,6 +7,8 @@ import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { uploadTosS3 } from "../../middlewares/multer-s3";
 import IManagerProfileDTO from "../../dto/IManagerDTO";
 import IEmployee from "../../entities/employeeEntities";
+import { ID } from "aws-sdk/clients/s3";
+import { IDocumentDTO } from "../../dto/IEmployeesDTO";
 
 @injectable()
 export default class ManagerService implements IManagerService {
@@ -49,7 +51,8 @@ export default class ManagerService implements IManagerService {
         managerName: managerProfile?.personalDetails?.managerName,
         email: managerProfile?.personalDetails.email,
         personalWebsite: managerProfile?.personalDetails?.personalWebsite,
-        profilePicture: profileImageUrl
+        profilePicture: profileImageUrl,
+        phone: managerProfile?.personalDetails?.phone
       }
 
     } catch (error) {
@@ -200,7 +203,7 @@ export default class ManagerService implements IManagerService {
     return result;
   }
 
-  private async uploadFileToS3(managerId: string, file: Express.Multer.File, fileType: "profileImage" | "companyLogo") {
+  private async uploadFileToS3(managerId: string, file: Express.Multer.File, fileType: "profileImage" | "companyLogo" | "resume"): Promise<string> {
     const result = await this.getDetails(managerId);
     const existingFile = fileType === "profileImage" ? result.personalDetails.profileImage : result.companyDetails.companyLogo;
 
@@ -255,6 +258,53 @@ export default class ManagerService implements IManagerService {
     } catch (error :any) {
       console.error("Error in updateManagerAddress:", error.message);
       throw new Error("Error updating manager address");
+    }
+  }
+
+  async uploadDocuments(managerId: string, file: Express.Multer.File, fileType: "resume"): Promise<IDocumentDTO> {
+    console.log(`"Data received:-->>>>>> to the service ",`.bgMagenta);
+    console.log();
+    console.log();
+    console.log();
+    console.log("managerId", managerId);
+    console.log("fileType", fileType);
+    console.log("documentData", file);
+    console.log();
+    console.log();
+    console.log();
+    console.log(`"Data received:-->>>>>> to the service ",`.bgMagenta);
+    try {
+      // Upload file to S3
+      const fileKey = await this.uploadFileToS3(managerId, file, "resume");
+
+      console.log("fileKey33333333333333333333333333333333333333", fileKey);
+      
+      const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
+      console.log("fileUrl444444444444444444444444444444444444444444444", fileUrl);
+      
+  
+      const documentData = {
+        documentName: fileType,
+        documentUrl: fileUrl,
+        documentSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+        uploadedAt: new Date(),
+      };
+  
+      const updatedManager = await this._managerRepository.uploadDocuments(managerId,fileType,documentData);
+
+
+      console.log("servuice -77777777777777777777777777777777", updatedManager);
+      
+  
+      return {
+        documentName: fileType,
+        documentUrl: fileUrl,
+        documentSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+        uploadedAt: new Date(),
+      };
+    } catch (error) {
+      console.error("Error while uploading document:", error);
+      throw new Error('Could not upload document.');
     }
   }
 }

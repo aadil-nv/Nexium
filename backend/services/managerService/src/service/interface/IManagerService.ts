@@ -12,4 +12,5 @@ export default interface IManagerService {
     updateManagerProfilePicture(businessOwnerId: string, file: Express.Multer.File): Promise<any>
     getLeaveEmployees(managerId: string): Promise<IEmployee>
     updateManagerAddress(managerId: string, data: any): Promise<any>
+    uploadDocuments(managerId: string, file: Express.Multer.File, fileType: string): Promise<any>
 }

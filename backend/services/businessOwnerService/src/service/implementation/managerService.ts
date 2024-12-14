@@ -51,7 +51,7 @@ export default class ManagerService implements IManagerService {
             businessOwnerId,
             data.name
         );
-        console.log(`managerCredentials:`.bgWhite, managerCredentials);
+
 
         // Prepare `managerData` structure
         const newManagerData: any = {
@@ -59,7 +59,7 @@ export default class ManagerService implements IManagerService {
                 managerName: data.name,
                 email: data.email,
                 personalWebsite: '', // Default value
-                profilePicture: data.profilePicture || "",
+                profilePicture:"1415789e35e86b00de158652ccd6807a8c2eb4f9a32ba0f4635239123505e74e",
                 phone: data.phoneNumber,
             },
             professionalDetails: {
@@ -83,13 +83,6 @@ export default class ManagerService implements IManagerService {
               postalCode: "",
               country:"",
             },
-            documents: [
-              {
-                documentName: "HR Document", // Default name
-                documentUrl: "https://example.com/default-document", // Default URL
-                uploadedAt: new Date(), // Default timestamp
-              },
-            ],
             businessOwnerId,
             subscriptionId: businessOwnerData.subscription.subscriptionId,
         };
@@ -99,10 +92,8 @@ export default class ManagerService implements IManagerService {
         // Send offer letter
         await this.sendOfferLetter(data.name, managerCredentials.managerCredentials, data.email);
 
-        // Add the manager to the database
         const managerData = await this._managerRepository.addManagers(businessOwnerId, newManagerData);
 
-        // Send the new manager data to RabbitMQ for further processing
         rabbitMQMessager.sendToMultipleQueues({ managerData });
 
         return {

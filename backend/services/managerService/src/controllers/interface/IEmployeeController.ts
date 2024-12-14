@@ -13,6 +13,5 @@ export default interface IEmployeeController {
     getEmployee(req: CustomRequest, res: Response): Promise<void>;
     updateProfilePicture(req: CustomRequest, res: Response): Promise<void>;
     updateResume(req: CustomRequest, res: Response): Promise<void>;
-    updateIdProof(req: CustomRequest, res: Response): Promise<void>;
     updateBlocking(req: CustomRequest, res: Response): Promise<void>;
 } 

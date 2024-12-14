@@ -9,6 +9,7 @@ export interface IAttendanceEntry {
     leaveType?: string | null;
     reason?: string | null;
     leaveStatus?: "Pending"|"Approved"|"Rejected"|"null"
+    rejectionReason:string
 }
 
 export interface IEmployeeAttendance extends Document {
