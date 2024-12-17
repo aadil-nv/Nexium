@@ -12,17 +12,19 @@ export default class LeaveController implements ILeaveController {
     constructor(@inject ("ILeaveService") private _leaveService: ILeaveService) {}
 
     async updateLeaveApproval(req: CustomRequest, res: Response): Promise<void> {
-        console.log(`update leave approval controleris ======`.bgYellow);
+        
         
         
         try {
             const employeeId = req.params.id;
-            console.log("employeeId--------------------------", employeeId);
+       
             const data = req.body
-            console.log("req.body", req.body);
+     
+        console.log(`data is FROM CONTROLLER`.bgWhite,data);
         
-
         const result = await this._leaveService.updateLeaveApproval(employeeId ,data);
+        console.log(`result is `.bgWhite,result);
+        
         res.status(200).json(result);
         
        } catch (error) {
@@ -33,11 +35,11 @@ export default class LeaveController implements ILeaveController {
     }
 
     async getAllLeaveEmployees(req: CustomRequest, res: Response): Promise<void> {
-        console.log(`get all leave employees controleris ======`.bgYellow);
+
         
         try {
             const result = await this._leaveService.getAllLeaveEmployees();
-            console.log("result", result);
+         
             
             res.status(200).json(result);
         } catch (error) {

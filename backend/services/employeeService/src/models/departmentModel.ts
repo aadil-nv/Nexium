@@ -45,6 +45,10 @@ const departmentSchema: Schema = new Schema({
   employees: { 
     type: [employeeSchema], 
     required: true,  // Ensure the employees array is required
+    validate: {
+      validator: (v: any[]) => v.length > 0,  // Ensure that the employees array is not empty
+      message: 'A department must have at least one employee.'
+    }
   },
 });
 

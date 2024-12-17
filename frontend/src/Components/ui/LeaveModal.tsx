@@ -5,7 +5,7 @@ import { employeeInstance } from "../../services/employeeInstance";
 type LeaveModalProps = {
   isVisible: boolean;
   onClose: () => void;
-  onSubmit: (leaveType: string, reason: string) => void;
+  onSubmit: (leaveType: string, reason: string,date: string) => void;
   attendanceId: string;
   date: string;
 };
@@ -48,12 +48,13 @@ const LeaveModal: React.FC<LeaveModalProps> = ({
             attendanceId,
             leaveType,
             reason,
+            date  
           }
         );
 
         if (response.status === 200) {
           console.log("Leave applied successfully:", response.data);
-          onSubmit(leaveType, reason);
+          onSubmit(leaveType, reason, date);
         } else {
           console.error("Failed to apply leave:", response.data);
         }

@@ -15,12 +15,9 @@ export default class EmployeeService implements IEmployeeService {
      private _employeeRepository: IEmployeeRepository) {}
     
     async  setNewAccessToken(refreshToken:string):Promise<ISetNewAccessTokenDTO> {
-
-        console.log("refresh token in manager service", refreshToken);
-    
     try {
       const decoded = verifyRefreshToken(refreshToken);
-      console.log("decoded==================>", decoded);
+
       
       const employeeData = decoded?.employeeData;
 
@@ -235,10 +232,12 @@ async getEmployeeCredentials(employeeId: string): Promise<IGetCredentailsDTO> {
   try {
     const employee = await this._employeeRepository.getProfile(employeeId);
     if (!employee) {throw new Error("Employee not found")}
+
     return {
       companyEmail: employee?.employeeCredentials.companyEmail,
       companyPassword: employee?.employeeCredentials.companyPassword,
     }
+    
   } catch (error: any) {
     throw new Error("Error generating new access token: " + error.message);
   }

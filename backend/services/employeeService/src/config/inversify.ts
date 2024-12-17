@@ -30,6 +30,18 @@ import PayrollRepository from "../repository/implementation/payrollRepository";
 import { IPayroll } from "../entities/payrollEntities"; 
 import payrollModel from "../models/payrollModel";
 
+import DepartmentController from "../controllers/implementation/departmentController";
+import DepartmentRepository from "../repository/implementation/departmentRepository";
+import DepartmentService from "../service/implementation/departmentService";
+
+import IDepartmentController from "../controllers/interface/IDepartmentController";
+import IDepartmentService from "../service/interface/IDepartmentService";
+import IDepartmentRepository from "../repository/interface/IDepartmentRepository";
+
+import DepartmentModel from "../models/departmentModel";
+import IDepartment from "../entities/departmentEntities";
+
+
 
 
 const container = new Container();
@@ -49,9 +61,16 @@ container.bind<IPayrollService>("IPayrollService").to(PayrollService);
 container.bind<IPayrollRepository>("IPayrollRepository").to(PayrollRepository);
 
 
+container.bind<IDepartmentController>("IDepartmentController").to(DepartmentController);
+container.bind<IDepartmentService>("IDepartmentService").to(DepartmentService);
+container.bind<IDepartmentRepository>("IDepartmentRepository").to(DepartmentRepository);
+
 container.bind<mongoose.Model<IPayroll>>("IPayroll").toConstantValue(payrollModel);
 container.bind<mongoose.Model<IEmployee>>("IEmployee").toConstantValue(EmployeeModel);
 container.bind<mongoose.Model<IEmployeeAttendance>>("IEmployeeAttendance").toConstantValue(AttendanceModel);
+container.bind<mongoose.Model<IDepartment>>("IDepartment").toConstantValue(DepartmentModel);
+
+
 
 
 

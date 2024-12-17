@@ -12,6 +12,8 @@ export default class LeaveService implements ILeaveService {
     async updateLeaveApproval(employeeId: string, data:object): Promise<ILeaveResonseDTO> {
         try {
             const result = await this._leaveRepository.updateLeaveApproval(employeeId, data);
+            console.log("result---------------------------------", result);
+            
             return {
                 leaveStatus: result?.attendance[0].leaveStatus,
                 message: "Leave approval updated successfully",
@@ -29,8 +31,7 @@ export default class LeaveService implements ILeaveService {
         try {
             const results = await this._leaveRepository.getAllLeaveEmployees();
     
-            console.log("results from service ---------------", results);
-    
+           
             // Flatten all attendance entries across employees
             const leaveDTOs: ILeaveDTO[] = results.flatMap((result) => {
                 return result.attendance?.map((attendanceEntry) => {

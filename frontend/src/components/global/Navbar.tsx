@@ -17,11 +17,13 @@ export default function Navbar() {
 
   const userName = businessOwner.isAuthenticated? businessOwner?.companyName:
                    superAdmin.isAuthenticated? "Super Admin": 
-                   manager.isAuthenticated? manager?.managerName: "Employee";
+                   manager.isAuthenticated? manager?.managerName: 
+                   employee.isAuthenticated? employee?.employeeName: "Guest";
 
   const profileImage = businessOwner.isAuthenticated? businessOwner?.businessOwnerProfilePicture: 
                        superAdmin.isAuthenticated? "https://cdn-icons-png.flaticon.com/512/149/149071.png" :
-                       manager.isAuthenticated? manager?.managerProfilePicture: "https://cdn-icons-png.flaticon.com/512/149/149071.png" ;
+                       manager.isAuthenticated? manager?.managerProfilePicture : 
+                       employee.isAuthenticated? employee?.employeeProfilePicture: "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
   const toggleMenuFunc = () => toggleMenu(dispatch, isActiveMenu);
   const handleProfile = () => handleProfileClick({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employee, dispatch, navigate });

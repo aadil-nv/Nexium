@@ -6,7 +6,9 @@ import useAuth from '../../hooks/useAuth';
 import { fetchBusinessOwnerPersonalInfo, uploadBusinessOwnerProfileImage, updateBusinessOwnerPersonalInfo } from '../../api/businessOwnerApi';
 import { fetchManagerPersonalInfo, updateManagerPersonalInfo, updateManagerProfilePicture } from '../../api/managerApi';
 import { fetchEmployeePersonalInfo , uploadEmployeeProfileImage ,updateEmployeePersonalInfo } from "../../api/employeeApi";
-import { login ,setBusinessOwnerData } from '../../redux/slices/businessOwnerSlice';
+import { setBusinessOwnerData } from '../../redux/slices/businessOwnerSlice';
+import { setManagerData} from '../../redux/slices/managerSlice';
+import { setEmployeeData } from '../../redux/slices/employeeSlice';
 import { useDispatch } from 'react-redux';
 
 interface ManagerInfo {
@@ -97,6 +99,12 @@ export default function PersonalDetails() {
     try {
       if (manager?.isAuthenticated) {
         const response = await updateManagerProfilePicture(file);
+         dispatch(setManagerData({
+                managerName: manager.managerName,
+                managerProfilePicture: response,
+                companyLogo: manager.companyLogo,
+                companyName: manager.companyName,
+                managerType: manager.managerType,}));
         setProfileImage(response);
       } else if (businessOwner?.isAuthenticated) {
         const response = await uploadBusinessOwnerProfileImage(file);
@@ -111,6 +119,13 @@ export default function PersonalDetails() {
         setProfileImage(response);
       } else if (employee?.isAuthenticated) {
         const response = await uploadEmployeeProfileImage(file); // Add a function for employee
+        dispatch(setEmployeeData({
+          employeeName: employee.employeeName,
+          employeeProfilePicture: response,
+          companyLogo: employee.companyLogo,
+          companyName: employee.companyName,
+          employeeType: employee.employeeType
+        }))
         setProfileImage(response);
       }
     } catch (error) {

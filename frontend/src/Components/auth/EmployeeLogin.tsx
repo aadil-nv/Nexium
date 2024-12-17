@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import { login, setEmployeeData } from "../../redux/slices/employeeSlice";
 import { z } from "zod";
 import { Spin } from "antd";
+import { employeeInstance } from "../../services/employeeInstance";
 
 // Zod schema for validation
 const loginSchema = z.object({
@@ -47,7 +48,14 @@ const EmployeeLogin: React.FC = () => {
       console.log("Response data of employee :", response?.data);
       if (response.data.success === true) {
         dispatch(login({ role: "employee", isAuthenticated: true ,position: response.data.position, workTime: response.data.workTime,workTimer: response.data.workTimer }));
-        dispatch(setEmployeeData({ employeeName: response?.data?.name, employeeProfilePicture: response?.data?.profilePicture, companyLogo: response?.data?.companyLogo, employeeType: response?.data?.employeeType, companyName: response?.data?.companyName }));
+        dispatch(setEmployeeData({ 
+          employeeName: response?.data?.employeeName,
+           employeeProfilePicture: response?.data?.eployeeProfilePicture,
+            companyLogo: response?.data?.companyLogo,
+             employeeType: response?.data.employeePosition,
+              companyName: response?.data.companyName }));
+
+        await employeeInstance.post("/employee/api/attendance/update-attendance");
         navigate("/employee/dashboard");
       }
     } catch (err) {

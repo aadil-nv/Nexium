@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Skeleton, Select, Input, Modal, Button, message } from 'antd';
+import { Skeleton, Select, Input, Modal, Button, message, Empty } from 'antd';
 import { SearchOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import useTheme from '../../../hooks/useTheme';
-import { fetchLeaveEmployees, updateLeaveApproval } from '../../../api/managerApi'; // Import the API utility
+import { fetchLeaveEmployees, updateLeaveApproval } from '../../../api/managerApi';
 
 const { Option } = Select;
 
@@ -33,13 +33,12 @@ function Leaves() {
         const fetchedLeaveData = await fetchLeaveEmployees();
         setLeaveData(fetchedLeaveData);
         setFilteredData(fetchedLeaveData);
-      } catch (error) {
+      } catch {
         setError('Failed to fetch leave data');
       } finally {
         setLoading(false);
       }
     };
-
     loadLeaveData();
   }, []);
 
@@ -51,7 +50,6 @@ function Leaves() {
 
   const handleActionChange = async (value: string, index: number) => {
     const selectedLeave = leaveData[index];
-
     if (value === 'Rejected') {
       setSelectedIndex(index);
       setModalVisible(true);
@@ -66,13 +64,12 @@ function Leaves() {
       });
 
       if (response.success) {
-        const updatedData = [...leaveData];
-        updatedData[index].leaveStatus = 'Approved';
-        setLeaveData(updatedData);
-        message.success('Leave approved successfully!');
+        leaveData[index].leaveStatus = 'Approved';
+        setLeaveData([...leaveData]);
+        message.success('Leave approved');
       }
-    } catch (error) {
-      message.error('Failed to approve leave.');
+    } catch {
+      message.error('Failed to approve leave');
     }
   };
 
@@ -85,19 +82,18 @@ function Leaves() {
       const response = await updateLeaveApproval(selectedLeave.employeeId, {
         action: 'Rejected',
         reason: rejectionReason,
-        date: new Date().toISOString(),
+        date: selectedLeave.leaveDate?.toISOString(),
         leaveType: selectedLeave.leaveType,
       });
 
       if (response.success) {
-        const updatedData = [...leaveData];
-        updatedData[selectedIndex].leaveStatus = 'Rejected';
-        updatedData[selectedIndex].reason = rejectionReason;
-        setLeaveData(updatedData);
-        message.success('Leave rejected successfully!');
+        leaveData[selectedIndex].leaveStatus = 'Rejected';
+        leaveData[selectedIndex].reason = rejectionReason;
+        setLeaveData([...leaveData]);
+        message.success('Leave rejected');
       }
-    } catch (error) {
-      message.error('Failed to reject leave.');
+    } catch {
+      message.error('Failed to reject leave');
     } finally {
       setModalVisible(false);
       setRejectionReason('');
@@ -106,10 +102,8 @@ function Leaves() {
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold text-gray-800 mb-6 border-l-4 pl-4 border-red-800" style={{ borderColor: themeColor }}>
-        Leaves
-      </h1>
-      <div className="p-5 max-w-full mx-auto bg-white text-gray-800 rounded-lg shadow-lg">
+      <h1 className="text-3xl font-semibold mb-6 border-l-4 pl-4" style={{ borderColor: themeColor }}>Leaves</h1>
+      <div className="p-5 bg-white rounded-lg shadow-lg">
         <Input
           placeholder="Search by employee ID"
           value={searchTerm}
@@ -118,69 +112,51 @@ function Leaves() {
           prefix={<SearchOutlined />}
         />
         <div className="overflow-x-auto">
-          {loading ? (
-            <Skeleton active />
-          ) : error ? (
-            <div className="text-red-500">{error}</div>
-          ) : (
-            <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
-              <thead style={{ backgroundColor: themeColor }} className="text-white">
-                <tr>
-                  <th className="px-4 py-2 text-xs sm:text-sm text-left">Employee ID</th>
-                  <th className="px-4 py-2 text-xs sm:text-sm text-left">Leave Type</th>
-                  <th className="px-4 py-2 text-xs sm:text-sm text-left">Leave Date</th>
-                  <th className="px-4 py-2 text-xs sm:text-sm text-left">Status</th>
-                  <th className="px-4 py-2 text-xs sm:text-sm text-left">Reason</th>
-                  <th className="px-4 py-2 text-xs sm:text-sm text-left">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredData.map((data, i) => (
-                  <motion.tr
-                    key={i}
-                    className={`bg-gray-${i % 2 === 0 ? '100' : '200'} hover:bg-gray-300 transition-all`}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">{data.employeeId}</td>
-                    <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">{data.leaveType}</td>
-                    <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">
-                      {data.leaveDate instanceof Date && !isNaN(data.leaveDate.getTime())
-                        ? data.leaveDate.toLocaleDateString()
-                        : 'N/A'}
-                    </td>
-                    <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">{data.leaveStatus}</td>
-                    <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">{data.reason || 'N/A'}</td>
-                    <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">
-                      <Select
-                        defaultValue={data.leaveStatus}
-                        style={{ width: 120 }}
-                        onChange={(value) => handleActionChange(value, i)}
-                        suffixIcon={<CheckCircleOutlined />}
-                      >
-                        <Option value="Approved">
-                          <CheckCircleOutlined /> Approve
-                        </Option>
-                        <Option value="Rejected">
-                          <CloseCircleOutlined /> Reject
-                        </Option>
-                      </Select>
-                    </td>
-                  </motion.tr>
-                ))}
-                {!filteredData.length && (
+          {loading ? <Skeleton active /> : error ? <Empty description={error} /> :
+            filteredData.length === 0 ? <Empty description="No leave data available" /> :
+              <table className="min-w-full border rounded-lg shadow-lg overflow-hidden">
+                <thead style={{ backgroundColor: themeColor }} className="text-white">
                   <tr>
-                    <td colSpan={6} className="text-center py-4">No leave data available</td>
+                    <th className="px-4 py-2 text-left">Employee ID</th>
+                    <th className="px-4 py-2 text-left">Leave Type</th>
+                    <th className="px-4 py-2 text-left">Leave Date</th>
+                    <th className="px-4 py-2 text-left">Status</th>
+                    <th className="px-4 py-2 text-left">Reason</th>
+                    <th className="px-4 py-2 text-left">Action</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody>
+                  {filteredData.map((data, i) => (
+                    <motion.tr
+                      key={i}
+                      className={`bg-gray-${i % 2 === 0 ? '100' : '200'} hover:bg-gray-300`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <td className="px-4 py-2 text-black">{data.employeeId}</td>
+                      <td className="px-4 py-2 text-black">{data.leaveType}</td>
+                      <td className="px-4 py-2 text-black">{data.leaveDate?.toLocaleDateString() || 'N/A'}</td>
+                      <td className="px-4 py-2 text-black">{data.leaveStatus}</td>
+                      <td className="px-4 py-2 text-black">{data.reason || 'N/A'}</td>
+                      <td className="px-4 py-2">
+                        <Select
+                          defaultValue={data.leaveStatus}
+                          style={{ width: 120 }}
+                          onChange={(value) => handleActionChange(value, i)}
+                          suffixIcon={<CheckCircleOutlined />}
+                        >
+                          <Option value="Approved" className="text-green-500"><CheckCircleOutlined /> Approve</Option>
+                          <Option value="Rejected" className="text-red-500"><CloseCircleOutlined /> Reject</Option>
+                        </Select>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>}
         </div>
       </div>
 
-      {/* Modal for rejection reason */}
       <Modal
         title="Rejection Reason"
         visible={modalVisible}

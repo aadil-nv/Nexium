@@ -5,6 +5,7 @@ import employeeAttendanceModel from "../../models/attendanceModel";
 import { IEmployeeAttendance } from "../../entities/attendanceEntities";
 import BaseRepository from "./baseRepository";
 import employeeModel from '../../models/employeeModel';
+import { log } from "console";
 
 @injectable()
 export default class LeaveRepository extends BaseRepository<IEmployeeAttendance> implements ILeaveRepository {
@@ -13,9 +14,18 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
         super(employeeAttendanceModel);
     }
     async updateLeaveApproval(employeeId: string, data: any): Promise<IEmployeeAttendance | null> {
+        console.log('"hitting updateLeaveApproval repository=------------------"'.bgRed);
+        console.log(`employeeId is ${employeeId}`.bgGreen);
+        console.log(`data is `.bgGreen,data);
+        
+        
+        
         try {
             // Format the provided date to "YYYY-MM-DD"
             const formattedDate = new Date(data.date).toISOString().split('T')[0];
+
+            console.log(`form atted date is `.bgBlue, formattedDate);
+            
     
             // Fetch the employee's attendance data
             const employeeAttendance = await this.employeeAttendanceModel.findOne({ employeeId });
@@ -31,16 +41,21 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
     
             const leaveField = data.leaveType; // Type of leave (e.g., "sick", "vacation")
     
-            // Handle leave approval and rejection scenarios
-            if (attendanceEntry.leaveStatus === "Pending") {
+            console.log(`"attendanceEntry.leaveStatus is ${attendanceEntry}`.bgYellow);
+            
+            
+            if (attendanceEntry.leaveStatus === "Pending" || attendanceEntry.status === "Absent") {
+                console.log(`"attendanceEntry.leaveStatus is ${attendanceEntry.leaveStatus}`.bgYellow);
                 if (data.action === "Approved") {
                     attendanceEntry.leaveStatus = "Approved";
-                    // Decrement the leave count for the specified leave type
+              
                     await employeeModel.findOneAndUpdate(
                         { _id: employeeId },
                         { $inc: { [`leaves.${leaveField}`]: -1 } }
                     );
-                } else if (data.action === "Rejected") {
+                } else if(data.action == "Rejected") {
+                    console.log(`"######################################"`.bgCyan);
+                    
                     attendanceEntry.leaveStatus = "Rejected";
                     attendanceEntry.rejectionReason = data.reason;
                 }
@@ -62,17 +77,16 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
             }
     
             // Save the updated attendance
-            await employeeAttendance.save();
+           const result =  await employeeAttendance.save();
+            console.log(`Updated leave approval for employee ${result}`.bgRed);
+            
     
-            return employeeAttendance;
+            return result;
         } catch (error) {
             console.error("Error in updateLeaveApproval repository:", error);
             throw new Error("Failed to update leave approval");
         }
     }
-    
-    
-    
     
     
     async getAllLeaveEmployees(): Promise<any> {
@@ -88,7 +102,7 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
             const filteredResults = results.map(employee => {
                 // Filter attendance where leaveStatus is not null or undefined
                 const filteredAttendance = employee.attendance.filter(attendance => 
-                    attendance.leaveStatus !== null && attendance.leaveStatus !== undefined
+                    attendance.leaveStatus !== null && attendance.leaveStatus !== undefined  && attendance.leaveStatus !== "null"
                 );
                 
                 // Return employee data with filtered attendance

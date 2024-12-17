@@ -72,4 +72,15 @@ export default class AttendanceController implements IAttendanceController {
             return this.handleError(res, error);
         }
     }
+
+    async updateAttendanceEntry(req: CustomRequest, res: Response): Promise<Response> {
+        try {
+            const employeeId = this.getEmployeeId(req);
+            if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
+            const leaves = await this.attendanceService.updateAttendanceEntry(employeeId);
+            return res.status(HttpStatusCode.OK).json(leaves);
+        } catch (error) {
+            return this.handleError(res, error);
+        }
+    }
 }

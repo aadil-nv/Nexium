@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { CSVLink } from 'react-csv';
 import * as XLSX from 'xlsx';
 import { FaFileCsv, FaFileExcel, FaDownload } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { Skeleton } from 'antd';
 import useTheme from '../../hooks/useTheme';
+import { employeeInstance } from '../../services/employeeInstance';
 
 // Define the type for payroll data
 interface PayrollData {
@@ -24,9 +25,43 @@ function Payroll() {
     { employeeName: 'Jane Smith', position: 'Product Manager', salary: '$6000', date: '2024-11-01', leaveDays: 1, workingHours: 160 },
     { employeeName: 'Alice Johnson', position: 'UI/UX Designer', salary: '$4500', date: '2024-11-01', leaveDays: 0, workingHours: 160 },
   ]);
+
+  const [payrollData2, setPayrollData2] = useState<any>(null);
   const [loading, setLoading] = useState(false); // Set to true while loading data
   const [error, setError] = useState<string | null>(null);
   const [payslipDownloaded, setPayslipDownloaded] = useState(false); // Track if payslip is downloaded
+
+
+  useEffect(() => {
+    const fetchPayrollData = async () => {
+      try {
+        setLoading(true);
+        const response = await employeeInstance.get(
+          '/employee/api/payroll/get-payroll'
+        );
+        setPayrollData2(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching department:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchPayrollData();
+  }, []);
+
+
+  console.log("======================================");
+  console.log("======================================");
+  console.log("======================================");
+  console.log("Pay roll daata", payrollData2);
+  console.log("======================================");
+  console.log("======================================");
+  
+
+
+
+
 
   // Example function for exporting to Excel
   const exportToExcel = () => {

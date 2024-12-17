@@ -146,17 +146,17 @@ export default class EmployeeController implements IEmployeeController {
     }
 
     async updateResume(req: CustomRequest, res: Response): Promise<void> {
-        console.log("hitting update resume==================");
+
         
         try {
             const employeeId = req.params.id;
-            console.log("employeeId--------------------------", employeeId);
+         
 
             console.log("req.file", req.file);
             
             
             const result = await this._employeeService.updateResume(employeeId, req.file as Express.Multer.File);
-            console.log("result", result);
+           
             
             res.status(200).json(result);
         } catch (error) {

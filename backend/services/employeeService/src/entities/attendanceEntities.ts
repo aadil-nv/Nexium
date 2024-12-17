@@ -1,14 +1,15 @@
 import mongoose, { Document } from "mongoose";
 
 export interface IAttendanceEntry {
+
     date: string;
-    status: 'Present' | 'Leave' | 'Absent'|"marked";
-    checkInTime: string;
-    checkOutTime: string;
-    hours: number;
+    status: 'Present' | 'Leave' | 'Absent'|"Marked"|"Halfday";
+    checkInTime: string | null;
+    checkOutTime: string| null;
+    minutes: number;
     leaveType?: string | null;
     reason?: string | null;
-    leaveStatus?: "Pending"|"Approved"|"Rejected"|"null"
+    leaveStatus?: string | null;
     rejectionReason?: string | null;
 }
 
@@ -22,14 +23,3 @@ export interface IEmployeeAttendance extends Document {
 
 
 //!============================================================================
-
-export interface IAttendanceEntry {
-    date: string;
-    status: 'Present' | 'Leave' | 'Absent' |'marked';
-    checkInTime: string;
-    checkOutTime: string;
-    hours: number;
-    leaveType?: string | null;
-    reason?: string | null;
-    isCompleted: boolean;
-}

@@ -12,7 +12,7 @@ const employeeSchema = new Schema<IEmployee>({
   role:{ type: String, default: "employee" },
   
   personalDetails: {
-    profilePicture:{ type: String ,default: "https://avatar.iran.liara.run/public/boy?username=Ash"},
+    profilePicture:{ type: String ,default: "bb40a09c55d1cbf1d85ed571a65da4400edef28bdbb77576fbabb3006945d6b5"},
     employeeName: { type: String },
     email: { type: String, required: true },
     phone: { type: String },

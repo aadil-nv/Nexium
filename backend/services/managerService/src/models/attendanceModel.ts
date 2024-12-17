@@ -14,7 +14,7 @@ const AttendanceEntrySchema: Schema = new Schema({
   leaveType: { type: String, default: null },
   reason: { type: String, default: null },
   leaveStatus: { type: String ,enum:["Pending","Approved","Rejected","null"] ,default: "null"},
-  rejectionReason:{ type: String ,default: null},
+  rejectionReason: { type: String, default: null },
   
 });
 
@@ -28,3 +28,4 @@ const EmployeeAttendanceSchema: Schema = new Schema({
 const EmployeeAttendance = mongoose.model<IEmployeeAttendance>('EmployeeAttendance', EmployeeAttendanceSchema);
 
 export default EmployeeAttendance;
+

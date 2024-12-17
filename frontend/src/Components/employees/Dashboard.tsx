@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { employeeInstance } from "../../services/employeeInstance";
+import { useSelector } from "react-redux";
+import useAuth from "../../hooks/useAuth";
 
 type EmployeeProfile = {
   employeeName: string;
@@ -12,7 +14,8 @@ type EmployeeProfile = {
 export default function Dashboard() {
   const [profile, setProfile] = useState<EmployeeProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
-
+  const {employee} = useAuth();
+  
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -46,6 +49,15 @@ export default function Dashboard() {
         <h2 className="text-lg font-semibold text-center mt-4">{profile.employeeName}</h2>
         <p className="text-center text-gray-600">{profile.email}</p>
         <p className="text-center text-gray-600">{profile.phone}</p>
+      </div>
+
+      <div>
+        <p className="text-center text-red-700">Employee Name ==={employee.employeeName }</p>
+        <p className="text-center text-red-700">Employee ProfilePicyre==={employee.employeeProfilePicture }</p>
+        <p className="text-center text-red-700">Employee employeeType=={employee.employeeType }</p>
+        <p className="text-center text-red-700">Employee companyLogo==={employee.companyLogo }</p>
+        <p className="text-center text-red-700">Employee comanyName==={employee.companyName }</p>
+        <p className="text-center text-red-700">WOrk time ==={employee.workTime }</p>
       </div>
     </div>
   );

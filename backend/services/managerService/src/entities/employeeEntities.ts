@@ -6,6 +6,7 @@ export default interface IEmployee extends Document {
   isActive: boolean;
   isVerified: boolean;
   isBlocked: boolean;
+  role: string;
   personalDetails: {
     employeeName: string;
     email: string;

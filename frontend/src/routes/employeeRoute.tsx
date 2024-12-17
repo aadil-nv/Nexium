@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import EmployeePrivateRoute from "./employeePrivateRoute";
 import DashBoardLayout from "../pages/employeePages/DashboardLayout";
 import Dashboard from "../components/employees/Dashboard";
-import Team from "../components/employees/Team";
+import Department from "../components/employees/Department";
 import Profile from "../components/global/Profile";
 import PersonalDetailes from "../components/global/PersonalDetailes";
 import Address from "../components/global/Address";
@@ -13,7 +13,7 @@ import Notifications from "../components/global/Notifications";
 import Payroll from "../components/employees/Payroll";
 import Leaves from "../components/employees/Leaves";
 import Announcements from "../components/global/Announcements";
-import Attendance from "../components/global/Attendance";
+import Attendance from "../components/employees/Attendance";
 
 const BusinessOwnerRoutes = () => {
 
@@ -24,7 +24,7 @@ const BusinessOwnerRoutes = () => {
           <Route element={<DashBoardLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="attendance" element={<Attendance />} />
-            <Route path="team" element={<Team />} />
+            <Route path="team" element={<Department />} />
             <Route path="payroll" element={<Payroll />} />
             <Route path="leaves" element={<Leaves />} />
             <Route path="profile" element={<Profile />} />

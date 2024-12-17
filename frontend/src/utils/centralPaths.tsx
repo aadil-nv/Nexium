@@ -37,8 +37,8 @@ export const superAdminLinks: LinkItem[] = [
 
 export const employeeLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/employee/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
-  { title: 'Team', route: '/employee/team', icon: 'fi fi-tr-department-structure' },
   { title: 'Attendance', route: '/employee/attendance', icon: 'fi fi-tr-skill' },
+  { title: 'Department', route: '/employee/team', icon: 'fi fi-tr-department-structure' },
   { title: 'Payroll', route: '/employee/payroll', icon: 'fi fi-tr-payroll' },
   { title: 'Leaves', route: '/employee/leaves', icon: 'fi fi-tr-house-leave' },
   { title: 'Notifications', route: '/employee/notifications', icon: 'fi fi-tr-bells' },

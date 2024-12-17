@@ -6,14 +6,15 @@ import { IAttendanceEntry,IEmployeeAttendance} from '../entities/attendanceEntit
 
 // Create the schema for a single day's attendance
 const AttendanceEntrySchema: Schema = new Schema({
+ 
   date: { type: String },
   status: { type: String, enum: ['Present', 'Leave', 'Absent' ,"marked"] ,default: "Absent"},
   checkInTime: { type: Date ,default: null},
   checkOutTime: { type: Date ,default: null},
-  hours: { type: Number ,default: 0},
+  minutes: { type: Number ,default: 0},
   leaveType: { type: String, default: null },
   reason: { type: String, default: null },
-  leaveStatus: { type: String ,enum:["Pending","Approved","Rejected","null"] ,default: "null"},
+  leaveStatus: { type: String ,enum:["Pending","Approved","Rejected"] ,default: null},
   rejectionReason: { type: String, default: null },
   
 });

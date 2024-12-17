@@ -19,7 +19,7 @@ if (!fs.existsSync(logDirectory)) {
   fs.mkdirSync(logDirectory);
 }
 
-// dasdasdasdasdaskofhosjik
+
 
 const accessLogStream = createStream('access.log', {
   interval: '7d',
@@ -29,7 +29,7 @@ const accessLogStream = createStream('access.log', {
 app.use(morgan('combined', { stream: accessLogStream }));
 app.use(morgan('dev'));
 
-// !kjgkkdasdsadasdasdsadaasdasrgbfbdjlkgdadasd
+
 app.use(cookieParser());
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 

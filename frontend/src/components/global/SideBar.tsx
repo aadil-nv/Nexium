@@ -44,13 +44,13 @@ const Sidebar = () => {
   className="text-xl font-extrabold text-gray-800 flex items-center space-x-2" // Added flex for inline layout and space between logo and name
 >
   <img
-    src={isAuthenticated(businessOwner) ? businessOwner.companyLogo : isAuthenticated(superAdmin) ? 'Super Admin' : isAuthenticated(manager) ? manager.companyLogo : 'Employee'}
+    src={isAuthenticated(businessOwner) ? businessOwner.companyLogo : isAuthenticated(superAdmin) ? 'Super Admin' : isAuthenticated(manager) ? manager.companyLogo : isAuthenticated(employee) ? employee.companyLogo : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
     alt="Business Owner Logo"
     className="w-auto h-auto max-w-[100px] max-h-[50px] object-contain" // Logo styling
   />
   
   <span className="truncate max-w-[200px]">  {/* Truncate the company name if it's too long */}
-    {isAuthenticated(businessOwner) ? businessOwner.companyName : isAuthenticated(superAdmin) ? 'Super Admin' : isAuthenticated(manager) ? manager.companyName : 'Employee'}
+    {isAuthenticated(businessOwner) ? businessOwner.companyName : isAuthenticated(superAdmin) ? 'Super Admin' : isAuthenticated(manager) ? manager.companyName : isAuthenticated(employee) ? employee.companyName : 'Guest'}
   </span>
 </NavLink>
 

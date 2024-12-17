@@ -5,7 +5,7 @@ import { employeeInstance } from "../services/employeeInstance";
 export const fetchAttendanceData = async () => {
   try {
     const response = await employeeInstance.get("/employee/api/attendance/get-attendances");
-    return response.data[0];
+    return response.data;
   } catch (error) {
     console.error("Error fetching attendance data:", error);
     throw error; // or return a default value

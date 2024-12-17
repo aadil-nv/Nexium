@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaSignInAlt, FaCalendarAlt } from "react-icons/fa";
 import { Empty } from "antd";
-import AttendanceHistory from "./AttendanceHistory";
-import Alert from "./Alert";
+import AttendanceHistory from "../global/AttendanceHistory";
+import Alert from "../global/Alert";
 import { useDispatch, useSelector } from "react-redux";
 import { updateWorkDetails } from "../../redux/slices/employeeSlice";
 import useAuth from "../../hooks/useAuth";
@@ -14,7 +14,7 @@ type IAttendance = {
   status: string;
   checkInTime: string | undefined;
   checkOutTime: string;
-  hours: number;
+  minutes: number;
   leaveType?: string | null;
   reason?: string | null;
   isCompleted?: boolean;
@@ -36,6 +36,8 @@ export default function AttendanceCard() {
   const [progress, setProgress] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
   const [showCheckoutAlert, setShowCheckoutAlert] = useState(false);
+  const [reloadData, setReloadData] = useState(false); // Added state for refreshing data
+  const [isLoading, setIsLoading] = useState(true); // State to track loading
   const { employee } = useAuth();
   const dispatch = useDispatch();
   const workTimer = useSelector((state: any) => state.employee.workTimer);
@@ -49,6 +51,8 @@ export default function AttendanceCard() {
     const loadData = async () => {
       try {
         const fetchedData = await fetchAttendanceData();
+        console.log("Attendance data fetched:", fetchedData.attendance);
+
         if (fetchedData && fetchedData.attendance) {
           setCurrentDayStatus(fetchedData);
           setAttendanceData(fetchedData.attendance);
@@ -58,30 +62,12 @@ export default function AttendanceCard() {
         }
       } catch (error) {
         console.error("Error fetching attendance data:", error);
+      } finally {
+        setIsLoading(false); 
       }
     };
     loadData();
-  }, []);
-
-  useEffect(() => {
-    if (isCheckedIn) {
-      const interval = setInterval(() => {
-        setTimer((prev) => {
-          const newTime = prev + 1;
-          setProgress((newTime / 28800) * 100);
-          dispatch(
-            updateWorkDetails({
-              position: employee?.position || "",
-              workTime: employee?.workTime || "",
-              workTimer: newTime,
-            })
-          );
-          return newTime;
-        });
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [isCheckedIn, dispatch, employee]);
+  }, [reloadData]); 
 
   const totalPages = Math.ceil(attendanceData.length / 5);
   const filteredData = attendanceData.slice((page - 1) * 5, page * 5);
@@ -98,16 +84,13 @@ export default function AttendanceCard() {
     };
     try {
       await markCheckIn(checkInData);
-      // Fetch the updated attendance data after check-in
-      const updatedData = await fetchAttendanceData();
-      setAttendanceData(updatedData.attendance);
-      setCurrentDayStatus(updatedData); // Update currentDayStatus after check-in
+      setReloadData((prev) => !prev); // Trigger data refresh
     } catch (error) {
       console.error("Error during check-in:", error);
     }
   };
 
-  const handleConfirmCheckout = async () => {
+const handleConfirmCheckout = async () => {
     const checkOutData = {
       workTime: timer,
       checkOutTime: new Date().toISOString(),
@@ -120,14 +103,11 @@ export default function AttendanceCard() {
       dispatch(
         updateWorkDetails({
           position: employee?.position || "",
-          workTime: timer.toString(),
+          workTime: employee.workTime || "",
           workTimer: 0,
         })
       );
-      // Fetch the updated attendance data after checkout
-      const updatedData = await fetchAttendanceData();
-      setAttendanceData(updatedData.attendance);
-      setCurrentDayStatus(updatedData); // Update currentDayStatus after check-out
+      setReloadData((prev) => !prev); // Trigger data refresh
     } catch (error) {
       console.error("Error during check-out:", error);
     }
@@ -137,8 +117,6 @@ export default function AttendanceCard() {
     (attendance) => attendance.date === new Date().toISOString().split("T")[0]
   );
   const currentStatus = currentAttendance?.status;
-  const employeeId = currentDayStatus?.employeeId;
-  console.log("xxxxxxxxxxxxxxx", employeeId);
 
   return (
     <motion.div className="p-6 bg-white shadow-lg rounded-lg mt-6 max-w-4xl mx-auto sm:p-4">
@@ -175,7 +153,8 @@ export default function AttendanceCard() {
       ) : (
         <AttendanceHistory
           attendanceData={filteredData}
-          updateAttendanceData={(data: IAttendance[]) => setAttendanceData(data)} // Pass the function to update attendance data
+          updateAttendanceData={(data: IAttendance[]) => setAttendanceData(data)}
+          isLoading={isLoading} 
         />
       )}
 
