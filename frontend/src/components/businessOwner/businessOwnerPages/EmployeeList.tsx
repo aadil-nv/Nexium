@@ -20,6 +20,8 @@ export default function EmployeeList() {
       setLoading(true);
       try {
         const managersData = await fetchManagers();
+        console.log("managersData",managersData);
+        
         setManagers(managersData);
       } catch (error) {
         console.error('Error fetching managers:', error);

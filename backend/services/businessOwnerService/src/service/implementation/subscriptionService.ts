@@ -29,7 +29,7 @@ export default class SubscriptionService implements ISubscriptionService {
     
             // Use the businessOwnerRepository to fetch business owner data
             const businessOwnerData = await this._businessOwnerRepository.findOne({ _id: objectId });
-            console.log("Business Owner Data:", businessOwnerData);
+           
     
             const subscriptionId = businessOwnerData?.subscription?.subscriptionId;
             if (!subscriptionId) {
@@ -38,7 +38,7 @@ export default class SubscriptionService implements ISubscriptionService {
     
             // Get the subscription details
             const subscription = await this._subscriptionRepository.getSubscription(subscriptionId.toString()); // Ensure subscriptionId is a string
-            console.log("Subscription Data:", subscription);
+          
     
             return {
                 _id: subscription._id,

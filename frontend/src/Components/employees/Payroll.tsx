@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { CSVLink } from 'react-csv';
-import * as XLSX from 'xlsx';
-import { FaFileCsv, FaFileExcel, FaDownload } from 'react-icons/fa';
+import { FaFilePdf, FaSearch, FaDownload } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import { Skeleton } from 'antd';
+import { Skeleton, Empty } from 'antd';
 import useTheme from '../../hooks/useTheme';
 import { employeeInstance } from '../../services/employeeInstance';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { generatePayslip } from '../../utils/generatePayslip';
 
-// Define the type for payroll data
 interface PayrollData {
   employeeName: string;
   position: string;
@@ -15,175 +15,199 @@ interface PayrollData {
   date: string;
   leaveDays: number;
   workingHours: number;
+  presentDays: number;
+  netSalary: number;
+  month: string;
+  year: string;
+  payDate: string;
 }
 
-function Payroll() {
+const Payroll = () => {
   const { themeColor } = useTheme();
-  const [payrollData, setPayrollData] = useState<PayrollData[]>([
-    // Demo data
-    { employeeName: 'John Doe', position: 'Software Engineer', salary: '$5000', date: '2024-11-01', leaveDays: 2, workingHours: 160 },
-    { employeeName: 'Jane Smith', position: 'Product Manager', salary: '$6000', date: '2024-11-01', leaveDays: 1, workingHours: 160 },
-    { employeeName: 'Alice Johnson', position: 'UI/UX Designer', salary: '$4500', date: '2024-11-01', leaveDays: 0, workingHours: 160 },
-  ]);
-
-  const [payrollData2, setPayrollData2] = useState<any>(null);
-  const [loading, setLoading] = useState(false); // Set to true while loading data
+  const [payrollData, setPayrollData] = useState<any>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [payslipDownloaded, setPayslipDownloaded] = useState(false); // Track if payslip is downloaded
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredData, setFilteredData] = useState<any>([]); // State for filtered data
+  const [currentPage, setCurrentPage] = useState(1);
+  const [monthlyPayslipData, setMonthlyPayslipData] = useState<any>(null);
+  const itemsPerPage = 10;
 
+  const tableFields = [
+    { header: 'Month', field: 'month' },
+    { header: 'Year', field: 'year' },
+    { header: 'Working Minutes', field: 'totalWorkedMinutes' },
+    { header: 'Present Days', field: 'totalPresentDays' },
+    { header: 'Leave Days', field: 'totalAbsentDays' },
+    { header: 'Net Salary', field: 'netSalary' },
+    { header: 'Pay Date', field: 'payDate' },
+    { header: 'Action', field: 'action' }
+  ];
+
+  const getMonthName = (monthNumber: string) => [
+    'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+  ][parseInt(monthNumber) - 1];
 
   useEffect(() => {
-    const fetchPayrollData = async () => {
-      try {
-        setLoading(true);
-        const response = await employeeInstance.get(
-          '/employee/api/payroll/get-payroll'
-        );
-        setPayrollData2(response.data);
+    setLoading(true);
+    employeeInstance.get('/employee/api/payroll/get-payroll')
+      .then(response => {
+        setPayrollData(response.data.payroll);
         setLoading(false);
-      } catch (error) {
-        console.error('Error fetching department:', error);
+      })
+      .catch((err) => {
+        setError(`Failed to load payroll data: ${err.message || 'Unknown error'}`);
         setLoading(false);
-      }
-    };
-
-    fetchPayrollData();
+      });
   }, []);
 
+  useEffect(() => {
+    if (searchQuery === '') {
+      setFilteredData(payrollData);
+    } else {
+      const filtered = payrollData.filter((item: any) =>
+        item.employeeName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredData(filtered);
+    }
+  }, [searchQuery, payrollData]);
 
-  console.log("======================================");
-  console.log("======================================");
-  console.log("======================================");
-  console.log("Pay roll daata", payrollData2);
-  console.log("======================================");
-  console.log("======================================");
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    const tableColumns = tableFields.map(field => field.header);
+    const tableRows = filteredData.map((data: any) =>
+      tableFields.map(({ field }) => {
+        if (field === 'month') return getMonthName(data.month);
+        if (field === 'netSalary') return data.netSalary.toFixed(2);
+        if (field === 'payDate') return new Date(data.payDate).toISOString().split('T')[0];
+        return data[field];
+      })
+    );
+    
+    autoTable(doc, { // Pass the `doc` as the first argument
+      head: [tableColumns],
+      body: tableRows,
+    });
+    
+    doc.save('payroll.pdf');
+  };
+  
   
 
+  const downloadPayslip = (payrollId: string) => {
+    console.log('employeeId', payrollId);
 
-
-
-
-  // Example function for exporting to Excel
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(payrollData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Payroll Data');
-    XLSX.writeFile(workbook, 'PayrollData.xlsx');
+    employeeInstance.get(`/employee/api/payroll/download-parollMonthly/${payrollId}`)
+      .then((response) => {
+        if (response.data) {
+          console.log('response.data', response.data);
+          setMonthlyPayslipData(response.data);
+          generatePayslip(response.data); // Generate and download payslip as PDF
+        } else {
+          console.error('No data received in the response');
+        }
+      })
+      .catch((err) => {
+        console.error('Error downloading payslip:', err);
+      });
   };
 
-  // Mock function to simulate downloading payslip (for demo purposes)
-  const downloadPayslip = (employeeName: string) => {
-    console.log(`Downloading payslip for ${employeeName}`);
-    
-    const payslipContent = `Payslip for ${employeeName}\nDate: 2024-11-01\nSalary: $5000\nLeave Days: 2\nWorking Hours: 160`;
-    const blob = new Blob([payslipContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    
-    // Create a link to download the file
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${employeeName}-Payslip.txt`; // Name the file based on employee
-    link.click();
-  
-    // Clean up the URL object
-    URL.revokeObjectURL(url);
-  
-    setPayslipDownloaded(true); // Set payslipDownloaded to true after download
+  const handlePagination = (direction: string) => {
+    if (direction === 'next') {
+      setCurrentPage(prevPage => prevPage + 1);
+    } else {
+      setCurrentPage(prevPage => prevPage - 1);
+    }
+  };
+
+  const paginateData = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredData.slice(startIndex, endIndex);
   };
 
   return (
-    <div className="p-5 max-w-full mx-auto bg-white text-gray-800 rounded-lg shadow-lg">
-      <div className="flex flex-col lg:flex-row justify-between items-center mb-4 space-y-4 lg:space-y-0 lg:space-x-4">
-        <div className="flex space-x-3">
-          {/* Only show CSV and Excel buttons if no payslip has been downloaded */}
-          {!payslipDownloaded && (
-            <>
-              <CSVLink data={payrollData} filename={"PayrollData.csv"}>
-                <motion.button
-                  className="flex items-center bg-green-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-green-700"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FaFileCsv className="mr-2" /> CSV
-                </motion.button>
-              </CSVLink>
-              <motion.button
-                onClick={exportToExcel}
-                className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-blue-700"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}  
-              >
-                <FaFileExcel className="mr-2" /> Excel
-              </motion.button>
-            </>
+    <div>
+      <div>
+        <h1>Payroll</h1>
+      </div>
+      <div className="p-5 max-w-full mx-auto bg-white text-gray-800 rounded-lg shadow-lg">
+        <div className="flex flex-col lg:flex-row justify-between items-center mb-4 space-y-4 lg:space-y-0 lg:space-x-4">
+          <div className="flex space-x-3">
+            <motion.button onClick={() => exportToPDF()} className="flex items-center bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+              <FaFilePdf className="mr-2" /> Download PDF
+            </motion.button>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="px-3 py-2 border rounded-md"
+              placeholder="Search by employee name"
+            />
+            <motion.button onClick={() => {}} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+              <FaSearch />
+            </motion.button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex space-x-4 p-4">
+                <Skeleton.Input active style={{ width: 80 }} />
+                <Skeleton.Input active style={{ width: 120 }} />
+                <Skeleton.Input active style={{ width: 100 }} />
+              </div>
+            ))
+          ) : error ? (
+            <Empty description="Failed to load payroll data" />
+          ) : filteredData.length === 0 && !loading && !error ? (
+            <Empty description="No payroll data available" />
+          ) : (
+            <table id="payroll-table" className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
+              <thead style={{ backgroundColor: themeColor }} className="text-white">
+                <tr>
+                  {tableFields.map(({ header }, index) => (
+                    <th key={index} className="px-4 py-2 text-xs sm:text-sm text-left">{header}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {paginateData().map((data, i) => (
+                  <motion.tr key={i} className={`bg-gray-${i % 2 === 0 ? '100' : '200'} hover:bg-gray-300`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
+                    {tableFields.map(({ field }, index) => (
+                      <td key={index} className="px-4 py-2 text-xs sm:text-sm text-gray-800">
+                        {field === 'month' ? getMonthName(data.month) :
+                          field === 'netSalary' ? data.netSalary.toFixed(2) :
+                          field === 'payDate' ? new Date(data.payDate).toISOString().split('T')[0] :
+                          field === 'action' ? (
+                            <motion.button onClick={() => downloadPayslip(data._id)} className="flex items-center bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700">
+                              <FaDownload className="mr-2" /> Download Payslip
+                            </motion.button>
+                          ) : data[field]}
+                      </td>
+                    ))}
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
-      </div>
 
-      <div className="overflow-x-auto">
-        {loading ? (
-          Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex space-x-4 p-4">
-              <Skeleton.Input active style={{ width: 80 }} />
-              <Skeleton.Input active style={{ width: 120 }} />
-              <Skeleton.Input active style={{ width: 100 }} />
-            </div>
-          ))
-        ) : error ? (
-          <div className="text-red-500">{error}</div>
-        ) : (
-          <table className="min-w-full border border-gray-300 rounded-lg overflow-hidden">
-            <thead style={{ backgroundColor: themeColor }} className="text-white">
-              <tr>
-                <th className="px-4 py-2 text-xs sm:text-sm text-left">Employee Name</th>
-                <th className="px-4 py-2 text-xs sm:text-sm text-left">Position</th>
-                <th className="px-4 py-2 text-xs sm:text-sm text-left">Salary</th>
-                <th className="px-4 py-2 text-xs sm:text-sm text-left">Date</th>
-                <th className="px-4 py-2 text-xs sm:text-sm text-left">Leave Days</th>
-                <th className="px-4 py-2 text-xs sm:text-sm text-left">Working Hours</th>
-                <th className="px-4 py-2 text-xs sm:text-sm text-left">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payrollData.map((data, i) => (
-                <motion.tr
-                  key={i}
-                  className={`bg-gray-${i % 2 === 0 ? '100' : '200'} hover:bg-gray-300 transition-all`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                >
-                  <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">{data.employeeName}</td>
-                  <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">{data.position}</td>
-                  <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">{data.salary}</td>
-                  <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">{data.date}</td>
-                  <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">{data.leaveDays}</td>
-                  <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">{data.workingHours}</td>
-                  <td className="px-4 py-2 text-xs sm:text-sm text-gray-800">
-                    <motion.button
-                      onClick={() => downloadPayslip(data.employeeName)}
-                      className="flex items-center bg-orange-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-orange-700"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <FaDownload className="mr-2" /> Download Payslip
-                    </motion.button>
-                  </td>
-                </motion.tr>
-              ))}
-              {!payrollData.length && (
-                <tr>
-                  <td colSpan={7} className="text-center py-4">
-                    No payroll data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
+        <div className="flex justify-between mt-4">
+          <button onClick={() => handlePagination('prev')} disabled={currentPage === 1} className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+            Previous
+          </button>
+          <button onClick={() => handlePagination('next')} disabled={filteredData.length <= currentPage * itemsPerPage} className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default Payroll;

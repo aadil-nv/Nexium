@@ -40,7 +40,12 @@ export interface IPersonalDetailsDTO {
     accessToken?:string;
   }
 
-
+  export interface ProfessionalDetailsDTO {
+    managerType: string;
+    workTime: string;
+    joiningDate: Date;
+    salary: number;
+  }
 
 
  

@@ -84,6 +84,8 @@ export default class BusinessOwnerPaymentRepository
   }
 
   async updateSubscriptionByEmail(email: string, subscription: any): Promise<any> {
+    console.log(`"subscription:"`.bgRed, subscription);
+    
     try {
       const result = await this.businessOwnerModel.updateOne(
         { "personalDetails.email": email },

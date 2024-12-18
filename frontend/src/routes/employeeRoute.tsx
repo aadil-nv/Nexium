@@ -11,7 +11,6 @@ import Documents from "../components/global/Documents";
 import Securitie from "../components/global/Securitie";
 import Notifications from "../components/global/Notifications";
 import Payroll from "../components/employees/Payroll";
-import Leaves from "../components/employees/Leaves";
 import Announcements from "../components/global/Announcements";
 import Attendance from "../components/employees/Attendance";
 
@@ -26,7 +25,6 @@ const BusinessOwnerRoutes = () => {
             <Route path="attendance" element={<Attendance />} />
             <Route path="team" element={<Department />} />
             <Route path="payroll" element={<Payroll />} />
-            <Route path="leaves" element={<Leaves />} />
             <Route path="profile" element={<Profile />} />
             <Route path="personaldetails" element={<PersonalDetailes  />} />
             <Route path="address" element={<Address />} />

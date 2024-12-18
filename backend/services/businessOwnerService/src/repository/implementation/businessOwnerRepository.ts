@@ -38,7 +38,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
   }
 
   async updateDetails(businessOwnerId: string, data: any): Promise<IBusinessOwnerDocument> {
-    console.log("Data received:-->>>>>>", data);
+ 
   
     try {
       // Define the fields allowed to be updated
@@ -74,7 +74,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         throw new Error(`No business owner found with ID: ${businessOwnerId}`);
       }
   
-      console.log("Updated personal details:", result);
+  
       return result;
     } catch (error) {
       console.error("Error updating personal details:", error);
@@ -84,7 +84,6 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
   
  
   async uploadImages(businessOwnerId: string, filePath: string): Promise<IBusinessOwnerDocument> {
-    console.log("Data received:-->>>>>>", filePath);
     
     try {
       const result = await this._businessOwnerModel.findByIdAndUpdate(
@@ -105,7 +104,6 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
   }
 
   async uploadLogo(businessOwnerId: string, filePath: string): Promise<IBusinessOwnerDocument> {
-    console.log("Data received:-->>>>>>", filePath);
     
     try {
       const result = await this._businessOwnerModel.findByIdAndUpdate(
@@ -118,7 +116,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         throw new Error(`No business owner found with ID: ${businessOwnerId}`);
       }
   
-      console.log("Updated personal details:", result);
+
       return result;
     } catch (error) {
       console.error('Error updating personal details:', error);
@@ -127,7 +125,6 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
   }
   async findIsBlocked(businessOwnerId: string): Promise<boolean | null> {
 
-    console.log("Finding businessOwner by ID in repository layer:", businessOwnerId);
     
     try {
       const businessOwner = await this._businessOwnerModel.findById(businessOwnerId);
@@ -153,7 +150,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         throw new Error(`No business owner found with ID: ${businessOwnerId}`);
       }
   
-      console.log("Updated personal details:", result);
+ 
       return result;
     } catch (error) {
       console.error('Error updating personal details:', error);
@@ -163,8 +160,6 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
 
   async updateCompanyDetails(businessOwnerId: string, data: any): Promise<IBusinessOwnerDocument> {
 
-    console.log("Data received:-->>>>>>", data);
-    
     try {
       const result = await this._businessOwnerModel.findByIdAndUpdate(
         businessOwnerId,
@@ -180,7 +175,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         throw new Error(`No business owner found with ID: ${businessOwnerId}`);
       }
   
-      console.log("Updated personal details:", result);
+   
       return result;
     } catch (error) {
       console.error('Error updating personal details:', error);

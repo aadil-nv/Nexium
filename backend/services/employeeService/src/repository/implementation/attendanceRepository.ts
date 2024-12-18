@@ -113,8 +113,6 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
         }
     }
     
-    
-    
 
     async findAttendanceByEmployeeId(employeeId: string): Promise<any> {
 
@@ -253,6 +251,56 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
             throw error;
         }
     }
+
+    async getPreviousMonthAttendance(employeeId: string): Promise<IEmployeeAttendance> {
+        console.log("hi from getPreviousMonthAttendance ---------------------------");
+      
+        try {
+          const currentDate = new Date();
+          
+          // Get previous month
+          const previousMonth = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
+          console.log("previousMonth", previousMonth);
+      
+          // Get the first and last day of the previous month
+          const startOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth(), 1);
+          console.log("startOfPreviousMonth", startOfPreviousMonth.toISOString().split('T')[0]);
+      
+          const endOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0);
+          console.log("endOfPreviousMonth", endOfPreviousMonth.toISOString().split('T')[0]);
+      
+          // Query to find attendance records for the previous month
+          const attendanceData = await this._employeeAttendanceModel.findOne({
+            employeeId: employeeId,
+            "attendance.date": {
+              $gte: startOfPreviousMonth.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
+              $lte: endOfPreviousMonth.toISOString().split('T')[0],   // Convert to YYYY-MM-DD format
+            }
+          }, {
+            attendance: {
+              $elemMatch: {
+                date: {
+                  $gte: startOfPreviousMonth.toISOString().split('T')[0], 
+                  $lte: endOfPreviousMonth.toISOString().split('T')[0],
+                }
+              }
+            }
+          });
+      
+          // If no attendance data found, return an empty object of the expected type
+          if (!attendanceData) {
+           throw new Error(`No attendance records found for employee ID ${employeeId}`);
+          }
+      
+          return attendanceData as IEmployeeAttendance;
+        } catch (error) {
+          console.error(error);
+          throw error;
+        }
+      }
+      
+      
+
     
     
     

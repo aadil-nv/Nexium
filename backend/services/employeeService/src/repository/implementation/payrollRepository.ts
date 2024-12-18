@@ -23,6 +23,54 @@ export default class PayrollRepository extends BaseRepository<IPayroll> implemen
             throw error;
         }
     }
+    async updatePayroll(employeeId: string, monthPayrollData: any): Promise<IPayroll> {
+    
+        try {
+            let payroll = await this._payrollModel.findOne({ employeeId }).exec() || 
+                          new this._payrollModel({ employeeId, payroll: [] });
+    
+            const payDate = new Date(monthPayrollData.payDate);
+            const currentMonth = payDate.getMonth() + 1;
+            const currentYear = payDate.getFullYear();
+            const previousMonth = currentMonth - 1;
+    
+            const updatedPayrollData = { month: previousMonth, year: currentYear, ...monthPayrollData };
+    
+            if (payroll.payroll.some(entry => Number(entry.month) === previousMonth)) {
+                console.log("Previous month's payroll already exists.");
+                return payroll;
+            }
+    
+            if (payroll.payroll.some(entry => Number(entry.month) === updatedPayrollData.month)) {
+                console.log('Payroll for this month already exists.');
+                return payroll;
+            }
+    
+            payroll.payroll.push(updatedPayrollData);
+            await payroll.save();
+            return payroll;
+        } catch (error) {
+            console.error("Error updating payroll:", error);
+            throw error;
+        }
+    }
+    
+    
+    async downloadPayrollMonthly(employeeId: string, payrollId: string): Promise<IPayroll> {
+        try {
+            const payroll = await this._payrollModel.findOne({ employeeId, "payroll._id": payrollId }).exec();
+            if (!payroll) {
+                throw new Error("Payroll not found");
+            }
+            return payroll;
+        } catch (error) {
+            console.error("Error downloading payroll:", error);
+            throw error;
+        }
+    }
+    
+    
+
     
     
 

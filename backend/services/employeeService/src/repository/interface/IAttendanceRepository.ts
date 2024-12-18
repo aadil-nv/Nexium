@@ -14,5 +14,6 @@ export default interface IAttendanceRepository extends BaseRepository<IEmployeeA
     
     markCheckIn(id: string, attendanceData: any): Promise<any>;
     markCheckOut(id: string, attendanceData: any): Promise<any>;
+    getPreviousMonthAttendance(employeeId: string): Promise<IEmployeeAttendance | null>
 
 }

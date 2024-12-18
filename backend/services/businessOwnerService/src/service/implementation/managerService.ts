@@ -9,6 +9,7 @@ import { IResponseDTO } from "dto/businessOwnerDTO";
 import { IManager } from "entities/managerEntity";
 import { uploadTosS3 } from '../../middlewares/multer-s3';
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { ManagerDTO } from "../../dto/managerDTO";
 
 
 const transporter = nodemailer.createTransport({
@@ -159,14 +160,60 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async getAllManagers(businessOwnerId: string): Promise<any[]> {
+  async getAllManagers(businessOwnerId: string): Promise<ManagerDTO[]> {
     try {
-      return await this._managerRepository.getAllManagers(businessOwnerId);
+      const managerData = await this._managerRepository.getAllManagers(businessOwnerId);
+      
+  
+      // Map the repository data to the ManagerDTO format
+      const mappedManagers: any = managerData.map(manager => ({
+        personalDetails: {
+          managerName: manager.personalDetails.managerName.toString(),
+          personalWebsite: manager.personalDetails.personalWebsite?.toString(), // Provide default value
+          email: manager.personalDetails.email,
+          profilePicture: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${manager.personalDetails.profilePicture}`, // Provide default value
+          phone: manager.personalDetails.phone,
+        },
+        professionalDetails: {
+          managerType: manager.professionalDetails.managerType,
+          workTime: manager.professionalDetails.workTime,
+          joiningDate: manager.professionalDetails.joiningDate || new Date(), // Provide default value if undefined
+          salary: manager.professionalDetails.salary,
+        },
+        address: {
+          street: manager.address.street,
+          city: manager.address.city,
+          state: manager.address.state,
+          country: manager.address.country,
+          postalCode: manager.address.postalCode,
+        },
+        companyDetails: {
+          companyName: manager.companyDetails.companyName,
+          companyLogo: manager.companyDetails.companyLogo || '', // Provide default value
+        },
+        managerCredentials: {
+          companyEmail: manager.managerCredentials.companyEmail,
+          companyPassword: manager.managerCredentials.companyPassword,
+        },
+        _id: manager._id,
+        isActive: manager.isActive,
+        isVerified: manager.isVerified,
+        isBlocked: manager.isBlocked,
+        businessOwnerId: manager.businessOwnerId,
+        createdAt: manager.createdAt,
+        updatedAt: manager.updatedAt,
+        documents: manager.documents, // Add documents if required
+      }));
+  
+      return mappedManagers; // Return the array of ManagerDTO
     } catch (error) {
       console.error("Error fetching managers:", error);
       throw error;
     }
   }
+  
+  
+  
   async blockManager(businessOwnerId: string, managerData: any): Promise<IResponseDTO> {
     try {
       const rabbitMQMessager = new RabbitMQMessager();

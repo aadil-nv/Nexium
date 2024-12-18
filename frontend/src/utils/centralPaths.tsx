@@ -23,7 +23,6 @@ export const businessOwnerLinks: LinkItem[] = [
   { title: 'Service Requests', route: '/business-owner/service-requests', icon: 'fi fi-tr-user-headset' },
   { title: 'Notifications', route: '/business-owner/notifications', icon: 'fi fi-tr-bells' },
   { title: 'Announcements', route: '/business-owner/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
-  { title: 'demo', route: '/business-owner/demo', icon: 'fi fi-tr-megaphone-announcement-leader' },
 ];
 
 export const superAdminLinks: LinkItem[] = [
@@ -40,7 +39,6 @@ export const employeeLinks: LinkItem[] = [
   { title: 'Attendance', route: '/employee/attendance', icon: 'fi fi-tr-skill' },
   { title: 'Department', route: '/employee/team', icon: 'fi fi-tr-department-structure' },
   { title: 'Payroll', route: '/employee/payroll', icon: 'fi fi-tr-payroll' },
-  { title: 'Leaves', route: '/employee/leaves', icon: 'fi fi-tr-house-leave' },
   { title: 'Notifications', route: '/employee/notifications', icon: 'fi fi-tr-bells' },
   { title: 'Announcements', route: '/employee/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   // { title: 'Service Requests', route: '/employee/service-requests', icon: 'fi fi-tr-hr-group' },

@@ -11,7 +11,7 @@ export const fetchManagers = async () => {
     return response.data;
   } catch (error) {
     console.error('Error fetching managers:', error);
-    await axios.post('http://localhost:3000/businessOwner/api/business-owner/logout');
+    // await axios.post('http://localhost:3000/businessOwner/api/business-owner/logout');
     throw error;
   }
 };
@@ -32,9 +32,6 @@ try {
 
     };
      
- 
-
-
 
 export const fetchCompanyDetails = async (isBusinessOwner) => {
   if (isBusinessOwner) {

@@ -17,6 +17,9 @@ const ManagerCard: React.FC<IManagerCardProps> = ({
   isBlocked: initialIsBlocked,
   managerId,
 }) => {
+
+  console.log("isVerifie777777777777777777777777777777777777777d", isVerified);
+  
   const { themeColor } = useTheme();
   const [isBlocked, setIsBlocked] = useState(initialIsBlocked);
   const [isInfoModalVisible, setIsInfoModalVisible] = useState(false);
