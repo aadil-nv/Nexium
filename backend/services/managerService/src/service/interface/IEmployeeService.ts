@@ -15,4 +15,6 @@ export default interface IEmployeeService {
     updateProfilePicture(employeeId: string ,file: Express.Multer.File): Promise<any>;
     updateResume(employeeId: string ,file: Express.Multer.File): Promise<any>;
     updateBlocking(employeeId: string ,blocking: any): Promise<any>;
+    getEmployeeWithOutDepartment(): Promise<IEmployeesDTO[]>
+    removeEmployee(employeeId: string): Promise<any>;
 }

@@ -3,7 +3,7 @@ import IDepartment from '../entities/departmentEntities';
 
 // Employee Schema
 const employeeSchema: Schema = new Schema({
-  _id: { 
+  employeeId: { 
     type: mongoose.Schema.Types.ObjectId,ref: 'Employee', 
     required: true,  // Ensure id is required and a string
   },
@@ -26,6 +26,7 @@ const employeeSchema: Schema = new Schema({
   },
   profilePicture: { 
     type: String, 
+    default :"https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png",
     required: false,  // URL or path to the employee's profile picture
   },
   isActive: { 

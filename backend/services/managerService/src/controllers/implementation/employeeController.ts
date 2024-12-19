@@ -186,4 +186,26 @@ export default class EmployeeController implements IEmployeeController {
         }
     }
 
+    async getEmployeeWithOutDepartment(req: Request, res: Response): Promise<void> {
+        try {
+            const employeesData = await this._employeeService.getEmployeeWithOutDepartment();
+            
+            res.status(200).json(employeesData);
+        } catch (error) {
+            console.error("Error fetching employees without department:", error);
+            res.status(500).json({ message: "Failed to get employees without department", error });
+        }
+    }
+
+    async removeEmployee(req: CustomRequest, res: Response): Promise<void> {
+        try {
+            const employeeId = req.params.id;
+            const result = await this._employeeService.removeEmployee(employeeId);
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error removing employee:", error);
+            res.status(500).json({ message: "Failed to remove employee", error });
+        }
+    }
+
 }

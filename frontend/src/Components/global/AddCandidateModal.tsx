@@ -1,26 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Select, Spin } from 'antd';
 import { toast } from 'react-toastify';
-import { fetchEmployees, addEmployeeToDepartment } from '../../api/managerApi';
+import { fetchEmployeesWithOutDepartment, addEmployeeToDepartment } from '../../api/managerApi';
 
-const AddCandidateModal: React.FC<{ isVisible: boolean; onClose: () => void ;  departmentId: string }> = ({ isVisible, onClose,departmentId }) => {
+interface AddCandidateModalProps {
+  isVisible: boolean;
+  onClose: () => void;
+  departmentId: string;
+  onEmployeesAdded: (newEmployees: any[]) => void;
+}
+
+const AddCandidateModal: React.FC<AddCandidateModalProps> = ({ 
+  isVisible, 
+  onClose, 
+  departmentId,
+  onEmployeesAdded 
+}) => {
   const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]); // Track selected employee IDs
-
-  console.log("departmentId",departmentId)
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!isVisible) return;
     setLoading(true);
-    fetchEmployees()
+    fetchEmployeesWithOutDepartment()
       .then(setEmployees)
       .catch(() => toast.error('Failed to fetch employees!'))
       .finally(() => setLoading(false));
   }, [isVisible]);
 
   const handleFinish = async () => {
-    const selectedEmployees = employees.filter((emp: any) => selectedEmployeeIds.includes(emp._id)); // Use _id here
+    const selectedEmployees = employees.filter((emp: any) => selectedEmployeeIds.includes(emp._id));
 
     if (selectedEmployees.length === 0) {
       toast.error('No employees selected!');
@@ -28,10 +38,10 @@ const AddCandidateModal: React.FC<{ isVisible: boolean; onClose: () => void ;  d
     }
 
     try {
-      // Assuming `addEmployee` API expects an array of employee objects or their IDs
-      const success = await addEmployeeToDepartment(selectedEmployees ,departmentId);
+      const success = await addEmployeeToDepartment(selectedEmployees, departmentId);
       if (success) {
         toast.success(`${selectedEmployees.length} employee(s) added to the department!`);
+        onEmployeesAdded(selectedEmployees); // Update parent component
       } else {
         toast.error('Failed to add employees to the department!');
       }
@@ -39,11 +49,11 @@ const AddCandidateModal: React.FC<{ isVisible: boolean; onClose: () => void ;  d
       toast.error('An error occurred while adding employees!');
     }
 
-    onClose(); // Close the modal after the action is complete
+    onClose();
   };
 
   const handleSelectChange = (value: any) => {
-    setSelectedEmployeeIds(value); // Update selected employee IDs
+    setSelectedEmployeeIds(value);
   };
 
   return (
@@ -52,7 +62,11 @@ const AddCandidateModal: React.FC<{ isVisible: boolean; onClose: () => void ;  d
         <Spin tip="Loading employees..." />
       ) : (
         <Form layout="vertical" onFinish={handleFinish}>
-          <Form.Item label="Search and Select Employees" name="employees" rules={[{ required: true, message: 'Please select employees!' }]}>
+          <Form.Item 
+            label="Search and Select Employees" 
+            name="employees" 
+            rules={[{ required: true, message: 'Please select employees!' }]}
+          >
             <Select
               mode="multiple"
               allowClear
@@ -60,10 +74,10 @@ const AddCandidateModal: React.FC<{ isVisible: boolean; onClose: () => void ;  d
               filterOption={(input, option) =>
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
-              value={selectedEmployeeIds} // Bind selected employee IDs to value
-              onChange={handleSelectChange} // Track changes
+              value={selectedEmployeeIds}
+              onChange={handleSelectChange}
               options={employees.map((emp) => ({
-                value: emp._id, // Use _id instead of id
+                value: emp._id,
                 label: `${emp.name} (${emp.position})`,
               }))}
             />

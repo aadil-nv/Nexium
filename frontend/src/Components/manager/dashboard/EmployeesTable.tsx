@@ -14,7 +14,7 @@ import { IEmployee } from "../../../interface/managerInterface";
 const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[]; loading: boolean; error: string | null; onUpdate: () => void }) => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch();  
 
   const exportToExcel = () => {
     const workbook = XLSX.utils.book_new();
@@ -22,7 +22,7 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
     XLSX.writeFile(workbook, "Data.xlsx");
   };
 
-  const handleClick = async (action: 'edit' | 'block', employeeId: any, isBlocked?: boolean) => {
+  const handleClick = async (action: 'edit' | 'block'| 'remove' , employeeId: any, isBlocked?: boolean) => {
     try {
       let response;
       if (action === 'edit') {
@@ -32,7 +32,9 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
         setIsModalVisible(true);
       } else if (action === 'block') {
         response = await managerInstance.post(`/manager/api/employee/update-blocking/${employeeId}`, { isBlocked: !isBlocked });
-        dispatch(setEmployeeDatas({ employeeData: data.map((e) => e._id === employeeId ? { ...e, isBlocked: !isBlocked } : e) }));
+        dispatch(setEmployeeDatas({ employeeData: data.map((e) => e.employeeId === employeeId ? { ...e, isBlocked: !isBlocked } : e) }));
+      } else if (action === "remove") {
+        await managerInstance.delete(`/manager/api/employee/remove-employee/${employeeId}`);
       }
       onUpdate(); // Notify parent to trigger data re-fetch
     } catch (error) {
@@ -86,8 +88,8 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
             </thead>
             <tbody>
               {data.filter((e) => e.name?.toLowerCase().includes(globalFilter.toLowerCase())).map((employee, i) => (
-                <motion.tr key={employee._id} className={`bg-gray-${i % 2 === 0 ? "100" : "200"} hover:bg-gray-300`}>
-                  {["_id", "name", "position", "email"].map((key) => (
+                <motion.tr key={employee.employeeId} className={`bg-gray-${i % 2 === 0 ? "100" : "200"} hover:bg-gray-300`}>
+                  {["employeeId", "name", "position", "email"].map((key) => (
                     <td key={key} className="px-4 py-2 text-xs sm:text-sm">{employee[key as keyof IEmployee] || "N/A"}</td>
                   ))}
                   <td className="px-4 py-2 text-xs sm:text-sm">
@@ -95,13 +97,13 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
                   </td>
                   <td className="px-4 py-2 text-xs sm:text-sm">
                     <div className="flex space-x-3 justify-center">
-                      <motion.button onClick={() => handleClick('edit', employee._id)} className="text-white w-24 bg-blue-500 hover:bg-blue-600 flex items-center justify-center rounded-md">
+                      <motion.button onClick={() => handleClick('edit', employee.employeeId)} className="text-white w-24 bg-blue-500 hover:bg-blue-600 flex items-center justify-center rounded-md">
                         <FaEdit className="mr-2" /> Edit
                       </motion.button>
-                      <motion.button onClick={() => handleClick('block', employee._id, employee.isBlocked)} className={`text-white w-24 flex items-center justify-center rounded-md ${employee.isBlocked ? "bg-red-500" : "bg-green-500"}`}>
+                      <motion.button onClick={() => handleClick('block', employee.employeeId, employee.isBlocked)} className={`text-white w-24 flex items-center justify-center rounded-md ${employee.isBlocked ? "bg-red-500" : "bg-green-500"}`}>
                         {employee.isBlocked ? <><FaUnlock className="mr-2" /> Unblock</> : <><FaLock className="mr-2" /> Block</>}
                       </motion.button>
-                      <motion.button onClick={() => console.log(`Delete ${employee._id}`)} className="text-white w-24 bg-red-500 flex items-center justify-center rounded-md">
+                      <motion.button onClick={() => handleClick('remove', employee.employeeId)} className="text-white w-24 bg-red-500 flex items-center justify-center rounded-md">
                         <FaSignOutAlt className="mr-2" /> Remove
                       </motion.button>
                     </div>

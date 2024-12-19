@@ -57,6 +57,7 @@ export default class EmployeeService implements IEmployeeService {
         mappedEmployeeData.businessOwnerId = managerData.businessOwnerId;
 
         mappedEmployeeData.personalDetails.employeeName = employeeData.name;
+
         mappedEmployeeData.personalDetails.personalWebsite = ''
         mappedEmployeeData.professionalDetails.salary = employeeData.salary;
         mappedEmployeeData.professionalDetails.workTime = employeeData.workTime;
@@ -335,7 +336,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
                   employeeName: employeeData.personalDetails.employeeName,
                   email: employeeData.personalDetails.email,
                   phone: employeeData.personalDetails.phone,
-                  profilePicture: "1415789e35e86b00de158652ccd6807a8c2eb4f9a32ba0f4635239123505e74e",
+                  profilePicture: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`,
               },
   
               address: {
@@ -379,6 +380,10 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
   async updateProfilePicture(employeeId: string ,file: Express.Multer.File): Promise<any> {
     try {
       const imageUrl = await this.uploadFileToS3(employeeId, file, "profilePicture");
+      console.log("==============imageUrl================ser======", imageUrl);
+      console.log("=================employeeId==========serv========", employeeId);
+      
+      
 
        const result = await this._employeeRepository.updateProfilePicture(employeeId, imageUrl);
        return { success: true, message: 'Image uploaded successfully!', data: { imageUrl:`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result}` } };
@@ -447,8 +452,6 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
     }
 }
 
-
-
 async updateBlocking(employeeId: string, blocking: any): Promise<any> {
   try {
       const result = await this._employeeRepository.updateBlocking(employeeId, blocking);
@@ -461,6 +464,39 @@ async updateBlocking(employeeId: string, blocking: any): Promise<any> {
   }
 }
 
+async getEmployeeWithOutDepartment(): Promise<IEmployeesDTO[]> {
+    try {
+        const employeesData = await this._employeeRepository.getEmployeeWithOutDepartment();
+
+        // Map the repository data to the DTO structure
+        const employeesDTO: IEmployeesDTO[] = employeesData.map((employee) => ({
+            employeeName: employee.personalDetails.employeeName, // Assuming `name` is the field in the repository data
+            position: employee.professionalDetails.position,
+            isActive: employee.isActive,
+            profilePicture: employee.personalDetails.profilePicture, // Provide a fallback for optional fields
+            email: employee.personalDetails.email,
+            _id: employee._id, 
+            isBlocked: employee.isBlocked
+        }));
+
+        
+
+        return employeesDTO;
+    } catch (error) {
+        console.error("Error in service layer:", error);
+        throw new Error("Failed to fetch employees data");
+    }
+}
+
+async removeEmployee(employeeId: string): Promise<any> {
+  try {
+      const result = await this._employeeRepository.removeEmployee(employeeId);
+      return result;
+  } catch (error) {
+      console.error("Error in removeEmployee service:", error);
+      throw error;
+  }
+}
 
 
 }

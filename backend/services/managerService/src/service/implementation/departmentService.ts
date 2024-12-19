@@ -1,3 +1,4 @@
+import { DepartmentWithEmployeesDTO } from "dto/IDepartmentDTO";
 import IDepartmentRepository from "../../repository/interface/IDepartmentRepository";
 import IDepartmentService from "../interface/IDepartmentService";
 import { inject, injectable } from "inversify";
@@ -11,49 +12,43 @@ export default class DepartmentService implements IDepartmentService {
   ) {}
 
   async addDepartments(departmentName: string, employees: any): Promise<any> {
-    console.log('"hitting addDepartments service=------------------"'.bgMagenta);
-    console.log("departmentName", departmentName);
-    console.log("employees********************************************", employees);
-    
-    
+  
     try {
       const department = await this._departmentRepository.addDepartments(departmentName, employees);
       return department;
-    } catch (error) {
-      console.error("Error in addDepartments service:", error);
+    } catch (error:any) {
+      console.error("Error in addDepartments service:", error.message);
       throw new Error("Failed to add departments");
     }
   }
 
-  async getDepartments(): Promise<any> {
+  async getDepartments(): Promise<DepartmentWithEmployeesDTO[]> {
     try {
-      const departments = await this._departmentRepository.findAll();
-      return departments;
+        const departments = await this._departmentRepository.getDepartments();
+
+        const departmentDTOs: DepartmentWithEmployeesDTO[] = departments.map((department: any) => ({
+            departmentId: department._id.toString(),
+            departmentName: department.departmentName,
+            employees: department.employees.map((employee: any) => ({
+                employeeId: employee.employeeId._id.toString(),
+                name: employee.employeeId.personalDetails.employeeName,
+                email: employee.employeeId.employeeCredentials.companyEmail,
+                position: employee.employeeId.professionalDetails.position,
+                profilePicture: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.employeeId.personalDetails.profilePicture}`,
+                isActive: employee.employeeId.isActive,
+            })),
+        }));
+        return departmentDTOs;
     } catch (error) {
-      console.error("Error in getDepartments service:", error);
-      throw new Error("Failed to fetch department data");
+        console.error("Error in getDepartments service:", error);
+        throw new Error("Failed to fetch department data");
     }
-  }
+}
+
 
   async removeEmployee(employeeId: string, departmentId: string): Promise<any> {
     try {
-      const department = await this._departmentRepository.findDepartment(departmentId);
-
-      if (!department) {
-        throw new Error("Department not found");
-      }
-
-      const employeeIndex = department.employees.findIndex((emp: any) => emp.id === employeeId);
-
-      if (employeeIndex === -1) {
-        throw new Error("Employee not found in the department");
-      }
-
-      department.employees.splice(employeeIndex, 1);
-
-      await this._departmentRepository.updateDepartment(departmentId, { employees: department.employees });
-
-      return { message: "Employee removed successfully", department };
+     const result = await this._departmentRepository.removeEmployeeFromDepartment(departmentId, employeeId);
     } catch (error: any) {
       console.error("Error in removeEmployee service:", error.message);
       throw error;
@@ -107,6 +102,8 @@ export default class DepartmentService implements IDepartmentService {
 }
 
 async addEmployeesToDepartment(employeeData: any[], departmentId: string): Promise<any> {
+
+  
   try {
       // Fetch the department
       const department = await this._departmentRepository.findDepartment(departmentId);

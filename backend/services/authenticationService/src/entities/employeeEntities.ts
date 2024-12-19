@@ -6,7 +6,7 @@ export default interface IEmployee extends Document {
   isActive: boolean;
   isVerified: boolean;
   isBlocked: boolean;
-  role: string;
+  role:string
   personalDetails: {
     employeeName: string;
     email: string;
@@ -43,7 +43,7 @@ export default interface IEmployee extends Document {
     resume: {
       documentName: string;
       documentUrl: string;
-      documentSize?: string;
+      documentSize: string; // Optional
       uploadedAt: Date;
     };
   };

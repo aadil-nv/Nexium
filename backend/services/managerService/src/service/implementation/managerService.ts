@@ -262,25 +262,14 @@ export default class ManagerService implements IManagerService {
   }
 
   async uploadDocuments(managerId: string, file: Express.Multer.File, fileType: "resume"): Promise<IDocumentDTO> {
-    console.log(`"Data received:-->>>>>> to the service ",`.bgMagenta);
-    console.log();
-    console.log();
-    console.log();
-    console.log("managerId", managerId);
-    console.log("fileType", fileType);
-    console.log("documentData", file);
-    console.log();
-    console.log();
-    console.log();
-    console.log(`"Data received:-->>>>>> to the service ",`.bgMagenta);
+
     try {
       // Upload file to S3
       const fileKey = await this.uploadFileToS3(managerId, file, "resume");
 
-      console.log("fileKey33333333333333333333333333333333333333", fileKey);
       
       const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
-      console.log("fileUrl444444444444444444444444444444444444444444444", fileUrl);
+    
       
   
       const documentData = {

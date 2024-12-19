@@ -3,7 +3,7 @@ import { MdAddBusiness } from 'react-icons/md';
 import DepartmentCard from '../../global/DepartmentCard';
 import useTheme from '../../../hooks/useTheme';
 import AddDepartmentModal from '../../ui/AddDepartment';
-import { fetchEmployeesAPI, fetchDepartmentsAPI, removeDepartmentAPI } from '../../../api/managerApi';
+import { fetchEmployeesWithOutDepAPI, fetchDepartmentsAPI, removeDepartmentAPI } from '../../../api/managerApi';
 import { IDepartment } from '../../../interface/managerInterface';
 import { IEmployee } from '../../../interface/GlobalInterface';
 
@@ -14,11 +14,9 @@ export default function Departments() {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
-    fetchEmployeesAPI().then(setEmployees).catch(console.error);
+    fetchEmployeesWithOutDepAPI().then(setEmployees).catch(console.error);
     fetchDepartmentsAPI().then(setDepartments).catch(console.error);
-  }, []);
-
-  console.log("employees444444444444444444444444", employees);
+  }, []); // Fetch data on initial mount
 
   const handleAddNewDepartment = (newDepartment: IDepartment) =>
     setDepartments((prev) => [newDepartment, ...prev]);
@@ -26,11 +24,14 @@ export default function Departments() {
   const handleRemoveDepartment = async (departmentId: string) => {
     try {
       await removeDepartmentAPI(departmentId);
-      setDepartments((prev) => prev.filter((dept) => dept._id !== departmentId));
+
+      fetchDepartmentsAPI().then(setDepartments).catch(console.error);
+      console.log('Department removed successfully');
     } catch (error) {
       console.error('Error removing department:', error);
     }
   };
+  
 
   return (
     <div className="p-6">
@@ -47,31 +48,31 @@ export default function Departments() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-        {departments.map(({ _id, departmentName, employees }) => (
+        {departments.map(({ _id, departmentId, departmentName, employees }) => (
           <DepartmentCard
             key={_id}
             departmentName={departmentName}
-            employees={employees.map(({ _id, name, position, profilePicture, email, isActive }) => ({
-              _id: _id || '', // Ensure _id is not undefined
-              name: name || '', // Ensure name is not undefined
-              position: position || '', // Ensure position is not undefined
-              profilePicture: profilePicture || '', // Ensure profilePicture is not undefined
-              email: email || '', // Ensure email is not undefined
-              isOnline: isActive ?? false, // Ensure isOnline is not undefined
+            employees={employees.map(({ employeeId, name, position, profilePicture, email, isActive }) => ({
+              _id: employeeId || '', 
+              name: name || '', 
+              position: position || '', 
+              profilePicture: profilePicture || '', 
+              email: email || '', 
+              isOnline: isActive ?? false, 
             }))}
             themeColor={themeColor}
-            departmentId={_id}
+            departmentId={departmentId}
             onEditEmployee={(employeeId) => console.log('Edit employee', employeeId)}
             onRemoveEmployee={(employeeId) =>
               setDepartments((prev) =>
                 prev.map((dept) =>
                   dept._id === _id
-                    ? { ...dept, employees: dept.employees.filter((emp) => emp._id !== employeeId) }
+                    ? { ...dept, employees: dept.employees.filter((emp) => emp.employeeId !== employeeId) }
                     : dept
                 )
               )
             }
-            onRemoveDepartment={() => handleRemoveDepartment(_id)}
+            onRemoveDepartment={() => handleRemoveDepartment(departmentId)}
           />
         ))}
       </div>
@@ -80,7 +81,7 @@ export default function Departments() {
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
         onAddDepartment={handleAddNewDepartment}
-        employees={employees}
+      
       />
     </div>
   );

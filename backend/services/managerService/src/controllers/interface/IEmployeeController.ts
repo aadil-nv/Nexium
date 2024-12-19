@@ -14,4 +14,6 @@ export default interface IEmployeeController {
     updateProfilePicture(req: CustomRequest, res: Response): Promise<void>;
     updateResume(req: CustomRequest, res: Response): Promise<void>;
     updateBlocking(req: CustomRequest, res: Response): Promise<void>;
+    getEmployeeWithOutDepartment(req: Request, res: Response): Promise<void>;
+    removeEmployee(req: CustomRequest, res: Response): Promise<void>;
 } 

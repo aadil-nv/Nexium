@@ -64,6 +64,10 @@ export const fetchEmployeesAPI = async () => {
     const response = await managerInstance.get('/manager/api/employee/get-employees');
     return response.data;
   };
+export const fetchEmployeesWithOutDepAPI = async () => {
+    const response = await managerInstance.get('/manager/api/employee/get-employee-without-department');
+    return response.data;
+  };
   
   export const fetchDepartmentsAPI = async () => {
     const response = await managerInstance.get('/manager/api/department/get-departments');
@@ -72,14 +76,36 @@ export const fetchEmployeesAPI = async () => {
 };
   
 export const removeDepartmentAPI = async (departmentId: string) => {
-    await managerInstance.delete('/manager/api/department/delete-department', {
+   const response = await managerInstance.delete('/manager/api/department/delete-department', {
       data: { departmentId },
     });
+    return response.data;
 };
 
 export const fetchEmployees = async (): Promise<IEmployee[]> => {
   try {
       const response = await managerInstance.get('/manager/api/employee/get-employees');
+
+
+
+     
+      return response.data.map((employee: any) => ({
+          employeeId: employee._id, // Directly from employee._id
+          name: employee.employeeName || '', // Directly from employee.employeeName
+          position: employee.position || '', // Directly from employee.position
+          profilePicture: employee.profilePicture || '', // Directly from employee.profilePicture
+          isOnline: employee.isActive || false, // Directly from employee.isActive
+          email:employee.email,
+          isBlocked: employee.isBlocked || false
+      }));
+  } catch (error) {
+      console.error('Error fetching employee data:', error);
+      throw error;
+  }
+};
+export const fetchEmployeesWithOutDepartment = async (): Promise<IEmployee[]> => {
+  try {
+      const response = await managerInstance.get('/manager/api/employee/get-employee-without-department');
 
       console.log("===============response============", response.data);
 
@@ -139,13 +165,11 @@ export const addEmployee = async (employeeData: any) => {
   };
 
   export const addEmployeeToDepartment = async (employeeData: any ,departmentId: string) => {
-    console.log("employeeData777777777777777777777777777",employeeData)
       try {
         const response = await managerInstance.post('/manager/api/department/add-employee', { employeeData , departmentId }, {
           withCredentials: true,
         });
   
-        console.log("response111111111111111111111111",response)
     
         if (response.status === 200) {
           toast.success('Employee added successfully!');
@@ -163,7 +187,7 @@ export const addEmployee = async (employeeData: any) => {
 
   export const removeEmployee = async (employeeId: string, departmentId: string) => {
     try {
-      const response = await managerInstance.patch(
+      const response = await managerInstance.post(
         '/manager/api/department/remove-employee',
         {
           employeeId, // employee ID to be removed

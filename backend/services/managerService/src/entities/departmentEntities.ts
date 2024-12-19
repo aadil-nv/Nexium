@@ -2,7 +2,7 @@ import mongoose, { Document, mongo } from 'mongoose';
 
 // Define the Employee interface
 export interface IEmployee {
-  _id: mongoose.Types.ObjectId;           // Unique identifier for the employee
+  employeeId: mongoose.Types.ObjectId;           // Unique identifier for the employee
   name: string;         // Name of the employee
   email?: string;       // Optional email address of the employee
   position?: string;    // Optional position of the employee

@@ -63,7 +63,7 @@ export default class AttendanceService implements IAttendanceService {
                 status: "Present"
             };
     
-            const updatedAttendance = await this.attendanceRepository.markCheckIn(employeeAttendance._id, todaysCheckIn);
+            const updatedAttendance = await this.attendanceRepository.markCheckIn(employeeAttendance._id, todaysCheckIn ,employeeId);
     
             return { status: "success", data: updatedAttendance, message: "Attendance marked successfully" };
         } catch (error) {
@@ -128,7 +128,7 @@ export default class AttendanceService implements IAttendanceService {
                 todayAttendance.status = "Present";
             }
     
-            const updatedAttendance = await this.attendanceRepository.markCheckOut(employeeAttendance._id, todayAttendance);
+            const updatedAttendance = await this.attendanceRepository.markCheckOut(employeeAttendance._id, todayAttendance ,employeeId);
             if (!updatedAttendance) {
                 return { status: "error", message: "Failed to update attendance record" };
             }

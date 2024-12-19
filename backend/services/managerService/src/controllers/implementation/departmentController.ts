@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import IDepartmentController from "../interface/IDepartmentController";
 import IDepartmentService from "../../service/interface/IDepartmentService";
 import { injectable, inject } from "inversify";
+import { log } from 'node:console';
 
 @injectable()
 export default class DepartmentController implements IDepartmentController {
@@ -13,8 +14,6 @@ export default class DepartmentController implements IDepartmentController {
         try {
             const { departmentName, employees } = req.body;
 
-            console.log("departmentName", departmentName);
-            console.log("employees#############################", employees);
             
 
             if (!Array.isArray(employees)) {
@@ -24,9 +23,9 @@ export default class DepartmentController implements IDepartmentController {
 
             const result = await this._departmentService.addDepartments(departmentName, employees);
             res.status(200).json(result);
-        } catch (error) {
-            console.error('Error in addDepartments:', error);
-            res.status(500).json({ message: 'Internal server error' });
+        } catch (error:any) {
+            console.error('Error in addDepartments:-----', error);
+            res.status(500).json({ error});
         }
     }
 
@@ -43,6 +42,13 @@ export default class DepartmentController implements IDepartmentController {
     async removeEmployee(req: Request, res: Response): Promise<void> {
         try {
             const { employeeId, departmentId } = req.body;
+            console.log("req.body", req.body);
+
+            console.log("employeeId##################", employeeId);
+            console.log("departmentId##################", departmentId);
+            
+            
+            
 
             if (!employeeId || !departmentId) {
                 res.status(400).json({ message: 'Employee ID and Department ID are required' });

@@ -161,6 +161,8 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
             }
             employee.personalDetails.profilePicture = profilePicture;
             const updatedEmployee = await employee.save();
+            console.log(`updatedEmployee((((((((((((((((()))))))))))))))))`.bgRed, updatedEmployee);
+            
             return updatedEmployee.personalDetails.profilePicture;
         } catch (error) {
             console.error("Error updating employee profile picture:", error);
@@ -216,6 +218,25 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }
       }
       
+      async getEmployeeWithOutDepartment(): Promise<IEmployee[]> {
+        try {
+          const employees = await this.employeeModel.find({ "professionalDetails.department": null });
+          return employees;
+        } catch (error) {
+          console.error("Error in getEmployeeWithOutDepartment repository:", error);
+          throw new Error("Failed to fetch employees without department");
+        }
+      }
+
+      async removeEmployee(employeeId: string): Promise<any> {
+        try {
+          const result = await this.employeeModel.findByIdAndDelete(employeeId);
+          return result;
+        } catch (error) {
+          console.error("Error in removeEmployee repository:", error);
+          throw new Error("Failed to remove employee");
+        }   
+      }
     
     
 }

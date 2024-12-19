@@ -9,10 +9,10 @@ const employeeSchema = new Schema<IEmployee>({
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
   isBlocked: { type: Boolean, default: false },
-  role: { type: String, default: 'employee' },
+  role:{ type: String, default: "employee" },
   
   personalDetails: {
-    profilePicture:{ type: String ,default: "https://avatar.iran.liara.run/public/boy?username=Ash"},
+    profilePicture:{ type: String ,default: "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"},
     employeeName: { type: String },
     email: { type: String, required: true },
     phone: { type: String },
@@ -33,7 +33,7 @@ const employeeSchema = new Schema<IEmployee>({
     joiningDate: { type: Date },
     currentStatus: { type: String },
     companyName: { type: String },
-    companyLogo: { type: String,default:"bba3de636181da05d21cf3760f7fca26c1751e50a4186ebd8e8a6cf6887df243"},
+    companyLogo: { type: String,default:"https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png"},
     salary: { type: Number },
   },
   
@@ -44,9 +44,9 @@ const employeeSchema = new Schema<IEmployee>({
 
   documents: {
     resume: {
-      documentName: { type: String },
+      documentName: { type: String},
       documentUrl: { type: String },
-      documentSize: { type: Number },
+      documentSize: { type: String },
       uploadedAt: { type: Date },
     },
   },
@@ -62,4 +62,3 @@ const employeeSchema = new Schema<IEmployee>({
 const Employee = mongoose.model<IEmployee>('Employee', employeeSchema);
 
 export default Employee;
-

@@ -24,7 +24,7 @@ export default interface IEmployee extends Document {
   }
   professionalDetails: {
     position: "Team Lead" | "Senior Software Engineer" | "Junior Software Engineer" ;
-    department: string;
+    department: string | null;
     workTime: "Full-Time" | "Part-Time" | "Contract" | "Temporary";
     joiningDate: Date;
     currentStatus: string;

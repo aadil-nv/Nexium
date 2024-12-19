@@ -2,7 +2,7 @@
 
 export interface IEmployee {  //! Part of Department 
 
-    _id?: string;
+    employeeId?: string;
     photo?: string;
     name?: string;
     email?: string;

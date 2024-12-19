@@ -15,55 +15,59 @@ export default class DepartmentRepository extends BaseRepository<any> implements
     }
 
     async addDepartments(departmentName: string, employees: any[]): Promise<any> {
-      console.log('"hitting addDepartments repository=------------------"'.bgRed);
+      console.log('"hitting addDepartments repository=------------------"'.bgMagenta);
+      console.log("employees0000000000000000", employees);
+    
       try {
-          console.log(`departmentName is ${departmentName}`.bgGreen);
-          console.log(`employees is ${JSON.stringify(employees)}`.bgGreen);
-
-          console.log("1111111111111111111111111111111111111111111111111");
-         
-
-          
-          
-          
-  
-          if (!Array.isArray(employees) || employees.length === 0) {
-              throw new Error('Employees must be a non-empty array');
+        if (!Array.isArray(employees) || employees.length === 0) {
+          throw new Error('Employees must be a non-empty array');
+        }
+    
+        // To collect employees that are already assigned to a department
+        const alreadyInDepartment: string[] = [];
+    
+        // Check each employee if they already belong to a department
+        for (let emp of employees) {
+          if (!emp.employeeId || !emp.name || typeof emp.employeeId !== 'string' || typeof emp.name !== 'string') {
+            console.log(`Invalid employee object: ${JSON.stringify(emp)}`.bgRed);
+            throw new Error(`Invalid employee object: ${JSON.stringify(emp)}`);
           }
-          console.log("22222222222222222222222222222222222222222222222222");
-     
-          employees.forEach((emp: any) => {
-              if (!emp._id || !emp.name || typeof emp._id !== 'string' || typeof emp.name !== 'string') {
-                  console.log(`Invalid employee object: ${JSON.stringify(emp)}`.bgRed);
-                  throw new Error(`Invalid employee object: ${JSON.stringify(emp)}`);
-              }
-              emp.name = emp.name.trim();
-          });
-          console.log("3333333333333333333333333333333333333333333333333");
-      
-  
-          // Create the department
-          const department = await this._departmentModel.create({ departmentName, employees });
-          console.log("Department added successfully:", department);
-          console.log("44444444444444444444444444444444444444444444444444");
-          // Update each employee's departmentId in professionalDetails
-          const departmentId = department._id;
-          const updatePromises = employees.map((emp) => {
-              return employeeModel.findByIdAndUpdate(
-                  emp._id, 
-                  { 'professionalDetails.department': departmentId }, // Corrected path
-                  { new: true }
-              );
-          });
-          await Promise.all(updatePromises);
-  
-          console.log("Employees updated with departmentId successfully.");
-          return department;
+    
+          // Check if the employee is already assigned to a department
+          const employee = await employeeModel.findById(emp.employeeId);
+    
+          if (employee && (employee.professionalDetails.department || '').trim()) {
+            alreadyInDepartment.push(emp.name); // Add employee name to the list if they are already in a department
+          }
+        }
+    
+        if (alreadyInDepartment.length > 0) {
+          throw new Error(`The following employees are already in a department: ${alreadyInDepartment.join(', ')}`);
+        }
+    
+        // If no employees are already assigned, proceed with adding the department
+        const department = await this._departmentModel.create({ departmentName, employees });
+        const departmentId = department._id;
+    
+        // Update employee records with the new departmentId
+        const updatePromises = employees.map((emp) => {
+          return employeeModel.findByIdAndUpdate(
+            emp.employeeId,
+            { 'professionalDetails.department': departmentId },
+            { new: true }
+          );
+        });
+    
+        await Promise.all(updatePromises);
+        console.log("Employees updated with departmentId successfully.");
+        return department;
+    
       } catch (error) {
-          console.error('Error in addDepartments repository:', error);
-          throw error;
+        console.error('Error in addDepartments repository:', error);
+        throw error;
       }
-  }
+    }
+    
   
     async findDepartment(departmentId: string): Promise<any> {
         try {
@@ -86,12 +90,28 @@ export default class DepartmentRepository extends BaseRepository<any> implements
 
       async deleteDepartment(departmentId: string): Promise<any> {
         try {
-          return await this._departmentModel.findByIdAndDelete(departmentId);
+            // Step 1: Find the department
+            const department = await this._departmentModel.findById(departmentId);
+            if (!department) {
+                throw new Error('Department not found');
+            }
+    
+            // Step 2: Extract employee IDs from the department
+            const employeeIds = department.employees.map(emp => emp.employeeId);
+    
+            // Step 3: Update each employee to remove the department reference
+            await employeeModel.updateMany(
+                { _id: { $in: employeeIds } },
+                { $unset: { 'professionalDetails.department': null } } // Removes the department field
+            );
+    
+            // Step 4: Delete the department
+            return await this._departmentModel.findByIdAndDelete(departmentId);
         } catch (error) {
-          console.error('Error in Repository (deleteDepartment):', error);
-          throw error;
+            console.error('Error in Repository (deleteDepartment):', error);
+            throw error;
         }
-      }
+    }
     
 
     
@@ -119,37 +139,48 @@ export default class DepartmentRepository extends BaseRepository<any> implements
         }
     }
     
-    async addEmployeesToDepartment(departmentId: string, employee: any): Promise<any> {
-      console.log('"hitting addEmployeeToDepartment repository=------------------"'.bgRed);
-      console.log("departmentId--------------------", departmentId);
-      console.log("employee----------------------------", employee);
+  async addEmployeesToDepartment(departmentId: string, employee: any): Promise<any> {
+
+      console.log("hitting addEmployeesToDepartment service=------------------".bgMagenta);
+      console.log("departmentId", departmentId);
+      console.log("employee", employee);
+      
       
       
       try {
           // Find the department by ID
           const department = await this._departmentModel.findById(departmentId);
-          console.log("department---------------------------", department);
+   
           
           if (!department) {
               throw new Error('Department not found.');
           }
-            console.log("1111111111111111111111111111111111111111111111111");
-        
+   
+          
           // Check if the employee is already part of the department
-          if (department.employees.some((emp: any) => emp._id === employee._id)) {
+          if (department.employees.some((emp: any) => emp.employeeId == employee._id)) {
+     
+            
               throw new Error(`Employee ${employee.name} is already in the department.`);
           }
-          console.log("22222222222222222222222222222222222222222222222222");
+
      
-          
+          const formattedEmployee = {
+            employeeId: employee._id,
+            name: employee.name,
+            email: employee.email,
+            position: employee.position,
+            profilePicture: employee.profilePicture || "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png",
+            isActive: employee.isOnline, // Map `isOnline` to `isActive`
+        };
   
           // Add the employee to the department's employee list
-          department.employees.push(employee);
-          console.log("3333333333333333333333333333333333333333333333333");
+          department.employees.push(formattedEmployee);
+     
        
           // Save the updated department
           await department.save();
-          console.log("4444444444444444444444444444444444444444444444444");
+
   
   
           // Update the employee's department field
@@ -157,15 +188,12 @@ export default class DepartmentRepository extends BaseRepository<any> implements
               employee._id,
               { 'professionalDetails.department': departmentId },
               { new: true }
-          );
-          console.log("updatedEmployee------------------------", updatedEmployee);
-          
+          ); 
   
           if (!updatedEmployee) {
               throw new Error('Employee not found while updating department field.');
           }
   
-          console.log("Updated employee's department successfully:", updatedEmployee);
   
           return {
               department,
@@ -177,6 +205,52 @@ export default class DepartmentRepository extends BaseRepository<any> implements
       }
   }
   
+  async getDepartments(): Promise<IDepartment[]> {
+    try {
+        const departments = await this._departmentModel.find().populate('employees.employeeId');
+        return departments;
+    } catch (error) {
+        console.error('Error in Repository (getDepartments):', error);
+        throw error;
+    }
+  }
+
+  
+  async removeEmployeeFromDepartment(departmentId: string, employeeId: string): Promise<any> {
+
+    
+    try {
+      // Find the department by ID and remove the employee
+      const department = await this._departmentModel.findById(departmentId);
+      if (!department) {
+        throw new Error('Department not found');
+      }
+  
+      // Find the employee in the department
+      const employeeIndex = department.employees.findIndex((emp: any) => emp.employeeId.toString() === employeeId);
+      if (employeeIndex === -1) {
+        throw new Error('Employee not found in the department');
+      }
+  
+      // Remove the employee from the department
+      department.employees.splice(employeeIndex, 1);
+      await department.save();
+  
+      // Update the employee's department to null
+      const employee = await employeeModel.findById(employeeId);
+      if (!employee) {
+        throw new Error('Employee not found');
+      }
+  
+      employee.professionalDetails.department = null ; 
+      await employee.save();
+  
+      return { message: 'Employee removed from department and updated successfully' };
+    } catch (error: any) {
+      console.error('Error in Repository (removeEmployeeFromDepartment):', error.message);
+      throw error;
+    }
+  }
   
   
       

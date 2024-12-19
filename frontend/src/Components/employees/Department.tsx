@@ -8,8 +8,7 @@ interface Employee {
   id: number;
   name: string;
   position: string;
-  online: boolean;
-  active: boolean;
+  isActive: boolean;
   profilePicture?: string;
 }
 
@@ -41,6 +40,8 @@ const Team: React.FC = () => {
 
     fetchDepartment();
   }, []);
+  console.log("department===============", department);
+  
 
   const filteredEmployees =
     department?.employees?.filter((employee) =>
@@ -100,11 +101,14 @@ const Team: React.FC = () => {
                   <div className="relative flex flex-col items-center">
                     {/* Online/Offline Status Circle */}
                     <div
-                      className={`absolute top-0 right-0 w-4 h-4 rounded-full border-2 border-white`}
-                      style={{
-                        backgroundColor: employee.online ? "green" : 'red', // Use themeColor for online, gray for offline
-                      }}
-                    ></div>
+  className={`absolute top-0 right-0 w-4 h-4 rounded-full border-2 border-white`}
+  style={{
+    backgroundColor: employee.isActive 
+      ? "#28a745" // A proper green color
+      : "#dc3545", // A proper red color
+  }}
+></div>
+
 
                     <img
                       src={employee.profilePicture || '/default-profile.jpg'}

@@ -22,7 +22,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       profilePicture: {
         type: String,
-        default: "1415789e35e86b00de158652ccd6807a8c2eb4f9a32ba0f4635239123505e74e",
+        default: "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png",
       },
     },
 
@@ -32,7 +32,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       companyLogo: {
         type: String,
-        default: "  ",
+        default: "https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png",
       },
       companyRegistrationNumber: {
         type: String,

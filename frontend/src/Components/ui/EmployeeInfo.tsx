@@ -30,7 +30,6 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose }) => {
   // States for modal data
   const [profilePicture, setProfilePicture] = useState(employeeData?.personalDetails?.profilePicture);
   const [resumeData, setResumeData] = useState(employeeData?.documents?.resume);
-  const [idProofData, setIdProofData] = useState(employeeData?.documents?.idProof);
   const [personalData, setPersonalData] = useState(employeeData?.personalDetails);
 
   // Initialize form using Form.useForm()
@@ -39,9 +38,8 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose }) => {
   // Update states when employeeData changes
   useEffect(() => {
     setPersonalData(employeeData?.personalDetails || null);
-    setProfilePicture(employeeData?.personalDetails?.profilePicture || null);
+    setProfilePicture(employeeData?.personalDetails?.profilePicture || "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png");
     setResumeData(employeeData?.documents?.resume || null);
-    setIdProofData(employeeData?.documents?.idProof || null);
 
     // Set form initial values when employee data is updated
     form.setFieldsValue({
@@ -66,6 +64,8 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose }) => {
       companyPassword: employeeData?.employeeCredentials?.companyPassword,
     });
   }, [employeeData, form]);
+  console.log("profilePicture",profilePicture);
+  
 
    const handleSubmit = async (tabKey: string, values: any) => {
     setLoading(true);
@@ -125,21 +125,7 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose }) => {
     }
   };
 
-  const handleIdProofUpload = async (field: string, file: any) => {
-    const formData = new FormData();
-    formData.append("file", file);
 
-    try {
-      const response = await managerInstance.post(
-        `/manager/api/employee/update-idproof/${employeeData._id}`,
-        formData
-      );
-      setIdProofData(response?.data?.data?.idProof);
-      message.success("ID Proof uploaded successfully!");
-    } catch (error) {
-      message.error("Failed to upload ID Proof.");
-    }
-  };
 
   return (
     <Modal
@@ -173,6 +159,8 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose }) => {
                               position: "relative",
                             }}
                           >
+                                                       
+
                             <img
                               src={profilePicture}
                               alt="Profile"
@@ -182,6 +170,8 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose }) => {
                               showUploadList={false}
                               beforeUpload={handleProfilePictureChange}
                             >
+                           
+                              
                               <Button
                                 icon={<EditOutlined />}
                                 style={{

@@ -11,7 +11,7 @@ const employeeSchema = new Schema<IEmployee>({
   isBlocked: { type: Boolean, default: false },
   
   personalDetails: {
-    profilePicture:{ type: String ,default: "https://avatar.iran.liara.run/public/boy?username=Ash"},
+    profilePicture:{ type: String ,default: "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"},
     employeeName: { type: String },
     email: { type: String, required: true },
     phone: { type: String },

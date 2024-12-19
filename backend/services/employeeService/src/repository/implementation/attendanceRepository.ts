@@ -138,7 +138,7 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
     }
 
 
-    async markCheckIn(id: string, updateData: any): Promise<any> {
+    async markCheckIn(id: string, updateData: any, employeeId: string): Promise<any> {
         try {
 
             const newAttendanceEntry = {
@@ -162,6 +162,11 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
             if (!updatedEmployeeAttendance) {
                 throw new Error('Employee attendance record not found');
             }
+            await this._employeeModel.findByIdAndUpdate(
+                employeeId, // Pass the ID directly
+                { $set: { isActive: true } } // Update object with the correct MongoDB syntax
+              );
+              
 
             return updatedEmployeeAttendance;
         } catch (error) {
@@ -218,7 +223,7 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
         }
     }
 
-    async markCheckOut(id: string, updateData: any): Promise<any> {
+    async markCheckOut(id: string, updateData: any, employeeId: string): Promise<any> {
         try {
             if (!mongoose.Types.ObjectId.isValid(id)) {
                 throw new Error('Invalid ObjectId');
@@ -243,6 +248,10 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
             if (!updatedEmployeeAttendance) {
                 throw new Error('Employee attendance record not found or no matching attendance entry found');
             }
+            await this._employeeModel.findByIdAndUpdate(
+                employeeId, 
+                { $set: { isActive: false } } // Update object with the correct MongoDB syntax
+              );
     
             console.log('Updated Employee Attendance:', updatedEmployeeAttendance);
             return updatedEmployeeAttendance;

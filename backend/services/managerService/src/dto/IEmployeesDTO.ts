@@ -1,11 +1,13 @@
+import mongoose from "mongoose";
+
 export interface IEmployeesDTO {
-    employeeName: string;
-    position: string;
-    isActive: boolean;
-    profilePicture: string;
-    _id: string
-    email: string
-    isBlocked: boolean
+    employeeName?: string;
+    position?: string;
+    isActive?: boolean;
+    profilePicture?: string;
+    _id?: any
+    email?: string
+    isBlocked?: boolean
 }
 
 export interface IEmployeePersonalInformationDTO {

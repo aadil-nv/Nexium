@@ -12,7 +12,7 @@ const employeeSchema = new Schema<IEmployee>({
   role:{ type: String, default: "employee" },
   
   personalDetails: {
-    profilePicture:{ type: String ,default: "bb40a09c55d1cbf1d85ed571a65da4400edef28bdbb77576fbabb3006945d6b5"},
+    profilePicture:{ type: String ,default: "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"},
     employeeName: { type: String },
     email: { type: String, required: true },
     phone: { type: String },
@@ -33,7 +33,7 @@ const employeeSchema = new Schema<IEmployee>({
     joiningDate: { type: Date },
     currentStatus: { type: String },
     companyName: { type: String },
-    companyLogo: { type: String,default:"bba3de636181da05d21cf3760f7fca26c1751e50a4186ebd8e8a6cf6887df243"},
+    companyLogo: { type: String,default:"https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png"},
     salary: { type: Number },
   },
   
