@@ -44,7 +44,8 @@ export interface ITokenResponse {
   isVerified?: boolean;
   companyName?:string
   profilePicture?:string;
-  companyLogo?:string
+  companyLogo?:string;
+  businessOwnerData?:any
 }
 
 

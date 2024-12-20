@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { FiMenu, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { useDispatch } from 'react-redux';
 import { setActiveMenu } from '../../redux/slices/menuSlice';
-import { businessOwnerLinks, superAdminLinks, managerLinks, employeeLinks } from '../../utils/centralPaths';
+import { businessOwnerLinks, superAdminLinks, managerLinks, employeeLinks, teamLeedLinks } from '../../utils/centralPaths';
 import useAuth from '../../hooks/useAuth';
 import useTheme from '../../hooks/useTheme';
 
@@ -20,9 +20,19 @@ const Sidebar = () => {
     ? businessOwnerLinks
     : isAuthenticated(manager)
     ? managerLinks
-    : isAuthenticated(employee)
+    : isAuthenticated(employee)&& employee.position !== 'Team Lead'
     ? employeeLinks
+    : isAuthenticated(employee)&& employee.position === 'Team Lead'
+    ? teamLeedLinks
     : [];
+
+    const companyLogo = isAuthenticated(businessOwner)
+    ? businessOwner.companyLogo||"https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png"
+    : isAuthenticated(manager)
+    ? manager.companyLogo ||"https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png"
+    : isAuthenticated(employee)
+    ? employee.companyLogo ||"https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png"
+    : '';
 
   const toggleMenu = () => dispatch(setActiveMenu(!isActiveMenu));
   const toggleSubMenu = (title: string) => setActiveSubMenu(activeSubMenu === title ? null : title);
@@ -43,11 +53,12 @@ const Sidebar = () => {
   to={`/${isAuthenticated(businessOwner) ? 'business-owner' : isAuthenticated(superAdmin) ? 'super-admin' : isAuthenticated(manager) ? 'manager' : 'employee'}/dashboard`}
   className="text-xl font-extrabold text-gray-800 flex items-center space-x-2" // Added flex for inline layout and space between logo and name
 >
-  <img
-    src={isAuthenticated(businessOwner) ? businessOwner.companyLogo : isAuthenticated(superAdmin) ? 'Super Admin' : isAuthenticated(manager) ? manager.companyLogo : isAuthenticated(employee) ? employee.companyLogo : 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}
-    alt="Business Owner Logo"
-    className="w-auto h-auto max-w-[100px] max-h-[50px] object-contain" // Logo styling
-  />
+<img
+  src={companyLogo}
+  alt="Business Owner Logo"
+  className="w-8 h-8 object-cover rounded-full" // Circular image styling
+/>
+
   
   <span className="truncate max-w-[200px]">  {/* Truncate the company name if it's too long */}
     {isAuthenticated(businessOwner) ? businessOwner.companyName : isAuthenticated(superAdmin) ? 'Super Admin' : isAuthenticated(manager) ? manager.companyName : isAuthenticated(employee) ? employee.companyName : 'Guest'}

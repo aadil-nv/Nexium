@@ -72,12 +72,11 @@ export default class EmployeeService implements IEmployeeService {
           if (!employee) {
             throw new Error("Employee not found");
           }
-           const profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
           return {
             employeeName: employee?.personalDetails.employeeName,
             email: employee?.personalDetails.email,
             phone: employee?.personalDetails.phone,
-            profilePicture: profilePicture ,
+            profilePicture: employee.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}` :employee.personalDetails.profilePicture ,
             personalWebsite: employee?.personalDetails.personalWebsite,
             message: "Profile fetched successfully",
           }

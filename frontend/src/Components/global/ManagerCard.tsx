@@ -18,7 +18,6 @@ const ManagerCard: React.FC<IManagerCardProps> = ({
   managerId,
 }) => {
 
-  console.log("isVerifie777777777777777777777777777777777777777d", isVerified);
   
   const { themeColor } = useTheme();
   const [isBlocked, setIsBlocked] = useState(initialIsBlocked);
@@ -29,8 +28,6 @@ const ManagerCard: React.FC<IManagerCardProps> = ({
   const handleViewDetails = async () => {
     try {
       const response = await businessOwnerInstance.get(`/businessOwner/api/manager/get-manager/${managerId}`);
-
-      console.log("responce data ius ===================",response.data);
       if (response.data) {
         setManagerDetails(response.data);
         setIsInfoModalVisible(true);
@@ -69,7 +66,7 @@ const ManagerCard: React.FC<IManagerCardProps> = ({
       <div className={`absolute top-2 right-2 w-4 h-4 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`} />
 
       {/* Manager Image */}
-      <img className="w-24 h-24 object-cover rounded-full mx-auto mt-4" src={image} alt="Manager Profile" />
+      <img className="w-24 h-24 object-cover rounded-full mx-auto mt-4" src={image ||"https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"} alt="Manager Profile" />
 
       <div className="p-4">
         <div className="flex items-center justify-center">

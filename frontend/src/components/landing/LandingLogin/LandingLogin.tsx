@@ -44,7 +44,7 @@ export default function LandingLoginPage() {
   
     try {
       const data = await loginBusinessOwnerAPI(email, password);
-      console.log("Login response data:", data);
+      console.log("Login response data:-------------", data);
   
       if (data.success) {
         // Successful login
@@ -53,6 +53,8 @@ export default function LandingLoginPage() {
           companyName: data.companyName,
           businessOwnerProfilePicture: data.profilePicture,
           companyLogo: data.companyLogo,
+       
+
         }));
        
       

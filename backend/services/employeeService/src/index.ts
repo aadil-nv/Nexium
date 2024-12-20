@@ -8,6 +8,7 @@ import attendanceRoutes from './routes/attendanceRoute';
 import employeeRoutes from './routes/employeeRoute';
 import payrollRoutes from './routes/payrollRoute';
 import departmentRoutes from './routes/departmentRoute';
+import taskRoutes from './routes/taskRoute';
 import 'colors' ;
 import morgan from 'morgan'; // Import morgan
 import { createStream } from 'rotating-file-stream';
@@ -52,6 +53,7 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/employee', employeeRoutes); 
 app.use('/api/payroll', payrollRoutes);
 app.use('/api/department', departmentRoutes);
+app.use('/api/task', taskRoutes);
 
 
 

@@ -70,8 +70,8 @@ export default class EmployeeService implements IEmployeeService {
               
 
               employeeName: employeeData.personalDetails.employeeName,
-              eployeeProfilePicture: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}` ,
-              companyLogo: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.professionalDetails.companyLogo}`,
+              eployeeProfilePicture:employeeData.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`:employeeData.personalDetails.profilePicture ,
+              companyLogo:employeeData.professionalDetails.companyLogo? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.professionalDetails.companyLogo}`:employeeData.professionalDetails.companyLogo,
               employeePosition: employeeData.professionalDetails.position,
               companyName: employeeData.professionalDetails.companyName
           };

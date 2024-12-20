@@ -24,7 +24,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
       // Validate input
       if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
   
-      const { success, message, accessToken, refreshToken, isVerified, email: companyEmail ,companyLogo,companyName,profilePicture } =
+      const { success, message, accessToken, refreshToken, isVerified, email: companyEmail ,companyLogo,companyName,profilePicture ,businessOwnerData } =
         await this._businessOwnerService.login(email, password);
 
        
@@ -60,7 +60,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
         maxAge: 7 * 24 * 60 * 60 * 1000 
       });
   
-      return res.status(200).json({ success, message ,companyLogo,companyName,profilePicture });
+      return res.status(200).json({ success, message ,companyLogo,companyName,profilePicture,businessOwnerData });
   
     } catch (error) {
       console.error("Error during login", error);

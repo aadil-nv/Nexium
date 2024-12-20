@@ -75,19 +75,27 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
           // Generate and return tokens if login is successful
           const accessToken = generateAccessToken({ businessOwnerData });
           const refreshToken = generateRefreshToken({ businessOwnerData });
-          const profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ businessOwnerData?.personalDetails?.profilePicture}`
-          const companyLogo = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ businessOwnerData?.companyDetails?.companyLogo}`
+          if(businessOwnerData.personalDetails.profilePicture ){
+              
+            businessOwnerData.personalDetails.profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ businessOwnerData?.personalDetails?.profilePicture}`
+          }
+          if(businessOwnerData.companyDetails.companyLogo){
+              
+            businessOwnerData.companyDetails.companyLogo= `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ businessOwnerData?.companyDetails?.companyLogo}`
+          }
       
           return { 
             success: true, 
             message: "Login successful", 
             accessToken, 
             refreshToken, 
-            isVerified: true, 
+            isVerified: true,
+            businessOwnerData, 
             email: businessOwnerData.personalDetails.email ,
-                companyName:businessOwnerData.companyDetails.companyName,
-                profilePicture:profilePicture,
-                companyLogo:companyLogo
+            companyName:businessOwnerData.companyDetails.companyName,
+            profilePicture:businessOwnerData.personalDetails.profilePicture,
+            companyLogo:businessOwnerData.companyDetails.companyLogo,
+
           };
       
         } catch (error) {
@@ -121,35 +129,16 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
           const newBusinessOwnerData: IBusinessOwnerDocument = new businessOwnerModel({
             _id: new mongoose.Types.ObjectId(),
             personalDetails: {
-              businessOwnerName: "", // Default empty, or provide data if available
               email: businessOwnerData.email,
               password: businessOwnerData.password,
               phone: businessOwnerData.phone,
-              personalWebsite: businessOwnerData.website ?? "",
-              profilePicture: "1415789e35e86b00de158652ccd6807a8c2eb4f9a32ba0f4635239123505e74e", // Default image
             },
             companyDetails: {
               companyName: businessOwnerData.companyName,
-              companyLogo: "811188cef8b1f8487a0c7cb19bf1ffa5a2fe5377703d1df6173f4fafea68b6bd", // Default logo
-              companyRegistrationNumber: "",
-              companyEmail: "",
-              companyWebsite: "",
             },
-            address: {
-              street:"",
-              city: "",
-              state: "",
-              postalCode: "",
-              country:"",
-            },
-            subscription: {
-              subscriptionId: '',
-              startDate: '',
-              endDate: '',
-              status: 'Pending',
-            },
-            isVerified: false, // Default to false
-            isBlocked: false, // Default to false
+            
+            isVerified: false,
+            isBlocked: false,
             role: businessOwnerData.role ?? "BusinessOwner", // Default to "owner"
           });
       

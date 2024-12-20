@@ -7,7 +7,7 @@ const managerSchema: Schema<IManager> = new Schema(
       managerName: { type: String },
       personalWebsite: { type: String },
       email: { type: String },
-      profilePicture: { type: String, default: "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png" },
+      profilePicture: { type: String },
       phone: { type: String },
     },
     professionalDetails: {
@@ -32,7 +32,7 @@ const managerSchema: Schema<IManager> = new Schema(
     },
     companyDetails: {
       companyName: { type: String },
-      companyLogo: { type: String ,default :"https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png" },
+      companyLogo: { type: String },
       companyRegistrationNumber: { type: String },
       companyWebsite: { type: String },
     },

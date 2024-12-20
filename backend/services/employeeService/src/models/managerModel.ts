@@ -31,7 +31,7 @@ const managerSchema: Schema<IManager> = new Schema(
     },
     companyDetails: {
       companyName: { type: String },
-      companyLogo: { type: String , default:"https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png" },
+      companyLogo: { type: String  },
       companyRegistrationNumber: { type: String },
       companyWebsite: { type: String },
     },

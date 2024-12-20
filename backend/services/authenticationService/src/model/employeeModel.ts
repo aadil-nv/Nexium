@@ -9,10 +9,10 @@ const employeeSchema = new Schema<IEmployee>({
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
   isBlocked: { type: Boolean, default: false },
-  role:{ type: String, default: "employee" },
+  role: { type: String, default: 'employee' },
   
   personalDetails: {
-    profilePicture:{ type: String ,default: "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"},
+    profilePicture:{ type: String },
     employeeName: { type: String },
     email: { type: String, required: true },
     phone: { type: String },
@@ -33,7 +33,7 @@ const employeeSchema = new Schema<IEmployee>({
     joiningDate: { type: Date },
     currentStatus: { type: String },
     companyName: { type: String },
-    companyLogo: { type: String,default:"https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png"},
+    companyLogo: { type: String},
     salary: { type: Number },
   },
   
@@ -44,10 +44,10 @@ const employeeSchema = new Schema<IEmployee>({
 
   documents: {
     resume: {
-      documentName: { type: String},
+      documentName: { type: String },
       documentUrl: { type: String },
-      documentSize: { type: String },
-      uploadedAt: { type: Date },
+      documentSize: { type: Number },
+      uploadedAt: { type: Date, },
     },
   },
   leaves: {

@@ -43,15 +43,14 @@ export default class ManagerService implements IManagerService {
       }
     
       const managerProfile = await this._managerRepository.findOne({managerId});
-      const profileImageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ managerProfile?.personalDetails?.profilePicture}`
-          console.log(`profileImageUrl: ${profileImageUrl}`);
+  
           
       return {
 
         managerName: managerProfile?.personalDetails?.managerName,
         email: managerProfile?.personalDetails.email,
         personalWebsite: managerProfile?.personalDetails?.personalWebsite,
-        profilePicture: profileImageUrl,
+        profilePicture: managerProfile?.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ managerProfile?.personalDetails.profilePicture}`:managerProfile?.personalDetails?.profilePicture ,
         phone: managerProfile?.personalDetails?.phone
       }
 
@@ -282,7 +281,6 @@ export default class ManagerService implements IManagerService {
       const updatedManager = await this._managerRepository.uploadDocuments(managerId,fileType,documentData);
 
 
-      console.log("servuice -77777777777777777777777777777777", updatedManager);
       
   
       return {

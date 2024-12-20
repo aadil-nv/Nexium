@@ -58,13 +58,6 @@ const Documents = () => {
     }
   }, [businessOwner.isAuthenticated ,manager.isAuthenticated,employee.isAuthenticated]);
 
-  console.log("=========================================");
-  console.log("=========================================");
-  console.log("document",document);
-  
-  console.log("=========================================");
-  console.log("=========================================");
-  
   
   const handleUpload = async (info: UploadChangeParam<UploadFile<any>>) => {
     const { file } = info;

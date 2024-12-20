@@ -41,7 +41,7 @@ export default class DepartmentService implements IDepartmentService {
               name: employeeData.personalDetails.employeeName,
               email: employeeData.employeeCredentials.companyEmail,
               position: employeeData.professionalDetails.position,
-              profilePicture: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`,
+              profilePicture: employeeData.personalDetails.profilePicture?`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`:employeeData.personalDetails.profilePicture,
               isActive: employeeData.isActive,
             })),
           

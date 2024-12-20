@@ -14,16 +14,27 @@ export default function Navbar() {
   const { isActiveMenu, themeColor } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const defaultProfileImage = "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png";
+
+  console.log("employee profile picture in navbar:", employee?.employeeProfilePicture);
+  
 
   const userName = businessOwner.isAuthenticated? businessOwner?.companyName:
                    superAdmin.isAuthenticated? "Super Admin": 
                    manager.isAuthenticated? manager?.managerName: 
                    employee.isAuthenticated? employee?.employeeName: "Guest";
 
-  const profileImage = businessOwner.isAuthenticated? businessOwner?.businessOwnerProfilePicture: 
-                       superAdmin.isAuthenticated? "https://cdn-icons-png.flaticon.com/512/149/149071.png" :
-                       manager.isAuthenticated? manager?.managerProfilePicture : 
-                       employee.isAuthenticated? employee?.employeeProfilePicture: "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+
+                   const profileImage = businessOwner.isAuthenticated
+                     ? businessOwner.businessOwnerProfilePicture || defaultProfileImage
+                     : superAdmin.isAuthenticated
+                     ? "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                     : manager.isAuthenticated
+                     ? manager.managerProfilePicture || defaultProfileImage
+                     : employee.isAuthenticated
+                     ? employee.employeeProfilePicture || defaultProfileImage
+                     : defaultProfileImage;
+                   
 
   const toggleMenuFunc = () => toggleMenu(dispatch, isActiveMenu);
   const handleProfile = () => handleProfileClick({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employee, dispatch, navigate });

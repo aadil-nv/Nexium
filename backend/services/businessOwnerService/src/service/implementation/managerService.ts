@@ -29,7 +29,6 @@ export default class ManagerService implements IManagerService {
   }
 
   async addManagers(businessOwnerId: string, data: any): Promise<IResponseDTO> {
-    console.log(`===================`.bgCyan.bold, data);
 
     try {
         const rabbitMQMessager = new RabbitMQMessager();
@@ -59,8 +58,7 @@ export default class ManagerService implements IManagerService {
             personalDetails: {
                 managerName: data.name,
                 email: data.email,
-                personalWebsite: '', // Default value
-                profilePicture:"1415789e35e86b00de158652ccd6807a8c2eb4f9a32ba0f4635239123505e74e",
+                personalWebsite: '',
                 phone: data.phoneNumber,
             },
             professionalDetails: {
@@ -163,15 +161,14 @@ export default class ManagerService implements IManagerService {
   async getAllManagers(businessOwnerId: string): Promise<ManagerDTO[]> {
     try {
       const managerData = await this._managerRepository.getAllManagers(businessOwnerId);
-      
-  
-      // Map the repository data to the ManagerDTO format
+   
+     
       const mappedManagers: any = managerData.map(manager => ({
         personalDetails: {
           managerName: manager.personalDetails.managerName.toString(),
           personalWebsite: manager.personalDetails.personalWebsite?.toString(), // Provide default value
           email: manager.personalDetails.email,
-          profilePicture: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${manager.personalDetails.profilePicture}`, // Provide default value
+          profilePicture: manager.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${manager.personalDetails.profilePicture}`: manager.personalDetails.profilePicture, // Provide default value
           phone: manager.personalDetails.phone,
         },
         professionalDetails: {

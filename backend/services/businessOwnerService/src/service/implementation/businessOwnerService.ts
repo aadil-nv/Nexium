@@ -108,13 +108,13 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     try {
       const result = await this.getDetails(businessOwnerId);
       const { companyDetails } = result;
-      const companyLogoUrl =  `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${companyDetails.companyLogo}`
+
        
       return {
         companyName: companyDetails.companyName,
         companyWebsite: companyDetails.companyWebsite,
         companyRegistrationNumber: companyDetails.companyRegistrationNumber,
-        companyLogo: companyLogoUrl,
+        companyLogo: companyDetails.companyLogo ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${companyDetails.companyLogo}`:companyDetails.companyLogo ,
         companyEmail: companyDetails.companyEmail,
       };
     } catch {
@@ -238,25 +238,13 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
 
   async uploadDocuments(businessOwnerId: string,file: Express.Multer.File,documentType: string): Promise<any> {
 
-    console.log(`"Data received:-->>>>>> to the service ",`.bgMagenta);
-    console.log();
-    console.log();
-    console.log();
-    console.log("businessOwnerId", businessOwnerId);
-    console.log("documentType", documentType);
-    console.log("documentData", file);
-    console.log();
-    console.log();
-    console.log();
-    console.log(`"Data received:-->>>>>> to the service ",`.bgMagenta);
+
     try {
       // Upload file to S3
       const fileKey = await this.uploadFileToS3(businessOwnerId, file, "documents");
 
-      console.log("fileKey33333333333333333333333333333333333333", fileKey);
       
       const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
-      console.log("fileUrl444444444444444444444444444444444444444444444", fileUrl);
       
   
       const documentData = {
@@ -266,11 +254,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         uploadedAt: new Date(),
       };
   
-      const updatedBusinessOwner = await this._businessOwnerRepository.uploadDocuments(businessOwnerId,documentType,documentData);
-
-
-      console.log("servuice -77777777777777777777777777777777", updatedBusinessOwner);
-      
+      const updatedBusinessOwner = await this._businessOwnerRepository.uploadDocuments(businessOwnerId,documentType,documentData);      
   
       return {
         documentName: documentType,

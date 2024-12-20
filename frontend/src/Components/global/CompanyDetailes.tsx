@@ -35,7 +35,7 @@ const CompanyDetails = () => {
         setCompanyDetails(data);
         console.log("data is ------->",data);
 
-        setLogo(data?.companyLogo || '');
+        setLogo(data?.companyLogo ||"https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png");
       } catch {
         message.error('Failed to fetch company details');
       } finally {
@@ -98,7 +98,7 @@ const CompanyDetails = () => {
           <div style={{ textAlign: 'center' }}>
             <Spin spinning={logoLoading} size="small">
               <img
-                src={logo}
+                src={logo }
                 alt="Company Logo"
                 style={{
                   width: '100%',

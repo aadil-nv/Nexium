@@ -48,6 +48,9 @@ const Team: React.FC = () => {
       employee.name.toLowerCase().includes(search.toLowerCase())
     ) || [];
 
+    console.log("filteredEmployees===============", filteredEmployees);
+    
+
   return (
     <div
       className="p-4 transition-all duration-300"
@@ -61,7 +64,7 @@ const Team: React.FC = () => {
         className="mb-6 p-4 text-white rounded-md"
         style={{ fontSize: '20px', fontWeight: 'bold' , backgroundColor: themeColor }}
       >
-        Department: {department?.departmentName || 'N/A'}
+        Department: {department?.departmentName || "Your Not added in a Department"}
       </div>
 
       {/* Search Section */}
@@ -111,7 +114,7 @@ const Team: React.FC = () => {
 
 
                     <img
-                      src={employee.profilePicture || '/default-profile.jpg'}
+                      src={employee.profilePicture||"https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"}
                       alt={employee.name}
                       className="w-32 h-32 rounded-full border-4 border-white mb-4"
                     />

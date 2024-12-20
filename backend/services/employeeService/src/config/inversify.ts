@@ -41,7 +41,15 @@ import IDepartmentRepository from "../repository/interface/IDepartmentRepository
 import DepartmentModel from "../models/departmentModel";
 import IDepartment from "../entities/departmentEntities";
 
+import ITaskController from "../controllers/interface/ITaskController";
+import TaskController from "../controllers/implementation/taskController";
+import ITaskService from "../service/interface/ITaskService";
+import TaskService from "../service/implementation/taskService";
+import ITaskRepository from "../repository/interface/ITaskRepository";
+import TaskRepository from "../repository/implementation/taskRepository";
 
+import TaskModel from "../models/taskModel";
+import {ITask} from "../entities/taskEntities";
 
 
 const container = new Container();
@@ -65,10 +73,19 @@ container.bind<IDepartmentController>("IDepartmentController").to(DepartmentCont
 container.bind<IDepartmentService>("IDepartmentService").to(DepartmentService);
 container.bind<IDepartmentRepository>("IDepartmentRepository").to(DepartmentRepository);
 
+
+container.bind<ITaskController>("ITaskController").to(TaskController);
+container.bind<ITaskService>("ITaskService").to(TaskService);
+container.bind<ITaskRepository>("ITaskRepository").to(TaskRepository);
+
+
+
+
 container.bind<mongoose.Model<IPayroll>>("IPayroll").toConstantValue(payrollModel);
 container.bind<mongoose.Model<IEmployee>>("IEmployee").toConstantValue(EmployeeModel);
 container.bind<mongoose.Model<IEmployeeAttendance>>("IEmployeeAttendance").toConstantValue(AttendanceModel);
 container.bind<mongoose.Model<IDepartment>>("IDepartment").toConstantValue(DepartmentModel);
+container.bind<mongoose.Model<ITask>>("ITask").toConstantValue(TaskModel);
 
 
 

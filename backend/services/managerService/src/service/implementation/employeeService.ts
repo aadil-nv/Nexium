@@ -380,10 +380,6 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
   async updateProfilePicture(employeeId: string ,file: Express.Multer.File): Promise<any> {
     try {
       const imageUrl = await this.uploadFileToS3(employeeId, file, "profilePicture");
-      console.log("==============imageUrl================ser======", imageUrl);
-      console.log("=================employeeId==========serv========", employeeId);
-      
-      
 
        const result = await this._employeeRepository.updateProfilePicture(employeeId, imageUrl);
        return { success: true, message: 'Image uploaded successfully!', data: { imageUrl:`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result}` } };
@@ -394,40 +390,32 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
   }
 
   private async uploadFileToS3(employeeId: string, file: Express.Multer.File, fileType: "profilePicture" | "resume" | "idProof"): Promise<string> {
-    // Fetch the employee data
+
     const result = await this._employeeRepository.getEmployeeInformation(employeeId);
 
-    // Determine the existing file based on the file type
     const existingFile = fileType === "profilePicture"
-        ? result.personalDetails.profilePicture // Corrected to `profilePicture`
-        : result.companyDetails ? result.companyDetails.companyLogo : null; // Check if `companyDetails` exists
+        ? result.personalDetails.profilePicture 
+        : result.companyDetails ? result.companyDetails.companyLogo : null;
 
     if (existingFile) {
         const s3Client = new S3Client({ region: 'eu-north-1' });
         try {
-            // Delete the existing file from S3
+       
             await s3Client.send(new DeleteObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, Key: existingFile }));
         } catch (deleteError) {
             console.error("Error deleting file from S3:", deleteError);
         }
     }
 
-    // Upload the new file to S3
     const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
-    console.log("==============fileUrl======================", fileUrl);
-    
     return fileUrl;
 }
 
 
   async updateResume(employeeId: string, file: Express.Multer.File): Promise<any> {
     try {
-        // Generate the document URL (Assuming S3 upload is handled by `uploadFileToS3`)
         const documentUrl = await this.uploadFileToS3(employeeId, file, "resume");
 
-        console.log("documentUrl", documentUrl);
-
-        // Prepare resume metadata
         const documentMetadata = {
             documentName: file.originalname,
             documentUrl,
@@ -455,7 +443,6 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
 async updateBlocking(employeeId: string, blocking: any): Promise<any> {
   try {
       const result = await this._employeeRepository.updateBlocking(employeeId, blocking);
-      console.log("result#######################################", result);
       
       return result;
   } catch (error) {
@@ -467,8 +454,8 @@ async updateBlocking(employeeId: string, blocking: any): Promise<any> {
 async getEmployeeWithOutDepartment(): Promise<IEmployeesDTO[]> {
     try {
         const employeesData = await this._employeeRepository.getEmployeeWithOutDepartment();
+        
 
-        // Map the repository data to the DTO structure
         const employeesDTO: IEmployeesDTO[] = employeesData.map((employee) => ({
             employeeName: employee.personalDetails.employeeName, // Assuming `name` is the field in the repository data
             position: employee.professionalDetails.position,
@@ -478,8 +465,6 @@ async getEmployeeWithOutDepartment(): Promise<IEmployeesDTO[]> {
             _id: employee._id, 
             isBlocked: employee.isBlocked
         }));
-
-        
 
         return employeesDTO;
     } catch (error) {

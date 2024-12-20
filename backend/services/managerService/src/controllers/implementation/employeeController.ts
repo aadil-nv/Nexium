@@ -133,11 +133,7 @@ export default class EmployeeController implements IEmployeeController {
     
         try {
             const employeeId = req.params.id;
-
-          
             const result = await this._employeeService.updateProfilePicture(employeeId, req.file as Express.Multer.File);
-            console.log("result", result);
-            
             res.status(200).json(result);
         } catch (error) {
             console.error("Error updating profile picture:", error);

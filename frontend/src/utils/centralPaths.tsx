@@ -7,6 +7,7 @@ import Securitie from '../components/global/Securitie';
 import CompanyDetails from '../components/global/CompanyDetailes';
 import { EditOutlined } from "@ant-design/icons";
 
+
 interface LinkItem {
   title: string;
   route: string;
@@ -34,14 +35,23 @@ export const superAdminLinks: LinkItem[] = [
   { title: 'Customer Support', route: '/super-admin/service-requests', icon: 'fi fi-tr-user-headset' },
 ];
 
+export const teamLeedLinks: LinkItem[] = [
+  { title: 'Dashboard', route: '/employee/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
+  { title: 'Attendance', route: '/employee/attendance', icon: 'fi fi-tr-skill' },
+  { title: 'Department', route: '/employee/team', icon: 'fi fi-tr-department-structure' },
+  { title: 'Tasks', route: '/employee/tasks', icon: 'fi fi-tr-responsability' } ,
+  { title: 'Payroll', route: '/employee/payroll', icon: 'fi fi-tr-payroll' },
+  { title: 'Notifications', route: '/employee/notifications', icon: 'fi fi-tr-bells' },
+  { title: 'Announcements', route: '/employee/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+];
 export const employeeLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/employee/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
   { title: 'Attendance', route: '/employee/attendance', icon: 'fi fi-tr-skill' },
   { title: 'Department', route: '/employee/team', icon: 'fi fi-tr-department-structure' },
+  { title: 'My Tasks', route: '/employee/my-tasks', icon: 'fi fi-tr-web-test' },
   { title: 'Payroll', route: '/employee/payroll', icon: 'fi fi-tr-payroll' },
   { title: 'Notifications', route: '/employee/notifications', icon: 'fi fi-tr-bells' },
   { title: 'Announcements', route: '/employee/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
-  // { title: 'Service Requests', route: '/employee/service-requests', icon: 'fi fi-tr-hr-group' },
 ];
 
 export const managerLinks: LinkItem[] = [

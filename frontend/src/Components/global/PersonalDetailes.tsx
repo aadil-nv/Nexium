@@ -57,7 +57,8 @@ export default function PersonalDetails() {
       fetchManagerPersonalInfo()
         .then((data: ManagerInfo) => {
           setManagerInfo(data);
-          setProfileImage(data?.profilePicture || '');
+          
+          setProfileImage(data?.profilePicture ||"https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png");
         })
         .catch((error) => {
           console.error('Error fetching manager info:', error);
@@ -70,7 +71,7 @@ export default function PersonalDetails() {
       fetchBusinessOwnerPersonalInfo()
         .then((data: BusinessOwnerInfo) => {
           setBusinessOwnerInfo(data);
-          setProfileImage(data?.profilePicture || '');
+          setProfileImage(data?.profilePicture || "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png");
         })
         .catch((error) => {
           console.error('Error fetching business owner info:', error);
@@ -83,7 +84,7 @@ export default function PersonalDetails() {
       fetchEmployeePersonalInfo()
         .then((data: EmployeeInfo) => {
           setEmployeeInfo(data);
-          setProfileImage(data?.profilePicture || '');
+          setProfileImage(data?.profilePicture || "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png");
         })
         .catch((error) => {
           console.error('Error fetching employee info:', error);
@@ -93,6 +94,9 @@ export default function PersonalDetails() {
         });
     }
   }, [businessOwner, manager, employee]);
+
+  console.log("profilepicter from PROFILe",profileImage);
+  
 
   const handleProfilePictureChange = async (file: File) => {
     setImageLoading(true);
@@ -114,11 +118,14 @@ export default function PersonalDetails() {
             companyName: businessOwner.companyName, // Keep existing company name
             businessOwnerProfilePicture: response, // Update profile picture
             companyLogo: businessOwner.companyLogo, // Keep existing company logo
+            
           })
         );  
         setProfileImage(response);
       } else if (employee?.isAuthenticated) {
         const response = await uploadEmployeeProfileImage(file); // Add a function for employee
+        console.log("response--------------------------",response);
+        
         dispatch(setEmployeeData({
           employeeName: employee.employeeName,
           employeeProfilePicture: response,

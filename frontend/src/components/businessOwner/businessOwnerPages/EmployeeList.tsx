@@ -103,7 +103,7 @@ export default function EmployeeList() {
           filteredManagers.map((manager, index) => (
             <motion.div key={index} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.1, duration: 0.5 }} className="flex justify-center">
               <ManagerCard
-                image={manager.personalDetails.profilePicture}
+                image={manager.personalDetails.profilePicture || "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"}
                 name={manager.personalDetails.managerName}
                 email={manager.personalDetails.email}
                 onViewDetails={() => alert(`Viewing details for ${manager.personalDetails.name}`)}
