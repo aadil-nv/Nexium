@@ -13,9 +13,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
   }
 
   async getProfile(employeeId: string): Promise<IEmployee> {
-
-    console.log("hitted get profile-----------------------------------repository",employeeId);
-    
     try {
       const employee = await this._employeeModel
         .findOne({ _id: employeeId }) // Adjusted to use `_id` if that's the field
@@ -137,5 +134,18 @@ async updateAddress(employeeId: string, data: any): Promise<IEmployee> {
       throw new Error('Could not update personal details.');
     }
   }
+
+  async getEmployeeDashboardData(employeeId: string): Promise<any> {
+    try {
+        const employee = await this._employeeModel.findOne({ _id: employeeId });
+        if (!employee) {
+            throw new Error(`No employee records found for employee ID ${employeeId}`);
+        }
+        return employee;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
 
 }

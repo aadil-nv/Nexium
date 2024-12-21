@@ -7,7 +7,7 @@ import rootReducer from '../reducers/rootReducer';
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['menu', 'businessOwner', 'superAdmin' ,'manager','employee',"otp","leave","task"], 
+  whitelist: ['menu', 'businessOwner', 'superAdmin' ,'manager','employee',"otp","leave","task","myTask"], 
 };
 
 // Apply persistence to root reducer

@@ -9,10 +9,10 @@ const employeeSchema = new Schema<IEmployee>({
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
   isBlocked: { type: Boolean, default: false },
-  role: { type: String, default: 'employee' },
+  role:{ type: String, default: "employee" },
   
   personalDetails: {
-    profilePicture:{ type: String },
+    profilePicture:{ type: String},
     employeeName: { type: String },
     email: { type: String, required: true },
     phone: { type: String },
@@ -44,10 +44,10 @@ const employeeSchema = new Schema<IEmployee>({
 
   documents: {
     resume: {
-      documentName: { type: String },
+      documentName: { type: String},
       documentUrl: { type: String },
-      documentSize: { type: Number },
-      uploadedAt: { type: Date, },
+      documentSize: { type: String },
+      uploadedAt: { type: Date },
     },
   },
   leaves: {

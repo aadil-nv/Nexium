@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/plots": "^2.3.2",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@flaticon/flaticon-uicons": "^3.3.1",
@@ -71,6 +72,7 @@
     "react-table": "^7.8.0",
     "react-toastify": "^10.0.5",
     "react-webcam": "^7.2.0",
+    "recharts": "^2.15.0",
     "redux": "^5.0.1",
     "redux-persist": "^6.0.0",
     "tailwind-merge": "^2.5.2",

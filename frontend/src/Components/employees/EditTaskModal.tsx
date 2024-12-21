@@ -5,6 +5,7 @@ import { employeeInstance } from '../../services/employeeInstance'; // Ensure th
 import { toast } from 'react-toastify'; // Ensure React-Toastify is imported
 
 interface ITaskDTO {
+  _id?: string;
   employeeId: string;
   dueDate: Date;
   tasks: {
@@ -59,11 +60,20 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
     }
   };
 
+  const handleDeleteTask = (index: number) => {
+    if (taskData) {
+      const updatedTasks = taskData.tasks.filter((_, i) => i !== index);
+      setTaskData({ ...taskData, tasks: updatedTasks });
+    }
+  };
+
   const handleSave = async () => {
     if (taskData) {
+      console.log("taskdatais -----------",taskData);
+      
       try {
         // Send the updated task data to the backend
-        const response = await employeeInstance.post(`/employee/api/task/update-task/${taskData.employeeId}`, taskData);
+        const response = await employeeInstance.post(`/employee/api/task/update-task/${taskData._id}`, taskData);
         
         if (response.status === 200) {
           toast.success('Task updated successfully!'); // Show success message
@@ -107,6 +117,11 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
               <Select.Option value="high">High</Select.Option>
             </Select>
           </Col>
+          <Col span={12} style={{ textAlign: 'right' }}>
+            <Button  onClick={() => handleDeleteTask(index)} style={{ marginTop: 8 ,backgroundColor:'red', color:"white"}}>
+              Delete Task
+            </Button>
+          </Col>
         </Row>
       </div>
     ));
@@ -125,7 +140,7 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
       {taskData && (
         <>
           <Input
-            value={taskData.employeeId}
+            value={taskData._id}
             disabled
             placeholder="Employee ID"
             style={{ marginBottom: 10 }}

@@ -11,11 +11,9 @@ export default class DepartmentRepository extends BaseRepository<IDepartment> im
     }
 
     async getDepartment(departmentId: string): Promise<IDepartment> {
-        console.log("departmentId from ropo====================",departmentId);
         
         try {
             const department = await this._departmentModel.findOne({ _id:departmentId }).exec();
-            console.log("department  from return ",department);
             
              if(!department){
                 throw new Error("Department not found");

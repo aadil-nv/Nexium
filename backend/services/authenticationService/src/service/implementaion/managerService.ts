@@ -68,8 +68,8 @@ export default class ManagerService implements IManagerService {
       const refreshToken = generateRefreshToken({ managerData });
 
       const managerName = managerData.personalDetails.managerName;
-      const managerProfilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ managerData.personalDetails.profilePicture}`
-      const companyLogo =  `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${managerData.companyDetails.companyLogo}`;
+      const managerProfilePicture = managerData.personalDetails.profilePicture ?`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ managerData.personalDetails.profilePicture }`:managerData.personalDetails.profilePicture
+      const companyLogo = managerData.companyDetails.companyLogo ?  `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${managerData.companyDetails.companyLogo}` :managerData.companyDetails.companyLogo;
       const managerType = managerData.professionalDetails.managerType;
       const companyName = managerData.companyDetails.companyName;
 

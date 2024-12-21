@@ -8,4 +8,7 @@ export default interface ITaskService {
     assignTaskToEmployee(taskData: ITaskDTO): Promise<ITaskResponceDTO>;
     getAllTasks(): Promise<ITaskDTO[]>
     updateTask(taskId: string, taskData: ITask): Promise<ITaskResponceDTO>;
+    deleteTask(taskId: string): Promise<ITaskDTO>;
+    getTasksByEmployeeId(employeeId: string): Promise<ITaskDTO[]>
+    updateTaskCompletion(data:object ,employeeId:string): Promise<ITaskDTO>;
 }

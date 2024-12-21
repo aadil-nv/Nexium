@@ -19,6 +19,8 @@ export default class DepartmentController implements IDepartmentController {
             
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
             const department = await this._departmentService.getDepartment(employeeId);
+            console.log(`department from controller `.bgCyan,department);
+            
             return res.status(HttpStatusCode.OK).json(department);
         } catch (error) {
             console.error(error);

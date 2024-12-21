@@ -12,7 +12,14 @@ const taskController = container.get<ITaskController>("ITaskController");
 taskRouter.get("/get-tasks/:id",tokenAutharaise,(req, res)=> taskController.getTasks(req, res));
 taskRouter.get('/get-employee-without-task',tokenAutharaise,(req, res)=> taskController.getEmployeeWithoutTask(req, res));
 taskRouter.get('/get-all-tasks',tokenAutharaise,(req, res)=> taskController.getAllTasks(req, res));
+taskRouter.get('/get-tasks-by-employee',tokenAutharaise,(req, res)=> taskController.getTasksByEmployee(req, res));
 
 taskRouter.post('/assign-task-to-employee',tokenAutharaise,(req, res)=> taskController.assignTaskToEmployee(req, res));
 taskRouter.post('/update-task/:id',tokenAutharaise,(req, res)=> taskController.updateTask(req, res));
+
+taskRouter.post('/update-task-completion',tokenAutharaise,(req, res)=> taskController.updateTaskCompletion(req, res));
+
+
+taskRouter.delete('/delete-task/:id',tokenAutharaise,(req, res)=> taskController.deleteTask(req, res));
+
 export default taskRouter

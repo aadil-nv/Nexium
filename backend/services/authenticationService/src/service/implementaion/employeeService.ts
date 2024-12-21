@@ -7,6 +7,7 @@ import nodemailer from "nodemailer";
 import OtpModel from "../../model/otpModel";
 import generateOtp from "../../utils/otp";
 import { IValidateOtpDTO } from "../../dto/employeeDTO";
+import { log } from "console";
 
 
 const transporter = nodemailer.createTransport({
@@ -194,6 +195,20 @@ export default class EmployeeService implements IEmployeeService {
       }
       await this.sendOtp(email, otp);
       return { success: true, message: 'OTP has been sent successfully.' };
+  }
+
+  async updateEmployee(employee: any): Promise<any> {
+    console.log("employee data---------------to rabbbbbbbb", employee);
+    
+    try {
+        const employeeId = employee._id;
+        console.log("employeeId", employeeId);
+        
+      return this._employeeRepository.update(employeeId, employee);
+    } catch (error) {
+      console.error('Error in updateEmployee service:', error);
+      throw error;
+    }
   }
 
 }

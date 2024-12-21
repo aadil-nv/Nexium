@@ -1,96 +1,104 @@
-import React, { useEffect, useState } from 'react';
-import { getAllManagers } from '../../../api/managerApi'; // Ensure the correct path to the API file
+import React from 'react';
 import { motion } from 'framer-motion';
-import useAuth from '../../../hooks/useAuth';
+import { Card, Col, Row, Typography, Divider } from 'antd';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { CalendarOutlined, UserOutlined, CheckCircleOutlined, BarChartOutlined } from '@ant-design/icons';
+import useTheme from '../../../hooks/useTheme';
 
-interface Manager {
-  _id: string;
-  name: string;
-  email: string;
-  // Add other manager fields as required
-}
+const lineChartData = [
+  { day: 'Mon', hours: 8 },
+  { day: 'Tue', hours: 7 },
+  { day: 'Wed', hours: 9 },
+  { day: 'Thu', hours: 8 },
+  { day: 'Fri', hours: 7 },
+  { day: 'Sat', hours: 6 },
+  { day: 'Sun', hours: 5 },
+];
+
+const statistics = [
+  { id: 1, title: 'Days Worked', value: 220, icon: <CalendarOutlined /> },
+  { id: 2, title: 'Absences', value: 5, icon: <UserOutlined /> },
+  { id: 3, title: 'Minutes Worked Today', value: 480, icon: <CheckCircleOutlined /> },
+  { id: 4, title: 'Leaves Left', value: 10, icon: <BarChartOutlined /> },
+];
 
 export default function Dashboard() {
-  const [managers, setManagers] = useState<Manager[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const {manager} = useAuth()
 
-  useEffect(() => {
-    // Fetch managers when the component mounts
-    const fetchManagers = async () => {
-      try {
-        const data = await getAllManagers();
-        console.log("data", data);
-        
-        setManagers(data);
-      } catch (error) {
-        setError('Failed to load managers');
-        console.error(error);
-      }
-    };
-
-    fetchManagers();
-  }, []);
-
+  const {themeColor, themeMode, isActiveMenu} = useTheme();
+  
   return (
-    <div className="p-5">
-      <motion.h1 
-        className="text-3xl font-bold text-blue-800 mb-5"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-      >
-        Departments
-      </motion.h1>
-
-      {error && (
-        <motion.p
-          className="text-red-500 mb-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          {error}
-        </motion.p>
-      )}
-
-      {managers.length > 0 ? (
-        <ul>
-          {managers.map((manager) => (
-            <motion.li 
-              key={manager._id} 
-              className="py-3 px-4 mb-3 border border-gray-300 rounded-lg bg-gray-100"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              whileHover={{ scale: 1.05 }}
+    <div style={{ padding: '10px', minHeight: '80vh' }}>
+      {/* Animated Title */}
+        <motion.h1
+              className="text-3xl font-semibold mb-6 border-l-4 pl-4" style={{ borderColor: themeColor }}
             >
-              <p className="text-lg font-semibold text-gray-800">{manager.name}</p>
-              <p className="text-sm text-gray-600">{manager.email}</p>
-            </motion.li>
-          ))}
-        </ul>
-      ) : (
-        <motion.p
-          className="text-gray-600 mt-5"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          No managers available.
-        </motion.p>
-      )}
+              Dashboard Overview
+            </motion.h1>
 
-
-      <div>
-        <p className="text-gray-600 mt-5">managerName :, {manager?.managerName}</p>
-        <p className="text-gray-600 mt-5">companyLogo :, {manager?.companyLogo}</p> 
-        <p className="text-gray-600 mt-5">companyName :, {manager?.companyName}</p> 
-        <p className="text-gray-600 mt-5">managerType :, {manager?.managerType}</p> 
-        <p className="text-gray-600 mt-5">managerProfilePicture :, {manager?.managerProfilePicture}</p> 
-
-
+      {/* Statistics Cards */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '34px' }}>
+        {statistics.map((stat) => (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            key={stat.id}
+            style={{ width: '275px' }} // Adjust card width as needed
+          >
+            <Card
+              title={
+                <span style={{ display: 'flex', alignItems: 'center' }}>
+                  {stat.icon}
+                  <span style={{ marginLeft: '8px' }}>{stat.title}</span>
+                </span>
+              }
+              bordered={false}
+              style={{
+                boxShadow: `0 4px 15px rgba(0,0,0,0.1)`,
+                borderRadius: '10px',
+                height: '200px',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                border: `2px solid ${themeColor}`,  // Apply themeColor to border
+              }}
+            >
+              <Typography.Title level={3} style={{ fontWeight: 'bold', color: themeColor }}>
+                {stat.value}
+              </Typography.Title>
+            </Card>
+          </motion.div>
+        ))}
       </div>
+
+      <Divider />
+
+      {/* Animated Line Graph */}
+      <Row justify="center" style={{ marginTop: '30px' }}>
+        <Col span={24}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card title="Work Hours for the Week" bordered={false} style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.1)', borderRadius: '10px' }}>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={lineChartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="day" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="hours" stroke={themeColor} animationDuration={1500} />  {/* Apply themeColor to Line stroke */}
+                </LineChart>
+              </ResponsiveContainer>
+            </Card>
+          </motion.div>
+        </Col>
+      </Row>
+
+      <Divider />
     </div>
   );
 }

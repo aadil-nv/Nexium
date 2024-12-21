@@ -262,23 +262,16 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
     }
 
     async getPreviousMonthAttendance(employeeId: string): Promise<IEmployeeAttendance> {
-        console.log("hi from getPreviousMonthAttendance ---------------------------");
       
         try {
           const currentDate = new Date();
-          
-          // Get previous month
+
           const previousMonth = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
-          console.log("previousMonth", previousMonth);
       
-          // Get the first and last day of the previous month
           const startOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth(), 1);
-          console.log("startOfPreviousMonth", startOfPreviousMonth.toISOString().split('T')[0]);
       
           const endOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0);
-          console.log("endOfPreviousMonth", endOfPreviousMonth.toISOString().split('T')[0]);
       
-          // Query to find attendance records for the previous month
           const attendanceData = await this._employeeAttendanceModel.findOne({
             employeeId: employeeId,
             "attendance.date": {
@@ -310,8 +303,46 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
       
       
 
-    
-    
+      async getAttendanceDashboardData(employeeId: string): Promise<any> {
+        try {
+          const employeeAttendance = await this._employeeAttendanceModel.findOne({ employeeId });
+      
+          if (!employeeAttendance) {
+            throw new Error(`No attendance records found for employee ID ${employeeId}`);
+          }
+      
+          const attendance = employeeAttendance.attendance;
+      
+          const absentDays = attendance.filter((entry) => entry.status === "Absent").length;
+          const presentDays = attendance.filter((entry) => entry.status === "Present").length;
+      
+          const totalMinutesWorked = attendance.reduce((sum, entry) => sum + (entry.minutes || 0), 0);
+          const totalHoursWorked = totalMinutesWorked / 60;
+      
+          const approvedLeaves = attendance.filter(
+            (entry) => entry.status === "Absent" && entry.leaveStatus === "Approved"
+          ).length;
+      
+          const perDayWorkedMinutes = attendance
+            .filter((entry) => entry.minutes > 0)
+            .map((entry) => ({
+              date: entry.date,
+              workedMinutes: entry.minutes,
+            }));
+      
+          return {
+            absentDays,
+            presentDays,
+            totalHoursWorked: totalHoursWorked.toFixed(2),
+            approvedLeaves,
+            perDayWorkedMinutes,
+          };
+        } catch (error) {
+          console.error(error);
+          throw error;
+        }
+      }
+      
     
      
 

@@ -34,6 +34,9 @@ export default function Navbar() {
                      : employee.isAuthenticated
                      ? employee.employeeProfilePicture || defaultProfileImage
                      : defaultProfileImage;
+
+                     console.log("profileImage=====================", profileImage);
+                     
                    
 
   const toggleMenuFunc = () => toggleMenu(dispatch, isActiveMenu);

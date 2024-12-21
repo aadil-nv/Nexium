@@ -40,7 +40,8 @@ const targets = {
   superAdmin: process.env.SUPER_ADMIN_API_BASE_URL,
   manager: process.env.MANAGER_API_BASE_URL,
   employee: process.env.EMPLOYEE_API_BASE_URL,
-  payment: process.env.PAYMENT_API_BASE_URL
+  payment: process.env.PAYMENT_API_BASE_URL,
+  notification: process.env.NOTIFICATION_API_BASE_URL
 };
 
 console.log("Targets: ", targets.payment);
@@ -52,6 +53,7 @@ app.use('/superAdmin', createProxyMiddleware({ target: targets.superAdmin, chang
 app.use('/manager', createProxyMiddleware({ target: targets.manager, changeOrigin: true }));
 app.use('/employee', createProxyMiddleware({ target: targets.employee, changeOrigin: true }));
 app.use('/payment', createProxyMiddleware({ target: targets.payment, changeOrigin: true }));
+app.use('/notification', createProxyMiddleware({ target: targets.notification, changeOrigin: true }));
 
 const port = process.env.GATEWAY_PORT 
 app.listen(port, () => console.log(`Gateway server running on http://localhost:${port}`.bgMagenta.bold));

@@ -9,11 +9,14 @@ import employeeRoutes from './routes/employeeRoute';
 import payrollRoutes from './routes/payrollRoute';
 import departmentRoutes from './routes/departmentRoute';
 import taskRoutes from './routes/taskRoute';
+import dashboardRoutes from './routes/dashboardRoute';
 import 'colors' ;
 import morgan from 'morgan'; // Import morgan
 import { createStream } from 'rotating-file-stream';
 import path from 'path';
 import fs from 'fs';
+import { connectConsumer } from './events/connect';
+
 
 
 
@@ -54,9 +57,11 @@ app.use('/api/employee', employeeRoutes);
 app.use('/api/payroll', payrollRoutes);
 app.use('/api/department', departmentRoutes);
 app.use('/api/task', taskRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 
 
+connectConsumer();
 app.listen(PORT, () => {
   console.log(`employeeService on http://localhost:${PORT}`.bgWhite.bold);
 });

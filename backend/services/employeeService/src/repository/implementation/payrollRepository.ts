@@ -54,6 +54,8 @@ export default class PayrollRepository extends BaseRepository<IPayroll> implemen
             throw error;
         }
     }
+
+
     
     
     async downloadPayrollMonthly(employeeId: string, payrollId: string): Promise<IPayroll> {
@@ -68,6 +70,28 @@ export default class PayrollRepository extends BaseRepository<IPayroll> implemen
             throw error;
         }
     }
+
+    async getPayrollDashboardData(employeeId: string): Promise<any> {
+  try {
+    const employeePayroll = await this._payrollModel.findOne({ employeeId });
+
+    if (!employeePayroll) {
+     return { employeeId, totalNetSalary: 0 };
+    }
+
+    // Calculate total net salary
+    const totalNetSalary = employeePayroll.payroll.reduce((sum, record) => sum + (record.netSalary || 0), 0);
+
+    return {
+      employeeId,
+      totalNetSalary: totalNetSalary.toFixed(2), // Format to 2 decimal places
+    };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
     
     
 

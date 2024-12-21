@@ -1,7 +1,8 @@
 // DTO for creating or updating tasks for an employee
 export interface ITaskDTO {
+   _id?: any;
     employeeId: string; // Employee ID (string format for validation in request)
-    dueDate: Date; // Date for the tasks
+    dueDate: any; // Date for the tasks
     employeeName: string; // Name of the employee
     employeeProfilePicture: string; // Profile picture of the employee
     tasks: {
@@ -9,6 +10,7 @@ export interface ITaskDTO {
       description?: string; // Optional description
       isCompleted?: boolean; // Optional, defaults to false if not provided
       priority?: "low" | "medium" | "high"; // Optional, defaults to "low" if not provided
+      _id?: any
     }[]; // Array of task items
   }
   

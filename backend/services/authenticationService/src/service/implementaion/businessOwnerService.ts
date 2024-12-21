@@ -106,7 +106,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       
     
     async register(businessOwnerData: Partial<IBusinessOwner>): Promise<ITokenResponse> {
-        console.log(`businessOwner data ---`, businessOwnerData);
+     
       
         try {
           // Hash password if it's provided

@@ -48,11 +48,21 @@ import TaskService from "../service/implementation/taskService";
 import ITaskRepository from "../repository/interface/ITaskRepository";
 import TaskRepository from "../repository/implementation/taskRepository";
 
+import IDashboardController from "../controllers/interface/IDashboardController";
+import DashboardController from "../controllers/implementation/dashboardController";
+import IDashboardService from "../service/interface/IDashboardService";
+import DashboardService from "../service/implementation/dashboardService";
+
 import TaskModel from "../models/taskModel";
 import {ITask} from "../entities/taskEntities";
+import IConsumer from "../events/interface/IConsumer"; //! Do not remove it is using
+import Consumer from "./../events/implementation/consumer"
 
 
 const container = new Container();
+
+
+container.bind<Consumer>("IConsumer").to(Consumer);
 
 container.bind<IAttendanceController>("IAttendanceController").to(AttendenceController);
 container.bind<IAttendanceService>("IAttendanceService").to(AttendanceService);
@@ -77,6 +87,9 @@ container.bind<IDepartmentRepository>("IDepartmentRepository").to(DepartmentRepo
 container.bind<ITaskController>("ITaskController").to(TaskController);
 container.bind<ITaskService>("ITaskService").to(TaskService);
 container.bind<ITaskRepository>("ITaskRepository").to(TaskRepository);
+
+container.bind<IDashboardController>("IDashboardController").to(DashboardController);
+container.bind<IDashboardService>("IDashboardService").to(DashboardService);
 
 
 

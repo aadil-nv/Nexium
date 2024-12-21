@@ -44,7 +44,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
         
         try {
           const employee = await this._employeeModel.findOne({ "personalDetails.email": email  }).exec();
-          console.log("hitting employee---",employee);
           return employee;
         } catch (error:any) {
           // Log the error for debugging purposes
@@ -63,6 +62,17 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
           throw new Error('Failed to update OTP. No document found or OTP was not changed.');
         }
       } 
+
+
+      async updateEmployee(employee: any): Promise<any> {
+        try {
+            const employeeId = employee.employeeId;
+          return this._employeeModel.updateOne({ _id: employeeId }, employee);
+        } catch (error) {
+          console.error('Error in updateEmployee service:', error);
+          throw error;
+        }
+      }
       
 
 }

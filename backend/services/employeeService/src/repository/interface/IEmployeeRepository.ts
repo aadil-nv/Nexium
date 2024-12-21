@@ -9,6 +9,7 @@ export default interface IEmployeeRepository extends BaseRepository<IEmployee> {
         updateProfilePicture(employeeId: string, file: string): Promise<IEmployee>;
         updateAddress(employeeId: string, data: any): Promise<IEmployee>;
         uploadDocuments(employeeId: string, fileType: "resume", documentData: any): Promise<IEmployee>;
+        getEmployeeDashboardData(employeeId: string): Promise<any>
 }
 
 

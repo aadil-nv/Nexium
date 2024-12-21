@@ -115,7 +115,7 @@ export default class PayrollService implements IPayrollService {
   async getPayroll(employeeId: string): Promise<IPayrollDTO> {
     try {
       const currentDate = new Date();
-      if (currentDate.getDate() === 18) {
+      if (currentDate.getDate() === 21) {
         await this.updatePayroll(employeeId);
       }
   

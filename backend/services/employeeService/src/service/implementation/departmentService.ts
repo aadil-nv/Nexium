@@ -12,46 +12,46 @@ export default class DepartmentService implements IDepartmentService {
     @inject("IEmployeeRepository")
     private _employeeRepository:IEmployeeRepository
 ) {}
-    async getDepartment(employeeId: string): Promise<IGetDepartmentDTO> {
-        
-        try {
-            const employeeData= await this._employeeRepository.getProfile(employeeId);
-            
-            if (!employeeData) throw new Error("Employee not found");
-            const departmentId = employeeData.professionalDetails.department
-            if(!departmentId) {
-                
-                return {
-                    message:"No department found",
-                    success:false
-                }
-            }
+async getDepartment(employeeId: string): Promise<IGetDepartmentDTO> {
+  try {
+    const employeeData = await this._employeeRepository.getProfile(employeeId);
 
+    if (!employeeData) throw new Error("Employee not found");
 
+    const departmentId = employeeData.professionalDetails.department;
+    if (!departmentId) {
+      return {
+        message: "No department found",
+        success: false,
+      };
+    }
 
-          const result: IDepartment | null = await this._departmentRepository.getDepartment(departmentId);
+    const result: IDepartment | null = await this._departmentRepository.getDepartment(departmentId);
 
-          if (!result) throw new Error("Department not found");
+    console.log("result from service department", result);
 
-          return {
-            departmentId: result._id.toString(), 
-            departmentName: result.departmentName,
-            employees: result.employees.map((employee) => ({
-              _id: employee._id.toString(), 
-              name: employeeData.personalDetails.employeeName,
-              email: employeeData.employeeCredentials.companyEmail,
-              position: employeeData.professionalDetails.position,
-              profilePicture: employeeData.personalDetails.profilePicture?`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`:employeeData.personalDetails.profilePicture,
-              isActive: employeeData.isActive,
-            })),
-          
-          };
-        } catch (error) {
-          console.log(error);
-          throw error;
-        }
-      }
-      
+    if (!result) throw new Error("Department not found");
+
+    return {
+      departmentId: result._id.toString(),
+      departmentName: result.departmentName,
+      employees: result.employees.map((employee) => ({
+        _id: employee._id.toString(),
+        name: employee.name,
+        email: employee.email,
+        position: employee.position,
+        profilePicture: employee.profilePicture
+          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.profilePicture}`
+          : employee.profilePicture,
+        isActive: employee.isActive,
+      })),
+    };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
       
       
       

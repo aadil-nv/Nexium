@@ -71,4 +71,5 @@ export default class BaseRepository<T extends Document> implements IBaseReposito
             return null;
         }
     }
+
 }
