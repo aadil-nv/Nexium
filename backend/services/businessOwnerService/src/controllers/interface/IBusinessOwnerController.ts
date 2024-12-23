@@ -14,5 +14,8 @@ export default interface IBusinessOwnerController {
     uploadLogo(req:CustomRequest ,res:Response):Promise<Response>
     updateAddress(req:CustomRequest ,res:Response):Promise<Response>
     uploadDocuments(req:CustomRequest ,res:Response):Promise<Response>
+    addServiceRequest(req:CustomRequest ,res:Response):Promise<Response>
+    getAllServiceRequests(req:CustomRequest ,res:Response):Promise<Response>
+    updateServiceRequest(req:CustomRequest ,res:Response):Promise<Response>
 
 }

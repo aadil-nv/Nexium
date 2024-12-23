@@ -15,6 +15,7 @@ managerRouter.put('/update-personal-info/:id',authenticateToken, (req, res, next
 managerRouter.put('/update-professional-info/:id',authenticateToken, (req, res, next) => managerController.updateProfessionalInfo(req, res));
 managerRouter.put('/update-address-info/:id',authenticateToken, (req, res, next) => managerController.updateAddressInfo(req, res));
 managerRouter.patch('/update-profile-pic/:id',authenticateToken,uploadMiddleware, (req, res, next) => managerController.uploadProfilePic(req, res));
+managerRouter.post('/update-resume/:id',authenticateToken,uploadMiddleware, (req, res, next) => managerController.updateResume(req, res));
 
 
 export default managerRouter

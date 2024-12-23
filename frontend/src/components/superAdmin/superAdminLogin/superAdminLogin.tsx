@@ -8,6 +8,7 @@ import { useDispatch } from "react-redux";
 import { login } from "../../../redux/slices/superAdminSlice";
 import { loginSuperAdmin } from "../../../api/superAdminApi";
 import { IFormInputs } from "../../../interface/superAdminInterface";
+import IMAGES from "../../../images/images";
 
 const SuperAdminLogin: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -36,12 +37,12 @@ const SuperAdminLogin: React.FC = () => {
       <div className="bg-white shadow-md rounded-2xl flex flex-col md:flex-row w-full max-w-4xl">
         <div className="w-full md:w-3/5 p-5">
           <div className="text-left font-bold">
-            <img src="/path/to/logo.png" alt="Logo" className="w-20 h-auto" />
+            <img src={IMAGES.navBarLogo} alt="Logo" className="w-20 h-auto" />
           </div>
           <div className="py-10 text-center">
             <h2 className="text-4xl font-bold text-blue-500">Login to your account</h2>
             <div className="w-24 h-1 bg-blue-500 mx-auto mt-4 mb-4"></div>
-            <form onSubmit={handleSubmit(handleLogin)} className="flex flex-col items-center w-full max-w-xs">
+            <form onSubmit={handleSubmit(handleLogin)} className="flex flex-col items-center w-full max-w-xs ml-20">
               <div className={`bg-gray-100 w-full p-2 flex items-center mb-3 rounded-md border-2 ${errors.email ? "border-red-500" : isValid ? "border-green-500" : "border-gray-300"}`}>
                 <FaEnvelope className="text-gray-400 m-2" />
                 <input type="email" placeholder="Email" className="bg-gray-100 outline-none text-sm text-black flex-1" {...register("email")} />

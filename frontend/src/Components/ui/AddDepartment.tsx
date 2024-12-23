@@ -32,6 +32,8 @@ const AddDepartmentModal: React.FC<{
       toast.error('No valid employees selected');
       return;
     }
+    console.log("employeesToAdd@@@@@@@@@@@@@@@@@@@@@@@@",employeesToAdd);
+    
 
     try {
       const response = await managerInstance.post(
@@ -61,7 +63,7 @@ const AddDepartmentModal: React.FC<{
 
         <Form.Item label="Select Employees" name="employees" rules={[{ required: true, message: 'Please select employees!' }]}>
           <Select mode="multiple" allowClear placeholder="Search and select employees" options={employees.map((emp) => ({
-            value: emp._id, label: emp.employeeName
+            value: emp._id, label: emp.employeeName 
           }))} />
         </Form.Item>
 

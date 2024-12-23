@@ -240,10 +240,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
 
 
     try {
-      // Upload file to S3
       const fileKey = await this.uploadFileToS3(businessOwnerId, file, "documents");
 
-      
       const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
       
   
@@ -267,7 +265,41 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       throw new Error('Could not upload document.');
     }
   }
-  
 
+  async  addServiceRequest(businessOwnerId: string, data: any): Promise<IResponseDTO> {
+    console.log("addServiceRequest===============================from service request",data);
+    
+    try {
+      const businessOwnerData = await this._businessOwnerRepository.findOne({ _id: businessOwnerId });
+      console.log("Business Owner Data:v from service", businessOwnerData);
+      
+      if (!businessOwnerData) {
+        throw new Error("Business owner not found");
+      }
+      const result = await this._businessOwnerRepository.addServiceRequest(businessOwnerId,businessOwnerData, data);
+      console.log("Service Request Result:", result);
+      
+      return { success: true, message: "Service request added successfully!", data: result };
+    } catch (error:any) {
+      throw new Error(error.message || "Error while adding service request");
+    }
+  }
+  async getAllServiceRequests(businessOwnerId: string): Promise<any[]> {
+    try {
+      const result = await this._businessOwnerRepository.getAllServiceRequests(businessOwnerId);
+      return result;
+    } catch (error:any) {
+      throw new Error(error.message || "Error while getting service requests");
+  }
+  }
+
+  async updateServiceRequest(serviceRequestId: string, data: any): Promise<IResponseDTO> {
+    try {
+      const result = await this._businessOwnerRepository.updateServiceRequest(serviceRequestId, data);
+      return { success: true, message: "Service request updated successfully!", data: result };
+    } catch (error:any) {
+      throw new Error(error.message || "Error while updating service request");
+    }
+  }
   
 }

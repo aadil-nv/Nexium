@@ -56,7 +56,7 @@ export default function Departments() {
               _id: employeeId || '', 
               name: name || '', 
               position: position || '', 
-              profilePicture: profilePicture || '', 
+              profilePicture: profilePicture||"https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", 
               email: email || '', 
               isOnline: isActive ?? false, 
             }))}

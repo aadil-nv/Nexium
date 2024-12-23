@@ -161,5 +161,36 @@ export default class ManagerController implements IManagerController {
       return res.status(error.name === "ValidationError" ? 400 : 500).json({ error: errorMessage });
     }
   } 
+
+  async updateResume(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = req.user?.businessOwnerData?._id;
+      const managerId = req.params.id;
+  
+      console.log("Business Owner ID:", businessOwnerId);
+      console.log("Manager ID:", managerId);
+      console.log("File Data:", req.file);
+  
+      // Ensure the service method is awaited and returns a promise
+      const response = await this._managerService.updateResume(
+        businessOwnerId as string,
+        managerId as string,
+        req.file
+      );
+  
+      if (!response) {
+        console.log("Manager not found");
+        return res.status(404).json({ error: "Manager not found" });
+      }
+  
+      console.log("Update Response:", response);
+      return res.status(200).json(response);
+  
+    } catch (error) {
+      console.error("Error in controller:", error);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+  
   
 }

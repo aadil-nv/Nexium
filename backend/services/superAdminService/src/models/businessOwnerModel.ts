@@ -23,7 +23,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       personalWebsite: {
         type: String,
       },
-      profileImage: {
+      profilePicture: {
         type: String,
        
       },
@@ -35,6 +35,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       companyLogo: {
         type: String,
+       
       },
       companyRegistrationNumber: {
         type: String,
@@ -47,20 +48,19 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       
       // Documents Object
-      documents: {
-        companyIncorporationDocument: {
-          type: String,
-          enum: Object.values(CompanyIncorporationDocType),
+    },
+    documents: {
+      companyCertificate: 
+        {
+          documentName: { type: String },
+          documentUrl: { type: String },
+          documentSize: { type: String },
+          uploadedAt: { type: Date },
         },
-        businessOwnerIdProof: {
-          type: String,
-          enum: Object.values(BusinessOwnerIDProofType),
-        },
-      },
     },
 
     address: {
-      streetAddress: {
+      street: {
         type: String,
       },
       city: {
@@ -93,7 +93,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
     subscription: {
       subscriptionId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Subscription', 
+        ref: 'Subscription', // Assuming 'Subscription' is the name of the model you're referencing
       },
       startDate: {
         type: Date,

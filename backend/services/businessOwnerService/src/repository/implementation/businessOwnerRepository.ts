@@ -4,7 +4,11 @@ import BusinessOwnerModel from "../../models/businessOwnerModel";
 import BaseRepository from "../implementation/baseRepository";
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntity";
 import SubscriptionModel from "../../models/subscriptionModel";
-import { IPersonalDetailsDTO } from "dto/businessOwnerDTO";
+import { IPersonalDetailsDTO } from "../../dto/businessOwnerDTO";
+import EmployeeModel from "../../models/employeeModel"
+import ManagerModel from "../../models/managerModel"
+import mongoose from "mongoose";
+import serviceRequestModel from "../../models/serviceRequestModel";
 
 @injectable()
 export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwnerDocument> implements IBusinessOwnerRepository {
@@ -211,6 +215,185 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
       throw new Error('Could not update documents.');
     }
   }
+
+  async getDashboardData(companyId: string): Promise<any> {
+    try {
+      // Switch to the correct database using the companyId
+      const _switchDb = mongoose.connection.useDb(companyId, { useCache: true });
   
+      // Define the Employee and Manager models for the switched database
+      const Employee = _switchDb.model('Employees', EmployeeModel.schema);
+      const Manager = _switchDb.model('Managers', ManagerModel.schema);
+  
+      // Get the total count of employees
+      const totalEmployees = await Employee.countDocuments();
+  
+      // Get the count of active employees
+      const activeEmployees = await Employee.countDocuments({ isActive: true });
+  
+      // Get the count of verified employees
+      const verifiedEmployees = await Employee.countDocuments({ isVerified: true });
+  
+      // Get the count of managers
+      const totalManagers = await Manager.countDocuments();
+  
+      // Get the count of active managers
+      const activeManagers = await Manager.countDocuments({ isActive: true });
+  
+      // Get the count of verified managers
+      const verifiedManagers = await Manager.countDocuments({ isVerified: true });
+  
+      // Get the total company employees count (sum of total employees and total managers)
+      const totalCompanyEmployees = totalEmployees + totalManagers;
+  
+      // Get the count of employees who joined in the last month
+      const lastMonthEmployees = await Employee.countDocuments({
+        "professionalDetails.joiningDate": {
+          $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
+        },
+      });
+  
+      // Get the count of employees who joined in each month over the past 6 months
+      const employeeMonthsJoined = await Employee.aggregate([
+        {
+          $match: {
+            "professionalDetails.joiningDate": {
+              $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)), // Last 6 months
+            },
+          },
+        },
+        {
+          $group: {
+            _id: { $month: "$professionalDetails.joiningDate" }, // Group by month of joining
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { _id: 1 }, // Sort by month in ascending order
+        },
+      ]);
+  
+      // Get the count of managers who joined in each month over the past 6 months
+      const managerMonthsJoined = await Manager.aggregate([
+        {
+          $match: {
+            "professionalDetails.joiningDate": {
+              $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)), // Last 6 months
+            },
+          },
+        },
+        {
+          $group: {
+            _id: { $month: "$professionalDetails.joiningDate" }, // Group by month of joining
+            count: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { _id: 1 }, // Sort by month in ascending order
+        },
+      ]);
+  
+      // Month names array
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June", 
+        "July", "August", "September", "October", "November", "December"
+      ];
+  
+      // Initialize an empty object for the months and counts for employees and managers
+      const employeeMonthCounts: { [key: string]: number } = {};
+      const managerMonthCounts: { [key: string]: number } = {};
+  
+      const currentMonth = new Date().getMonth(); // Get the current month (0-based index)
+  
+      // Initialize all months with 0 count for employees and managers in their respective objects
+      for (let i = 0; i < 6; i++) {
+        const monthIndex = (currentMonth - i + 12) % 12;
+        employeeMonthCounts[monthNames[monthIndex]] = 0; // Set default count for employees for each month
+        managerMonthCounts[monthNames[monthIndex]] = 0;  // Set default count for managers for each month
+      }
+  
+      // Map the aggregated employee data into the employeeMonthCounts object
+      employeeMonthsJoined.forEach((entry: any) => {
+        const monthIndex = (currentMonth - entry._id + 12) % 12; // Adjust for past months
+        const monthName = monthNames[entry._id - 1]; // Get the month name (1-based index)
+        employeeMonthCounts[monthName] = entry.count;
+      });
+  
+      // Map the aggregated manager data into the managerMonthCounts object
+      managerMonthsJoined.forEach((entry: any) => {
+        const monthIndex = (currentMonth - entry._id + 12) % 12; // Adjust for past months
+        const monthName = monthNames[entry._id - 1]; // Get the month name (1-based index)
+        managerMonthCounts[monthName] = entry.count;
+      });
+  
+      // Return the collected data for the dashboard
+      return {
+        totalEmployees,
+        activeEmployees,
+        verifiedEmployees,
+        totalManagers,
+        activeManagers,
+        verifiedManagers,
+        totalCompanyEmployees, // New total company employees count
+        lastMonthEmployees,
+        employeeMonthCounts, // Object of month names and their corresponding employee join counts
+        managerMonthCounts,  // Object of month names and their corresponding manager join counts
+      };
+    } catch (error) {
+      console.error("Error retrieving dashboard data: ", error);
+      throw new Error("Failed to fetch dashboard data.");
+    }
+  }
+
+  async addServiceRequest(businessOwnerId: string, businessOwnerData: any, data: any): Promise<any> {
+    try {
+
+      const { companyName, companyLogo } = businessOwnerData.companyDetails;  
+      const { serviceName, requestReason } = data;  
+  
+      const newServiceRequest = new serviceRequestModel({
+        businessOwnerId,  
+        companyName,      
+        companyLogo,      
+        serviceName,   
+        requestReason,  
+        status: 'Pending', 
+      });
+  
+      // Save the service request to the database
+      const result = await newServiceRequest.save();
+  
+      // Return the saved result
+      return result;
+    } catch (error) {
+      console.error("Error adding service request: ", error);
+      throw new Error("Failed to add service request.");
+    }
+  }
+
+  async getAllServiceRequests(businessOwnerId: string): Promise<any[]> {
+    try {
+      const result = await serviceRequestModel.find({ businessOwnerId: businessOwnerId }).exec();
+      return result;
+    } catch (error) {
+      console.error("Error getting service requests: ", error);
+      throw new Error("Failed to get service requests.");
+    }
+  
+  }
+
+  async updateServiceRequest(serviceRequestId: string, data: any): Promise<any> {
+    try {
+      const result = await serviceRequestModel.findOneAndUpdate(
+        { _id: serviceRequestId },
+        { $set: data },
+        { new: true }
+      );
+      return result;
+    } catch (error) {
+      console.error("Error updating service request: ", error);
+      throw new Error("Failed to update service request.");
+    }
+  }
   
 }

@@ -29,8 +29,11 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
       .finally(() => setLoading(false));
   }, [isVisible]);
 
+  console.log("employees--------------222222222222222222",employees);
+  
+
   const handleFinish = async () => {
-    const selectedEmployees = employees.filter((emp: any) => selectedEmployeeIds.includes(emp._id));
+    const selectedEmployees = employees.filter((emp: any) => selectedEmployeeIds.includes(emp._id,emp.profilePicture));
 
     if (selectedEmployees.length === 0) {
       toast.error('No employees selected!');

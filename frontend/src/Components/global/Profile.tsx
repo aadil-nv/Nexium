@@ -11,7 +11,6 @@ export default function Profile() {
   const { businessOwner, superAdmin, manager, employee } = useAuth();
   
   const tabsToShow = businessOwner.isAuthenticated ? businessOwnerTabs :
-                     superAdmin.isAuthenticated ? superAdminTabs :
                      manager.isAuthenticated ? managerTabs :
                      employee.isAuthenticated ? employeeTabs : [];
 

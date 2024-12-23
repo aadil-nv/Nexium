@@ -22,16 +22,18 @@ export const businessOwnerLinks: LinkItem[] = [
   { title: 'Managers', route: '/business-owner/employees', icon: 'fi fi-tr-employees' },
   { title: 'Subscriptions', route: '/business-owner/subscriptions', icon: 'fi fi-tr-benefit' },
   { title: 'Service Requests', route: '/business-owner/service-requests', icon: 'fi fi-tr-user-headset' },
-  { title: 'Notifications', route: '/business-owner/notifications', icon: 'fi fi-tr-bells' },
-  { title: 'Announcements', route: '/business-owner/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  // { title: 'Notifications', route: '/business-owner/notifications', icon: 'fi fi-tr-bells' },
+  // { title: 'Announcements', route: '/business-owner/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  { title: 'Chat', route: '/business-owner/chat', icon: 'fi fi-tr-messages' },
+  { title: 'Meetings', route: '/business-owner/meeting', icon: 'fi fi-tr-circle-video' },
 ];
 
 export const superAdminLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/super-admin/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
   { title: 'Business Owners', route: '/super-admin/businessowners', icon: 'fi fi-tr-corporate-alt' },
   { title: 'Subscription Plans', route: '/super-admin/plans', icon: 'fi fi-tr-features' },
-  { title: 'Notifications', route: '/super-admin/notifications', icon: 'fi fi-tr-bells' },
-  { title: 'Announcements', route: '/super-admin/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  // { title: 'Notifications', route: '/super-admin/notifications', icon: 'fi fi-tr-bells' },
+  // { title: 'Announcements', route: '/super-admin/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   { title: 'Customer Support', route: '/super-admin/service-requests', icon: 'fi fi-tr-user-headset' },
 ];
 
@@ -41,8 +43,9 @@ export const teamLeedLinks: LinkItem[] = [
   { title: 'Department', route: '/employee/team', icon: 'fi fi-tr-department-structure' },
   { title: 'Tasks', route: '/employee/tasks', icon: 'fi fi-tr-responsability' } ,
   { title: 'Payroll', route: '/employee/payroll', icon: 'fi fi-tr-payroll' },
-  { title: 'Notifications', route: '/employee/notifications', icon: 'fi fi-tr-bells' },
-  { title: 'Announcements', route: '/employee/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  // { title: 'Announcements', route: '/employee/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  { title: 'Chat', route: '/employee/chat', icon: 'fi fi-tr-messages' },
+  { title: 'Meetings', route: '/employee/meeting', icon: 'fi fi-tr-circle-video' },
 ];
 export const employeeLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/employee/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
@@ -50,27 +53,23 @@ export const employeeLinks: LinkItem[] = [
   { title: 'Department', route: '/employee/team', icon: 'fi fi-tr-department-structure' },
   { title: 'My Tasks', route: '/employee/my-tasks', icon: 'fi fi-tr-web-test' },
   { title: 'Payroll', route: '/employee/payroll', icon: 'fi fi-tr-payroll' },
-  { title: 'Notifications', route: '/employee/notifications', icon: 'fi fi-tr-bells' },
-  { title: 'Announcements', route: '/employee/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  // { title: 'Announcements', route: '/employee/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  { title: 'Chat', route: '/employee/chat', icon: 'fi fi-tr-messages' },
+  { title: 'Meetings', route: '/employee/meeting', icon: 'fi fi-tr-circle-video' },
 ];
 
 export const managerLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/manager/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
   { title: 'Employees', route: '/manager/employees', icon: 'fi fi-tr-employees' },
   { title: 'Departments', route: '/manager/departments', icon: 'fi fi-tr-department-structure' },
-
-  { title: 'Payroll', route: '/manager/payroll', icon: 'fi fi-tr-payroll' },
-  {title: 'Onboarding',route: '/manager/onboarding-employee-list',icon: 'fi fi-tr-onboarding',
-    hasSubMenu: true,subLinks: [
-      { title: 'Pre Boarding', route: '/manager/pre-boarding', icon: 'fi fi-tr-skill' },
-      { title: 'Interview', route: '/manager/interview', icon: 'fi fi-tr-chart-user' },]
-  },
   { title: 'Leaves', route: '/manager/leaves', icon: 'fi fi-tr-house-leave' },
-  { title: 'Notifications', route: '/manager/notifications', icon: 'fi fi-tr-bells' },
-  { title: 'Announcements', route: '/manager/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
-  { title: 'Service Requests', route: '/manager/service-requests', icon: 'fi fi-tr-hr-group' },
+  // { title: 'Announcements', route: '/manager/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  { title: 'Chat', route: '/manager/chat', icon: 'fi fi-tr-messages' },
+  { title: 'Meetings', route: '/manager/meeting', icon: 'fi fi-tr-circle-video' },
 ];
   
+
+
 
 
 export const businessOwnerTabs = [
@@ -78,6 +77,7 @@ export const businessOwnerTabs = [
   { key: "2", tab: "Company Details", component: <CompanyDetails /> },
   { key: "3", tab: "Address", component: <Address /> },
   { key: "4", tab: "Documents", component: <Documents /> },
+  
 
 ];
 export const superAdminTabs = [

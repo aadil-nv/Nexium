@@ -2,6 +2,7 @@ import { DepartmentWithEmployeesDTO } from "dto/IDepartmentDTO";
 import IDepartmentRepository from "../../repository/interface/IDepartmentRepository";
 import IDepartmentService from "../interface/IDepartmentService";
 import { inject, injectable } from "inversify";
+import { profile } from "node:console";
 
 
 
@@ -34,7 +35,7 @@ export default class DepartmentService implements IDepartmentService {
                 name: employee.employeeId.personalDetails.employeeName,
                 email: employee.employeeId.employeeCredentials.companyEmail,
                 position: employee.employeeId.professionalDetails.position,
-                profilePicture: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.employeeId.personalDetails.profilePicture}`,
+                profilePicture:employee.employeeId.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.employeeId.personalDetails.profilePicture}` : employee.employeeId.personalDetails.profilePicture,
                 isActive: employee.employeeId.isActive,
             })),
         }));
@@ -118,12 +119,17 @@ async addEmployeesToDepartment(employeeData: any[], departmentId: string): Promi
           results.push(updatedInfo);
       }
 
+      // console.log("results====3456fvc256326=====================", department.updatedEmployee.personalDetails.profilePicture );
+      
+
       return {
           departmentId: department._id,
           departmentName: department.departmentName,
           employeesAdded: results.map((result) => ({
               employeeId: result.updatedEmployee._id,
-              employeeName: result.updatedEmployee.name,
+              employeeName: result.updatedEmployee.personalDetails.employeeName,
+              email: result.updatedEmployee.employeeCredentials.companyEmail,
+              profilePicture: result.updatedEmployee.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result.updatedEmployee.personalDetails.profilePicture}` : result.updatedEmployee.personalDetails.profilePicture
           })),
       };
   } catch (error: any) {

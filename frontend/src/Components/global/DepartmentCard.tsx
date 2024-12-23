@@ -83,7 +83,7 @@ export default function DepartmentCard({
               <div className="flex items-start space-x-3 min-w-0">
                 <div className="relative flex-shrink-0">
                   <img
-                    src={employee.profilePicture}
+                    src={employee.profilePicture || ''}
                     alt={employee.name}
                     className="w-8 h-8 rounded-full object-cover"
                   />

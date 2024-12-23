@@ -14,5 +14,8 @@ export default interface IBusinessOwnerService {
     updateAddress(businessOwnerId: string, data: any): Promise<IResponseDTO>;
     updateCompanyDetails(businessOwnerId: string, data: any): Promise<ICompanyDetailsDTO>;
     uploadDocuments(businessOwnerId: string, documentData:any ,documentType:any): Promise<IDocumentDTO>;
+    addServiceRequest(businessOwnerId: string, data: any): Promise<IResponseDTO>;
+    getAllServiceRequests(businessOwnerId: string): Promise<any[]>
+    updateServiceRequest(serviceRequestId: string, data: any): Promise<IResponseDTO>;
 
 }

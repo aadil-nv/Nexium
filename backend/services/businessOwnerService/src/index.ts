@@ -8,6 +8,7 @@ import businessOwnerRoutes from './routes/businessOwnerRoute';
 import managerRoutes from './routes/managerRoute';
 import employeeRoutes from './routes/employeeRoute';
 import subscriptionRoutes from './routes/subscriptionRoute';
+import dashboardRoutes from './routes/dashboardRoutes';
 import 'colors' ;
 import {connectConsumer} from "./events/rabbitmq/connectConsumer"
 import cookieParser from 'cookie-parser';
@@ -54,6 +55,8 @@ app.use('/api/business-owner', businessOwnerRoutes);
 app.use('/api/manager', managerRoutes); 
 app.use('/api/employee', employeeRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+
 
 connectConsumer();
 

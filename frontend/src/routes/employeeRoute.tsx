@@ -15,6 +15,9 @@ import Announcements from "../components/global/Announcements";
 import Attendance from "../components/employees/Attendance";
 import Task from "../components/employees/Task";
 import MyTask from "../components/employees/MyTask";
+import Settings from "../components/global/Settings";
+import Chat from "../components/global/Chat";
+import Meeting from "../components/global/Meeting";
 
 const BusinessOwnerRoutes = () => {
 
@@ -36,6 +39,11 @@ const BusinessOwnerRoutes = () => {
             <Route path="announcements" element={<Announcements />} />
             <Route path="tasks" element={<Task />} />
             <Route path="my-tasks" element={<MyTask />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="chat" element={<Chat />} />
+            <Route path="meeting" element={<Meeting />} />
+
+            
           </Route>
         </Route>
       </Routes>

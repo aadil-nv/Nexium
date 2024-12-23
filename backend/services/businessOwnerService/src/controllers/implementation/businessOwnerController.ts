@@ -173,21 +173,59 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   async uploadDocuments(req: CustomRequest, res: Response): Promise<Response> {
     try {
       const businessOwnerId = this.getBusinessOwnerId(req);
-      console.log("businessOwnerId", businessOwnerId);
-    
-
-      console.log("req.file", req.file);
   
       if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
       if (!req.file ) return this.handleResponse(res, 400, false, 'File or document type missing.');
   
       const result = await this._businessOwnerService.uploadDocuments(businessOwnerId, req.file, "companyCertificate");
 
-      console.log("result***********************************", result);
       
       return this.handleResponse(res, 200, true, 'Document uploaded successfully', result);
     } catch (error) {
       return this.handleResponse(res, 500, false, 'Failed to upload documents');
+    }
+  }
+
+  async addServiceRequest(req: CustomRequest, res: Response): Promise<Response> {
+    
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      console.log("Business Owner ID:", businessOwnerId);
+      
+      const data = req.body;
+      console.log("Service Request Data:", data);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      
+      const result = await this._businessOwnerService.addServiceRequest(businessOwnerId, data);
+      console.log("Service Request Result:", result);
+      
+      return this.handleResponse(res, 200, true, 'Service request added', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to add service request');
+    }
+  }
+
+  async getAllServiceRequests(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.getAllServiceRequests(businessOwnerId);
+      return this.handleResponse(res, 200, true, 'Service requests fetched', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to fetch service requests');
+    }
+  }
+
+  async updateServiceRequest(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      const serviceRequestId = req.params.id;
+      const data = req.body;
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.updateServiceRequest(serviceRequestId, data);
+      return this.handleResponse(res, 200, true, 'Service request updated', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to update service request');
     }
   }
   

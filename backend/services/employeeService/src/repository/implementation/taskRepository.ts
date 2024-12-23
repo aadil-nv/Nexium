@@ -48,31 +48,30 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
                 .find({})
                 .select("employeeId")
                 .exec();
-
-                
-
-            // Step 2: Extract employeeIds from tasks
+    
             const taskEmployeeIds = taskEmployees.map(task => task.employeeId.toString());
-
-
-            // Step 3: Get all employees excluding those with task assignments
+    
+            // Step 2: Get all employees excluding those with task assignments
+            // and where the position is not "Team Lead"
             const employeesWithoutTasks = await employeeModel
                 .find({
                     _id: { $nin: taskEmployeeIds }, // Filter out employees with existing tasks
-                     // Only consider active employees
+                    "professionalDetails.position": { $ne: "Team Lead" }, // Exclude "Team Lead"
+                    isActive: true, // Only consider active employees
                 })
                 .exec();
-                
+            
             if (!employeesWithoutTasks || employeesWithoutTasks.length === 0) {
                 throw new Error("No employees without tasks found");
             }
-
+    
             return employeesWithoutTasks;
         } catch (error) {
             console.error("Error fetching employees without tasks:", error);
             throw new Error("Could not retrieve employees without tasks");
         }
     }
+    
 
     async assignTaskToEmployee(taskData: ITask): Promise<ITask> {
         console.log("TASK DATA FOR ASSIGN:", taskData);
@@ -172,7 +171,6 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
 
     async updateTaskCompletion( data: {taskId: string, isCompleted: boolean }, employeeId: string): Promise<ITask> {
         try {
-            // Find the task by employeeId and taskId, then update the isCompleted field
             const result = await this.taskModel.findOneAndUpdate(
                 { "employeeId": employeeId, "tasks._id": data.taskId }, // Match both employeeId and taskId
                 { $set: { "tasks.$.isCompleted": data.isCompleted } }, // Update isCompleted in the specific task

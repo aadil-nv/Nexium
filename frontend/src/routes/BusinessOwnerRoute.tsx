@@ -1,11 +1,11 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import BusinessOwnerPrivateRoute from "./BusinessOwnerPrivateRoute"; // Adjust the import path based on your project structure
-import BusinessOwnerDashboard from "../components/businessOwner/BusinessOwnerPages/Dashboard";
+import BusinessOwnerDashboard from "../components/businessOwner/businessOwnerPages/BusinessOwnerDashboard";
 
 import BusinessOwnerDashBoardLayout from "../pages/businessOwnerPages/DashboardLayout";
 import Subscriptions from "../components/businessOwner/businessOwnerPages/Subscriptions";
-import ServiceRequests from "../components/businessOwner/BusinessOwnerPages/ServiceRequests";
+import ServiceRequests from "../components/global/ServiceRequests";
 import EmployeeList from "../components/businessOwner/businessOwnerPages/EmployeeList";
 import Notifications from "../components/global/Notifications";
 import Announcements from "../components/global/Announcements";
@@ -17,6 +17,7 @@ import Documents from "../components/global/Documents";
 import Securitie from "../components/global/Securitie";
 import SuccessPage from "../components/ui/SuccessPage";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
+import Settings from "../components/global/Settings";
 
 const BusinessOwnerRoutes = () => {
   const navigate = useNavigate(); // Initialize navigate
@@ -42,6 +43,8 @@ const BusinessOwnerRoutes = () => {
           <Route path="address" element={<Address />} />
           <Route path="documents" element={<Documents />} />
           <Route path="security" element={<Securitie />} />
+          <Route path="settings" element={<Settings />} />
+          
           <Route
             path="success"
             element={<SuccessPage message="Success" onClose={handleSuccessClose} />}

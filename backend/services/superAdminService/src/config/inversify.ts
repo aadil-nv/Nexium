@@ -28,6 +28,11 @@ import ISuperAdminService from "../service/interface/ISuperAdminService";
 import ISuperAdminRepository from "../repository/interface/ISuperAdminRepository";
 import SuperAdminRepository from "../repository/implementation/superAdminRepository";
 
+import IDashboardController from "../controllers/interface/IDashboardController";
+import IDashboardService from "../service/interface/IDashboardService";
+import DashboardController from "../controllers/implementation/dashboardController";
+import DashboardService from "../service/implementation/dashboardService";
+
 
 
 
@@ -49,6 +54,10 @@ container.bind<IBaseRepository>("IBaseRepository").to(BaseRepository);
 container.bind<ISuperAdminController>("ISuperAdminController").to(SuperAdminController);
 container.bind<ISuperAdminService>("ISuperAdminService").to(SuperAdminService);
 container.bind<ISuperAdminRepository>("ISuperAdminRepository").to(SuperAdminRepository);
+
+
+container.bind<IDashboardController>("IDashboardController").to(DashboardController);
+container.bind<IDashboardService>("IDashboardService").to(DashboardService);
 
 
 export default container

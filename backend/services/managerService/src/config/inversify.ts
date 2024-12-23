@@ -41,7 +41,10 @@ import LeaveService from "../service/implementation/leaveService";  // Ensure co
 import LeaveController from "../controllers/implementation/leaveController";  // Ensure correct import
 import EmployeeAttendance from "../models/attendanceModel";
 
-
+import IDashboardController from "../controllers/interface/IDashboardController";
+import IDashboardService from "../service/interface/IDashboardService";
+import DashboardController from "../controllers/implementation/dashboardController";
+import DashboardService from "../service/implementation/dashboardService";
 
 
 
@@ -78,5 +81,9 @@ container.bind<ILeaveRepository>("ILeaveRepository").to(LeaveRepository);
 container.bind<ILeaveService>("ILeaveService").to(LeaveService);
 
 container.bind<typeof EmployeeAttendance>("IEmployeeAttendance").toConstantValue(EmployeeAttendance);
+
+
+container.bind<IDashboardController>("IDashboardController").to(DashboardController);
+container.bind<IDashboardService>("IDashboardService").to(DashboardService);
 
 export default container;

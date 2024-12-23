@@ -1,69 +1,81 @@
-import React, { useState } from 'react';
-import useTheme from '../../hooks/useTheme';
-import SuccessPage from '../ui/SuccessPage';
+import React, { useState, useEffect } from 'react';
+import { Button, notification } from 'antd';
 
-export default function Notifications() {
-  const { themeColor } = useTheme();
-  
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: 'You have a new message from John Doe.', timestamp: '2024-10-24 10:30 AM' },
-    { id: 2, message: 'Your appointment is scheduled for tomorrow at 3 PM.', timestamp: '2024-10-24 09:15 AM' },
-    { id: 3, message: 'New comment on your post.', timestamp: '2024-10-23 08:45 PM' },
-  ]);
+// Define the structure of a notification object
+interface NotificationData {
+  key: number;
+  message: string;
+  description: string;
+}
 
-  const [showSuccessPage, setShowSuccessPage] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+const Notifications: React.FC = () => {
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
 
-  const handleDelete = (id: number) => {
-    setNotifications(notifications.filter(notification => notification.id !== id));
-  };
+  // Set demo data on initial render
+  useEffect(() => {
+    const demoNotifications: NotificationData[] = [
+      {
+        key: Date.now(),
+        message: 'New Demo Notification 1',
+        description: 'This is the first demo notification for testing purposes.',
+      },
+      {
+        key: Date.now() + 1,
+        message: 'New Demo Notification 2',
+        description: 'This is the second demo notification for testing purposes.',
+      },
+    ];
+    
+    // Add demo notifications to the state
+    setNotifications(demoNotifications);
 
-  const handleSuccessButtonClick = (message: string) => {
-    setSuccessMessage(message);  // Set dynamic success message
-    setShowSuccessPage(true);  // Show success page
-  };
+    // Open demo notifications using Ant Design notification API
+    demoNotifications.forEach((notificationData) => {
+      notification.open({
+        message: notificationData.message,
+        description: notificationData.description,
+        key: notificationData.key,
+        onClick: () => {
+          console.log('Notification Clicked!');
+        },
+      });
+    });
+  }, []);
 
-  const closeSuccessPage = () => {
-    setShowSuccessPage(false);
-    setSuccessMessage('');
+  const clearNotifications = () => {
+    setNotifications([]);
+    notification.success({
+      message: 'All Notifications Cleared',
+    });
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4" style={{ color: themeColor }}>Notifications</h1>
-      
-      {showSuccessPage && (
-        <SuccessPage message={successMessage} onClose={closeSuccessPage} />
-      )}
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-6">Notifications</h1>
 
-      <div className="space-y-4">
+      {/* Clear Notifications Button */}
+      <Button type="default" onClick={clearNotifications}>
+        Clear Notifications
+      </Button>
+
+      {/* Displaying Notifications */}
+      <div className="mt-6">
+        <h2 className="text-xl font-semibold mb-4">Notifications</h2>
         {notifications.length === 0 ? (
-          <p>No notifications available.</p>
+          <p>No notifications yet.</p>
         ) : (
-          notifications.map(notification => (
-            <div key={notification.id} className="border rounded-md p-4 flex justify-between items-center">
-              <div>
-                <p className="text-gray-800" style={{ color: themeColor }}>{notification.message}</p>
-                <p className="text-sm text-gray-500">{notification.timestamp}</p>
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleDelete(notification.id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
-                >
-                  Delete
-                </button>
-                <button
-                  onClick={() => handleSuccessButtonClick('Notification action was successful!')}
-                  className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition"
-                >
-                  Success
-                </button>
-              </div>
-            </div>
-          ))
+          <ul>
+            {notifications.map((notification) => (
+              <li key={notification.key} className="mb-2">
+                <strong>{notification.message}</strong>
+                <p>{notification.description}</p>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>
   );
 }
+
+export default Notifications;

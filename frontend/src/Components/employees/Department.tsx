@@ -42,6 +42,9 @@ const Team: React.FC = () => {
     fetchDepartment();
   }, []);
 
+  console.log("department***************************", department);
+  
+
   const filteredEmployees =
     department?.employees?.filter((employee) =>
       employee.name.toLowerCase().includes(search.toLowerCase())
@@ -119,8 +122,7 @@ const Team: React.FC = () => {
 
                     <img
                       src={
-                        employee.profilePicture ||
-                        "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"
+                        employee.profilePicture || "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"
                       }
                       alt={employee.name}
                       className="w-24 h-24 rounded-full border-4 border-white mb-4"

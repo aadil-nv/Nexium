@@ -11,4 +11,5 @@ export default interface IManagerController {
   updateProfessionalInfo(req: CustomRequest, res: Response): Promise<Response>;
   updateAddressInfo(req: CustomRequest, res: Response): Promise<Response>;
   uploadProfilePic(req: CustomRequest, res: Response): Promise<Response>;
+  updateResume(req: CustomRequest, res: Response): Promise<Response>;
 }

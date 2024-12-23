@@ -6,6 +6,11 @@ import BaseRepository from "../../repository/implementation/baseRepository";
 import { Model } from "mongoose";
 import managerModel from "../../models/managerModel";
 import attendanceModel from "../../models/attendanceModel";
+import employeeModel from "../../models/employeeModel";
+import taskModel from "../../models/taskModel";
+import moment from "moment";
+import departmentModel from "../../models/departmentModel";
+
 
 
 @injectable()
@@ -180,6 +185,68 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
       } catch (error) {
         console.error('Error updating documents:', error);
         throw new Error('Could not update documents.');
+      }
+    }
+
+    async getDashboardData(managerId: string): Promise<any> {
+      try {
+        // Fetch data
+        const employees = await employeeModel.find({ managerId }).select('_id').lean();
+        const departments = await departmentModel.find().lean();
+        const tasks = await taskModel.find({ employeeId: { $in: employees.map((e) => e._id) } }).lean();
+    
+        // Counts
+        const employeeCount = employees.length;
+        const departmentCount = departments.length;
+        const taskCount = tasks.reduce((acc, task) => acc + task.tasks.length, 0);
+        const completedTaskCount = tasks.reduce(
+          (acc, task) => acc + task.tasks.filter((t) => t.isCompleted).length,
+          0
+        );
+    
+        // Area chart data: Number of completed tasks by department
+        const departmentTaskData = departments.map((department) => {
+          const taskCount = department.employees.reduce((count, employee) => {
+            const employeeTasks = tasks.filter((task) => String(task.employeeId) === String(employee.employeeId));
+            const completedTasks = employeeTasks.reduce(
+              (acc, task) => acc + task.tasks.filter((t) => t.isCompleted).length,
+              0
+            );
+            return count + completedTasks;
+          }, 0);
+          return { department: department.departmentName, completedTasks: taskCount };
+        });
+    
+        // Area chart data: Tasks by month with full month name
+        const tasksByMonth = tasks.reduce<{ [key: string]: number }>((acc, task) => {
+          task.tasks.forEach((t) => {
+            if (t.isCompleted) {
+              const month = moment(task.createdAt).format("MMMM YYYY"); // Format as full month name and year
+              acc[month] = (acc[month] || 0) + 1;
+            }
+          });
+          return acc;
+        }, {});
+    
+        const tasksOverTimeData = Object.keys(tasksByMonth).map((month) => ({
+          month,
+          completedTasks: tasksByMonth[month],
+        }));
+    
+        // Return dashboard data
+        return {
+          employeeCount,
+          departmentCount,
+          taskCount,
+          completedTaskCount,
+          areaChartData: {
+            departmentTaskData,
+            tasksOverTimeData,
+          },
+        };
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        throw new Error("Failed to fetch dashboard data");
       }
     }
     

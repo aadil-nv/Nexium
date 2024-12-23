@@ -27,5 +27,10 @@ businessOwnerRouter.patch('/update-personaldetailes', authenticateToken,uploadMi
 businessOwnerRouter.patch('/update-companydetailes', authenticateToken, (req, res, next) => businessOwnerController.updateCompanyDetails(req, res));
 
 
+businessOwnerRouter.post('/add-service-request', authenticateToken, (req, res, next) => businessOwnerController.addServiceRequest(req, res));
+businessOwnerRouter.get('/service-requests', authenticateToken, (req, res, next) => businessOwnerController.getAllServiceRequests(req, res));
+businessOwnerRouter.post('/updated-service-request/:id', authenticateToken, (req, res, next) => businessOwnerController.updateServiceRequest(req, res));
+
+
 
 export default businessOwnerRouter;

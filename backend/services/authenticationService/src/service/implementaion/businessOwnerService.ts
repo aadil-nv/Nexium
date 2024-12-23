@@ -54,7 +54,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
           // Check if the account is blocked
           if (businessOwnerData.isBlocked) {
             console.log("Account is blocked");
-            return { success: false, message: "Account is blocked. Please contact admin", isVerified: false };
+            return { success: false, message: "Invalid email or password", isVerified: false };
           }
       
           // Check if the account is verified

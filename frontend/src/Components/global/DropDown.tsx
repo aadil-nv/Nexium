@@ -1,7 +1,6 @@
 import React from 'react';
-import {IDropdownMenuProps}  from "../../interface/GlobalInterface"
-
-
+import { IDropdownMenuProps } from '../../interface/GlobalInterface';
+import useAuth from '../../hooks/useAuth';
 
 const DropdownMenu: React.FC<IDropdownMenuProps> = ({
   themeColor,
@@ -9,20 +8,25 @@ const DropdownMenu: React.FC<IDropdownMenuProps> = ({
   onProfileClick,
   onSettingsClick,
 }) => {
+  const { superAdmin, businessOwner, employee, manager } = useAuth();
+
   return (
     <div
       className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg z-50"
       style={{ borderColor: themeColor }} // Set menu border to current color
     >
       <ul>
-        <li
-          className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
-          onClick={onProfileClick} // Use onProfileClick
-          style={{ color: themeColor }} // Apply current theme color
-        >
-          <i className="fi fi-tr-user-gear text-xl"></i>
-          Profile
-        </li>
+        {/* Show Profile only if superAdmin is not authenticated */}
+        {!superAdmin?.isAuthenticated && (
+          <li
+            className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
+            onClick={onProfileClick} // Use onProfileClick
+            style={{ color: themeColor }} // Apply current theme color
+          >
+            <i className="fi fi-tr-user-gear text-xl"></i>
+            Profile
+          </li>
+        )}
         <li
           className="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer"
           onClick={onSettingsClick} // Use onSettingsClick
@@ -42,7 +46,5 @@ const DropdownMenu: React.FC<IDropdownMenuProps> = ({
     </div>
   );
 };
-
-
 
 export default DropdownMenu;

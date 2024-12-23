@@ -24,7 +24,7 @@ const transporter = nodemailer.createTransport({
 export default class ManagerService implements IManagerService {
   private _managerRepository: IManagerRepository;
 
-  constructor(@inject("IManagerRepoitory") managerRepository: IManagerRepository) {
+  constructor(@inject("IManagerRepository") managerRepository: IManagerRepository) {
     this._managerRepository = managerRepository;
   }
 
@@ -36,7 +36,6 @@ export default class ManagerService implements IManagerService {
 
 
         this.validateManagerData(data);
-
  
         const businessOwnerData = await this._managerRepository.findById(businessOwnerId);
         if (!businessOwnerData) throw new Error("Business owner not found");
@@ -201,6 +200,9 @@ export default class ManagerService implements IManagerService {
         updatedAt: manager.updatedAt,
         documents: manager.documents, // Add documents if required
       }));
+
+      console.log("mappedManagers:2222222222222222222222222", mappedManagers);
+      
   
       return mappedManagers; // Return the array of ManagerDTO
     } catch (error) {
@@ -253,18 +255,81 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async getManager(businessOwnerId: string, managerId: string): Promise<IManager> {
+  async getManager(businessOwnerId: string, managerId: string): Promise<ManagerDTO> {
     try {
-     const reult = await this._managerRepository.findManagerById(managerId ,businessOwnerId);
-     if(!reult){
-      throw new Error("Manager not found");
-     }
-     return reult;
+      const result = await this._managerRepository.findManagerById(managerId, businessOwnerId);
+  
+      if (!result) {
+        throw new Error("Manager not found");
+      }
+  
+      // Dynamically build the DTO, excluding undefined fields
+      const managerDTO: ManagerDTO = {
+        personalDetails: {
+          managerName: result.personalDetails.managerName,
+          ...(result.personalDetails.personalWebsite && { personalWebsite: result.personalDetails.personalWebsite }),
+          email: result.personalDetails.email,
+          ...(result.personalDetails.profilePicture  && { profilePicture: result.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result.personalDetails.profilePicture}` : result.personalDetails.profilePicture }),
+          phone: result.personalDetails.phone,
+        },
+        professionalDetails: {
+          managerType: result.professionalDetails.managerType,
+          workTime: result.professionalDetails.workTime,
+          ...(result.professionalDetails.joiningDate && { joiningDate: result.professionalDetails.joiningDate }),
+          ...(result.professionalDetails.managerType && { designation: result.professionalDetails.managerType }),
+          salary: result.professionalDetails.salary,
+        },
+        ...(result.address && {
+          address: {
+            ...(result.address.street && { street: result.address.street }),
+            ...(result.address.city && { city: result.address.city }),
+            ...(result.address.state && { state: result.address.state }),
+            ...(result.address.postalCode && { postalCode: result.address.postalCode }),
+            ...(result.address.country && { country: result.address.country }),
+          },
+        }),
+        companyDetails: {
+          companyName: result.companyDetails.companyName,
+          ...(result.companyDetails.companyLogo && { companyLogo: result.companyDetails.companyLogo }),
+          companyRegistrationNumber: result.companyDetails.companyRegistrationNumber,
+          ...(result.companyDetails.companyWebsite && { companyWebsite: result.companyDetails.companyWebsite }),
+        },
+        ...(result.documents && {
+          documents: {
+            resume: {
+              documentName: result.documents.resume.documentName,
+              documentUrl: result.documents.resume.documentUrl,
+              ...(result.documents.resume.documentSize && { documentSize: result.documents.resume.documentSize }),
+              uploadedAt: result.documents.resume.uploadedAt,
+            },
+          },
+        }),
+        ...(result.managerCredentials && {
+          managerCredentials: {
+            companyEmail: result.managerCredentials.companyEmail,
+          },
+        }),
+        ...(result.isActive !== undefined && { isActive: result.isActive }),
+        ...(result.isVerified !== undefined && { isVerified: result.isVerified }),
+        ...(result.isBlocked !== undefined && { isBlocked: result.isBlocked }),
+        ...(result.businessOwnerId && { businessOwnerId: result.businessOwnerId.toString() }),
+        ...(result.subscriptionId && { subscriptionId: result.subscriptionId.toString() }),
+        ...(result.createdAt && { createdAt: result.createdAt }),
+        ...(result.updatedAt && { updatedAt: result.updatedAt }),
+      };
+
+
+      console.log("managerDTO", managerDTO);
+      
+      
+  
+      return managerDTO;
     } catch (error) {
       console.error("Error fetching manager:", error);
       throw error;
     }
   }
+  
 
   async updatePersonalInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager> {
     try {
@@ -325,7 +390,7 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  private async uploadFileToS3(businessOwnerId: string,managerId: string, file: Express.Multer.File, fileType: "profilePicture" | "companyLogo") {
+  private async uploadFileToS3(businessOwnerId: string,managerId: string, file: Express.Multer.File, fileType: "profilePicture" | "companyLogo" | "resume"): Promise<string> {
     const result = await this.getDetails(businessOwnerId ,managerId);
     const existingFile = fileType === "profilePicture" ? result.personalDetails.profilePicture : result.companyDetails.companyLogo;
 
@@ -344,5 +409,34 @@ export default class ManagerService implements IManagerService {
     if (!result) throw new Error("Business owner not found");
     return result;
   }
+
+
+  async updateResume(businessOwnerId: string, managerId: string, file: Express.Multer.File): Promise<any> {
+    try {
+      const fileKey = await this.uploadFileToS3(businessOwnerId,managerId, file, "resume");
+
+      
+      const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
+      
   
+      const documentData = {
+        documentName: file.originalname,
+        documentUrl: fileUrl,
+        documentSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+        uploadedAt: new Date(),
+      };
+  
+      const updatedBusinessOwner = await this._managerRepository.updateResume(businessOwnerId,managerId,documentData);      
+  
+      return {
+        documentName: file.originalname,
+        documentUrl: fileUrl,
+        documentSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+        uploadedAt: new Date(),
+      };
+    } catch (error) {
+      console.error("Error updating manager:", error);
+      throw error;
+    }
+  }
 }

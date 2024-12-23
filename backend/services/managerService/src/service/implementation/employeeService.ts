@@ -460,7 +460,7 @@ async getEmployeeWithOutDepartment(): Promise<IEmployeesDTO[]> {
             employeeName: employee.personalDetails.employeeName, // Assuming `name` is the field in the repository data
             position: employee.professionalDetails.position,
             isActive: employee.isActive,
-            profilePicture: employee.personalDetails.profilePicture, // Provide a fallback for optional fields
+            profilePicture: employee.personalDetails.profilePicture , // Provide a fallback for optional fields
             email: employee.personalDetails.email,
             _id: employee._id, 
             isBlocked: employee.isBlocked

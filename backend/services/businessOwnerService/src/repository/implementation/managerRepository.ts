@@ -137,32 +137,31 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
       const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
       const manager = _switchDb.model<IManager>('Managers', managerModel.schema);
   
-      // Ensure that only personal details are updated
+      // Ensure only the specified fields in personalDetails are updated
       const updateData = {
-        personalDetails: {
-          managerName: data.fullName,
-          personalWebsite: data.website,
-          email: data.email,
-          phone: data.phone,
-         
-        }
+        $set: {
+          "personalDetails.managerName": data.fullName,
+          "personalDetails.personalWebsite": data.website,
+          "personalDetails.email": data.email,
+          "personalDetails.phone": data.phone,
+        },
       };
   
-      // Update the personal details
+      // Update the manager document
       const updatedManager = await manager.findByIdAndUpdate(managerId, updateData, { new: true });
-      
+  
       if (!updatedManager) {
         console.error("Manager not found");
         return null; // Return null if no manager is found with the provided managerId
       }
   
       return updatedManager; // Return the updated manager document
-  
     } catch (error) {
       console.error("Error updating manager:", error);
       throw error; // Throw the error to be handled by the controller or service layer
     }
   }
+  
 
   async updateProfessionalInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager | null> {
     console.log("Updating manager's professional details with data:", data);
@@ -175,11 +174,10 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
       // Ensure that only professional details are updated
       const updateData = {
         professionalDetails: {
-          joiningDate: data.joiningDate,
+          joiningDate: data.dateOfJoin,
           workTime: data.workTime,
-          managerType: data.managerType,
+          managerType: data.jobTitle,
           salary: data.salary,
-          designation: data.designation
         }
       };
   
@@ -270,4 +268,95 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
       throw new Error('Could not update personal details.');
     }
   }
+
+
+    
+ 
+    async getDashboardData(companyId: string): Promise<any> {
+      try {
+        // Switch to the correct database using the companyId
+        const _switchDb = mongoose.connection.useDb(companyId, { useCache: true });
+        const manager = _switchDb.model<IManager>('Managers', managerModel.schema);
+    
+        // Get the total count of managers
+        const totalManagers = await manager.countDocuments();
+    
+        // Get the count of active managers
+        const activeManagers = await manager.countDocuments({ isActive: true });
+    
+        // Get the count of verified managers
+        const verifiedManagers = await manager.countDocuments({ isVerified: true });
+    
+        // Get the count of blocked managers
+        const blockedManagers = await manager.countDocuments({ isBlocked: true });
+    
+        // Get the count of managers who joined in the last week
+        const lastWeekManagers = await manager.countDocuments({
+          "professionalDetails.joiningDate": { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+        });
+    
+        // Get the count of managers who joined in the last month
+        const lastMonthManagers = await manager.countDocuments({
+          "professionalDetails.joiningDate": { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+        });
+    
+        // Get the count of managers grouped by the month they joined
+        const monthlyJoinData = await manager.aggregate([
+          {
+            $project: {
+              monthJoined: { $month: "$professionalDetails.joiningDate" },
+            },
+          },
+          {
+            $group: {
+              _id: "$monthJoined",
+              count: { $sum: 1 },
+            },
+          },
+          { $sort: { _id: 1 } }, // Sort by month (ascending)
+        ]);
+    
+        // Return the collected data for the dashboard
+        return {
+          totalManagers,
+          activeManagers,
+          verifiedManagers,
+          blockedManagers,
+          lastWeekManagers,
+          lastMonthManagers,
+          monthlyJoinData,
+        };
+      } catch (error) {
+        console.error("Error retrieving dashboard data: ", error);
+        throw new Error("Failed to fetch dashboard data.");
+      }
+    }
+    
+    async updateResume(businessOwnerId: string, managerId: string, documentData: any): Promise<IManager> {
+
+      console.log("Data received:--66666666666666666666666666666666>>>>>>", documentData);
+
+
+      
+      try {
+        const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+        const manager = _switchDb.model<IManager>('Managers', managerModel.schema);
+        const result = await manager.findByIdAndUpdate(managerId, { 
+          $set: { 'documents.resume': documentData.documentUrl,
+                 "documents.resumeName": documentData.documentName,
+                 "documents.resumeSize": documentData.documentSize,
+                 "documents.resumeUploadedAt": documentData.uploadedAt,
+           } },
+           { new: true });
+        if (!result) {
+          throw new Error(`No manager found with ID: ${managerId}`);
+        }
+        return result;
+      } catch (error) {
+        console.error('Error updating resume:', error);
+        throw new Error('Could not update resume.');
+      }
+    }
+  
+  
 }

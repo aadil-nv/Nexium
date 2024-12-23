@@ -6,6 +6,7 @@ import { setActiveMenu } from '../../redux/slices/menuSlice';
 import { businessOwnerLinks, superAdminLinks, managerLinks, employeeLinks, teamLeedLinks } from '../../utils/centralPaths';
 import useAuth from '../../hooks/useAuth';
 import useTheme from '../../hooks/useTheme';
+import imgae from "../../images/images"
 
 const Sidebar = () => {
   const { businessOwner, superAdmin, manager, employee } = useAuth();
@@ -32,7 +33,7 @@ const Sidebar = () => {
     ? manager.companyLogo ||"https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png"
     : isAuthenticated(employee)
     ? employee.companyLogo ||"https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png"
-    : '';
+    : imgae.logoThird
 
   const toggleMenu = () => dispatch(setActiveMenu(!isActiveMenu));
   const toggleSubMenu = (title: string) => setActiveSubMenu(activeSubMenu === title ? null : title);
@@ -56,7 +57,7 @@ const Sidebar = () => {
 <img
   src={companyLogo}
   alt="Business Owner Logo"
-  className="w-8 h-8 object-cover rounded-full" // Circular image styling
+  className="w-10 h-12 object-cover rounded-full" // Circular image styling
 />
 
   

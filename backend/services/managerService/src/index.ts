@@ -8,6 +8,8 @@ import managerRoutes from './routes/managerRouter';
 import departmentRoutes from './routes/departmentRouter';
 import employeeRoutes from './routes/employeeRouter';
 import onboardingRoutes from './routes/onboardingRouter';
+import dashboardRoutes from './routes/dashboardRoutes';
+
 import "colors"
 import morgan from 'morgan'; // Import morgan
 import { createStream } from 'rotating-file-stream';
@@ -49,6 +51,8 @@ app.use('/api/department', departmentRoutes);
 app.use('/api/employee', employeeRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/leave',leaveRoutes)
+app.use('/api/dashboard', dashboardRoutes);
+
 
 app.listen(PORT, () => {
   console.log(`managerService on http://localhost:${PORT}`.bgBlue.bold);

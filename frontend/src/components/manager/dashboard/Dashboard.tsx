@@ -1,104 +1,198 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Card, Col, Row, Typography, Divider } from 'antd';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { CalendarOutlined, UserOutlined, CheckCircleOutlined, BarChartOutlined } from '@ant-design/icons';
-import useTheme from '../../../hooks/useTheme';
+import { FaUsers, FaChartLine } from 'react-icons/fa';
+import {
+  AreaChart,
+  Area,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
+import { managerInstance } from '../../../services/managerInstance';
 
-const lineChartData = [
-  { day: 'Mon', hours: 8 },
-  { day: 'Tue', hours: 7 },
-  { day: 'Wed', hours: 9 },
-  { day: 'Thu', hours: 8 },
-  { day: 'Fri', hours: 7 },
-  { day: 'Sat', hours: 6 },
-  { day: 'Sun', hours: 5 },
-];
+export default function ManagerDashboard() {
+  const [data, setData] = useState<any>(null);
 
-const statistics = [
-  { id: 1, title: 'Days Worked', value: 220, icon: <CalendarOutlined /> },
-  { id: 2, title: 'Absences', value: 5, icon: <UserOutlined /> },
-  { id: 3, title: 'Minutes Worked Today', value: 480, icon: <CheckCircleOutlined /> },
-  { id: 4, title: 'Leaves Left', value: 10, icon: <BarChartOutlined /> },
-];
+  useEffect(() => {
+    // Fetch the dashboard data from the API
+    managerInstance
+      .get('/manager/api/dashboard/dashboard-data')
+      .then((response) => {
+        setData(response.data);
+        console.log('Response from API:', response.data);
+      })
+      .catch((error) => {
+        console.error('Error fetching dashboard data:', error);
+      });
+  }, []);
 
-export default function Dashboard() {
+  // Ensure data is available before rendering
+  if (!data) {
+    return <div>Loading...</div>;
+  }
 
-  const {themeColor, themeMode, isActiveMenu} = useTheme();
-  
+  const { manager } = data;
+  const { employeeCount, departmentCount, taskCount, completedTaskCount, areaChartData } = manager;
+  const { departmentTaskData, tasksOverTimeData } = areaChartData;
+
+  // Stat card component
+  const StatCard = ({ icon, title, value, textColor, bgColor }) => (
+    <motion.div
+      className={`p-6 rounded-lg shadow hover:shadow-lg transition-shadow ${bgColor}`}
+      whileHover={{ scale: 1.05 }}
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="space-y-2 text-white flex items-center">
+        <div className="mr-4 text-3xl">{icon}</div>
+        <div>
+          <p className="text-sm">{title}</p>
+          <h3 className="text-2xl font-bold">{value}</h3>
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  // Chart container component
+  const ChartContainer = ({ children }) => (
+    <motion.div
+      className="bg-white p-4 rounded-lg shadow"
+      whileHover={{ scale: 1.02 }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {children}
+    </motion.div>
+  );
+
   return (
-    <div style={{ padding: '10px', minHeight: '80vh' }}>
-      {/* Animated Title */}
-        <motion.h1
-              className="text-3xl font-semibold mb-6 border-l-4 pl-4" style={{ borderColor: themeColor }}
-            >
-              Dashboard Overview
-            </motion.h1>
+    <motion.div
+      className="mt-2"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1 }}
+    >
+      <motion.h1
+        className="text-3xl font-bold mb-8"
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.7 }}
+      >
+        Analytics Dashboard
+      </motion.h1>
 
-      {/* Statistics Cards */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '34px' }}>
-        {statistics.map((stat) => (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            key={stat.id}
-            style={{ width: '275px' }} // Adjust card width as needed
-          >
-            <Card
-              title={
-                <span style={{ display: 'flex', alignItems: 'center' }}>
-                  {stat.icon}
-                  <span style={{ marginLeft: '8px' }}>{stat.title}</span>
-                </span>
-              }
-              bordered={false}
-              style={{
-                boxShadow: `0 4px 15px rgba(0,0,0,0.1)`,
-                borderRadius: '10px',
-                height: '200px',
-                textAlign: 'center',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                border: `2px solid ${themeColor}`,  // Apply themeColor to border
-              }}
-            >
-              <Typography.Title level={3} style={{ fontWeight: 'bold', color: themeColor }}>
-                {stat.value}
-              </Typography.Title>
-            </Card>
-          </motion.div>
-        ))}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <StatCard
+          icon={<FaUsers />}
+          title="Total Employees"
+          value={employeeCount}
+          textColor="text-green-200"
+          bgColor="bg-gradient-to-r from-blue-400 to-blue-600"
+        />
+        <StatCard
+          icon={<FaUsers />}
+          title="Total Departments"
+          value={departmentCount}
+          textColor="text-green-200"
+          bgColor="bg-gradient-to-r from-green-400 to-green-600"
+        />
+        <StatCard
+          icon={<FaUsers />}
+          title="Total Tasks"
+          value={taskCount}
+          textColor="text-green-200"
+          bgColor="bg-gradient-to-r from-yellow-400 to-yellow-600"
+        />
+        <StatCard
+          icon={<FaUsers />}
+          title="Completed Tasks"
+          value={completedTaskCount}
+          textColor="text-green-200"
+          bgColor="bg-gradient-to-r from-red-400 to-red-600"
+        />
       </div>
 
-      <Divider />
-
-      {/* Animated Line Graph */}
-      <Row justify="center" style={{ marginTop: '30px' }}>
-        <Col span={24}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
+      {/* Area Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+        <ChartContainer>
+          <motion.h2
+            className="text-xl font-bold mb-4 flex items-center text-black"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Card title="Work Hours for the Week" bordered={false} style={{ boxShadow: '0 4px 15px rgba(0,0,0,0.1)', borderRadius: '10px' }}>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={lineChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="hours" stroke={themeColor} animationDuration={1500} />  {/* Apply themeColor to Line stroke */}
-                </LineChart>
-              </ResponsiveContainer>
-            </Card>
-          </motion.div>
-        </Col>
-      </Row>
+            <FaChartLine className="mr-2" /> Task Completion Over Time
+          </motion.h2>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={tasksOverTimeData}>
+                <defs>
+                  <linearGradient id="colorTasks" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="completedTasks"
+                  stroke="#8884d8"
+                  fillOpacity={1}
+                  fill="url(#colorTasks)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartContainer>
+      </div>
 
-      <Divider />
-    </div>
+      {/* Department Task Data */}
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mt-6">
+        <ChartContainer>
+          <motion.h2
+            className="text-xl font-bold mb-4 flex items-center text-black"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <FaChartLine className="mr-2" /> Completed Tasks by Department
+          </motion.h2>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={departmentTaskData}>
+                <defs>
+                  <linearGradient id="colorDepartmentTasks" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#82ca9d" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="department" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="completedTasks"
+                  stroke="#82ca9d"
+                  fillOpacity={1}
+                  fill="url(#colorDepartmentTasks)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartContainer>
+      </div>
+    </motion.div>
   );
 }

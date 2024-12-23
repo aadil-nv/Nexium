@@ -79,6 +79,8 @@ export const removeDepartmentAPI = async (departmentId: string) => {
    const response = await managerInstance.delete('/manager/api/department/delete-department', {
       data: { departmentId },
     });
+    console.log("response1111111111111111",response.data);
+    
     return response.data;
 };
 
@@ -169,7 +171,8 @@ export const addEmployee = async (employeeData: any) => {
         const response = await managerInstance.post('/manager/api/department/add-employee', { employeeData , departmentId }, {
           withCredentials: true,
         });
-  
+        console.log("Added employeed to department",response.data);
+        
     
         if (response.status === 200) {
           toast.success('Employee added successfully!');

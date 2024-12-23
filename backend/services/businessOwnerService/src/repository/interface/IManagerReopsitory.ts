@@ -1,4 +1,4 @@
-import BaseRepository from "repository/implementation/baseRepository";
+import BaseRepository from "../implementation/baseRepository";
 import {IManager} from "../../entities/managerEntity";  // Assuming IManager is an interface for manager document
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntity"; // If necessary for any other purpose, you can still import it
 
@@ -14,4 +14,7 @@ export default interface IManagerRepository extends BaseRepository<IManager> {  
     updateAddressInfo(businessOwnerId: string, managerId: string, data: IManager): Promise<IManager | null>;
     getDetails(businessOwnerId: string ,managerId : string): Promise<IManager>;
     uploadProfilePic(businessOwnerId: string,managerId: string, filePath: string ): Promise<IManager>;
+    getDashboardData(companyId: string): Promise<any>
+    updateResume(businessOwnerId: string, managerId: string,documentData: any): Promise<IManager>;
+
 }

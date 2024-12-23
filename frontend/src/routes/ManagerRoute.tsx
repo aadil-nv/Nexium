@@ -10,7 +10,7 @@ import Payroll from "../components/manager/dashboard/Payroll";
 import Leaves from "../components/manager/dashboard/Leaves";
 import Announcements from "../components/global/Announcements";
 import Notifications from "../components/global/Notifications";
-import ServiceRequests from "../components/manager/dashboard/ServiceRequest";
+import ServiceRequests from "../components/global/ServiceRequests";
 import ManagerPrivateRoute from "./ManagerPrivateRoute";
 import OnBordingEmployeeList from "../components/manager/dashboard/OnBordingEmployeeList";
 import PreBoarding from "../components/manager/dashboard/PreBoarding";
@@ -20,6 +20,7 @@ import PersonalDetailes from "../components/global/PersonalDetailes";
 import Address from "../components/global/Address";
 import Documents from "../components/global/Documents";
 import Securitie from "../components/global/Securitie";
+import Settings from "../components/global/Settings";
 
 
 const MangerRoutes = () => {
@@ -31,12 +32,14 @@ const MangerRoutes = () => {
         <Route path="employees" element={<Employees />} />
         <Route path="departments" element={<Departments />} />
       
-        <Route path="service-requests" element={<ServiceRequests />} />
+        {/* <Route path="service-requests" element={<ServiceRequests />} /> */}
         <Route path="payroll" element={<Payroll />} />
         <Route path="leaves" element={<Leaves />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="settings" element={<Settings />} />
+        
 
           <Route path="personaldetails" element={<PersonalDetailes  />} />
           <Route path="address" element={<Address />} />
@@ -44,9 +47,9 @@ const MangerRoutes = () => {
           <Route path="security" element={<Securitie />} />
 
         <Route path="settings" element={<Notifications />} />
-        <Route path="onboarding-employee-list" element={<OnBordingEmployeeList />} />
-        <Route path="pre-boarding" element={<PreBoarding />} />
-        <Route path="interview" element={<Interview />} />
+        {/* <Route path="onboarding-employee-list" element={<OnBordingEmployeeList />} /> */}
+        {/* <Route path="pre-boarding" element={<PreBoarding />} /> */}
+        {/* <Route path="interview" element={<Interview />} /> */}
         <Route path="manager-profile" element={<Profile />} />
       </Route>
      </Route>
