@@ -44,7 +44,11 @@ const targets = {
   notification: process.env.NOTIFICATION_API_BASE_URL
 };
 
-console.log("Targets: ", targets.payment);
+console.log("Targets:sssfsdfsds ", targets.payment);
+// asdhaskjdjkaskdhsakjdhjkashjkdhskajhdkjafdsdfsdfsshd
+// asdhaskjdjkaskdhsakjdhjkashjkdhskajhdkjafdsdfsdfsshd
+// asdhaskjdjkaskdhsakjdhjkashjkdhskajhdkjafdsdfsdfsshd
+// asdhaskjdjkaskdhsakjdhjkashjkdhskajhdkjafdsdfsdfsshd
 
 
 app.use('/authentication', createProxyMiddleware({ target: targets.authentication, changeOrigin: true }));
