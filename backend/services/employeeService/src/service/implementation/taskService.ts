@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import ITaskRepository from "../../repository/interface/ITaskRepository";
 import ITaskService from "../interface/ITaskService";
-import { ITaskDTO,IGetEmployeeWithoutTaskDTO, ITaskResponceDTO } from "../../dto/ITaskDTO";
+import { ITaskDTO,IGetEmployeeWithoutTaskDTO, ITaskResponceDTO ,IGetEmployeeTaskDTO } from "../../dto/ITaskDTO";
 import { ITask } from "entities/taskEntities";
 import e from "cors";
 
@@ -14,20 +14,26 @@ export default class TaskService implements ITaskService {
   
     try {
       const tasks = await this.taskRepository.getTasks(employeeId); // Fetch tasks from the repository
-      console.log("tasks", tasks);
+      console.log("tasks))))))))))))))))))))))))))))))))))))))))))))", tasks);
   
       // Map tasks to the DTO format
       return tasks.map((task) => ({
         _id: task._id,
         employeeId: task.employeeId.toString(), 
+        taskName: task.taskName,
         employeeName: task.employeeName, 
         employeeProfilePicture: task.employeeProfilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${task.employeeProfilePicture}` : task.employeeProfilePicture,
         dueDate: task.dueDate,
+        assignedBy: task.assignedBy.toString(),
+        assignedDate: task.assignedDate,
+        isApproved: task.isApproved,
         tasks: task.tasks.map((item) => ({
           title: item.title,
           description: item.description || "",
           isCompleted: item.isCompleted ?? false, 
           priority: item.priority || "low", 
+          response: item.response || "",
+          taskStatus: item.taskStatus || "backlog",
           _id: item._id
         })),
       }));
@@ -37,13 +43,11 @@ export default class TaskService implements ITaskService {
     }
   }
   
-  async getEmployeeWithoutTask(): Promise<IGetEmployeeWithoutTaskDTO[]> {
+  async getEmployeesToAddTask(): Promise<IGetEmployeeWithoutTaskDTO[]> {
 
     try {
-      const employees = await this.taskRepository.getEmployeeWithoutTask();
-      console.log("employees----from -----service",employees);
+      const employees = await this.taskRepository.getEmployeesToAddTask()
       
-
       return employees.map((employee: any) => ({
         _id: employee._id.toString(),
         name: employee.personalDetails.employeeName,
@@ -58,19 +62,52 @@ export default class TaskService implements ITaskService {
     }
   }
 
-   async assignTaskToEmployee(taskData: object): Promise<ITaskResponceDTO> {
-      try {
-        const result = await this.taskRepository.assignTaskToEmployee(taskData);
-        if(!result) throw new Error("Error assigning task to employee");
-        return { message: "Task assigned successfully", success: true };
-        
-      } catch (error) {
-        console.error("Error assigning task to employee:", error);
+  async assignTaskToEmployee(taskData: object, teamLeadId: string): Promise<ITaskDTO> {
+    try {
+      const tasks = await this.taskRepository.assignTaskToEmployee(taskData, teamLeadId);
+  
+      // Log the tasks to check the structure
+      console.log("Assigned tasks:", tasks);
+  
+      // If tasks is not an array, wrap it in an array to handle uniformly
+      const taskArray = Array.isArray(tasks) ? tasks : [tasks];
+  
+      // Check if taskArray is empty or not an array
+      if (taskArray.length === 0) {
         throw new Error("Error assigning task to employee");
-
-        
       }
+  
+      // Return the task(s) in the required DTO format
+      return taskArray.map((task: ITask) => ({
+        _id: task._id.toString(),
+        employeeId: task.employeeId.toString(),
+        employeeName: task.employeeName,
+        taskName: task.taskName,
+        employeeProfilePicture: task.employeeProfilePicture
+          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${task.employeeProfilePicture}`
+          : task.employeeProfilePicture,
+        dueDate: task.dueDate,
+        isApproved: task.isApproved ?? false,
+        assignedBy: task.assignedBy.toString(),
+        assignedDate: task.assignedDate,
+        tasks: task.tasks.map((item) => ({
+          title: item.title,
+          description: item.description || "",
+          isCompleted: item.isCompleted ?? false,
+          response: item.response || "",
+          priority: item.priority || "low",
+          taskStatus: item.taskStatus || "not started", // Default taskStatus if missing
+          _id: item._id.toString()
+        }))
+      }))[0];  // We return the first task (in case of a single task) since it's a one-to-one assignment
+  
+    } catch (error) {
+      console.error("Error assigning task to employee:", error);
+      throw new Error("Error assigning task to employee");
+    }
   }
+  
+  
 
   async getAllTasks(): Promise<ITaskDTO[]> {
     try {
@@ -79,6 +116,11 @@ export default class TaskService implements ITaskService {
         _id: task._id,
         employeeId: task.employeeId.toString(),
         employeeName: task.employeeName,
+        taskName: task.taskName,
+        assignedBy: task.assignedBy,
+        assignedDate: task.assignedDate,
+        isApproved: task.isApproved,
+
         employeeProfilePicture: task.employeeProfilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${task.employeeProfilePicture}` : task.employeeProfilePicture,
         dueDate: task.dueDate,
         tasks: task.tasks.map((item) => ({
@@ -86,7 +128,9 @@ export default class TaskService implements ITaskService {
           description: item.description || "",
           isCompleted: item.isCompleted ?? false,
           priority: item.priority || "low",
-          _id: item._id
+          _id: item._id,
+          taskStatus: item.taskStatus,
+          response:item.response
         })),
       }));
     } catch (error) {
@@ -115,6 +159,10 @@ export default class TaskService implements ITaskService {
         _id: result._id,
         employeeId: result.employeeId.toString(),
         employeeName: result.employeeName,
+        taskName: result.taskName,
+        assignedBy: result.assignedBy.toString(),
+        assignedDate: result.assignedDate,
+        isApproved: result.isApproved,
         employeeProfilePicture: result.employeeProfilePicture
           ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result.employeeProfilePicture}`
           : result.employeeProfilePicture,
@@ -125,6 +173,8 @@ export default class TaskService implements ITaskService {
           isCompleted: item.isCompleted ?? false,
           priority: item.priority || "low",
           _id: item._id,
+          taskStatus: item.taskStatus,
+          response:item.response
         })),
       };
     } catch (error: any) {
@@ -133,28 +183,46 @@ export default class TaskService implements ITaskService {
     }
   }
 
-  async getTasksByEmployeeId(employeeId: string): Promise<ITaskDTO[]> {
+  async getTasksByEmployeeId(employeeId: string, taskId: string): Promise<ITaskDTO> {
     try {
-      const tasks = await this.taskRepository.getTasksByEmployeeId(employeeId);
-      return tasks.map((task) => ({
-        _id: task._id,
+      const task = await this.taskRepository.getTasksByEmployeeId(employeeId, taskId);
+  
+      if (!task) {
+        throw new Error("Task not found for the provided employeeId and taskId.");
+      }
+  
+      console.log("Fetched task: ", task); // Inspect the structure of the fetched task
+  
+      return {
+        _id: task._id.toString(),
         employeeId: task.employeeId.toString(),
         employeeName: task.employeeName,
-        employeeProfilePicture: task.employeeProfilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${task.employeeProfilePicture}` : task.employeeProfilePicture,
+        taskName: task.taskName,
+        employeeProfilePicture: task.employeeProfilePicture
+          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${task.employeeProfilePicture}`
+          : "",
         dueDate: task.dueDate,
-        tasks: task.tasks.map((item) => ({
-          title: item.title,
-          description: item.description || "",
-          isCompleted: item.isCompleted ?? false,
-          priority: item.priority || "low",
-          _id: item._id
-        })),
-      }));
+        isApproved: task.isApproved,
+        assignedBy: task.assignedBy?.toString(),
+        assignedDate: task.assignedDate,
+        tasks: task.tasks?.length
+          ? task.tasks.map((item) => ({
+              _id: item._id?.toString(),
+              title: item.title ,
+              description: item.description ,
+              isCompleted: item.isCompleted ,
+              priority: item.priority,
+              taskStatus: item.taskStatus,
+              response:item.response
+            }))
+          : [],
+      };
     } catch (error) {
       console.error("Error fetching tasks by employee ID:", error);
       throw new Error("Could not retrieve tasks");
     }
   }
+  
 
   async updateTaskCompletion(data: object,employeeId:string): Promise<ITaskDTO> {
     try {
@@ -165,6 +233,7 @@ export default class TaskService implements ITaskService {
         _id: result._id,
         employeeId: result.employeeId.toString(),
         employeeName: result.employeeName,
+        taskName: result.taskName,
         employeeProfilePicture: result.employeeProfilePicture
           ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result.employeeProfilePicture}`
           : result.employeeProfilePicture,
@@ -183,4 +252,105 @@ export default class TaskService implements ITaskService {
     }
   }
   
+  async updateTaskApproval(data: object,employeeId:string): Promise<ITaskDTO> {
+    try {
+      const result = await this.taskRepository.updateTaskApproval(data ,employeeId);
+      if (!result) throw new Error("Error updating task approval");
+  
+      return {
+        _id: result._id,
+        employeeId: result.employeeId.toString(),
+        employeeName: result.employeeName,
+        taskName: result.taskName,
+        employeeProfilePicture: result.employeeProfilePicture
+          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result.employeeProfilePicture}`
+          : result.employeeProfilePicture,
+        dueDate: result.dueDate,
+        assignedBy: result.assignedBy.toString(),
+        assignedDate: result.assignedDate,
+        isApproved: result.isApproved,
+        tasks: result.tasks.map((item: any) => ({
+          title: item.title,
+          description: item.description || "",
+          isCompleted: item.isCompleted ?? false,
+          priority: item.priority || "low",
+          taskStatus: item.taskStatus,
+          response:item.response,
+          _id: item._id,          
+        })),
+      };
+    } catch (error: any) {
+      console.error("Error updating task approval:", error.message);
+      throw new Error("Error updating task approval");
+    }
+  }
+
+  async getTaskListOfEmployee(employeeId: string): Promise<IGetEmployeeTaskDTO[]> {
+    try {
+      const tasks = await this.taskRepository.getTaskListOfEmployee(employeeId);
+      console.log("Fetched tasks: ", tasks); // Inspect the structure of the fetched tasks
+  
+      return tasks.map((task:ITask) => ({
+        _id: task._id.toString(),
+        employeeId: task.employeeId.toString(),
+        employeeName: task.employeeName,
+        taskName: task.taskName,
+        employeeProfilePicture: task.employeeProfilePicture 
+          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${task.employeeProfilePicture}` 
+          : task.employeeProfilePicture,
+        dueDate: task.dueDate,
+        isApproved: task.isApproved,
+        assignedBy: task.assignedBy.toString(),
+        assignedDate: task.assignedDate,
+        tasks: task.tasks.map((item) => ({
+          _id: item._id.toString(),
+          title: item.title,
+          description: item.description || "",
+          isCompleted: item.isCompleted ?? false,
+          priority: item.priority || "low",
+          taskStatus: item.taskStatus,
+          response:item.response
+        }))
+      }));    
+    } catch (error) {
+      console.error("Error fetching tasks by employee ID:", error);
+      throw new Error("Could not retrieve tasks");  
+
+    }
+  }
+    
+
+  async updateCompletedTask(data: object,taskId:string): Promise<ITaskDTO> {
+    try {
+      const result = await this.taskRepository.updateCompletedTask(data ,taskId);
+      if (!result) throw new Error("Error updating task completion");
+  
+      return {
+        _id: result._id,
+        employeeId: result.employeeId.toString(),
+        employeeName: result.employeeName,
+        taskName: result.taskName,
+        employeeProfilePicture: result.employeeProfilePicture
+          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result.employeeProfilePicture}`
+          : result.employeeProfilePicture,
+        dueDate: result.dueDate,
+        assignedBy: result.assignedBy.toString(),
+        assignedDate: result.assignedDate,
+        isApproved: result.isApproved,
+        tasks: result.tasks.map((item: any) => ({
+          title: item.title,
+          description: item.description || "",
+          isCompleted: item.isCompleted ?? false,
+          priority: item.priority || "low",
+          taskStatus: item.taskStatus,
+          response:item.response,
+          _id: item._id,          
+        })),
+      };
+    } catch (error: any) {
+      console.error("Error updating task completion:", error.message);
+      throw new Error("Error updating task completion");
+    }
+  }
+
 }

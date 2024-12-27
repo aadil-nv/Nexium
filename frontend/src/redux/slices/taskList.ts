@@ -2,29 +2,25 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface Task {
   _id: string;
-  employeeId: string;
-  dueDate: Date;
-  employeeName: string;
-  employeeProfilePicture?: string;
   taskName: string;
-  tasks: {
-    title: string;
-    description?: string;
-    isCompleted?: boolean;
-    priority?: 'low' | 'medium' | 'high';
-  }[];
+  dueDate: string;
+  assignedBy: string;
+  status: 'Pending' | 'Completed';
+  isApproved: boolean;
 }
 
 interface TaskState {
   tasks: Task[];
+  loading: boolean;
 }
 
 const initialState: TaskState = {
   tasks: [], // Initially no tasks
+  loading: false,
 };
 
-const taskSlice = createSlice({
-  name: 'tasks',
+const taskListSlice = createSlice({
+  name: 'taskList',
   initialState,
   reducers: {
     setTasks: (state, action: PayloadAction<Task[]>) => {
@@ -42,8 +38,11 @@ const taskSlice = createSlice({
     removeTask: (state, action: PayloadAction<string>) => {
       state.tasks = state.tasks.filter((task) => task._id !== action.payload); // Remove task based on _id
     },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
   },
 });
 
-export const { setTasks, addTask, updateTask, removeTask } = taskSlice.actions;
-export default taskSlice.reducer;
+export const { setTasks, addTask, updateTask, removeTask, setLoading } = taskListSlice.actions;
+export default taskListSlice.reducer;

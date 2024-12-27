@@ -21,6 +21,9 @@ import Address from "../components/global/Address";
 import Documents from "../components/global/Documents";
 import Securitie from "../components/global/Securitie";
 import Settings from "../components/global/Settings";
+import LeaveSettings from "../components/manager/dashboard/LeaveSettings";
+import Chat from "../components/global/Chat";
+import Meeting from "../components/global/Meeting";
 
 
 const MangerRoutes = () => {
@@ -33,7 +36,8 @@ const MangerRoutes = () => {
         <Route path="departments" element={<Departments />} />
       
         {/* <Route path="service-requests" element={<ServiceRequests />} /> */}
-        <Route path="payroll" element={<Payroll />} />
+        <Route path="payroll-settings" element={<Payroll />} />
+        <Route path="leave-settings" element={<LeaveSettings />} />
         <Route path="leaves" element={<Leaves />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="notifications" element={<Notifications />} />
@@ -45,6 +49,9 @@ const MangerRoutes = () => {
           <Route path="address" element={<Address />} />
           <Route path="documents" element={<Documents />} />
           <Route path="security" element={<Securitie />} />
+          <Route path="chat" element={<Chat />} />
+          <Route path="meeting" element={<Meeting />} />
+
 
         <Route path="settings" element={<Notifications />} />
         {/* <Route path="onboarding-employee-list" element={<OnBordingEmployeeList />} /> */}

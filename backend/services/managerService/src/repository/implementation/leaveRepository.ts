@@ -1,11 +1,12 @@
 import { injectable, inject } from "inversify";
 import ILeaveRepository from "../interface/ILeaveRepository";
-import { Model } from "mongoose";
+import mongoose, { Model } from "mongoose";
 import employeeAttendanceModel from "../../models/attendanceModel";
 import { IEmployeeAttendance } from "../../entities/attendanceEntities";
 import BaseRepository from "./baseRepository";
 import employeeModel from '../../models/employeeModel';
-import { log } from "console";
+import leaveTypeModel from "../../models/leaveTypeModel";
+import { ILeaveType} from "../../entities/leaveTypeEntities";
 
 @injectable()
 export default class LeaveRepository extends BaseRepository<IEmployeeAttendance> implements ILeaveRepository {
@@ -130,6 +131,75 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
     }
     
     
+    async findAllLeaveTypes(): Promise<ILeaveType> {
+        try {
+            // Use Mongoose's `findOne()` to retrieve the first leave types document
+            let leaveTypesDoc = await leaveTypeModel.findOne();
+    
+            if (!leaveTypesDoc) {
+                // If no document exists, create a new one with default leave type values set to 0
+                const newLeaveTypesDoc = await leaveTypeModel.create({
+                    sickLeave: 0,        // Default max days for Sick Leave
+                    casualLeave: 0,      // Default max days for Casual Leave
+                    maternityLeave: 0,   // Default max days for Maternity Leave
+                    paternityLeave: 0,   // Default max days for Paternity Leave
+                    paidLeave: 0,        // Default max days for Paid Leave
+                    unpaidLeave: 0,      // Default max days for Unpaid Leave
+                    compensatoryLeave: 0, // Default max days for Compensatory Leave
+                    bereavementLeave: 0,  // Default max days for Bereavement Leave
+                    marriageLeave: 0,     // Default max days for Marriage Leave
+                    studyLeave: 0,        // Default max days for Study Leave
+                });
+    
+                // Return the newly created document
+                return newLeaveTypesDoc;
+            }
+    
+            // If a document exists, return it
+            return leaveTypesDoc;
+        } catch (error) {
+            console.error("Error in findAllLeaveTypes repository:", error);
+            throw new Error("Failed to fetch leave types");
+        }
+    }
     
     
+    
+
+    async updateLeaveTypes(leaveTypeId: string, data: Partial<ILeaveType>): Promise<ILeaveType> {
+        try {
+            // Find the leave types document by ID
+            const leaveTypesDoc = await leaveTypeModel.findOne();
+    
+            if (!leaveTypesDoc) {
+                throw new Error('Leave types document not found');
+            }
+    
+            // Update the corresponding leave type field with new data
+            if (data.sickLeave !== undefined) leaveTypesDoc.sickLeave = data.sickLeave;
+            if (data.casualLeave !== undefined) leaveTypesDoc.casualLeave = data.casualLeave;
+            if (data.maternityLeave !== undefined) leaveTypesDoc.maternityLeave = data.maternityLeave;
+            if (data.paternityLeave !== undefined) leaveTypesDoc.paternityLeave = data.paternityLeave;
+            if (data.paidLeave !== undefined) leaveTypesDoc.paidLeave = data.paidLeave;
+            if (data.unpaidLeave !== undefined) leaveTypesDoc.unpaidLeave = data.unpaidLeave;
+            if (data.compensatoryLeave !== undefined) leaveTypesDoc.compensatoryLeave = data.compensatoryLeave;
+            if (data.bereavementLeave !== undefined) leaveTypesDoc.bereavementLeave = data.bereavementLeave;
+            if (data.marriageLeave !== undefined) leaveTypesDoc.marriageLeave = data.marriageLeave;
+            if (data.studyLeave !== undefined) leaveTypesDoc.studyLeave = data.studyLeave;
+    
+            // Save the updated document
+            const updatedResult = await leaveTypesDoc.save();
+    
+            // Return the updated leave type document
+            return updatedResult;
+        } catch (error: any) {
+            console.error("Error in updateLeaveTypes repository:", error);
+            throw new Error("Failed to update leave types");
+        }
+    }
+    
+    
+    
+    
+
 }

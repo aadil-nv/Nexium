@@ -46,6 +46,15 @@ import IDashboardService from "../service/interface/IDashboardService";
 import DashboardController from "../controllers/implementation/dashboardController";
 import DashboardService from "../service/implementation/dashboardService";
 
+import IPayrollController from "../controllers/interface/IPayrollController";
+import IPayrollService from "../service/interface/IPayrollService";
+import IPayrollRepository from "../repository/interface/IPayrollRepository";
+import PayrollController from "../controllers/implementation/payrollController";
+import PayrollService from "../service/implementation/payrollService";
+import PayrollRepository from "../repository/implementation/payrollRepository";
+
+import PayrollCriteriaModel from "../models/payrollCriteriaModel";
+import { IPayrollCriteria } from "../entities/payrollCriteriaEntities";
 
 
 const container = new Container();
@@ -85,5 +94,13 @@ container.bind<typeof EmployeeAttendance>("IEmployeeAttendance").toConstantValue
 
 container.bind<IDashboardController>("IDashboardController").to(DashboardController);
 container.bind<IDashboardService>("IDashboardService").to(DashboardService);
+
+
+container.bind<IPayrollController>("IPayrollController").to(PayrollController);
+container.bind<IPayrollRepository>("IPayrollRepository").to(PayrollRepository);
+container.bind<IPayrollService>("IPayrollService").to(PayrollService);
+
+container.bind<typeof PayrollCriteriaModel>("IPayrollCriteria").toConstantValue(PayrollCriteriaModel);
+
 
 export default container;

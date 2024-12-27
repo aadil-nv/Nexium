@@ -3,5 +3,7 @@ import { CustomRequest } from "../../middlewares/tokenAuthenticate";
 export default interface  ILeaveController{
     updateLeaveApproval(req: CustomRequest, res: Response): Promise<void>;
     getAllLeaveEmployees(req: CustomRequest, res: Response): Promise<void>;
+    getAllLeaveTypes(req: CustomRequest, res: Response): Promise<Response>;
+    updateLeaveTypes(req: CustomRequest, res: Response): Promise<Response>;
     
 }

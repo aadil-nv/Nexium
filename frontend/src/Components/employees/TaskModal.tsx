@@ -4,6 +4,8 @@ import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Moment } from 'moment';
 import moment from 'moment';
 import { employeeInstance } from '../../services/employeeInstance';
+import { useDispatch } from 'react-redux'; // Add useDispatch to dispatch actions
+import { addTask } from '../../redux/slices/taskSlice'; // Import the addTask action
 
 // Define ITaskDTO structure
 interface ITaskDTO {
@@ -11,6 +13,7 @@ interface ITaskDTO {
   dueDate: Date;
   employeeName: string;
   employeeProfilePicture?: string;
+  taskName: string;
   tasks: {
     title: string;
     description?: string;
@@ -25,10 +28,13 @@ interface TaskModalProps {
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
+  const dispatch = useDispatch(); // Initialize dispatch
+
   const [employeeId, setEmployeeId] = useState<string>(''); // Track employeeId
   const [dueDate, setDueDate] = useState<Moment | null>(null); // Track due date
+  const [taskName, setTaskName] = useState<string>(''); // Track task name
   const [tasks, setTasks] = useState<{ title: string; description?: string; priority?: 'low' | 'medium' | 'high' }[]>([{ title: '', description: '', priority: 'low' }]); // Tasks state
-  const [availableEmployees, setAvailableEmployees] = useState<{ _id: string, name: string , profilePicture?: string }[]>([]); // Available employees state
+  const [availableEmployees, setAvailableEmployees] = useState<{ _id: string, name: string, profilePicture?: string }[]>([]); // Available employees state
 
   // Fetch employees without tasks when the modal is opened
   useEffect(() => {
@@ -49,16 +55,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
     }
   }, [visible]);
 
-  // Log available employees for debugging
-  console.log("Available employees:", availableEmployees);
-
   const handleTaskChange = (index: number, field: string, value: any) => {
     const updatedTasks = [...tasks];
     updatedTasks[index] = { ...updatedTasks[index], [field]: value };
     setTasks(updatedTasks);
   };
 
-  const addTask = () => {
+  const addTaskItem = () => {
     setTasks([...tasks, { title: '', description: '', priority: 'low' }]);
   };
 
@@ -68,60 +71,55 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
   };
 
   const handleSave = async () => {
-    console.log("Employee ID before save:", employeeId); // Check employeeId before sending request
-    if (!employeeId || !dueDate) {
-      console.error("Missing employeeId or dueDate"); // Check if values are missing
-      return; // Add validation if necessary
+    if (!employeeId || !dueDate || !taskName) {
+      console.error("Missing employeeId, dueDate, or taskName");
+      return;
     }
-  
+
     const employee = availableEmployees.find((emp) => emp._id === employeeId);
-    
-    // Ensure employee is found and that we have both name and profile picture
     if (!employee) {
       console.error('Employee not found');
       return;
     }
-  
+
     const taskData: ITaskDTO = {
       employeeId,
       employeeName: employee.name, // Send employee name
       employeeProfilePicture: employee.profilePicture, // Send employee profile picture
       dueDate: dueDate.toDate(),
+      taskName,
       tasks,
     };
-  
+
     try {
-      // Send the data to the backend via POST request
       const response = await employeeInstance.post('/employee/api/task/assign-task-to-employee', taskData);
-      console.log('Tasks assigned successfully:', response.data);
-      
-      // Show success notification
+      console.log('response===========================', response);
+
+      // Dispatch the action to add the task to Redux store
+      dispatch(addTask(response.data)); // Adding the task to Redux after successful task assignment
+
       notification.success({
         message: 'Tasks Assigned Successfully',
         description: 'The tasks have been assigned to the selected employee.',
       });
-  
-      // Call the onSave callback with the task data after successful save
-      onSave(taskData);
-  
-      // Close the modal after successful save
+      setEmployeeId(''); // Clear employee ID
+      setDueDate(null); // Clear due date
+      setTaskName(''); // Clear task name
+      setTasks([{ title: '', description: '', priority: 'low' }]); // R
+
+     
       onCancel();
-  
     } catch (error) {
-      console.error('Error assigning tasks:', error);
-  
-      // Show error notification
       notification.error({
         message: 'Error Assigning Tasks',
         description: 'There was an error assigning the tasks. Please try again.',
       });
     }
   };
-  
 
   return (
     <Modal
-      title="Assign Multiple Tasks"
+      title="Assign Tasks to Employee"
       visible={visible}
       onCancel={onCancel}
       onOk={handleSave}
@@ -130,10 +128,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
       <Select
         placeholder="Select Employee"
         value={employeeId}
-        onChange={(value) => {
-          console.log("Selected employee ID:", value); // Log selected employee ID for debugging
-          setEmployeeId(value);
-        }}
+        onChange={(value) => setEmployeeId(value)}
         style={{ width: '100%', marginBottom: '1rem' }}
       >
         {availableEmployees.map((employee) => (
@@ -150,24 +145,31 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
         style={{ width: '100%', marginBottom: '1rem' }}
       />
 
+      <Input
+        placeholder="Task Name"
+        value={taskName}
+        onChange={(e) => setTaskName(e.target.value)}
+        style={{ width: '100%', marginBottom: '1rem' }}
+      />
+
       <Divider>Tasks</Divider>
       {tasks.map((task, index) => (
         <Row key={index} gutter={16} style={{ marginBottom: '1rem' }}>
-          <Col span={6}>
+          <Col xs={24} sm={12} md={8}>
             <Input
               placeholder="Task Title"
               value={task.title}
               onChange={(e) => handleTaskChange(index, 'title', e.target.value)}
             />
           </Col>
-          <Col span={8}>
+          <Col xs={24} sm={12} md={8}>
             <Input
               placeholder="Description"
               value={task.description}
               onChange={(e) => handleTaskChange(index, 'description', e.target.value)}
             />
           </Col>
-          <Col span={4}>
+          <Col xs={24} sm={12} md={4}>
             <Select
               placeholder="Priority"
               value={task.priority}
@@ -178,18 +180,18 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
               <Select.Option value="high">High</Select.Option>
             </Select>
           </Col>
-          <Col span={3}>
+          <Col xs={24} sm={12} md={4}>
             <Button
               type="text"
               danger
               icon={<DeleteOutlined />}
               onClick={() => removeTask(index)}
-              disabled={tasks.length === 1} // Prevent deleting the last task
+              disabled={tasks.length === 1}
             />
           </Col>
         </Row>
       ))}
-      <Button type="dashed" onClick={addTask} icon={<PlusOutlined />} style={{ width: '100%' }}>
+      <Button type="dashed" onClick={addTaskItem} icon={<PlusOutlined />} style={{ width: '100%' }}>
         Add Task
       </Button>
     </Modal>

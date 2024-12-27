@@ -8,6 +8,7 @@ import { logout as businessOwnerLogout } from "../redux/slices/businessOwnerSlic
 import { logout as managerLogout } from "../redux/slices/managerSlice";
 import { logout as employeeLogout } from "../redux/slices/employeeSlice";
 import { NavbarFunctionsProps} from "../utils/interfaces"
+import {persistor} from "../redux/store/store" 
 
 
 
@@ -33,9 +34,11 @@ export const handleLogout = ({
     managerInstance.post("/manager/api/manager/logout");
     navigate("/manager-login");
   } else if (isEmployee.isAuthenticated) {
+    // persistor.purge()
     dispatch(employeeLogout());
     managerInstance.post("/manager/api/manager/logout");
     navigate("/employee-login");
+
   }
 };
 

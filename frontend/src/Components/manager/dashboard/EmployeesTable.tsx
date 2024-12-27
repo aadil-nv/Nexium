@@ -90,14 +90,14 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
               {data.filter((e) => e.name?.toLowerCase().includes(globalFilter.toLowerCase())).map((employee, i) => (
                 <motion.tr key={employee.employeeId} className={`bg-gray-${i % 2 === 0 ? "100" : "200"} hover:bg-gray-300`}>
                   {["employeeId", "name", "position", "email"].map((key) => (
-                    <td key={key} className="px-4 py-2 text-xs sm:text-sm">{employee[key as keyof IEmployee] || "N/A"}</td>
+                    <td key={key} className="px-6 py-4 text-xs sm:text-sm">{employee[key as keyof IEmployee] || "N/A"}</td>
                   ))}
                   <td className="px-4 py-2 text-xs sm:text-sm">
                     <span className={employee.isBlocked ? "text-red-500" : "text-green-500"}>{employee.isBlocked ? "Blocked" : "Active"}</span>
                   </td>
                   <td className="px-4 py-2 text-xs sm:text-sm">
                     <div className="flex space-x-3 justify-center">
-                      <motion.button onClick={() => handleClick('edit', employee.employeeId)} className="text-white w-24 bg-blue-500 hover:bg-blue-600 flex items-center justify-center rounded-md">
+                      <motion.button onClick={() => handleClick('edit', employee.employeeId)} className="text-white w-24 h-10 bg-blue-500 hover:bg-blue-600 flex items-center justify-center rounded-md">
                         <FaEdit className="mr-2" /> Edit
                       </motion.button>
                       <motion.button onClick={() => handleClick('block', employee.employeeId, employee.isBlocked)} className={`text-white w-24 flex items-center justify-center rounded-md ${employee.isBlocked ? "bg-red-500" : "bg-green-500"}`}>

@@ -9,6 +9,7 @@ import departmentRoutes from './routes/departmentRouter';
 import employeeRoutes from './routes/employeeRouter';
 import onboardingRoutes from './routes/onboardingRouter';
 import dashboardRoutes from './routes/dashboardRoutes';
+import payrollRoutes from './routes/payrollRoutes';
 
 import "colors"
 import morgan from 'morgan'; // Import morgan
@@ -52,6 +53,7 @@ app.use('/api/employee', employeeRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/leave',leaveRoutes)
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/payroll', payrollRoutes);
 
 
 app.listen(PORT, () => {

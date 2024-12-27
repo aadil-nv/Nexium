@@ -23,7 +23,7 @@ export const businessOwnerLinks: LinkItem[] = [
   { title: 'Subscriptions', route: '/business-owner/subscriptions', icon: 'fi fi-tr-benefit' },
   { title: 'Service Requests', route: '/business-owner/service-requests', icon: 'fi fi-tr-user-headset' },
   // { title: 'Notifications', route: '/business-owner/notifications', icon: 'fi fi-tr-bells' },
-  // { title: 'Announcements', route: '/business-owner/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  { title: 'Announcements', route: '/business-owner/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   { title: 'Chat', route: '/business-owner/chat', icon: 'fi fi-tr-messages' },
   { title: 'Meetings', route: '/business-owner/meeting', icon: 'fi fi-tr-circle-video' },
 ];
@@ -33,7 +33,7 @@ export const superAdminLinks: LinkItem[] = [
   { title: 'Business Owners', route: '/super-admin/businessowners', icon: 'fi fi-tr-corporate-alt' },
   { title: 'Subscription Plans', route: '/super-admin/plans', icon: 'fi fi-tr-features' },
   // { title: 'Notifications', route: '/super-admin/notifications', icon: 'fi fi-tr-bells' },
-  // { title: 'Announcements', route: '/super-admin/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  { title: 'Announcements', route: '/super-admin/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   { title: 'Customer Support', route: '/super-admin/service-requests', icon: 'fi fi-tr-user-headset' },
 ];
 
@@ -51,7 +51,7 @@ export const employeeLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/employee/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
   { title: 'Attendance', route: '/employee/attendance', icon: 'fi fi-tr-skill' },
   { title: 'Department', route: '/employee/team', icon: 'fi fi-tr-department-structure' },
-  { title: 'My Tasks', route: '/employee/my-tasks', icon: 'fi fi-tr-web-test' },
+  { title: 'My Tasks', route: '/employee/task-list', icon: 'fi fi-tr-web-test' },
   { title: 'Payroll', route: '/employee/payroll', icon: 'fi fi-tr-payroll' },
   // { title: 'Announcements', route: '/employee/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   { title: 'Chat', route: '/employee/chat', icon: 'fi fi-tr-messages' },
@@ -63,9 +63,11 @@ export const managerLinks: LinkItem[] = [
   { title: 'Employees', route: '/manager/employees', icon: 'fi fi-tr-employees' },
   { title: 'Departments', route: '/manager/departments', icon: 'fi fi-tr-department-structure' },
   { title: 'Leaves', route: '/manager/leaves', icon: 'fi fi-tr-house-leave' },
-  // { title: 'Announcements', route: '/manager/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
+  { title: 'Announcements', route: '/manager/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   { title: 'Chat', route: '/manager/chat', icon: 'fi fi-tr-messages' },
   { title: 'Meetings', route: '/manager/meeting', icon: 'fi fi-tr-circle-video' },
+  { title: 'Payroll Settings', route: '/manager/payroll-settings', icon: "fi fi-tr-calendar-salary" },
+  { title: 'Leave Settings', route: '/manager/leave-settings', icon: 'fi fi-tr-spring-calendar' },
 ];
   
 

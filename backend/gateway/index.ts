@@ -45,10 +45,7 @@ const targets = {
 };
 
 console.log("Targets:sssfsdfsds ", targets.payment);
-// asdhaskjdjkaskdhsakjdhjkashjkdhskajhdkjafdsdfsdfsshd
-// asdhaskjdjkaskdhsakjdhjkashjkdhskajhdkjafdsdfsdfsshd
-// asdhaskjdjkaskdhsakjdhjkashjkdhskajhdkjafdsdfsdfsshd
-// asdhaskjdjkaskdhsakjdhjkashjkdhskajhdkjafdsdfsdfsshd
+
 
 
 app.use('/authentication', createProxyMiddleware({ target: targets.authentication, changeOrigin: true }));

@@ -21,10 +21,10 @@ export default class TaskController implements ITaskController {
         }
     }
 
-    async getEmployeeWithoutTask(req: Request, res: Response): Promise<Response> {
+    async getEmployeesToAddTask(req: Request, res: Response): Promise<Response> {
         
         try {
-            const employees = await this.taskService.getEmployeeWithoutTask();
+            const employees = await this.taskService.getEmployeesToAddTask();
             if(!employees) return res.status(HttpStatusCode.OK).json([]);
             
             return res.status(HttpStatusCode.OK).json(employees);
@@ -33,12 +33,15 @@ export default class TaskController implements ITaskController {
         }
     }
 
-    async assignTaskToEmployee(req: Request, res: Response): Promise<Response> {
+    async assignTaskToEmployee(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const taskData = req.body;
+            const teamLeadId = req.user?.employeeData?._id
             console.log(`"taskData from the body "`.bgRed,taskData);
             
-            const task = await this.taskService.assignTaskToEmployee(taskData);
+            const task = await this.taskService.assignTaskToEmployee(taskData ,teamLeadId as string);
+                console.log(`"task from the body "`.bgRed,task);
+                
             return res.status(HttpStatusCode.OK).json(task);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
@@ -77,13 +80,17 @@ export default class TaskController implements ITaskController {
         }
     }
 
-    async getTasksByEmployee(req: CustomRequest, res: Response): Promise<Response> {
+    async getTasksByEmployeeId(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const employeeId = req.user?.employeeData?._id;
+            const taskId = req.params.id;
             
-            const tasks = await this.taskService.getTasksByEmployeeId(employeeId as string);
+            const tasks = await this.taskService.getTasksByEmployeeId(employeeId as string , taskId as string);
+
+            console.log("tasks ----------------?>>>>",tasks);
             
-            return res.status(HttpStatusCode.OK).json(tasks[0]);
+            
+            return res.status(HttpStatusCode.OK).json(tasks);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
         }
@@ -98,6 +105,48 @@ export default class TaskController implements ITaskController {
             const data = req.body;
             console.log(`"taskId from the body "`.bgRed,data);
             const task = await this.taskService.updateTaskCompletion( data,employeeId as string);
+            return res.status(HttpStatusCode.OK).json(task);
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
+        }
+    }
+
+    async updateTaskApproval(req:CustomRequest , res:Response): Promise<Response> {
+        try {
+            const taskId = req.params.id;
+          
+            console.log(`"taskId from the body "`.bgRed,taskId);
+            
+            const data = req.body;
+            console.log(`"taskId from the body "`.bgRed,data);
+            const task = await this.taskService.updateTaskApproval( data,taskId as string);
+            return res.status(HttpStatusCode.OK).json(task);
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
+        }
+    }
+
+    async getTaskListOfEmployee(req:CustomRequest , res:Response): Promise<Response> {
+        try {
+            const employeeId = req.user?.employeeData?._id;
+            const tasks = await this.taskService.getTaskListOfEmployee(employeeId as string);
+            console.log("tasks ----------------2323142?>>>>",tasks);
+            
+            return res.status(HttpStatusCode.OK).json(tasks);
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
+        }
+    }
+
+    async updateCompletedTask(req:CustomRequest , res:Response): Promise<Response> {
+        try {
+            const taskId = req.params.id;
+            console.log(`"taskId from the body "`.bgRed,taskId);
+            
+            const data = req.body;
+            console.log(`"taskId from the body "`.bgRed,data);
+            
+            const task = await this.taskService.updateCompletedTask(data, taskId as string);
             return res.status(HttpStatusCode.OK).json(task);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });

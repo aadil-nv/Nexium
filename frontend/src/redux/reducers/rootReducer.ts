@@ -8,6 +8,7 @@ import otpReducer from '../slices/otpSlice';
 import leaveReducer from '../slices/leaveSlice';
 import taskReducer from '../slices/taskSlice';
 import myTaskReducer from '../slices/myTaskSlice';
+import taskListReducer from '../slices/taskList';
 import { RESET_STORE } from './resetAction';
 
 
@@ -20,7 +21,8 @@ const appReducer = combineReducers({
   otp: otpReducer,
   leave: leaveReducer,
   task: taskReducer,
-  myTask: taskReducer
+  myTask: taskReducer,
+  taskList:taskListReducer
 });
 
 const rootReducer = (state: any, action: any) => {

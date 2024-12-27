@@ -41,76 +41,73 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
         }
     }
 
-    async getEmployeeWithoutTask(): Promise<IEmployee[]> {
-        try {
-            // Step 1: Get all task records and extract the employeeId from each task
-            const taskEmployees = await this.taskModel
-                .find({})
-                .select("employeeId")
-                .exec();
-    
-            const taskEmployeeIds = taskEmployees.map(task => task.employeeId.toString());
-    
-            // Step 2: Get all employees excluding those with task assignments
-            // and where the position is not "Team Lead"
-            const employeesWithoutTasks = await employeeModel
-                .find({
-                    _id: { $nin: taskEmployeeIds }, // Filter out employees with existing tasks
-                    "professionalDetails.position": { $ne: "Team Lead" }, // Exclude "Team Lead"
-                    isActive: true, // Only consider active employees
-                })
-                .exec();
-            
-            if (!employeesWithoutTasks || employeesWithoutTasks.length === 0) {
-                throw new Error("No employees without tasks found");
-            }
-    
-            return employeesWithoutTasks;
-        } catch (error) {
-            console.error("Error fetching employees without tasks:", error);
-            throw new Error("Could not retrieve employees without tasks");
+  async getEmployeesToAddTask(): Promise<IEmployee[]> {
+    try {
+        // Step 1: Get all employees excluding those with the position "Team Lead"
+        const employeesToTask = await employeeModel
+            .find({
+                "professionalDetails.position": { $ne: "Team Lead" }, // Exclude "Team Lead
+            })
+            .exec();
+
+        if (!employeesToTask || employeesToTask.length === 0) {
+            throw new Error("No employees found with a position other than Team Lead");
         }
+        
+        return employeesToTask;
+    } catch (error) {
+        console.error("Error fetching employees for task assignment:", error);
+        throw new Error("Could not retrieve employees for task assignment");
     }
+}
+
     
 
-    async assignTaskToEmployee(taskData: ITask): Promise<ITask> {
-        console.log("TASK DATA FOR ASSIGN:", taskData);
-    
-        try {
-            // Validate that employeeId is present in taskData
-            if (!taskData.employeeId) {
-                throw new Error("Employee ID is required in task data");
-            }
-    
-            // Fetch employee details using the employeeId from taskData
-            const employee = await employeeModel.findById(taskData.employeeId);
-            if (!employee) {
-                throw new Error(`Employee not found with ID: ${taskData.employeeId}`);
-            }
-    
-         
-    
-            // Include employeeName and profilePicture in taskData
-            const enrichedTaskData = {
-                ...taskData,
-                employeeName:employee.personalDetails.employeeName,
-                employeeProfilePicture: employee.personalDetails.profilePicture,
-            };
-    
-            // Create and save the task
-            const task = new this.taskModel(enrichedTaskData);
-            const result = await task.save();
-    
-            if (!result) {
-                throw new Error("Error assigning task to employee");
-            }
-    
-            return result;
-        } catch (error:any) {
-            console.error("Error assigning task to employee:", error);
-            throw new Error(error.message || "Error assigning task to employee");
+async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> {
+    console.log("TASK DATA FOR ASSIGN:", taskData);
+
+    try {
+        // Fetch team lead data
+        const teamLeadData = await employeeModel.findById({ _id: teamLeadId });
+
+        if (!teamLeadData) {
+            throw new Error("Team Lead not found with the provided ID");
         }
+
+        if (!taskData.employeeId) {
+            throw new Error("Employee ID is required in task data");
+        }
+
+        // Fetch employee details using the employeeId from taskData
+        const employee = await employeeModel.findById(taskData.employeeId);
+        if (!employee) {
+            throw new Error(`Employee not found with ID: ${taskData.employeeId}`);
+        }
+
+        // Include employeeName, profilePicture, assignedBy, and assignedDate in taskData
+        const enrichedTaskData = {
+            ...taskData,
+            employeeName: employee.personalDetails.employeeName,
+            employeeProfilePicture: employee.personalDetails.profilePicture,
+            assignedBy: teamLeadData.personalDetails.employeeName, // Assigning team lead's name
+            assignedDate: new Date(), // Setting today's date
+        };
+
+        // Create and save the task
+        const task = new this.taskModel(enrichedTaskData);
+        const result = await task.save();
+
+        if (!result) {
+            throw new Error("Error assigning task to employee");
+        }
+
+        return result;
+    } catch (error: any) {
+        console.error("Error assigning task to employee:", error);
+        throw new Error(error.message || "Error assigning task to employee");
     }
+}
+
     
 
     async updateTask(taskId: string, taskData: ITask): Promise<ITask> {
@@ -159,15 +156,22 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
         }
       }
 
-      async getTasksByEmployeeId(employeeId: string): Promise<ITask[]> {
+      async getTasksByEmployeeId(employeeId: string, taskId: string): Promise<ITask | null> {
         try {
-          const tasks = await this.taskModel.find({ employeeId: employeeId }).exec();
-          return tasks;
+            const task = await this.taskModel.findOne({
+                employeeId: employeeId,
+                _id: taskId, // Using _id to match the taskId
+            }).exec();
+    
+            console.log("Task Retrieved ***********************************************************************", task);
+    
+            return task;
         } catch (error) {
-          console.error("Error fetching tasks by employee:", error);
-          throw new Error("Could not retrieve tasks by employee");
+            console.error("Error fetching task by employeeId and taskId:", error);
+            throw new Error("Could not retrieve the task by employeeId and taskId");
         }
     }
+    
 
     async updateTaskCompletion( data: {taskId: string, isCompleted: boolean }, employeeId: string): Promise<ITask> {
         try {
@@ -179,6 +183,73 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
     
             if (!result) {
                 throw new Error(`Task with ID ${data.taskId} not found for employee ${employeeId} or update failed`);
+            }
+    
+            return result;
+        } catch (error) {
+            console.error("Error updating task completion:", error);
+            throw new Error("Error updating task completion");
+        }
+    }
+
+    async updateTaskApproval(data: any, taskId: string): Promise<ITask | null> {
+        console.log(`taskId from the body: ${taskId}`);
+        console.log(`Data received: ${JSON.stringify(data)}`);
+        
+        try {
+            // Find the task by taskId and update the 'isApproved' field
+            const result = await this.taskModel.findOneAndUpdate(
+                { _id: taskId }, // Match by taskId
+                { $set: { isApproved: data.isApproved } }, // Update isApproved field
+                { new: true } // Return the updated document
+            ).exec();
+    
+            if (!result) {
+                throw new Error(`Task with ID ${taskId} not found or update failed`);
+            }
+    
+            console.log(`Updated task: ${JSON.stringify(result)}`);
+    
+            // Return the updated task object
+            return result;
+        } catch (error) {
+            console.error("Error updating task approval:", error);
+            throw new Error("Error updating task approval");
+        }
+    }
+    
+    
+    async getTaskListOfEmployee(employeeId: string): Promise<ITask[]> {
+        try {
+          const tasks = await this.taskModel.find({ employeeId: employeeId }).exec();
+          console.log("TASKS BY EMPLOYEE***********************************************************************",tasks);
+          
+          return tasks;
+        } catch (error) {
+          console.error("Error fetching tasks by employee:", error);
+          throw new Error("Could not retrieve tasks by employee");
+        }
+    }
+    
+    async updateCompletedTask(data: any, taskId: string): Promise<ITask> {
+        try {
+            
+            const subTaskId = data.taskId;  // Get the sub-taskId
+    
+            const result = await this.taskModel.findOneAndUpdate(
+                { _id: taskId, "tasks._id": subTaskId }, // Match employeeId and sub-taskId
+                { 
+                    $set: {
+                        "tasks.$.taskStatus": data.taskStatus,  // Update taskStatus
+                        "tasks.$.isCompleted": data.isCompleted,  // Update isCompleted
+                        "tasks.$.response": data.response        // Update response
+                    }
+                }, 
+                { new: true } // Return the updated document
+            ).exec();
+    
+            if (!result) {
+                throw new Error(`Sub-task with ID ${subTaskId} not found for employee ${taskId} or update failed`);
             }
     
             return result;
