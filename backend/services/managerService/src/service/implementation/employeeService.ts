@@ -11,6 +11,11 @@ import RabbitMQMessager from "../../events/implementation/producer";
 import IEmployee from "../../entities/employeeEntities";
 import { uploadTosS3 } from "../../middlewares/multer-s3";
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { generateUAN } from "../../utils/generateUAN";
+import { generatePFAccountNumber } from "../../utils/generatePFAccountNumber";
+import { generateESICAccountNumber } from "../../utils/generateESICAccountNumber";
+import { IEmployeeAttendance } from "../../entities/attendanceEntities";
+import ILeaveRepository from "repository/interface/ILeaveRepository";
 
 
 
@@ -25,7 +30,11 @@ const transporter = nodemailer.createTransport({
 @injectable()
 export default class EmployeeService implements IEmployeeService {
   constructor(
-    @inject("IEmployeeRepository") private _employeeRepository: IEmployeeRepository
+    @inject("IEmployeeRepository") 
+    private _employeeRepository: IEmployeeRepository,
+    @inject("ILeaveRepository")
+    private _leaveRepository: ILeaveRepository
+
   ) {}
 
   async addEmployees(employeeData: any, managerData: any): Promise<any> {
@@ -65,6 +74,10 @@ export default class EmployeeService implements IEmployeeService {
         mappedEmployeeData.professionalDetails.department = null;
         mappedEmployeeData.professionalDetails.position = employeeData.position;
         mappedEmployeeData.professionalDetails.companyName = managerData.companyDetails.companyName;
+        mappedEmployeeData.professionalDetails.uanNumber = generateUAN();
+        mappedEmployeeData.professionalDetails.pfAccount = generatePFAccountNumber();
+        mappedEmployeeData.professionalDetails.esiAccount = generateESICAccountNumber();
+        
 
         const email = generateEmail(mappedEmployeeData.professionalDetails.companyName, employeeData.name, managerId);
 
@@ -75,7 +88,7 @@ export default class EmployeeService implements IEmployeeService {
 
 
         const addedEmployee = await this._employeeRepository.addEmployee(mappedEmployeeData); // Renamed variable
-        rabbitMQMessager.sendToMultipleQueues({ employeeData: addedEmployee });
+        await rabbitMQMessager.sendToMultipleQueues({ employeeData: addedEmployee });
         return { success: true, data: addedEmployee }; // Renamed variable
         await this.sendOfferLetter(managerName, mappedEmployeeData);
     } catch (error: any) {
@@ -310,6 +323,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
 
       try {
           const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId);
+          const leaveData = await this._leaveRepository.getEmployeeLeaves(employeeId);
   
           if (!employeeData) {
               throw new Error("Employee not found");
@@ -337,6 +351,14 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
                   email: employeeData.personalDetails.email,
                   phone: employeeData.personalDetails.phone,
                   profilePicture: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`,
+                  personalWebsite: employeeData.personalDetails.personalWebsite,
+                  bankAccountNumber: employeeData.personalDetails.bankAccountNumber,
+                  ifscCode: employeeData.personalDetails.ifscCode,
+                  aadharNumber: employeeData.personalDetails.aadharNumber,
+                  panNumber: employeeData.personalDetails.panNumber,
+                  gender: employeeData.personalDetails.gender,
+
+
               },
   
               address: {
@@ -355,7 +377,10 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
                   currentStatus: employeeData.professionalDetails.currentStatus,
                   companyName: employeeData.professionalDetails.companyName,
                   salary: employeeData.professionalDetails.salary,
-                  skills: employeeData.professionalDetails.skills,
+                  uanNumber: employeeData.professionalDetails.uanNumber,
+                  pfAccount: employeeData.professionalDetails.pfAccount,
+                  esiAccount: employeeData.professionalDetails.esiAccount,
+                  comapanyLogo: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.professionalDetails.comapanyLogo}`,
               },
   
               employeeCredentials: {
@@ -363,12 +388,29 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
                   companyPassword: employeeData.employeeCredentials.companyPassword,
               },
   
-              leaves: {
-                  casualLeave: employeeData.leaves.casualLeave,
-                  sickLeave: employeeData.leaves.sickLeave,
-                  paidLeave: employeeData.leaves.paidLeave,
-                  unpaidLeave: employeeData.leaves.unpaidLeave,
+              documents: {
+                  resume: {
+                      documentName: employeeData.documents.resume.documentName,
+                      documentUrl: employeeData.documents.resume.documentUrl,
+                      documentSize: employeeData.documents.resume.documentSize,
+                      uploadedAt: employeeData.documents.resume.uploadedAt,
+                  },
               },
+
+              leaves :{
+                sickLeave: leaveData.sickLeave,
+                casualLeave: leaveData.sickLeave,
+                maternityLeave: leaveData.sickLeave,
+                paternityLeave: leaveData.sickLeave,
+                paidLeave: leaveData.sickLeave,
+                unpaidLeave: leaveData.sickLeave,
+                compensatoryLeave: leaveData.sickLeave,
+                bereavementLeave: leaveData.sickLeave,
+                marriageLeave: leaveData.sickLeave,
+                studyLeave: leaveData.sickLeave,
+              }
+  
+             
           };
   
       } catch (error) {
@@ -460,9 +502,9 @@ async getEmployeeWithOutDepartment(): Promise<IEmployeesDTO[]> {
             employeeName: employee.personalDetails.employeeName, // Assuming `name` is the field in the repository data
             position: employee.professionalDetails.position,
             isActive: employee.isActive,
-            profilePicture: employee.personalDetails.profilePicture , // Provide a fallback for optional fields
-            email: employee.personalDetails.email,
-            _id: employee._id, 
+            profilePicture: employee.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}` : employee.personalDetails.profilePicture , 
+            email: employee.employeeCredentials.companyEmail,
+            employeeId: employee._id, 
             isBlocked: employee.isBlocked
         }));
 

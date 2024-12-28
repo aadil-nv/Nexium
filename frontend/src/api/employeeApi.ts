@@ -68,7 +68,8 @@ export const uploadEmployeeProfileImage = async (file: File) => {
 
 
 export const updateEmployeePersonalInfo = async (details: any) => {
-
+    console.log("detiles is s------>",details);
+    
   try {
     const response = await employeeInstance.patch('/employee/api/employee/update-personalinfo', details);
     toast.success('Details updated successfully!');

@@ -31,19 +31,22 @@ const taskSlice = createSlice({
       state.tasks = action.payload;
     },
     addTask: (state, action: PayloadAction<Task>) => {
-      state.tasks.push(action.payload); // Add the task to the tasks array
+      state.tasks.push(action.payload);
     },
     updateTask: (state, action: PayloadAction<Task>) => {
       const index = state.tasks.findIndex((task) => task._id === action.payload._id);
       if (index !== -1) {
-        state.tasks[index] = action.payload; // Update the task at the index
+        state.tasks[index] = action.payload;
       }
     },
     removeTask: (state, action: PayloadAction<string>) => {
-      state.tasks = state.tasks.filter((task) => task._id !== action.payload); // Remove task based on _id
+      state.tasks = state.tasks.filter((task) => task._id !== action.payload);
+    },
+    resetTasks: (state) => {
+      state.tasks = []; // Clear all tasks
     },
   },
 });
 
-export const { setTasks, addTask, updateTask, removeTask } = taskSlice.actions;
+export const { setTasks, addTask, updateTask, removeTask, resetTasks } = taskSlice.actions;
 export default taskSlice.reducer;

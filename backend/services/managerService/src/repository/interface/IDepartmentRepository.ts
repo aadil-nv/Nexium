@@ -11,5 +11,6 @@ export default interface IDepartmentRepository extends BaseRepository<any> {
         addEmployeesToDepartment(departmentId: string, employeeId: string): Promise<any>
         getDepartments():Promise<any>
         removeEmployeeFromDepartment(departmentId: string, employeeId: string): Promise<any>
+        findAllDepartments(): Promise<IDepartment[]>
        
 }

@@ -58,7 +58,12 @@ async updateProfile(employeeId: string, data: any): Promise<IEmployee> {
             "personalDetails.businessOwnerName": data.employeeName,
             "personalDetails.email": data.email,
             "personalDetails.personalWebsite": data.personalWebsite,
-            "personalDetails.phone": data.phone
+            "personalDetails.phone": data.phone,
+            "personalDetails.bankAccountNumber": data.bankAccountNumber,
+            "personalDetails.ifscCode": data.ifscCode,
+            "personalDetails.panNumber": data.panNumber,
+            "personalDetails.aadharNumber": data.aadharNumber,
+            "personalDetails.gender": data.gender,
           } },
         { new: true } // Return the updated document
       );

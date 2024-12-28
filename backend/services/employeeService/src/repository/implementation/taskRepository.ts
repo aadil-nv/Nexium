@@ -1,10 +1,11 @@
 import { injectable, inject } from "inversify";
-import { Model } from "mongoose";
+import mongoose, { Model } from "mongoose";
 import BaseRepository from "./baseRepository";
 import { ITask } from "../../entities/taskEntities";
 import ITaskRepository from "../../repository/interface/ITaskRepository";
 import IEmployee from "../../entities/employeeEntities";
 import employeeModel from "../../models/employeeModel"; // Importing the employee model
+import departmentModel from "../../models/departmentModel";
 
 @injectable()
 export default class TaskRepository extends BaseRepository<ITask> implements ITaskRepository {
@@ -29,40 +30,83 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
         }
     }
 
-    async getAllTasks(): Promise<ITask[]> {
-        try {
-            const tasks = await this.taskModel.find()
-            
-            if (!tasks || tasks.length === 0) throw new Error("No tasks found");
-            return tasks;
-        } catch (error) {
-            console.error("Error fetching tasks:", error);
-            throw new Error("Could not retrieve tasks");
-        }
-    }
 
-  async getEmployeesToAddTask(): Promise<IEmployee[]> {
+
+   async getAllTasks(teamLeadId: string): Promise<ITask[]> {
     try {
-        // Step 1: Get all employees excluding those with the position "Team Lead"
-        const employeesToTask = await employeeModel
-            .find({
-                "professionalDetails.position": { $ne: "Team Lead" }, // Exclude "Team Lead
-            })
-            .exec();
+        const teamLeadData = await employeeModel.findById(teamLeadId);
 
-        if (!employeesToTask || employeesToTask.length === 0) {
-            throw new Error("No employees found with a position other than Team Lead");
+        if (!teamLeadData) {
+            throw new Error("Team lead not found");
         }
+        const departmentId = teamLeadData?.professionalDetails.department;
+
+        const departmentData = await departmentModel.findById(departmentId);
+
+        if (!departmentData) {
+            throw new Error("Department not found");
+        }
+
+        const employeesList = departmentData.employees.map(employee => {
+            return employee.employeeId}
+        );
+
+        const allTasks = await this.taskModel.find({
+            employeeId: { $in: employeesList }
+        }).exec();
         
-        return employeesToTask;
+
+        if (!allTasks || allTasks.length === 0) {
+            throw new Error("No tasks found for this department");
+        }
+
+        return allTasks;
+
     } catch (error) {
-        console.error("Error fetching employees for task assignment:", error);
-        throw new Error("Could not retrieve employees for task assignment");
+        console.error("Error fetching tasks:", error);
+        throw error; 
     }
-}
+    }
 
     
+    async getEmployeesToAddTask(teamLeadId: string): Promise<IEmployee[]> {
+        try {
+          // Fetch the Team Lead data
+          const teamLeadData = await employeeModel.findById({ _id: teamLeadId });
+          if (!teamLeadData) {
+            throw new Error("Team Lead not found");
+          }
+      
+          // Fetch the department data using the Team Lead's department ID
+          const departmentData = await departmentModel.findById(teamLeadData.professionalDetails.department);
+          if (!departmentData) {
+            throw new Error("Department not found");
+          }
+      
+          // Extract the employee IDs from the department's employees list
+          const employeeIds = departmentData.employees.map((employee) => employee.employeeId);
+      
+          // Find employees whose position is not "Team Lead" and are in the department
+          const employeesToTask = await employeeModel
+            .find({
+              _id: { $in: employeeIds }, // Filter by employee IDs in the department
+              "professionalDetails.position": { $ne: "Team Lead" }, // Exclude "Team Lead"
+            })
+            .exec();
+      
+          if (!employeesToTask || employeesToTask.length === 0) {
+            throw new Error("No employees found with a position other than Team Lead");
+          }
+      
+          return employeesToTask;
+        } catch (error) {
+          console.error("Error fetching employees for task assignment:", error);
+          throw new Error("Could not retrieve employees for task assignment");
+        }
+      }
+      
 
+    
 async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> {
     console.log("TASK DATA FOR ASSIGN:", taskData);
 
@@ -108,9 +152,7 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
     }
 }
 
-    
-
-    async updateTask(taskId: string, taskData: ITask): Promise<ITask> {
+        async updateTask(taskId: string, taskData: ITask): Promise<ITask> {
     
       
         try {
@@ -163,7 +205,6 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
                 _id: taskId, // Using _id to match the taskId
             }).exec();
     
-            console.log("Task Retrieved ***********************************************************************", task);
     
             return task;
         } catch (error) {
@@ -222,7 +263,6 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
     async getTaskListOfEmployee(employeeId: string): Promise<ITask[]> {
         try {
           const tasks = await this.taskModel.find({ employeeId: employeeId }).exec();
-          console.log("TASKS BY EMPLOYEE***********************************************************************",tasks);
           
           return tasks;
         } catch (error) {

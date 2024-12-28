@@ -23,7 +23,7 @@ export interface ICardProps {
 
 
  export  interface IEmployee {
-    _id: string;
+    employeeId?: string;
     name: string;
     email: string;
     position: string;

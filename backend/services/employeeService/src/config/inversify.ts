@@ -58,6 +58,9 @@ import {ITask} from "../entities/taskEntities";
 import IConsumer from "../events/interface/IConsumer"; //! Do not remove it is using
 import Consumer from "./../events/implementation/consumer"
 
+import EmployeeLeaveModel from "../models/employeeLeaveModel";
+import {IEmployeeLeave} from "../entities/employeeLeaveEntities"
+
 
 const container = new Container();
 
@@ -99,6 +102,7 @@ container.bind<mongoose.Model<IEmployee>>("IEmployee").toConstantValue(EmployeeM
 container.bind<mongoose.Model<IEmployeeAttendance>>("IEmployeeAttendance").toConstantValue(AttendanceModel);
 container.bind<mongoose.Model<IDepartment>>("IDepartment").toConstantValue(DepartmentModel);
 container.bind<mongoose.Model<ITask>>("ITask").toConstantValue(TaskModel);
+container.bind<mongoose.Model<IEmployeeLeave>>("IEmployeeLeave").toConstantValue(EmployeeLeaveModel);
 
 
 

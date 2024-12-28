@@ -24,7 +24,6 @@ export default function Departments() {
   const handleRemoveDepartment = async (departmentId: string) => {
     try {
       await removeDepartmentAPI(departmentId);
-
       fetchDepartmentsAPI().then(setDepartments).catch(console.error);
       console.log('Department removed successfully');
     } catch (error) {
@@ -48,15 +47,15 @@ export default function Departments() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-        {departments.map(({ _id, departmentId, departmentName, employees }) => (
+        {departments.map(({ departmentId, departmentName, employees  }) => (
           <DepartmentCard
-            key={_id}
+            key={departmentId}
             departmentName={departmentName}
             employees={employees.map(({ employeeId, name, position, profilePicture, email, isActive }) => ({
-              _id: employeeId || '', 
+              employeeId: employeeId , 
               name: name || '', 
               position: position || '', 
-              profilePicture: profilePicture||"https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", 
+              profilePicture: profilePicture||"", 
               email: email || '', 
               isOnline: isActive ?? false, 
             }))}
@@ -66,7 +65,7 @@ export default function Departments() {
             onRemoveEmployee={(employeeId) =>
               setDepartments((prev) =>
                 prev.map((dept) =>
-                  dept._id === _id
+                  dept.departmentId === departmentId
                     ? { ...dept, employees: dept.employees.filter((emp) => emp.employeeId !== employeeId) }
                     : dept
                 )

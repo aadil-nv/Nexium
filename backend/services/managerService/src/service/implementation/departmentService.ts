@@ -13,25 +13,75 @@ export default class DepartmentService implements IDepartmentService {
   ) {}
 
   async addDepartments(departmentName: string, employees: any): Promise<any> {
+    console.log(`"departmentName=================="`.bgRed, employees);
   
     try {
+      // Fetch all existing departments
+      const departments = await this._departmentRepository.findAllDepartments();
+  
+      // Check if the department name already exists
+      const existingDepartment = departments.find(
+        (department: any) => department.departmentName.toLowerCase() === departmentName.toLowerCase()
+      );
+  
+      if (existingDepartment) {
+        return { 
+          message: `The department name "${departmentName}" already exists. Please choose a different name.`, 
+          success: false 
+        };
+      }
+  
+      // Validate "Team Lead" position in employees
+      const teamLeads = employees.filter((employee: any) => employee.position === "Team Lead");
+  
+      if (teamLeads.length === 0) {
+        return { 
+          message: "Please add at least one Team Lead to the department.", 
+          success: false 
+        };
+      }
+  
+      if (teamLeads.length > 1) {
+        return { 
+          message: "A department can have only one Team Lead.", 
+          success: false 
+        };
+      }
+  
+      // Add the department if validation passes
       const department = await this._departmentRepository.addDepartments(departmentName, employees);
-      return department;
-    } catch (error:any) {
+  
+      console.log("Department added successfully:", department);
+  
+      return { 
+        message: "Department added successfully.", 
+        success: true, 
+        department 
+      };
+    } catch (error: any) {
       console.error("Error in addDepartments service:", error.message);
-      throw new Error("Failed to add departments");
+  
+      return { 
+        message: "Failed to add departments due to an internal error.", 
+        success: false,
+        error: error.message
+      };
     }
   }
+  
+  
 
   async getDepartments(): Promise<DepartmentWithEmployeesDTO[]> {
     try {
         const departments = await this._departmentRepository.getDepartments();
+        console.log("departments========================", departments);
+        
 
         const departmentDTOs: DepartmentWithEmployeesDTO[] = departments.map((department: any) => ({
             departmentId: department._id.toString(),
             departmentName: department.departmentName,
             employees: department.employees.map((employee: any) => ({
-                employeeId: employee.employeeId._id.toString(),
+                employeeId: employee.employeeId._id,
                 name: employee.employeeId.personalDetails.employeeName,
                 email: employee.employeeId.employeeCredentials.companyEmail,
                 position: employee.employeeId.professionalDetails.position,
@@ -39,6 +89,9 @@ export default class DepartmentService implements IDepartmentService {
                 isActive: employee.employeeId.isActive,
             })),
         }));
+
+        console.log(`"departmentDTOs====================="`.bgGreen, departmentDTOs);
+        
         return departmentDTOs;
     } catch (error) {
         console.error("Error in getDepartments service:", error);
@@ -104,13 +157,12 @@ export default class DepartmentService implements IDepartmentService {
 
 async addEmployeesToDepartment(employeeData: any[], departmentId: string): Promise<any> {
 
-  
   try {
       // Fetch the department
       const department = await this._departmentRepository.findDepartment(departmentId);
       if (!department) {
           throw new Error('Department not found.');
-      }
+      } 
 
       // Process each employee
       const results = [];
@@ -119,7 +171,7 @@ async addEmployeesToDepartment(employeeData: any[], departmentId: string): Promi
           results.push(updatedInfo);
       }
 
-      // console.log("results====3456fvc256326=====================", department.updatedEmployee.personalDetails.profilePicture );
+      console.log("results====3456fvc256326=====================", department );
       
 
       return {

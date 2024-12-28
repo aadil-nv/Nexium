@@ -4,9 +4,9 @@ import { ITaskDTO ,IGetEmployeeWithoutTaskDTO, ITaskResponceDTO, IGetEmployeeTas
 
 export default interface ITaskService {
     getTasks(employeeId: string): Promise<ITaskDTO[]>;
-    getEmployeesToAddTask(): Promise<IGetEmployeeWithoutTaskDTO[]>
+    getEmployeesToAddTask(teamLeadId : string): Promise<IGetEmployeeWithoutTaskDTO[]>
     assignTaskToEmployee(taskData: ITaskDTO , teamLeadId:string): Promise<ITaskDTO>;
-    getAllTasks(): Promise<ITaskDTO[]>
+    getAllTasks(teamLeadId:string): Promise<ITaskDTO[]>
     updateTask(taskId: string, taskData: ITask): Promise<ITaskResponceDTO>;
     deleteTask(taskId: string): Promise<ITaskDTO>;
     getTasksByEmployeeId(employeeId: string ,taskId?:string): Promise<ITaskDTO>

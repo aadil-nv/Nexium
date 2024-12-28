@@ -66,6 +66,7 @@ export const fetchEmployeesAPI = async () => {
   };
 export const fetchEmployeesWithOutDepAPI = async () => {
     const response = await managerInstance.get('/manager/api/employee/get-employee-without-department');
+    // console.log("response22222222222222222222",response.data)
     return response.data;
   };
   
@@ -79,7 +80,7 @@ export const removeDepartmentAPI = async (departmentId: string) => {
    const response = await managerInstance.delete('/manager/api/department/delete-department', {
       data: { departmentId },
     });
-    console.log("response1111111111111111",response.data);
+    // console.log("response33333333333333333333333333333",response.data);
     
     return response.data;
 };
@@ -113,7 +114,7 @@ export const fetchEmployeesWithOutDepartment = async (): Promise<IEmployee[]> =>
 
      
       return response.data.map((employee: any) => ({
-          _id: employee._id, // Directly from employee._id
+          employeeId: employee.employeeId, // Directly from employee._id
           name: employee.employeeName || '', // Directly from employee.employeeName
           position: employee.position || '', // Directly from employee.position
           profilePicture: employee.profilePicture || '', // Directly from employee.profilePicture

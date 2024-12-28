@@ -4,7 +4,6 @@ import ITaskService from "../../service/interface/ITaskService";
 import ITaskController from "../../controllers/interface/ITaskController";
 import { HttpStatusCode } from "../../utils/enums";
 import { CustomRequest } from "../../middlewares/tokenAuth";
-import { log } from "node:console";
 
 @injectable()
 
@@ -21,10 +20,11 @@ export default class TaskController implements ITaskController {
         }
     }
 
-    async getEmployeesToAddTask(req: Request, res: Response): Promise<Response> {
+    async getEmployeesToAddTask(req: CustomRequest, res: Response): Promise<Response> {
         
         try {
-            const employees = await this.taskService.getEmployeesToAddTask();
+            const teamLeadId = req.user?.employeeData?._id
+            const employees = await this.taskService.getEmployeesToAddTask( teamLeadId as string);
             if(!employees) return res.status(HttpStatusCode.OK).json([]);
             
             return res.status(HttpStatusCode.OK).json(employees);
@@ -48,10 +48,11 @@ export default class TaskController implements ITaskController {
         }
     }
 
-    async getAllTasks(req: Request, res: Response): Promise<Response> {
+    async getAllTasks(req: CustomRequest, res: Response): Promise<Response> {
         
         try {
-            const tasks = await this.taskService.getAllTasks();
+            const teamLeadId = req.user?.employeeData?._id
+            const tasks = await this.taskService.getAllTasks(teamLeadId as string);
             
             return res.status(HttpStatusCode.OK).json(tasks);
         } catch (error) {
@@ -85,10 +86,7 @@ export default class TaskController implements ITaskController {
             const employeeId = req.user?.employeeData?._id;
             const taskId = req.params.id;
             
-            const tasks = await this.taskService.getTasksByEmployeeId(employeeId as string , taskId as string);
-
-            console.log("tasks ----------------?>>>>",tasks);
-            
+            const tasks = await this.taskService.getTasksByEmployeeId(employeeId as string , taskId as string);            
             
             return res.status(HttpStatusCode.OK).json(tasks);
         } catch (error) {

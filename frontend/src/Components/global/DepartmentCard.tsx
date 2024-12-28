@@ -20,6 +20,9 @@ export default function DepartmentCard({
   const [departmentEmployees, setDepartmentEmployees] = useState(employees)
   
 
+  console.log("employees from -------------------------",employees);
+  
+
   const handleAddCandidate = () => {
     setIsModalVisible(true);
   };
@@ -28,12 +31,17 @@ export default function DepartmentCard({
     setIsModalVisible(false);
   };
 
-  const handleRemoveEmployeeClick = async (employeeId: string) => {
+  const handleRemoveEmployeeClick = async (employeeId: any) => {
+
+    console.log('employeeId:isssssssssssssssssssssssssssss', employeeId);
+    
+    console.log('departmentId:isssssssssssssssssssssssssssss', departmentId);
+    
  
     try {
       await removeEmployee(employeeId, departmentId);
       onRemoveEmployee(employeeId);
-      setDepartmentEmployees((prev) => prev.filter((emp) => emp._id !== employeeId));
+      setDepartmentEmployees((prev) => prev.filter((emp) => emp.employeeId !== employeeId));
     } catch (error) {
       console.error('Error removing employee:', error);
     }
@@ -77,13 +85,13 @@ export default function DepartmentCard({
 
       <ul className="space-y-2 overflow-y-auto max-h-[300px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         {departmentEmployees.map((employee) => (
-          <li key={employee._id} className="p-2 bg-gray-100 rounded-lg">
+          <li key={employee.employeeId} className="p-2 bg-gray-100 rounded-lg">
             
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-start space-x-3 min-w-0">
                 <div className="relative flex-shrink-0">
                   <img
-                    src={employee.profilePicture || ''}
+                    src={employee.profilePicture || "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"}
                     alt={employee.name}
                     className="w-8 h-8 rounded-full object-cover"
                   />
@@ -101,7 +109,7 @@ export default function DepartmentCard({
               </div>
               <button
                 className="p-1.5 text-red-500 hover:bg-red-100 rounded-full transition-colors"
-                onClick={() => handleRemoveEmployeeClick(employee._id)}
+                onClick={() => handleRemoveEmployeeClick(employee.employeeId)}
                 aria-label="Remove Employee"
               >
                 <FaTrash size={14} />

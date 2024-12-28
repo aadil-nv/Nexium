@@ -52,6 +52,8 @@ export default class PayrollRepository extends BaseRepository<IPayrollCriteria> 
         }
     }
     async updatePayrollCriteria(payrollData: any, payrollId: string): Promise<IPayrollCriteria> {
+
+        
         try {
             const updatedPayroll = await this.payrollCriteriaModel.findByIdAndUpdate(payrollId, payrollData, { new: true }).exec();
             if(!updatedPayroll) {

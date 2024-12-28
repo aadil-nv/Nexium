@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export default interface IEmployee extends Document {
+  _id:any
   managerId: mongoose.Schema.Types.ObjectId; // Correct reference to HR
   businessOwnerId: mongoose.Schema.Types.ObjectId;
   isActive: boolean;
@@ -13,7 +14,11 @@ export default interface IEmployee extends Document {
     phone: string;
     profilePicture:string
     personalWebsite: string;
-   
+    bankAccountNumber: string;
+    ifscCode: string;
+    aadharNumber: string;
+    panNumber: string;
+    gender: "Male" | "Female" | "Other";
   };
   address:{
     street: String ,
@@ -24,15 +29,17 @@ export default interface IEmployee extends Document {
   }
   professionalDetails: {
     position: "Team Lead" | "Senior Software Engineer" | "Junior Software Engineer" ;
-    department: string | null;
     workTime: "Full-Time" | "Part-Time" | "Contract" | "Temporary";
+    department: string | null;
     joiningDate: Date;
     currentStatus: string;
     companyName: string;
     comapanyLogo: string;
     salary: number;
-    skills: string[];
-    
+    uanNumber: string;
+    pfAccount: string;
+    esiAccount: string;
+  
   };
   employeeCredentials: {
     companyEmail: string;
@@ -46,12 +53,6 @@ export default interface IEmployee extends Document {
       documentSize?: string
       uploadedAt: Date;
     };
-  };
-  leaves: {
-    casualLeave: number;
-    sickLeave: number;
-    paidLeave: number;
-    unpaidLeave: number;
   };
 
   

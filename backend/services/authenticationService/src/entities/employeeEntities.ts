@@ -6,14 +6,20 @@ export default interface IEmployee extends Document {
   isActive: boolean;
   isVerified: boolean;
   isBlocked: boolean;
-  role:string
+  role: string;
   personalDetails: {
     employeeName: string;
     email: string;
     phone: string;
     profilePicture:string
     personalWebsite: string;
-   
+    bankAccountNumber: string;
+    bankName: string;
+    ifscCode: string;
+    aadharNumber: string;
+    panNumber: string;
+    dateOfBirth: Date;
+    gender: "Male" | "Female" | "Other";
   };
   address:{
     street: String ,
@@ -24,15 +30,17 @@ export default interface IEmployee extends Document {
   }
   professionalDetails: {
     position: "Team Lead" | "Senior Software Engineer" | "Junior Software Engineer" ;
-    department: string;
+    department: string | null;
     workTime: "Full-Time" | "Part-Time" | "Contract" | "Temporary";
     joiningDate: Date;
     currentStatus: string;
     companyName: string;
-    companyLogo: string;
+    comapanyLogo: string;
     salary: number;
-    skills: string[];
-    
+    uanNumber: string;
+    pfAccount: string;
+    esiAccount: string;
+  
   };
   employeeCredentials: {
     companyEmail: string;
@@ -43,15 +51,9 @@ export default interface IEmployee extends Document {
     resume: {
       documentName: string;
       documentUrl: string;
-      documentSize: string; // Optional
+      documentSize?: string
       uploadedAt: Date;
     };
-  };
-  leaves: {
-    casualLeave: number;
-    sickLeave: number;
-    paidLeave: number;
-    unpaidLeave: number;
   };
 
   

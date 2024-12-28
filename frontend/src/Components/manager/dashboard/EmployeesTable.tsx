@@ -27,6 +27,8 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
       let response;
       if (action === 'edit') {
         response = await managerInstance.get(`/manager/api/employee/get-employee/${employeeId}`);
+        console.log("response >>>>>>>>>>>>>><<<<<<<<<<<<<<<<",response);
+        
         dispatch(clearEmployeeData());
         dispatch(setEmployeeDatas({ employeeData: response.data }));
         setIsModalVisible(true);

@@ -43,6 +43,13 @@ const employeeSlice = createSlice({
       state.position = null;
       state.workTime = null;
       state.workTimer = null;  // Reset work timer
+      state.employeeName = ""; // Reset employee name
+      state.employeeProfilePicture = ""; // Reset employee profile picture
+      state.companyLogo = ""; // Reset company logo
+      state.employeeType = ""; // Reset employee type
+      state.companyName = ""; // Reset company name
+      
+
     },
     updateWorkDetails: (state, action: PayloadAction<{ position: string; workTime: string; workTimer: number }>) => {
       state.position = action.payload.position;

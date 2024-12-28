@@ -5,10 +5,10 @@ import IEmployee from "../../entities/employeeEntities";
 
 export default interface ITaskRepository extends BaseRepository <ITask>{ 
     getTasks(employeeId: string): Promise<ITask[]>
-    getEmployeesToAddTask(): Promise<IEmployee[]>
+    getEmployeesToAddTask(teamLeadId: string): Promise<IEmployee[]>
     assignTaskToEmployee(taskData: object , teamLeadId:string): Promise<ITask>
     updateTask(taskId: string, taskData: ITask): Promise<ITask>
-    getAllTasks(): Promise<ITask[]>
+    getAllTasks(teamLeadId : string): Promise<ITask[]>
     deleteTask(taskId: string): Promise<ITask>
     getTasksByEmployeeId(employeeId: string ,taskId:string): Promise<ITask | null>
     updateTaskCompletion(data: object  ,employeeId:string): Promise<ITask>

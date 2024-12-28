@@ -18,10 +18,11 @@ const AddDepartmentModal: React.FC<{
 
   const handleSubmit = async (values: any) => {
     const employeesToAdd = values.employees
-      .map((id: string) => employees.find((e) => e._id === id))
+      .map((id: string) => employees.find((e) => e.employeeId === id))
       .filter(Boolean)
       .map((emp: any) => ({
-        employeeId: emp._id, 
+        employeeId: emp.employeeId, 
+        email: emp.email,
         name: emp.employeeName || 'No Name', 
         position: emp.position || 'No Position', 
         isActive: emp.isOnline, 
@@ -32,7 +33,6 @@ const AddDepartmentModal: React.FC<{
       toast.error('No valid employees selected');
       return;
     }
-    console.log("employeesToAdd@@@@@@@@@@@@@@@@@@@@@@@@",employeesToAdd);
     
 
     try {
@@ -40,17 +40,19 @@ const AddDepartmentModal: React.FC<{
         '/manager/api/department/add-departments',
         { departmentName: values.departmentName, employees: employeesToAdd }
       );
-
+     
+        
       if (response.status === 200) {
         toast.success('Department added successfully!');
-        onAddDepartment(response.data);
+        onAddDepartment(response.data.department);
+        
         form.resetFields();
         onClose();
         fetchEmployeesWithOutDepAPI().then(setEmployees).catch(console.error);
       }
     } catch (error) {
-      console.error('Error adding department:', error);
-      toast.error(error.message);
+      console.error('Error adding department:', error.response?.data?.message);
+      toast.error( error.response?.data?.message);
     }
   };
 
@@ -63,7 +65,7 @@ const AddDepartmentModal: React.FC<{
 
         <Form.Item label="Select Employees" name="employees" rules={[{ required: true, message: 'Please select employees!' }]}>
           <Select mode="multiple" allowClear placeholder="Search and select employees" options={employees.map((emp) => ({
-            value: emp._id, label: emp.employeeName 
+            value: emp.employeeId, label: `${emp.employeeName} (${emp.position})` 
           }))} />
         </Form.Item>
 

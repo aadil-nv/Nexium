@@ -59,6 +59,11 @@ export default class EmployeeService implements IEmployeeService {
             phone: employee?.personalDetails.phone,
             profilePicture: profilePicture,
             personalWebsite: employee?.personalDetails.personalWebsite,
+            bankAccountNumber: employee?.personalDetails.bankAccountNumber,
+            ifscCode: employee?.personalDetails.ifscCode,
+            panNumber: employee?.personalDetails.panNumber,
+            aadharNumber: employee?.personalDetails.aadharNumber,
+            gender: employee?.personalDetails.gender,
             message: "Profile fetched successfully",
           }
         } catch (error:any) {
@@ -79,6 +84,11 @@ export default class EmployeeService implements IEmployeeService {
             phone: employee?.personalDetails.phone,
             profilePicture: employee.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}` :employee.personalDetails.profilePicture ,
             personalWebsite: employee?.personalDetails.personalWebsite,
+            bankAccountNumber: employee?.personalDetails.bankAccountNumber,
+            ifscCode: employee?.personalDetails.ifscCode,
+            panNumber: employee?.personalDetails.panNumber,
+            aadharNumber: employee?.personalDetails.aadharNumber,
+            gender: employee?.personalDetails.gender,
             message: "Profile fetched successfully",
           }
         } catch (error:any) {
@@ -110,12 +120,15 @@ export default class EmployeeService implements IEmployeeService {
       if (!employee) {throw new Error("Employee not found")}
       return {
         position:employee?.professionalDetails.position, 
-        department:employee?.professionalDetails.department, 
+        department:employee?.professionalDetails.department || "No department", 
         workTime:employee?.professionalDetails.workTime, 
         joiningDate:employee?.professionalDetails.joiningDate,
         currentStatus: employee?.professionalDetails.currentStatus,
         companyName:employee?.professionalDetails.companyName, 
         salary: employee?.professionalDetails.salary,
+        uanNumber: employee?.professionalDetails.uanNumber,
+        pfAccount: employee?.professionalDetails.pfAccount,
+        esiAccount: employee?.professionalDetails.esiAccount
           
       }
     } catch (error: any) {
@@ -130,7 +143,7 @@ export default class EmployeeService implements IEmployeeService {
         return {
           documentName:employee?.documents.resume.documentName,     
           documentUrl: employee?.documents.resume.documentUrl,       
-          documentSize: employee?.documents.resume.documentSize,    
+          documentSize: employee?.documents.resume.documentSize || "No document",    
           uploadedAt: employee?.documents.resume.uploadedAt
         }
     } catch (error: any) {
@@ -154,6 +167,8 @@ export default class EmployeeService implements IEmployeeService {
   }
 
   async updateProfile(employeeId: string, data: any): Promise<IEmployeeResponseDTO> {
+    console.log(`profile updatye data is ==>`.bgMagenta, data);
+    
         try {
              const rabbitMQMessager = new RabbitMQMessager();
              await rabbitMQMessager.init();

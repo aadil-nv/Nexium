@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Select, Spin } from 'antd';
 import { toast } from 'react-toastify';
 import { fetchEmployeesWithOutDepartment, addEmployeeToDepartment } from '../../api/managerApi';
+import { log } from 'node:console';
 
 interface AddCandidateModalProps {
   isVisible: boolean;
@@ -33,7 +34,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
   
 
   const handleFinish = async () => {
-    const selectedEmployees = employees.filter((emp: any) => selectedEmployeeIds.includes(emp._id,emp.profilePicture));
+    const selectedEmployees = employees.filter((emp: any) => selectedEmployeeIds.includes(emp.employeeId,emp.profilePicture));
 
     if (selectedEmployees.length === 0) {
       toast.error('No employees selected!');
@@ -42,8 +43,11 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
 
     try {
       const success = await addEmployeeToDepartment(selectedEmployees, departmentId);
+      console.log("success=========================",success);
+      
       if (success) {
         toast.success(`${selectedEmployees.length} employee(s) added to the department!`);
+
         onEmployeesAdded(selectedEmployees); // Update parent component
       } else {
         toast.error('Failed to add employees to the department!');
@@ -80,7 +84,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
               value={selectedEmployeeIds}
               onChange={handleSelectChange}
               options={employees.map((emp) => ({
-                value: emp._id,
+                value: emp.employeeId,
                 label: `${emp.name} (${emp.position})`,
               }))}
             />

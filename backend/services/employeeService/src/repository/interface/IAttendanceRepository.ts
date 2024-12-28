@@ -2,6 +2,7 @@ import BaseRepository from "../implementation/baseRepository";
 
 import { IEmployeeAttendance } from "../../entities/attendanceEntities";
 import  IEmployee  from "../../entities/employeeEntities";
+import { IEmployeeLeave } from "../../entities/employeeLeaveEntities";
 export default interface IAttendanceRepository extends BaseRepository<IEmployeeAttendance>  {
 
     updateAttendances(employeeId: string): Promise<IEmployeeAttendance>;
@@ -16,5 +17,6 @@ export default interface IAttendanceRepository extends BaseRepository<IEmployeeA
     markCheckOut(id: string, attendanceData: any , employeeId: string): Promise<any>;
     getPreviousMonthAttendance(employeeId: string): Promise<IEmployeeAttendance | null>
     getAttendanceDashboardData(employeeId: string): Promise<any>
+    fetchApprovedLeaves(employeeId: string): Promise<IEmployeeLeave>;
 
 }

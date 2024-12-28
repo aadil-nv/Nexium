@@ -15,8 +15,8 @@ interface InfoModalProps {
 }
 
 const tabConfigurations = [
-  { key: "1", tab: "Personal Details", fields: ["profilePicture", "employeeName", "email", "phone"] },
-  { key: "2", tab: "Professional Details", fields: ["position", "workTime", "salary", "dateOfJoin", "department", "currentStatus", "companyName"] },
+  { key: "1", tab: "Personal Details", fields: ["profilePicture", "employeeName", "email", "phone", "aadharNumber", "panNumber", "gender", "bankAccountNumber", "ifscCode"] },
+  { key: "2", tab: "Professional Details", fields: ["position", "workTime", "salary", "dateOfJoin", "department", "currentStatus", "companyName","pfAccount" , "esiAccount" , "uanNumber"] },
   { key: "3", tab: "Address", fields: ["street", "city", "postalCode", "country", "state"] },
   { key: "4", tab: "Documents", fields: ["uploadId", "uploadResume"] },
   { key: "5", tab: "Security", fields: ["companyEmail", "companyPassword"] },
@@ -26,6 +26,9 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose }) => {
   const [loading, setLoading] = useState(false);
   const employeeData = useSelector((state: RootState) => state.manager.employeeData?.employeeData);
   const dispatch = useDispatch(); // To dispatch actions
+
+  console.log("employeeData++++++++++++++++++++++++++++", employeeData);
+  
   
   // States for modal data
   const [profilePicture, setProfilePicture] = useState(employeeData?.personalDetails?.profilePicture);
@@ -52,6 +55,14 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose }) => {
       currentStatus: employeeData?.professionalDetails?.currentStatus || "Not added",
       companyName: employeeData?.professionalDetails?.companyName,
       salary: employeeData?.professionalDetails?.salary,
+      aadharNumber: employeeData?.personalDetails?.aadharNumber,
+      panNumber: employeeData?.personalDetails?.panNumber,
+      gender: employeeData?.personalDetails?.gender,
+      bankAccountNumber: employeeData?.personalDetails?.bankAccountNumber,
+      ifscCode: employeeData?.personalDetails?.ifscCode,
+      uanNumber: employeeData?.professionalDetails?.uanNumer,
+      pfAccount: employeeData?.professionalDetails?.pfAccount,
+      esicAccount: employeeData?.professionalDetails?.esicAccount,
       dateOfJoin: employeeData?.professionalDetails?.joiningDate
         ? new Date(employeeData?.professionalDetails?.joiningDate).toLocaleDateString()
         : "",

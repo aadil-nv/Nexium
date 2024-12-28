@@ -14,7 +14,6 @@ export interface IEmployee {  //! Part of Department
   }
 
 export interface IDepartment {
-    _id: string;
     departmentName: string;
     employees: IEmployee[];
     departmentId: string;
@@ -42,7 +41,13 @@ export interface IDepartment {
       employeeName: string;
       email: string;
       phone: string;
-      profilePicture: string;
+      profilePicture:string
+      personalWebsite: string;
+      bankAccountNumber: string;
+      ifscCode: string;
+      aadharNumber: string;
+      panNumber: string;
+      gender: string;
     };
     address: {
       street: string;
@@ -59,7 +64,9 @@ export interface IDepartment {
       currentStatus: string;
       companyName: string;
       salary: number;
-      skills: string[];
+      pfAccount: string;
+      esicAccount: string;
+      uanNumer: string;
     };
     employeeCredentials: {
       companyEmail: string;

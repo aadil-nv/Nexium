@@ -6,6 +6,7 @@ import BaseRepository from "./baseRepository";
 import  IEmployee  from "../../entities/employeeEntities";
 import {  isSunday,format } from 'date-fns';
 import { ObjectId } from "mongodb";
+import { IEmployeeLeave } from "../../entities/employeeLeaveEntities";
 
 
 
@@ -14,7 +15,8 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
 
     constructor(
         @inject("IEmployeeAttendance") private  _employeeAttendanceModel: Model<IEmployeeAttendance>,
-        @inject("IEmployee") private  _employeeModel: Model<IEmployee> 
+        @inject("IEmployee") private  _employeeModel: Model<IEmployee> ,
+        @inject("IEmployeeLeave") private  _employeeLeaveModel: Model<IEmployeeLeave>
     ) {
         super(_employeeAttendanceModel);
     }
@@ -344,6 +346,19 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
       }
       
     
-     
+     async fetchApprovedLeaves(employeeId: string): Promise<IEmployeeLeave> {
+        try {
+          const employeeLeave = await this._employeeLeaveModel.findOne({ employeeId });
+      
+          if (!employeeLeave) {
+            throw new Error(`No leave records found for employee ID ${employeeId}`);
+          }
+      
+          return employeeLeave;
+        } catch (error) {
+          console.error(error);
+          throw error;
+        }
+      }
 
 }

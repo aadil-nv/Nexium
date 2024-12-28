@@ -142,9 +142,9 @@ export default class AttendanceService implements IAttendanceService {
     
     async fetchApprovedLeaves(employeeId: string): Promise<any> {
         try {
-            const employeeData= await this.attendanceRepository.findEmployeeById(employeeId);
+            const approvedLeaves= await this.attendanceRepository.fetchApprovedLeaves(employeeId)
 
-            if (!employeeData) {
+            if (!approvedLeaves) {
                 return {
                     status: "error",
                     data: null,
@@ -152,7 +152,7 @@ export default class AttendanceService implements IAttendanceService {
                 };
             }
             
-            const leaves = employeeData.leaves
+            const leaves = approvedLeaves
 
             return leaves;
         } catch (error) {

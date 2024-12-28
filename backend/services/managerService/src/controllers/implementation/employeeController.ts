@@ -120,7 +120,8 @@ export default class EmployeeController implements IEmployeeController {
            
             
             const result = await this._employeeService.getEmployee(employeeId);
-         
+            console.log("result-------------------------", result);
+            
             
             res.status(200).json(result);
         } catch (error) {

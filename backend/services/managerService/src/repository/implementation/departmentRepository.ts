@@ -14,9 +14,16 @@ export default class DepartmentRepository extends BaseRepository<any> implements
         super(departmentModel);
     }
 
+    async findAllDepartments(): Promise<IDepartment[]> {
+        try {
+            return await this._departmentModel.find().populate('employees.employeeId').exec();
+        } catch (error) {
+            console.error("Error finding departments:", error);
+            throw error;
+        }
+    }
+
     async addDepartments(departmentName: string, employees: any[]): Promise<any> {
-      console.log('"hitting addDepartments repository=------------------"'.bgMagenta);
-      console.log("employees0000000000000000", employees);
     
       try {
         if (!Array.isArray(employees) || employees.length === 0) {
@@ -141,12 +148,6 @@ export default class DepartmentRepository extends BaseRepository<any> implements
     
   async addEmployeesToDepartment(departmentId: string, employee: any): Promise<any> {
 
-      console.log("hitting addEmployeesToDepartment service=------------------".bgMagenta);
-      console.log("departmentId", departmentId);
-      console.log("employee", employee);
-      
-      
-      
       try {
           // Find the department by ID
           const department = await this._departmentModel.findById(departmentId);
@@ -158,34 +159,33 @@ export default class DepartmentRepository extends BaseRepository<any> implements
    
           
           // Check if the employee is already part of the department
-          if (department.employees.some((emp: any) => emp.employeeId == employee._id)) {
+          if (department.employees.some((emp: any) => emp.employeeId == employee.employeeId)) {
      
-            
               throw new Error(`Employee ${employee.name} is already in the department.`);
+          }
+
+          const employeeData = await employeeModel.findById(employee.employeeId);
+          if(!employeeData){
+              throw new Error("Employee not found");
           }
 
      
           const formattedEmployee = {
-            employeeId: employee._id,
-            name: employee.name,
-            email: employee.email,
-            position: employee.position,
-            profilePicture: employee.profilePicture || "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png",
-            isActive: employee.isOnline, // Map `isOnline` to `isActive`
+            employeeId: employeeData?._id,
+            name: employeeData?.personalDetails?.employeeName,
+            email: employeeData?.employeeCredentials?.companyEmail,
+            position: employeeData?.professionalDetails?.position,
+            profilePicture: employeeData?.personalDetails?.profilePicture,
+            isActive: employeeData?.isActive, // Map `isOnline` to `isActive`
         };
   
-          // Add the employee to the department's employee list
           department.employees.push(formattedEmployee);
      
-       
-          // Save the updated department
           await department.save();
 
-  
-  
-          // Update the employee's department field
+
           const updatedEmployee = await employeeModel.findByIdAndUpdate(
-              employee._id,
+              employee.employeeId,
               { 'professionalDetails.department': departmentId },
               { new: true }
           ); 
@@ -208,6 +208,8 @@ export default class DepartmentRepository extends BaseRepository<any> implements
   async getDepartments(): Promise<IDepartment[]> {
     try {
         const departments = await this._departmentModel.find().populate('employees.employeeId');
+        console.log("departments======sdft435sg==================", departments);
+        
         return departments;
     } catch (error) {
         console.error('Error in Repository (getDepartments):', error);
@@ -218,21 +220,17 @@ export default class DepartmentRepository extends BaseRepository<any> implements
   
   async removeEmployeeFromDepartment(departmentId: string, employeeId: string): Promise<any> {
 
-    
     try {
-      // Find the department by ID and remove the employee
       const department = await this._departmentModel.findById(departmentId);
       if (!department) {
         throw new Error('Department not found');
       }
   
-      // Find the employee in the department
       const employeeIndex = department.employees.findIndex((emp: any) => emp.employeeId.toString() === employeeId);
       if (employeeIndex === -1) {
         throw new Error('Employee not found in the department');
       }
   
-      // Remove the employee from the department
       department.employees.splice(employeeIndex, 1);
       await department.save();
   

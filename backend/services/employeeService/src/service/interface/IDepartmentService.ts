@@ -1,5 +1,5 @@
-import { IGetDepartmentDTO } from "../../dto/IDepartmentDTO";
+import { DepartmentWithEmployeesDTO } from "../../dto/IDepartmentDTO";
 
 export default interface IDepartmentService {
-    getDepartment(employeeId: string): Promise<IGetDepartmentDTO>
+    getDepartment(employeeId: string): Promise<DepartmentWithEmployeesDTO>
 }

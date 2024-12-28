@@ -5,17 +5,25 @@ import { Model } from "mongoose";
 import BaseRepository from "./baseRepository";
 import departmentModal from "../../models/departmentModel";
 import IDepartment from "../../entities/departmentEntities";
+import employeeLeaveModel from "../../models/employeeLeaveModel";
+import leaveTypeModel from "../../models/leaveTypeModel";
+import { ILeaveType } from "../../entities/leaveTypeEntities";
+import {IEmployeeLeave} from "../../entities/employeeLeaveEntities";
 
 
 @injectable()
 export default class EmployeeRepository extends BaseRepository<IEmployee> implements IEmployeeRepository {
     private readonly employeeModel: Model<IEmployee>;
     private readonly departmentModel: Model<IDepartment>;
+    private readonly employeeLeaveModel: Model<IEmployeeLeave>;
+    private  readonly leaveTypeModel: Model<ILeaveType>;
 
     constructor(@inject("EmployeeModel") _employeeModel: Model<IEmployee>) {
         super(_employeeModel);
         this.employeeModel = _employeeModel;
         this.departmentModel = departmentModal
+        this.employeeLeaveModel = employeeLeaveModel
+        this.leaveTypeModel = leaveTypeModel
     }
 
     async getEmployees(): Promise<IEmployee[]> {
@@ -31,15 +39,47 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
 
     async addEmployee(employeeData: IEmployee): Promise<IEmployee> {
         try {
+            // Create a new employee from the employeeData
             const employee = new this.employeeModel(employeeData);
-            console.log("employee from repo -----------------", employee);
-            
-            return await employee.save();
+            console.log("Employee from repo -----------------", employee);
+    
+            // Save the employee to the database
+            const savedEmployee = await employee.save();
+    
+            // Find the existing leave types
+            const existingLeaves = await this.leaveTypeModel.findOne();
+            if (!existingLeaves) {
+                throw new Error("Leave type not found");
+            }
+    
+            // Create a new leave entry for the employee
+            const employeeLeaveData = {
+                employeeId: savedEmployee._id,  // Link the leave record to the saved employee
+                sickLeave: existingLeaves.sickLeave,
+                casualLeave: existingLeaves.casualLeave,
+                maternityLeave: existingLeaves.maternityLeave,
+                paternityLeave: existingLeaves.paternityLeave,
+                paidLeave: existingLeaves.paidLeave,
+                unpaidLeave: existingLeaves.unpaidLeave,
+                compensatoryLeave: existingLeaves.compensatoryLeave,
+                bereavementLeave: existingLeaves.bereavementLeave,
+                marriageLeave: existingLeaves.marriageLeave,
+                studyLeave: existingLeaves.studyLeave,
+            };
+    
+            // Save the employee's leave data
+            const employeeLeave = new this.employeeLeaveModel(employeeLeaveData);
+            await employeeLeave.save();
+    
+            // Return the saved employee
+            return savedEmployee;
+    
         } catch (error) {
             console.error("Error in addEmployee repository:", error);
             throw new Error("Failed to add employee to the database");
         }
     }
+    
 
     async findByEmail(email: string): Promise<IEmployee | null> {
         try {

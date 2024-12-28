@@ -7,6 +7,8 @@ import BaseRepository from "./baseRepository";
 import employeeModel from '../../models/employeeModel';
 import leaveTypeModel from "../../models/leaveTypeModel";
 import { ILeaveType} from "../../entities/leaveTypeEntities";
+import { IEmployeeLeave } from "../../entities/employeeLeaveEntities";
+import employeeLeaveModel from "../../models/employeeLeaveModel";
 
 @injectable()
 export default class LeaveRepository extends BaseRepository<IEmployeeAttendance> implements ILeaveRepository {
@@ -198,6 +200,22 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
         }
     }
     
+    async getEmployeeLeaves(employeeId: string): Promise<IEmployeeLeave> {
+        try {
+            // Use Mongoose's `findOne()` to retrieve the leave employee document
+            const leaveEmployeeDoc = await employeeLeaveModel.findOne({ employeeId });
+    
+            if (!leaveEmployeeDoc) {
+                throw new Error('Leave employee document not found');
+            }
+    
+            // Return the leave employee document
+            return leaveEmployeeDoc;
+        } catch (error) {
+            console.error("Error in getEmployeeLeaves repository:", error);
+            throw new Error("Failed to fetch leave employee");
+        }
+    }
     
     
     

@@ -3,7 +3,7 @@ import IDepartment from '../entities/departmentEntities';
 
 // Employee Schema
 const employeeSchema: Schema = new Schema({
-  _id: { 
+  employeeId: { 
     type: mongoose.Schema.Types.ObjectId,ref: 'Employee', 
     required: true,  // Ensure id is required and a string
   },
@@ -26,7 +26,7 @@ const employeeSchema: Schema = new Schema({
   },
   profilePicture: { 
     type: String,
-    required: false, 
+    required: false,  // URL or path to the employee's profile picture
   },
   isActive: { 
     type: Boolean, 
@@ -45,10 +45,6 @@ const departmentSchema: Schema = new Schema({
   employees: { 
     type: [employeeSchema], 
     required: true,  // Ensure the employees array is required
-    validate: {
-      validator: (v: any[]) => v.length > 0,  // Ensure that the employees array is not empty
-      message: 'A department must have at least one employee.'
-    }
   },
 });
 

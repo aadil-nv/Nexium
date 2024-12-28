@@ -10,28 +10,50 @@ export default class DepartmentController implements IDepartmentController {
         @inject("IDepartmentService") private _departmentService: IDepartmentService
     ) {}
 
-    async addDepartments(req: Request, res: Response): Promise<void> {
+    async addDepartments(req: Request, res: Response): Promise<Response> {
         try {
-            const { departmentName, employees } = req.body;
-
-            
-
-            if (!Array.isArray(employees)) {
-                res.status(400).json({ message: 'Employees must be an array of objects' });
-                return;
-            }
-
-            const result = await this._departmentService.addDepartments(departmentName, employees);
-            res.status(200).json(result);
-        } catch (error:any) {
-            console.error('Error in addDepartments:-----', error);
-            res.status(500).json({ error});
+          const { departmentName, employees } = req.body;
+      
+          // Validate employees input
+          if (!Array.isArray(employees)) {
+            return res.status(400).json({ 
+              message: "Employees must be an array of objects", 
+              success: false 
+            });
+          }
+      
+          // Call the service layer
+          const result = await this._departmentService.addDepartments(departmentName, employees);
+      
+          // Return the response from the service layer
+          if (!result.success) {
+            return res.status(400).json(result); 
+          }
+      
+          return res.status(200).json(result);
+      
+        } catch (error: any) {
+          console.error("Error in addDepartments:", error);
+      
+          return res.status(500).json({
+            message: "An unexpected error occurred.",
+            success: false,
+            error: error.message
+          });
         }
-    }
+      }
+      
 
     async getDepartments(req: Request, res: Response): Promise<void> {
         try {
             const departments = await this._departmentService.getDepartments();
+            const datas = departments.map((dep: any) => ({
+                employees : dep.employees.employeeId,
+                empname : dep.employees.name
+            }))
+            console.log(`get departments-------------------------------------------------`.bgRed, departments.employees);
+            console.log(`get departments-------------------------------------------------`.bgRed, datas);
+            
             res.status(200).json(departments);
         } catch (error) {
             console.error("Error fetching departments:", error);

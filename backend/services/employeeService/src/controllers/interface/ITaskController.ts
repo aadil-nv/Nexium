@@ -3,9 +3,9 @@ import { Request, Response } from "express";
 import { CustomRequest } from "../../middlewares/tokenAuth";
 export default interface ITaskController {
     getTasks(req: Request, res: Response): Promise<Response>;
-    getEmployeesToAddTask(req: Request, res: Response): Promise<Response>;
+    getEmployeesToAddTask(req: CustomRequest, res: Response): Promise<Response>;
     assignTaskToEmployee(req: CustomRequest, res: Response): Promise<Response>;
-    getAllTasks(req: Request, res: Response): Promise<Response>;
+    getAllTasks(req: CustomRequest, res: Response): Promise<Response>;
     updateTask(req: Request, res: Response): Promise<Response>;
     deleteTask(req: Request, res: Response): Promise<Response>;
     getTasksByEmployeeId(req: CustomRequest, res: Response): Promise<Response>;
@@ -13,4 +13,5 @@ export default interface ITaskController {
     updateTaskApproval(req:CustomRequest , res:Response):Promise<Response>
     getTaskListOfEmployee(req:CustomRequest , res:Response):Promise<Response>
     updateCompletedTask(req:CustomRequest , res:Response):Promise<Response>
+
 }

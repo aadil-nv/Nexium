@@ -36,6 +36,9 @@ export default function ProfessionalDetails() {
     fetchDetails();
   }, [manager.isAuthenticated, employee.isAuthenticated, businessOwner.isAuthenticated]);
 
+  console.log("details00000000000000000000",details);
+  
+
   if (loading) return <p>Loading...</p>;
 
   const employeeFields = [
@@ -46,6 +49,10 @@ export default function ProfessionalDetails() {
     { name: 'currentStatus', label: 'Current Status', type: 'text' },
     { name: 'companyName', label: 'Company Name', type: 'text' },
     { name: 'salary', label: 'Salary', type: 'number' },
+    { name: 'uanNumber', label: 'UAN NO', type: 'uanNumber' },
+    { name: "pfAccount", label: "PF a/c", type: "pfAccount" },
+    { name: "esiAccount", label: "ESI a/c", type: "esiAccount" },
+
   ];
 
   const managerFields = [

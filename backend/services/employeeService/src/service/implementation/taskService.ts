@@ -43,10 +43,10 @@ export default class TaskService implements ITaskService {
     }
   }
   
-  async getEmployeesToAddTask(): Promise<IGetEmployeeWithoutTaskDTO[]> {
+  async getEmployeesToAddTask(teamLeadId: string): Promise<IGetEmployeeWithoutTaskDTO[]> {
 
     try {
-      const employees = await this.taskRepository.getEmployeesToAddTask()
+      const employees = await this.taskRepository.getEmployeesToAddTask(teamLeadId)
       
       return employees.map((employee: any) => ({
         _id: employee._id.toString(),
@@ -109,9 +109,9 @@ export default class TaskService implements ITaskService {
   
   
 
-  async getAllTasks(): Promise<ITaskDTO[]> {
+  async getAllTasks(teamLeadId : string): Promise<ITaskDTO[]> {
     try {
-      const tasks = await this.taskRepository.getAllTasks()
+      const tasks = await this.taskRepository.getAllTasks(teamLeadId)
       return tasks.map((task:ITask) => ({
         _id: task._id,
         employeeId: task.employeeId.toString(),

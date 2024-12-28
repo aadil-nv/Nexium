@@ -12,6 +12,11 @@ export interface IGetProfileDTO {
     profilePicture:string;
     message: string;
     personalWebsite: string;
+    bankAccountNumber: string;
+    ifscCode: string;
+    panNumber: string;
+    aadharNumber: string;
+    gender: "Male" | "Female" | "Other";
  
 }    
 
@@ -37,6 +42,9 @@ export interface IGetEmployeeProfessionalDTO {
     currentStatus: string;
     companyName: string;
     salary: number;
+    uanNumber: string;
+    pfAccount: string;
+    esiAccount: string
    
 
 }
