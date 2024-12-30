@@ -17,4 +17,5 @@ export default interface IEmployeeService {
     updateBlocking(employeeId: string ,blocking: any): Promise<any>;
     getEmployeeWithOutDepartment(): Promise<IEmployeesDTO[]>
     removeEmployee(employeeId: string): Promise<any>;
+    updateCredentials(employeeId: string ,credentials: any): Promise<any>;
 }

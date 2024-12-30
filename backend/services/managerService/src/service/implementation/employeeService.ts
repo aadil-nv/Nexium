@@ -153,10 +153,7 @@ export default class EmployeeService implements IEmployeeService {
         companyEmail: employeeData.email,
         companyPassword: "",
       },
-      documents: {
-        resume: "",
-        idProof: "",
-      },
+
     };
   }
 
@@ -188,7 +185,7 @@ export default class EmployeeService implements IEmployeeService {
             employeeName: employee.personalDetails.employeeName, // Assuming `name` is the field in the repository data
             position: employee.professionalDetails.position,
             isActive: employee.isActive,
-            profilePicture: employee.personalDetails.profilePicture || "", // Provide a fallback for optional fields
+            profilePicture: employee.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}` : employee.personalDetails.profilePicture, // Provide a fallback for optional fields
             email: employee.personalDetails.email,
             _id: employee._id,
             isBlocked: employee.isBlocked
@@ -350,7 +347,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
                   employeeName: employeeData.personalDetails.employeeName,
                   email: employeeData.personalDetails.email,
                   phone: employeeData.personalDetails.phone,
-                  profilePicture: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`,
+                  profilePicture: employeeData.personalDetails.profilePicture ?  `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}` :employeeData.personalDetails.profilePicture,
                   personalWebsite: employeeData.personalDetails.personalWebsite,
                   bankAccountNumber: employeeData.personalDetails.bankAccountNumber,
                   ifscCode: employeeData.personalDetails.ifscCode,
@@ -391,7 +388,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
               documents: {
                   resume: {
                       documentName: employeeData.documents.resume.documentName,
-                      documentUrl: employeeData.documents.resume.documentUrl,
+                      documentUrl: employeeData.documents.resume.documentUrl ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.documents.resume.documentUrl}` : '',
                       documentSize: employeeData.documents.resume.documentSize,
                       uploadedAt: employeeData.documents.resume.uploadedAt,
                   },
@@ -521,6 +518,17 @@ async removeEmployee(employeeId: string): Promise<any> {
       return result;
   } catch (error) {
       console.error("Error in removeEmployee service:", error);
+      throw error;
+  }
+}
+
+
+async updateCredentials(employeeId: string ,credentials: any): Promise<any> {
+  try {
+      const result = await this._employeeRepository.updateCredentials(employeeId, credentials);
+      return result;
+  } catch (error) {
+      console.error("Error in updateCredentials service:", error);
       throw error;
   }
 }

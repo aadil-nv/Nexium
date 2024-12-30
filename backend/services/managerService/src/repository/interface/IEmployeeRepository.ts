@@ -16,4 +16,5 @@ export default interface IEmployeeRepository extends BaseRepository<any>  {
     updateBlocking(employeeId: string, blocking: any): Promise<any>
     getEmployeeWithOutDepartment(): Promise<IEmployee[]>
     removeEmployee(employeeId: string): Promise<any>
+    updateCredentials(employeeId: string ,credentials: any): Promise<any>
 }

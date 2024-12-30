@@ -9,128 +9,128 @@ import leaveTypeModel from "../../models/leaveTypeModel";
 import { ILeaveType} from "../../entities/leaveTypeEntities";
 import { IEmployeeLeave } from "../../entities/employeeLeaveEntities";
 import employeeLeaveModel from "../../models/employeeLeaveModel";
+import IEmployee from "../../entities/employeeEntities";
 
 @injectable()
 export default class LeaveRepository extends BaseRepository<IEmployeeAttendance> implements ILeaveRepository {
 
-    constructor(@inject("IEmployeeAttendance") private employeeAttendanceModel: Model<IEmployeeAttendance>) {
+    constructor(@inject("IEmployeeAttendance") 
+    private employeeAttendanceModel: Model<IEmployeeAttendance>,
+    @inject("IEmployeeLeave")
+    private employeeLeaveModel: Model<IEmployeeLeave>) {
         super(employeeAttendanceModel);
     }
     async updateLeaveApproval(employeeId: string, data: any): Promise<IEmployeeAttendance | null> {
-        console.log('"hitting updateLeaveApproval repository=------------------"'.bgRed);
-        console.log(`employeeId is ${employeeId}`.bgGreen);
-        console.log(`data is `.bgGreen,data);
-        
-        
-        
-        try {
-            // Format the provided date to "YYYY-MM-DD"
-            const formattedDate = new Date(data.date).toISOString().split('T')[0];
-
-            console.log(`form atted date is `.bgBlue, formattedDate);
-            
+        console.log("data!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", data);
+        console.log("employeeId", employeeId);
     
-            // Fetch the employee's attendance data
+        try {
+            const formattedDate = new Date(data.date).toISOString().split('T')[0];
+    
             const employeeAttendance = await this.employeeAttendanceModel.findOne({ employeeId });
             if (!employeeAttendance) {
                 throw new Error("Employee attendance not found");
             }
     
-            // Find the specific attendance entry based on the formatted date
             const attendanceEntry = employeeAttendance.attendance.find(entry => entry.date === formattedDate);
             if (!attendanceEntry) {
                 throw new Error("Attendance entry for the specified date not found");
             }
     
-            const leaveField = data.leaveType; // Type of leave (e.g., "sick", "vacation")
+            const leaveField = data.leaveType as keyof IEmployeeLeave;
     
-            console.log(`"attendanceEntry.leaveStatus is ${attendanceEntry}`.bgYellow);
-            
-            
-            if (attendanceEntry.leaveStatus === "Pending" || attendanceEntry.status === "Absent") {
-                console.log(`"attendanceEntry.leaveStatus is ${attendanceEntry.leaveStatus}`.bgYellow);
-                if (data.action === "Approved") {
-                    attendanceEntry.leaveStatus = "Approved";
-              
-                    await employeeModel.findOneAndUpdate(
-                        { _id: employeeId },
-                        { $inc: { [`leaves.${leaveField}`]: -1 } }
-                    );
-                } else if(data.action == "Rejected") {
-                    console.log(`"######################################"`.bgCyan);
-                    
-                    attendanceEntry.leaveStatus = "Rejected";
-                    attendanceEntry.rejectionReason = data.reason;
+            const leaveRecord = await this.employeeLeaveModel.findOne({ employeeId });
+            if (!leaveRecord) {
+                throw new Error("Employee leave record not found");
+            }
+    
+            const currentLeaveCount = leaveRecord[leaveField] || 0;
+    
+            // Determine the leave duration (full or half) and adjust accordingly
+            let leaveDuration = 1; // Default to full leave
+            if (data.duration === "half") {
+                leaveDuration = 0.5; // Adjust to half leave if "half" is specified
+            }
+    
+            if (data.action === "Approved" && attendanceEntry.leaveStatus === "Pending") {
+                if (currentLeaveCount < leaveDuration) {
+                    throw new Error(`Not enough ${leaveField} leaves available to approve`);
                 }
-            } else if (attendanceEntry.leaveStatus === "Rejected" && data.action === "Approved") {
                 attendanceEntry.leaveStatus = "Approved";
-                // Decrement the leave count for the specified leave type
-                await employeeModel.findOneAndUpdate(
-                    { _id: employeeId },
-                    { $inc: { [`leaves.${leaveField}`]: -1 } }
+                await this.employeeLeaveModel.findOneAndUpdate(
+                    { employeeId },
+                    { $inc: { [leaveField]: -leaveDuration } } // Decrease by the leaveDuration (1 or 0.5)
                 );
-            } else if (attendanceEntry.leaveStatus === "Approved" && data.action === "Rejected") {
+            } else if (data.action === "Rejected" && attendanceEntry.leaveStatus === "Pending") {
                 attendanceEntry.leaveStatus = "Rejected";
                 attendanceEntry.rejectionReason = data.reason;
-                // Increment the leave count for the specified leave type
-                await employeeModel.findOneAndUpdate(
-                    { _id: employeeId },
-                    { $inc: { [`leaves.${leaveField}`]: 1 } }
+            } else if (attendanceEntry.leaveStatus === "Rejected" && data.action === "Approved") {
+                if (currentLeaveCount < leaveDuration) {
+                    throw new Error(`Not enough ${leaveField} leaves available to approve`);
+                }
+                attendanceEntry.leaveStatus = "Approved";
+                await this.employeeLeaveModel.findOneAndUpdate(
+                    { employeeId },
+                    { $inc: { [leaveField]: -leaveDuration } } // Decrease by the leaveDuration (1 or 0.5)
                 );
+            } else if (attendanceEntry.leaveStatus == "Approved" && data.action == "Rejected") {
+                console.log(`Reverting approved leave for ${leaveField}, incrementing leave count=========`.bgYellow);
+                attendanceEntry.leaveStatus = "Rejected";
+                attendanceEntry.rejectionReason = data.reason;
+                const updateResult = await this.employeeLeaveModel.findOneAndUpdate(
+                    { employeeId },
+                    { $inc: { [leaveField]: leaveDuration } } // Increase by the leaveDuration (1 or 0.5)
+                );
+    
+                console.log(`Leave increment result:`, updateResult);
             }
     
             // Save the updated attendance
-           const result =  await employeeAttendance.save();
-            console.log(`Updated leave approval for employee ${result}`.bgRed);
-            
+            const result = await employeeAttendance.save();
     
             return result;
-        } catch (error) {
-            console.error("Error in updateLeaveApproval repository:", error);
-            throw new Error("Failed to update leave approval");
+        } catch (error: any) {
+            console.error("Error in updateLeaveApproval repository:", error.message);
+            throw new Error(error.message);
         }
     }
     
     
+    
     async getAllLeaveEmployees(): Promise<any> {
         try {
-            const results = await this.employeeAttendanceModel.find({
-                "attendance.leaveStatus": { 
-                    $in: ["Pending", "Approved", "Rejected"],
-                    $exists: true // Ensure the field exists and is not undefined
-                }
-            });
-    
-            // Filter out attendance records where leaveStatus is null or undefined
+            // Fetch employees with valid leave status
+            const results = await this.employeeAttendanceModel
+                .find({
+                    "attendance.leaveStatus": { 
+                        $in: ["Pending", "Approved", "Rejected"],
+                        $exists: true // Ensure the field exists and is not undefined
+                    }
+                })
+
+
             const filteredResults = results.map(employee => {
-                // Filter attendance where leaveStatus is not null or undefined
+                // Filter attendance where leaveStatus is not null, undefined, or "null" string
                 const filteredAttendance = employee.attendance.filter(attendance => 
-                    attendance.leaveStatus !== null && attendance.leaveStatus !== undefined  && attendance.leaveStatus !== "null"
+                    attendance.leaveStatus && attendance.leaveStatus !== "null"
                 );
-                
+    
                 // Return employee data with filtered attendance
                 return { ...employee.toObject(), attendance: filteredAttendance };
             });
     
-            if (!filteredResults || filteredResults.length === 0) {
+            // Check if any valid results were found
+            if (filteredResults.length === 0) {
                 throw new Error("No leave employees found with valid leave status");
             }
     
-            console.log("========================================================");
-            console.log();
-            console.log();
-            console.log();
-            console.log(`Total leave employees: ${filteredResults.length}`.bgMagenta);
-            console.log();
-            console.log();
-            console.log();
-            console.log("========================================================");
             return filteredResults;
         } catch (error) {
             console.error("Error in getAllLeaveEmployees repository:", error);
             throw new Error("Failed to fetch leave employees");
         }
     }
+    
     
     
     async findAllLeaveTypes(): Promise<ILeaveType> {

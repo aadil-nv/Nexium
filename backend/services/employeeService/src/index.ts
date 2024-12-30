@@ -10,6 +10,7 @@ import payrollRoutes from './routes/payrollRoute';
 import departmentRoutes from './routes/departmentRoute';
 import taskRoutes from './routes/taskRoute';
 import dashboardRoutes from './routes/dashboardRoute';
+import leaveRoutes from './routes/leaveRoute';
 import 'colors' ;
 import morgan from 'morgan'; // Import morgan
 import { createStream } from 'rotating-file-stream';
@@ -58,6 +59,7 @@ app.use('/api/payroll', payrollRoutes);
 app.use('/api/department', departmentRoutes);
 app.use('/api/task', taskRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/leave',leaveRoutes);
 
 
 

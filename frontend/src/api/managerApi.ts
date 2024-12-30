@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { message } from 'antd';
 import { fetchLeaveEmployeesRequest ,fetchLeaveEmployeesFailure,fetchLeaveEmployeesSuccess} from "../redux/slices/leaveSlice";
 import { Dispatch } from 'redux';
+import { duration } from "moment";
 
 
 
@@ -292,8 +293,9 @@ export const addEmployee = async (employeeData: any) => {
         leaveDate: item.date ? new Date(item.date) : null, // Ensure leaveDate is a Date object
         leaveStatus: item.leaveStatus, // Adjust leaveStatus accordingly
         reason: item.reason ,
-        hours: item.hours || 0,
+        minutes: item.minutes || 0,
         status: item.status ,
+        duration: item.duration
       }));
     } catch (error) {
       throw new Error('Failed to fetch leave employees');

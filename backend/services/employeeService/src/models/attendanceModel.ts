@@ -8,11 +8,12 @@ import { IAttendanceEntry,IEmployeeAttendance} from '../entities/attendanceEntit
 const AttendanceEntrySchema: Schema = new Schema({
  
   date: { type: String },
-  status: { type: String, enum: ['Present', 'Leave', 'Absent' ,"marked"] ,default: "Absent"},
+  status: { type: String, enum: ['Present', 'Leave', 'Absent' ,"marked",] ,default: "Absent"},
   checkInTime: { type: Date ,default: null},
   checkOutTime: { type: Date ,default: null},
   minutes: { type: Number ,default: 0},
   leaveType: { type: String, default: null },
+  duration :{ type: String , enum:["half","full"] },
   reason: { type: String, default: null },
   leaveStatus: { type: String ,enum:["Pending","Approved","Rejected"] ,default: null},
   rejectionReason: { type: String, default: null },

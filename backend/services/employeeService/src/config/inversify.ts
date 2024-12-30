@@ -61,6 +61,15 @@ import Consumer from "./../events/implementation/consumer"
 import EmployeeLeaveModel from "../models/employeeLeaveModel";
 import {IEmployeeLeave} from "../entities/employeeLeaveEntities"
 
+import LeaveController from "../controllers/implementation/leaveController";
+import LeaveService from "../service/implementation/leaveService";
+import LeaveRepository from "../repository/implementation/leaveRepository";
+import ILeaveController from "../controllers/interface/ILeaveController";
+import ILeaveService from "../service/interface/ILeaveService";
+import ILeaveRepository from "../repository/interface/ILeaveRepository";
+
+import AppliedLeaveModel from "../models/appliedLeaveModel";
+import {IAppliedLeave} from "../entities/leaveTypeEntities"
 
 const container = new Container();
 
@@ -95,6 +104,10 @@ container.bind<IDashboardController>("IDashboardController").to(DashboardControl
 container.bind<IDashboardService>("IDashboardService").to(DashboardService);
 
 
+container.bind<ILeaveController>("ILeaveController").to(LeaveController);
+container.bind<ILeaveService>("ILeaveService").to(LeaveService);
+container.bind<ILeaveRepository>("ILeaveRepository").to(LeaveRepository);
+
 
 
 container.bind<mongoose.Model<IPayroll>>("IPayroll").toConstantValue(payrollModel);
@@ -103,6 +116,7 @@ container.bind<mongoose.Model<IEmployeeAttendance>>("IEmployeeAttendance").toCon
 container.bind<mongoose.Model<IDepartment>>("IDepartment").toConstantValue(DepartmentModel);
 container.bind<mongoose.Model<ITask>>("ITask").toConstantValue(TaskModel);
 container.bind<mongoose.Model<IEmployeeLeave>>("IEmployeeLeave").toConstantValue(EmployeeLeaveModel);
+container.bind<mongoose.Model<IAppliedLeave>>("IAppliedLeave").toConstantValue(AppliedLeaveModel);
 
 
 

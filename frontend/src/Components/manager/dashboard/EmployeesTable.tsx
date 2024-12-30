@@ -14,6 +14,7 @@ import { IEmployee } from "../../../interface/managerInterface";
 const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[]; loading: boolean; error: string | null; onUpdate: () => void }) => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
   const dispatch = useDispatch();  
 
   const exportToExcel = () => {
@@ -27,8 +28,7 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
       let response;
       if (action === 'edit') {
         response = await managerInstance.get(`/manager/api/employee/get-employee/${employeeId}`);
-        console.log("response >>>>>>>>>>>>>><<<<<<<<<<<<<<<<",response);
-        
+        setSelectedEmployeeId(employeeId);
         dispatch(clearEmployeeData());
         dispatch(setEmployeeDatas({ employeeData: response.data }));
         setIsModalVisible(true);
@@ -45,8 +45,14 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
   };
 
   const handleCancel = () => {
+    setSelectedEmployeeId(null);
     dispatch(clearEmployeeData());
     setIsModalVisible(false);
+  };
+
+  const handleEmployeeUpdate = () => {
+    onUpdate(); // Refresh the table data
+    handleCancel(); // Close the modal
   };
 
   return (
@@ -118,7 +124,12 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
         )}
       </div>
 
-      <EmployeeInfoModal visible={isModalVisible} onClose={handleCancel} />
+      <EmployeeInfoModal 
+        visible={isModalVisible} 
+        onClose={handleCancel}
+        onUpdate={handleEmployeeUpdate}
+        employeeId={selectedEmployeeId}
+      />
     </div>
   );
 };

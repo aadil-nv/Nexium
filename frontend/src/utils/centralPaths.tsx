@@ -46,6 +46,9 @@ export const teamLeedLinks: LinkItem[] = [
   // { title: 'Announcements', route: '/employee/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   { title: 'Chat', route: '/employee/chat', icon: 'fi fi-tr-messages' },
   { title: 'Meetings', route: '/employee/meeting', icon: 'fi fi-tr-circle-video' },
+  { title: 'Leaves', route: '/employee/leaves', icon: 'fi fi-tr-house-leave' },
+
+
 ];
 export const employeeLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/employee/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
@@ -56,6 +59,8 @@ export const employeeLinks: LinkItem[] = [
   // { title: 'Announcements', route: '/employee/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   { title: 'Chat', route: '/employee/chat', icon: 'fi fi-tr-messages' },
   { title: 'Meetings', route: '/employee/meeting', icon: 'fi fi-tr-circle-video' },
+  { title: 'Leaves', route: '/employee/leaves', icon: 'fi fi-tr-house-leave' },
+
 ];
 
 export const managerLinks: LinkItem[] = [

@@ -48,6 +48,9 @@ export default class EmployeeController implements IEmployeeController {
             const employeeId = req.params.id;
          
             const personalInformation = req.body;
+
+            console.log("personalInformation", personalInformation);
+            
      
             const result = await this._employeeService.updateEmployeePersonalInformation(employeeId ,personalInformation);
             res.status(200).json(result);
@@ -143,18 +146,12 @@ export default class EmployeeController implements IEmployeeController {
     }
 
     async updateResume(req: CustomRequest, res: Response): Promise<void> {
-
         
         try {
             const employeeId = req.params.id;
-         
-
-            console.log("req.file", req.file);
-            
-            
+      
             const result = await this._employeeService.updateResume(employeeId, req.file as Express.Multer.File);
            
-            
             res.status(200).json(result);
         } catch (error) {
             console.error("Error updating resume:", error);
@@ -202,6 +199,21 @@ export default class EmployeeController implements IEmployeeController {
         } catch (error) {
             console.error("Error removing employee:", error);
             res.status(500).json({ message: "Failed to remove employee", error });
+        }
+    }
+
+    async updateCredentials(req: CustomRequest, res: Response): Promise<void> {
+        try {
+            const employeeId = req.params.id;
+            const credentials = req.body;
+            console.log("credentials++++++++++++++++++++++++++++++", credentials);
+            
+            const result = await this._employeeService.updateCredentials(employeeId, credentials);
+
+            res.status(200).json(result);
+        } catch (error) {
+            console.error("Error updating credentials:", error);
+            res.status(500).json({ message: "Failed to update credentials", error });
         }
     }
 

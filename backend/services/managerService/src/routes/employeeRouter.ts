@@ -24,6 +24,8 @@ employeeRouter.post('/update-professionalinformation/:id',authenticateToken,(req
 employeeRouter.post('/update-profile-picture/:id',authenticateToken,uploadMiddleware,(req,res)=>employeeController.updateProfilePicture(req,res))
 employeeRouter.post('/update-resume/:id',authenticateToken,uploadMiddleware,(req,res)=>employeeController.updateResume(req,res) )
 employeeRouter.post('/update-blocking/:id',authenticateToken,(req,res)=>employeeController.updateBlocking(req,res))
+employeeRouter.post('/update-credentials/:id',authenticateToken,(req,res)=>employeeController.updateCredentials(req,res))
+
 
 employeeRouter.delete('/remove-employee/:id',authenticateToken,(req,res)=>employeeController.removeEmployee(req,res))
 

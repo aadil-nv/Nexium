@@ -4,7 +4,7 @@ import { IEmployeeLeave } from '../entities/employeeLeaveEntities';
 
 const employeeLeaveSchema = new Schema<IEmployeeLeave>(
   {
-    employeeId: { type: String},
+    employeeId: { type: String , required: true ,ref: 'Employee' },
     sickLeave: { type: Number },
     casualLeave: { type: Number },
     maternityLeave: { type: Number },

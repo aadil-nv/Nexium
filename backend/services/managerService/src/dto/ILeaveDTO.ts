@@ -5,15 +5,18 @@ export interface ILeaveDTO {
     leaveType: string;
     date: Date | null;
     reason: string | null;
-    hours: number;  
+    minutes: number;  
+    duration: string | null;
     status: "Pending" | "Approved" | "Rejected" | "null";
     leaveStatus?: "Pending" | "Approved" | "Rejected" | "null";
+    employeeName?: any;
+    profilePicture?: any;
    
 }
 
 export interface ILeaveResonseDTO{
    
-    leaveStatus?: "Pending"|"Approved"|"Rejected"|"null"
+    leaveStatus?: string | null
     message?: string
     success?: boolean
 }

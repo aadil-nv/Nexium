@@ -21,7 +21,6 @@ const employeeSchema = new Schema<IEmployee>({
     ifscCode: { type: String },
     aadharNumber: { type: String },
     panNumber: { type: String },
-    dateOfBirth: { type: Date },
     gender: { type: String, enum: ['Male', 'Female', 'Other'] },
   },
   address:{

@@ -56,6 +56,9 @@ import PayrollRepository from "../repository/implementation/payrollRepository";
 import PayrollCriteriaModel from "../models/payrollCriteriaModel";
 import { IPayrollCriteria } from "../entities/payrollCriteriaEntities";
 
+import EmployeeLeaveModel from "../models/employeeLeaveModel";
+import {IEmployeeLeave} from "../entities/employeeLeaveEntities";
+
 
 const container = new Container();
 
@@ -101,6 +104,9 @@ container.bind<IPayrollRepository>("IPayrollRepository").to(PayrollRepository);
 container.bind<IPayrollService>("IPayrollService").to(PayrollService);
 
 container.bind<typeof PayrollCriteriaModel>("IPayrollCriteria").toConstantValue(PayrollCriteriaModel);
+
+container.bind<typeof EmployeeLeaveModel>("IEmployeeLeave").toConstantValue(EmployeeLeaveModel);
+
 
 
 export default container;

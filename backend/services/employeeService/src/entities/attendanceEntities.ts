@@ -7,6 +7,7 @@ export interface IAttendanceEntry {
     checkInTime: string | null;
     checkOutTime: string| null;
     minutes: number;
+    duration?: string | null;
     leaveType?: string | null;
     reason?: string | null;
     leaveStatus?: string | null;

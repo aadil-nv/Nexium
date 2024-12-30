@@ -278,5 +278,19 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }   
       }
     
+      async updateCredentials(employeeId: string ,credentials: any): Promise<any> {
+        try {
+            const employee = await this.employeeModel.findById(employeeId);
+            if (!employee) {
+                throw new Error("Employee not found");
+            }
+            employee.employeeCredentials = credentials;
+            const updatedEmployee = await employee.save();
+            return updatedEmployee.employeeCredentials;
+        } catch (error) {
+            console.error("Error updating employee credentials:", error);
+            throw new Error("Failed to update employee credentials");
+        }
+    }
     
 }

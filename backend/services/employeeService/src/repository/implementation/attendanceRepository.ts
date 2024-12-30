@@ -196,7 +196,7 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
 
     async applyLeave(employeeId: string, leaveData: any): Promise<any> {
         try {
-            const { attendanceId, leaveType, reason,date } = leaveData;
+            const { attendanceId, leaveType, reason,date ,duration} = leaveData;
     
             const employeeAttendance = await this._employeeAttendanceModel.findOne({ employeeId });
     
@@ -214,7 +214,8 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
     
             dayOfLeave.leaveType = leaveType || null;
             dayOfLeave.reason = reason || null;
-            dayOfLeave.leaveStatus = "Pending"; 
+            dayOfLeave.leaveStatus = "Pending";
+            dayOfLeave.duration = duration || null; 
 
             await employeeAttendance.save();
     

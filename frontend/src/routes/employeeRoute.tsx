@@ -19,6 +19,7 @@ import Settings from "../components/global/Settings";
 import Chat from "../components/global/Chat";
 import Meeting from "../components/global/Meeting";
 import MyTaskList from "../components/employees/MyTaskList";
+import Leaves from "../components/employees/employeeLeave";
 
 const BusinessOwnerRoutes = () => {
 
@@ -42,6 +43,7 @@ const BusinessOwnerRoutes = () => {
 
             <Route path="task/:id" element={<MyTask />} />
             <Route path="task-list" element={<MyTaskList />} />
+            <Route path="leaves" element={<Leaves />} />
 
             <Route path="settings" element={<Settings />} />
             <Route path="chat" element={<Chat />} />

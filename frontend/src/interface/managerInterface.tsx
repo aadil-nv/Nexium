@@ -11,6 +11,7 @@ export interface IEmployee {  //! Part of Department
     profilePicture?: string;
     isActive?: boolean;
     isBlocked?: boolean;
+    gender?: string;
   }
 
 export interface IDepartment {
@@ -65,7 +66,7 @@ export interface IDepartment {
       companyName: string;
       salary: number;
       pfAccount: string;
-      esicAccount: string;
+      esiAccount: string;
       uanNumer: string;
     };
     employeeCredentials: {

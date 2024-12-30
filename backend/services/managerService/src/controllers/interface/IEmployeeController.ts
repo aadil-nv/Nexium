@@ -16,4 +16,5 @@ export default interface IEmployeeController {
     updateBlocking(req: CustomRequest, res: Response): Promise<void>;
     getEmployeeWithOutDepartment(req: Request, res: Response): Promise<void>;
     removeEmployee(req: CustomRequest, res: Response): Promise<void>;
+    updateCredentials(req: CustomRequest, res: Response): Promise<void>;
 } 

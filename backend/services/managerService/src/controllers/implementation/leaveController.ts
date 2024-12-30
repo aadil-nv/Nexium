@@ -11,23 +11,35 @@ import ILeaveService from "../../service/interface/ILeaveService";
 export default class LeaveController implements ILeaveController {
     constructor(@inject ("ILeaveService") private _leaveService: ILeaveService) {}
 
-    async updateLeaveApproval(req: CustomRequest, res: Response): Promise<void> {
+    async updateLeaveApproval(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const employeeId = req.params.id;
-       
-            const data = req.body
-     
-        
-        const result = await this._leaveService.updateLeaveApproval(employeeId ,data);
-        
-        res.status(200).json(result);
-        
-       } catch (error) {
-        console.error("Error updating leave approval:", error);
-        res.status(500).json({ message: "Failed to update leave approval", error });
-        
-       }
+            const data = req.body;
+    
+            const result = await this._leaveService.updateLeaveApproval(employeeId, data);
+    
+            if (result.success) {
+                return res.status(200).json({
+                    message: result.message,
+                    leaveStatus: result.leaveStatus,
+                    success: true
+                });
+            } else {
+                return res.status(400).json({
+                    message: result.message,
+                    success: false
+                });
+            }
+        } catch (error:any) {
+            console.error("Error updating leave approval:", error);
+            return res.status(500).json({
+                message: "Failed to update leave approval",
+                error: error.message,
+                success: false
+            });
+        }
     }
+    
 
     async getAllLeaveEmployees(req: CustomRequest, res: Response): Promise<void> {
 

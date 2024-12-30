@@ -2,7 +2,7 @@ import IAttendanceRepository from "../../repository/interface/IAttendanceReposit
 import  IAttendanceService  from "../interface/IAttendanceService";
 import { injectable, inject } from "inversify";
 import { IAttendanceEntry } from "../../entities/attendanceEntities";
-import { IAttendanceResponceDTO } from "../../dto/IAttendanceDTO";
+import { IApprovedLeaveDTO, IAttendanceResponceDTO } from "../../dto/IAttendanceDTO";
 import { log } from "console";
 import e from "express";
 import { bgBlue } from "colors";
@@ -140,27 +140,39 @@ export default class AttendanceService implements IAttendanceService {
         }
     }
     
-    async fetchApprovedLeaves(employeeId: string): Promise<any> {
+    async fetchApprovedLeaves(employeeId: string): Promise<IApprovedLeaveDTO> {
         try {
             const approvedLeaves= await this.attendanceRepository.fetchApprovedLeaves(employeeId)
+            console.log("approvedLeaves--------------------------",approvedLeaves);
+            
 
             if (!approvedLeaves) {
-                return {
-                    status: "error",
-                    data: null,
-                    message: "Employee not found",
-                };
+                throw new Error("No leave records found");
             }
             
-            const leaves = approvedLeaves
-
-            return leaves;
+            const leaveDTO: IApprovedLeaveDTO = {
+         
+              
+                sickLeave: approvedLeaves.sickLeave,
+                casualLeave: approvedLeaves.casualLeave,
+                maternityLeave: approvedLeaves.maternityLeave,
+                paternityLeave: approvedLeaves.paternityLeave,
+                paidLeave: approvedLeaves.paidLeave,
+                unpaidLeave: approvedLeaves.unpaidLeave,
+                compensatoryLeave: approvedLeaves.compensatoryLeave,
+                bereavementLeave: approvedLeaves.bereavementLeave,
+                marriageLeave: approvedLeaves.marriageLeave,
+                studyLeave: approvedLeaves.studyLeave,
+             
+              };
+          
+              return leaveDTO;
         } catch (error) {
             console.error("Error fetching approved leaves:", error);
             throw error;
         }
-    }
-    
+  
+      }
     async applyLeave(data: any, employeeId: any): Promise<any> {
         console.log("Apply Leave Data:", data);
     
