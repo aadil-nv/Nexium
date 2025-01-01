@@ -265,44 +265,60 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
     }
 
     async getPreviousMonthAttendance(employeeId: string): Promise<IEmployeeAttendance> {
-      
-        try {
-          const currentDate = new Date();
-
-          const previousMonth = new Date(currentDate.setMonth(currentDate.getMonth() - 1));
-      
-          const startOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth(), 1);
-      
-          const endOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0);
-      
-          const attendanceData = await this._employeeAttendanceModel.findOne({
-            employeeId: employeeId,
-            "attendance.date": {
-              $gte: startOfPreviousMonth.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
-              $lte: endOfPreviousMonth.toISOString().split('T')[0],   // Convert to YYYY-MM-DD format
-            }
-          }, {
-            attendance: {
-              $elemMatch: {
-                date: {
-                  $gte: startOfPreviousMonth.toISOString().split('T')[0], 
-                  $lte: endOfPreviousMonth.toISOString().split('T')[0],
-                }
-              }
-            }
-          });
-      
-          // If no attendance data found, return an empty object of the expected type
-          if (!attendanceData) {
-           throw new Error(`No attendance records found for employee ID ${employeeId}`);
+      try {
+        const currentDate = new Date();
+        console.log("Current date:", currentDate);
+    
+        // Get the previous month
+        const previousMonth = new Date(currentDate.setMonth(currentDate.getMonth() - 1));  // Subtract 1 month
+        console.log("Previous month:", previousMonth);
+    
+        const startOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth(), 1);  // First day of previous month
+        const endOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0); // Last day of previous month
+        console.log("Start of previous month:", startOfPreviousMonth);
+        console.log("End of previous month:", endOfPreviousMonth);
+    
+        // Fetch attendance data for the employee in the previous month
+        const attendanceData = await this._employeeAttendanceModel.findOne({
+          employeeId: employeeId,
+          "attendance.date": {
+            $gte: startOfPreviousMonth.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
+            $lte: endOfPreviousMonth.toISOString().split('T')[0],   // Convert to YYYY-MM-DD format
           }
-      
-          return attendanceData as IEmployeeAttendance;
-        } catch (error) {
-          console.error(error);
-          throw error;
+        });
+    
+        // If no attendance data found, throw an error
+        if (!attendanceData) {
+          console.log(`No attendance records found for employee ID ${employeeId}`);
+          throw new Error(`No attendance records found for employee ID ${employeeId}`);
         }
+    
+        console.log("Attendance data found:", attendanceData);
+    
+        // Filter attendance records for the previous month
+        const previousMonthAttendance = attendanceData.attendance.filter((att: any) => {
+          const attDate = new Date(att.date);
+          return attDate >= startOfPreviousMonth && attDate <= endOfPreviousMonth;
+        });
+    
+        console.log("Filtered previous month attendance:", previousMonthAttendance);
+    
+        // Return filtered data with only previous month's attendance records
+        const result = {
+          ...attendanceData.toObject(),
+          attendance: previousMonthAttendance,  // Only include previous month attendance records
+        };
+    
+        console.log("Final attendance data to return:", result);
+    
+        return result as IEmployeeAttendance;
+    
+      } catch (error) {
+        console.error("Error fetching previous month attendance:", error);
+        throw error;
       }
+    }
+    
       
       
 

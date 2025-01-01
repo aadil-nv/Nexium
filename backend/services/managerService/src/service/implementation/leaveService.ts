@@ -4,13 +4,19 @@ import ILeaveRepository from "../../repository/interface/ILeaveRepository";
 import {ILeaveResonseDTO ,ILeaveDTO, ILeaveTypesDTO} from "../../dto/ILeaveDTO";
 import { ILeaveType } from "entities/leaveTypeEntities";
 import { duration } from "moment";
+import { IAppliedLeaveDTO, IAppliedLeaveResponce } from "dto/IAppliedLeaveDTO";
+import { time } from "console";
+import IManagerRepository from "../../repository/interface/IManagerRepository";
 
 
 
 
 @injectable()
 export default class LeaveService implements ILeaveService {
-    constructor(@inject("ILeaveRepository") private _leaveRepository: ILeaveRepository) {}
+    constructor(@inject("ILeaveRepository")
+     private _leaveRepository: ILeaveRepository,
+     @inject("IManagerRepository")
+     private  _managerRepository: IManagerRepository) {}
 
     async updateLeaveApproval(employeeId: string, data: object): Promise<ILeaveResonseDTO> {
         try {
@@ -120,7 +126,65 @@ async getAllLeaveEmployees(): Promise<ILeaveDTO[]> {
     }
     
    
+
+
+
+    async fetchAllPreAppliedLeaves(): Promise<IAppliedLeaveDTO[]> {
+        try {
+          // Fetch all pre-applied leaves from the repository
+          const leaves = await this._leaveRepository.fetchAllPreAppliedLeaves();
     
+          // Map the result to the DTO format
+          const mappedLeaves: IAppliedLeaveDTO[] = leaves.map((leave) => ({
+            _id:leave._id,
+            employeeId: leave.employeeId?._id?.toString() || '',
+            employeeName: leave.employeeId?.personalDetails?.employeeName || 'N/A',
+            profilePicture: leave.employeeId?.personalDetails?.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ leave.employeeId?.personalDetails?.profilePicture}` :leave.employeeId?.personalDetails?.profilePicture ,
+            leaveType: leave.leaveType,
+            reason: leave.reason,
+            startDate: leave.startDate.toISOString(),
+            endDate: leave.endDate.toISOString(),
+            duration: leave.duration,
+            status: leave.status,
+            appliedAt: leave.appliedAt.toISOString(),
+            approvedBy: leave.approvedBy || 'N/A',
+            rejectionReason: leave.rejectionReason || 'N/A',
+            daysCount: leave.daysCount,
+          }));
     
+          return mappedLeaves;
+        } catch (error) {
+          console.error('Error fetching pre-applied leaves:', error);
+          throw new Error('Failed to fetch pre-applied leaves');
+        }
+      }
+
+
+      async updatePreAppliedLeaves(employeeId: string, managerId: string, data: any): Promise<IAppliedLeaveResponce> {
+        try {
+          // Fetch manager details
+          const managerData = await this._managerRepository.getDetails(managerId);
+          console.log("Manager data is:", managerData);
+      
+          const managerName = managerData.personalDetails.managerName;
+          console.log("Manager name is:", managerName);
     
+      
+          const result = await this._leaveRepository.updatePreAppliedLeaves(employeeId,managerName, data);
+          console.log("Result of update:", result);
+      
+          if (!result) {
+            throw new Error('Error occurred in updateLeaveApproval');
+          }
+      
+          return { message: "Updated successfully", success: true };
+        } catch (error) {
+          console.error('Error updating pre-applied leaves:', error);
+          throw new Error('Failed to update pre-applied leaves');
+        }
+      }
+      
+      
 }
+
+

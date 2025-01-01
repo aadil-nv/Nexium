@@ -27,8 +27,6 @@ export interface IPayrollDTO {
       otherDeductions: number;
       totalDeductions: number;
       bankAccount: string;
-      bankName: string;
-      bankBranch: string;
       employeeName: string;
       _id?:any
     }>;

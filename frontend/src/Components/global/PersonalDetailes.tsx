@@ -137,7 +137,6 @@ export default function PersonalDetails() {
 
   const employeeFields = employee?.isAuthenticated && [
     { name: 'bankAccountNumber', label: 'BANK ACCOUNT NUMBER', icon: <BankOutlined /> },
-    { name: 'bankName', label: 'BANK NAME', icon: <BankOutlined /> },
     { name: 'ifscCode', label: 'IFSC CODE', icon: <BankOutlined /> },
     { name: 'aadharNumber', label: 'AADHAR NUMBER', icon: <IdcardOutlined /> },
     { name: 'panNumber', label: 'PAN NUMBER', icon: <IdcardOutlined /> }

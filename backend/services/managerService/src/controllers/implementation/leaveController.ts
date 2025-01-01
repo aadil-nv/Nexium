@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import ILeaveController from "../interface/ILeaveController";
 import { CustomRequest } from "../../middlewares/tokenAuthenticate";
 import ILeaveService from "../../service/interface/ILeaveService";
+import { log } from "util";
 
 
 
@@ -89,4 +90,46 @@ export default class LeaveController implements ILeaveController {
             return res.status(500).json({ message: "Failed to update leave types", error });
         }
     }
+
+    async fetchAllPreAppliedLeaves(req: CustomRequest, res: Response): Promise<Response>{
+        console.log("hitting get leave types==================");
+        
+        try {
+            const result = await this._leaveService.fetchAllPreAppliedLeaves();
+            console.log("result", result);
+            
+            
+            return res.status(200).json(result);
+        } catch (error) {
+            console.error("Error fetch All PreAppliedLeaves  :", error);
+            return res.status(500).json({ message: "Failed to fetch leave types", error });
+        }
+    }
+
+    async updatePreAppliedLeaves(req: CustomRequest, res: Response): Promise<Response>{
+        console.log("hitttttttttttttttttttttttttttttttttttttttttttt");
+        
+        try {
+            const data = req.body
+            console.log("data00000000000",data);
+            
+            const employeeId = req.params.id
+            console.log("employeeId is ---->",employeeId);
+            
+            const managerId = req.user?.managerData?._id
+
+            console.log("manager is --->",managerId);
+            
+
+            const response = await this._leaveService.updatePreAppliedLeaves(employeeId , managerId as string , data)
+            console.log("responce is >>>>>>>>",response);
+            
+            return res.status(200).json(response);
+            
+        } catch (error) {
+            console.error("Error fetch All PreAppliedLeaves  :", error);
+            return res.status(500).json({ message: "Failed to update pre applied lave", error });
+        }
+    }
+
 }

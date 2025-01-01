@@ -3,6 +3,7 @@ import { IEmployeeAttendance } from "../../entities/attendanceEntities";
 import BaseRepository from "../implementation/baseRepository";
 import { ILeaveType} from "../../entities/leaveTypeEntities";
 import { IEmployeeLeave } from "../../entities/employeeLeaveEntities";
+import { IAppliedLeave } from "entities/appliedLeaveEntities";
 
 
 export default interface ILeaveRepository extends BaseRepository<IEmployeeAttendance> {
@@ -11,4 +12,6 @@ export default interface ILeaveRepository extends BaseRepository<IEmployeeAttend
     findAllLeaveTypes(): Promise<ILeaveType>
     updateLeaveTypes(leaveTypeId: string, data: any): Promise<ILeaveType>
     getEmployeeLeaves(employeeId: string): Promise<IEmployeeLeave>
+    fetchAllPreAppliedLeaves():Promise <IAppliedLeave[]>
+    updatePreAppliedLeaves(employeeId: string,managerName: string, data: any): Promise<IAppliedLeave | null>
 }

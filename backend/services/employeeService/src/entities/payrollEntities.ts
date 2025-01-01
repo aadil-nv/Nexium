@@ -28,7 +28,6 @@ export interface IPayroll extends Document {
     otherDeductions?: number;    // Other deductions (optional)
     totalDeductions?: number;    // Total deductions (optional)
     bankAccount?: string;        // Bank account (optional)
-    bankName?: string;           // Bank name (optional)
     bankBranch?: string;         // Bank branch (optional)
     employeeName?: string;       // Employee name (optional)
     _id?: Schema.Types.ObjectId ;

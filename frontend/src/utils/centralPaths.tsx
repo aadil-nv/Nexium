@@ -73,6 +73,8 @@ export const managerLinks: LinkItem[] = [
   { title: 'Meetings', route: '/manager/meeting', icon: 'fi fi-tr-circle-video' },
   { title: 'Payroll Settings', route: '/manager/payroll-settings', icon: "fi fi-tr-calendar-salary" },
   { title: 'Leave Settings', route: '/manager/leave-settings', icon: 'fi fi-tr-spring-calendar' },
+  { title: 'Pre Applied Leaves', route: '/manager/pre-applied-leaves', icon: 'fi fi-tr-spring-calendar' },
+
 ];
   
 

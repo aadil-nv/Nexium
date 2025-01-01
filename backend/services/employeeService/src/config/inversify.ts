@@ -69,7 +69,10 @@ import ILeaveService from "../service/interface/ILeaveService";
 import ILeaveRepository from "../repository/interface/ILeaveRepository";
 
 import AppliedLeaveModel from "../models/appliedLeaveModel";
-import {IAppliedLeave} from "../entities/leaveTypeEntities"
+import {IAppliedLeave} from "../entities/appliedLeaveEntities"
+
+import PayrollCriteriaModel from "../models/payrollCriteriaModel";
+import {IPayrollCriteria} from "../entities/payrollCriteriaEntities"
 
 const container = new Container();
 
@@ -117,6 +120,8 @@ container.bind<mongoose.Model<IDepartment>>("IDepartment").toConstantValue(Depar
 container.bind<mongoose.Model<ITask>>("ITask").toConstantValue(TaskModel);
 container.bind<mongoose.Model<IEmployeeLeave>>("IEmployeeLeave").toConstantValue(EmployeeLeaveModel);
 container.bind<mongoose.Model<IAppliedLeave>>("IAppliedLeave").toConstantValue(AppliedLeaveModel);
+container.bind<mongoose.Model<IPayrollCriteria>>("IPayrollCriteria").toConstantValue(PayrollCriteriaModel);
+
 
 
 

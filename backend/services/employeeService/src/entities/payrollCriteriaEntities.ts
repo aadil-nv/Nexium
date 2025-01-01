@@ -2,7 +2,7 @@ import { Document } from "mongoose";
 
 // Update the IPayrollCriteria interface to extend Document
 export interface IPayrollCriteria extends Document {
-  _id: any;
+   
   allowances: {
     bonus: number;
     gratuity: number;

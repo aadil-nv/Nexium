@@ -4,10 +4,14 @@ import BaseRepository from "./baseRepository";
 import {IPayroll} from "../../entities/payrollEntities";
 import IPayrollRepository from "../../repository/interface/IPayrollRepository"; 
 import payrollModel from "../../models/payrollModel";
+import { IPayrollCriteria } from "entities/payrollCriteriaEntities";
 
 @injectable()
 export default class PayrollRepository extends BaseRepository<IPayroll> implements IPayrollRepository {
-    constructor(@inject("IPayroll") private  _payrollModel: Model<IPayroll>) {
+    constructor(@inject("IPayroll") 
+    private  _payrollModel: Model<IPayroll>,
+    @inject("IPayrollCriteria") 
+    private _payrollCreateModel: Model<IPayrollCriteria>) {
         super(_payrollModel);
     }
 
@@ -54,10 +58,7 @@ export default class PayrollRepository extends BaseRepository<IPayroll> implemen
             throw error;
         }
     }
-
-
-    
-    
+ 
     async downloadPayrollMonthly(employeeId: string, payrollId: string): Promise<IPayroll> {
         try {
             const payroll = await this._payrollModel.findOne({ employeeId, "payroll._id": payrollId }).exec();
@@ -72,6 +73,7 @@ export default class PayrollRepository extends BaseRepository<IPayroll> implemen
     }
 
     async getPayrollDashboardData(employeeId: string): Promise<any> {
+
   try {
     const employeePayroll = await this._payrollModel.findOne({ employeeId });
 
@@ -93,7 +95,19 @@ export default class PayrollRepository extends BaseRepository<IPayroll> implemen
 }
 
     
-    
+async getPayrollCriteria(): Promise<IPayrollCriteria> {
+    try {
+        const payrollCriteria = await this._payrollCreateModel.findOne().exec();
+        if (!payrollCriteria) {
+            throw new Error(`No payroll criteria found`);
+        }
+        return payrollCriteria;
+    } catch (error) {
+        console.error("Error finding payroll criteria:", error);
+        throw error;
+    }
+}
+
 
     
     

@@ -1,59 +1,57 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import  {IAppliedLeave}  from '../entities/leaveTypeEntities';
+  import mongoose, { Schema, Document } from 'mongoose';
+  import { IAppliedLeave } from '../entities/appliedLeaveEntities';
 
-const AppliedLeaveSchema: Schema = new Schema(
-  {
-    employeeId: {
-      type: String,
-      required: true,
+  const AppliedLeaveSchema: Schema = new Schema(
+    {
+      employeeId: {
+        type: mongoose.Schema.Types.ObjectId,ref: 'Employee',
+        required: true,
+      },
+      leaveType: {
+        type: String,  // This will store an array of leave types
+        required: true,  // Ensure that at least one leave type is provided
+      },
+      reason: {
+        type: String,
+        required: true,  // Ensure reason is always provided
+      },
+      startDate: {
+        type: Date,
+        required: true,  // Ensure start date is always provided
+      },
+      endDate: {
+        type: Date,
+        required: true,  // Ensure end date is always provided
+      },
+      duration: {
+        type: Number,  // Total duration of leave in days
+        required: true,
+      },
+      status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending',
+      },
+      appliedAt: {
+        type: Date,
+        default: Date.now,  // Automatically set the applied date if not provided
+      },
+      approvedBy: {
+        type: String,
+        required: false,
+      },
+      rejectionReason: {
+        type: String,
+        required: false,
+      },
+      daysCount: {
+        type: Number,
+        default: 0,  // This can be used to store total days applied for leave
+      },
     },
-    leaveType: {
-      type: String,
-      required: true,
-    },
-    reason: {
-      type: String,
-      required: true,
-    },
-    startDate: {
-      type: Date,
-      required: true,
-    },
-    endDate: {
-      type: Date,
-      required: true,
-    },
-    duration: {
-      type: Number,  // Duration in days (could be fractional like 0.5 for half-day leave)
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ['Pending', 'Approved', 'Rejected'],
-      default: 'Pending',
-    },
-    appliedAt: {
-      type: Date,
-      default: Date.now,
-    },
-    approvedBy: {
-      type: String,
-      required: false,
-    },
-    rejectionReason: {
-      type: String,
-      required: false,
-    },
-    daysCount: {
-      type: Number,
-      required: true,
-      default: 0,  // Initial value
-    },
-  },
-  { timestamps: true } // automatically adds createdAt and updatedAt
-);
+    { timestamps: true } // Automatically adds createdAt and updatedAt fields
+  );
 
-  
-const AppliedLeave = mongoose.model<IAppliedLeave>('AppliedLeave', AppliedLeaveSchema);
+  const AppliedLeave = mongoose.model<IAppliedLeave>('AppliedLeave', AppliedLeaveSchema);
 
-export default AppliedLeave;
+  export default AppliedLeave;

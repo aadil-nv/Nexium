@@ -28,8 +28,6 @@ const payrollSchema = new Schema<IPayroll>({
     otherDeductions: { type: Number, default: 0 },
     totalDeductions: { type: Number, default: 0 },
     bankAccount: { type: String, default: '' },
-    bankName: { type: String, default: '' },
-    bankBranch: { type: String, default: '' },
     employeeName: { type: String, default: '' },
   }],
 }, {

@@ -13,12 +13,10 @@ dotenv.config();
 
 const app = express();
 
-
 const logDirectory = path.resolve(__dirname, './logs');
 if (!fs.existsSync(logDirectory)) {
   fs.mkdirSync(logDirectory);
 }
-
 
 
 const accessLogStream = createStream('access.log', {
@@ -46,15 +44,13 @@ const targets = {
 
 console.log("Targets:sssfsdfsds ", targets.payment);
 
-
-
-app.use('/authentication', createProxyMiddleware({ target: targets.authentication, changeOrigin: true }));
-app.use('/businessOwner', createProxyMiddleware({ target: targets.businessOwner, changeOrigin: true }));
-app.use('/superAdmin', createProxyMiddleware({ target: targets.superAdmin, changeOrigin: true }));
-app.use('/manager', createProxyMiddleware({ target: targets.manager, changeOrigin: true }));
+app.use('/authentication', createProxyMiddleware({ target: targets.authentication, changeOrigin: true}));
+app.use('/businessOwner', createProxyMiddleware({ target: targets.businessOwner, changeOrigin: true}));
+app.use('/superAdmin', createProxyMiddleware({ target: targets.superAdmin, changeOrigin: true}));
+app.use('/manager', createProxyMiddleware({ target: targets.manager, changeOrigin: true}));
 app.use('/employee', createProxyMiddleware({ target: targets.employee, changeOrigin: true }));
-app.use('/payment', createProxyMiddleware({ target: targets.payment, changeOrigin: true }));
-app.use('/notification', createProxyMiddleware({ target: targets.notification, changeOrigin: true }));
+app.use('/payment', createProxyMiddleware({ target: targets.payment, changeOrigin: true}));
+app.use('/notification', createProxyMiddleware({ target: targets.notification, changeOrigin: true}));
 
 const port = process.env.GATEWAY_PORT 
 app.listen(port, () => console.log(`Gateway server running on http://localhost:${port}`.bgMagenta.bold));

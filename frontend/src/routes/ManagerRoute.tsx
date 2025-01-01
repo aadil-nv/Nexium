@@ -24,6 +24,7 @@ import Settings from "../components/global/Settings";
 import LeaveSettings from "../components/manager/dashboard/LeaveSettings";
 import Chat from "../components/global/Chat";
 import Meeting from "../components/global/Meeting";
+import PreAppliedLeaves from "../components/manager/dashboard/PreAppliedLeaves";
 
 
 const MangerRoutes = () => {
@@ -51,6 +52,7 @@ const MangerRoutes = () => {
           <Route path="security" element={<Securitie />} />
           <Route path="chat" element={<Chat />} />
           <Route path="meeting" element={<Meeting />} />
+          <Route path="pre-applied-leaves" element={<PreAppliedLeaves />} />
 
 
         <Route path="settings" element={<Notifications />} />

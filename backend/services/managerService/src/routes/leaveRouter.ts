@@ -13,5 +13,8 @@ leaveRouter.get('/get-all-leave-employees',authenticateToken,(req, res) => leave
 leaveRouter.get('/get-all-leavetypes',authenticateToken,(req, res) => leaveController.getAllLeaveTypes(req, res))
 leaveRouter.post('/update-leavetypes/:id',authenticateToken,(req, res) => leaveController.updateLeaveTypes(req, res))
 
+leaveRouter.get('/pre-applied-leaves',authenticateToken,(req,res)=>leaveController.fetchAllPreAppliedLeaves(req, res))
+leaveRouter.post('/update-pre-applied-leave/:id',authenticateToken,(req,res)=>leaveController.updatePreAppliedLeaves(req, res))
+
 
 export default leaveRouter;

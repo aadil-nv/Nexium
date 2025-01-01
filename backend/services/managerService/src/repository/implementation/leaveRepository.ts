@@ -10,6 +10,7 @@ import { ILeaveType} from "../../entities/leaveTypeEntities";
 import { IEmployeeLeave } from "../../entities/employeeLeaveEntities";
 import employeeLeaveModel from "../../models/employeeLeaveModel";
 import IEmployee from "../../entities/employeeEntities";
+import { IAppliedLeave } from "entities/appliedLeaveEntities";
 
 @injectable()
 export default class LeaveRepository extends BaseRepository<IEmployeeAttendance> implements ILeaveRepository {
@@ -17,9 +18,12 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
     constructor(@inject("IEmployeeAttendance") 
     private employeeAttendanceModel: Model<IEmployeeAttendance>,
     @inject("IEmployeeLeave")
-    private employeeLeaveModel: Model<IEmployeeLeave>) {
+    private employeeLeaveModel: Model<IEmployeeLeave>,
+    @inject("IAppliedLeave")
+    private appliedLeaveModel:Model<IAppliedLeave>) {
         super(employeeAttendanceModel);
     }
+
     async updateLeaveApproval(employeeId: string, data: any): Promise<IEmployeeAttendance | null> {
         console.log("data!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", data);
         console.log("employeeId", employeeId);
@@ -216,6 +220,109 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
             throw new Error("Failed to fetch leave employee");
         }
     }
+    
+    async fetchAllPreAppliedLeaves(): Promise<IAppliedLeave[]> {
+        try {
+          // Fetch all pre-applied leaves from the database
+          const preAppliedLeaves = await this.appliedLeaveModel.find().populate({
+            path: 'employeeId',
+            select: 'personalDetails', // Only select `personalDetails`
+          });
+    
+          // Check if no pre-applied leaves are found and throw an error
+          if (!preAppliedLeaves || preAppliedLeaves.length === 0) {
+            throw new Error('No pre-applied leaves found');
+          }
+    
+          // Return the list of pre-applied leaves
+          return preAppliedLeaves;
+        } catch (error) {
+          // Improved error handling and logging
+          console.error("Error fetching pre-applied leaves:", error);
+          throw new Error('Failed to fetch pre-applied leaves');
+        }
+      }
+
+      async updatePreAppliedLeaves(employeeId: string, managerName: string, data: any): Promise<IAppliedLeave | null> {
+
+        console.log("Manager name is:", managerName);
+        console.log("Data is$$$$$$$$$$$$$$$$$$$$:", data);
+
+        
+        try {
+            const employeeLeaveData:any = await this.employeeLeaveModel.findOne({ employeeId });
+            if (!employeeLeaveData) throw new Error('Employee leave data not found');
+            
+            const appliedLeaveData: any = await this.appliedLeaveModel.findById(data.leaveId);
+            if (!appliedLeaveData) throw new Error('Leave not found or update failed');
+    
+            // Process if approved and status is pending
+            if (data.action === 'approved' && appliedLeaveData.status === 'pending') {
+                Object.assign(appliedLeaveData, {
+                    status: 'approved',
+                    approvedBy: managerName,
+                    approvedDate: new Date().toISOString()
+                });
+    
+                const { leaveType, duration } = appliedLeaveData;
+                if (employeeLeaveData[leaveType] !== undefined) {
+                    employeeLeaveData[leaveType] -= duration;
+                    await employeeLeaveData.save();
+                } else {
+                    throw new Error('Invalid leave type');
+                }
+                await appliedLeaveData.save();
+            }else if (data.action === 'rejected' && appliedLeaveData.status === 'pending'){
+                Object.assign(appliedLeaveData, {
+                    status: 'rejected',
+                    rejectedBy: managerName,
+                    rejectedDate: new Date().toISOString(),
+                    rejectionReason: data.rejectionReason
+                });
+                await appliedLeaveData.save();
+            }else if (data.action === 'rejected' && appliedLeaveData.status === 'approved'){
+                Object.assign(appliedLeaveData, {
+                    status: 'rejected',
+                    rejectedBy: managerName,
+                    rejectedDate: new Date().toISOString(),
+                    rejectionReason: data.rejectionReason
+                });
+                const { leaveType, duration } = appliedLeaveData;
+                if (employeeLeaveData[leaveType] !== undefined) {
+                    employeeLeaveData[leaveType] += duration;
+                    await employeeLeaveData.save();
+                } else {
+                    throw new Error('Invalid leave type');
+                }
+                await appliedLeaveData.save();
+            }else if (data.action === 'approved' && appliedLeaveData.status === 'rejected'){
+                Object.assign(appliedLeaveData, {
+                    status: 'approved',
+                    approvedBy: managerName,
+                    approvedDate: new Date().toISOString(),
+                    rejectionReason: data.rejectionReason
+
+                });
+                const { leaveType, duration } = appliedLeaveData;
+                if (employeeLeaveData[leaveType] !== undefined) {
+                    employeeLeaveData[leaveType] -= duration;
+                    await employeeLeaveData.save();
+                } else {
+                    throw new Error('Invalid leave type');
+                }
+                await appliedLeaveData.save();
+            }
+            
+            return appliedLeaveData;
+    
+        } catch (error) {
+            console.error('Error updating leave in repository:', error);
+            throw new Error('Failed to update leave details');
+        }
+    }
+    
+    
+    
     
     
     

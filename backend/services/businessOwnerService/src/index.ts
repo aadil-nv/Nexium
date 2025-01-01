@@ -12,7 +12,7 @@ import dashboardRoutes from './routes/dashboardRoutes';
 import 'colors' ;
 import {connectConsumer} from "./events/rabbitmq/connectConsumer"
 import cookieParser from 'cookie-parser';
-import morgan from 'morgan'; // Import morgan
+import morgan from 'morgan';  
 import { createStream } from 'rotating-file-stream';
 import path from 'path';
 import fs from 'fs';
@@ -29,7 +29,6 @@ if (!fs.existsSync(logDirectory)) {
 }
 
 
-// Set up log file rotation
 const accessLogStream = createStream('access.log', {
     interval: '7d',
     path: logDirectory,
@@ -63,3 +62,4 @@ connectConsumer();
 app.listen(PORT, () => {
   console.log(`businessOwnerService on http://localhost:${PORT}`.bgBlue.bold);
 });
+

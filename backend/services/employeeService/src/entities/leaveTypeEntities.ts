@@ -15,16 +15,4 @@ export interface ILeaveType extends Document {
     studyLeave: number;
   }
 
-  export  interface IAppliedLeave extends Document {
-    employeeId: string;
-    leaveType: string;
-    reason: string;
-    startDate: Date;
-    endDate: Date;
-    duration: number;   // Duration in days
-    status: 'Pending' | 'Approved' | 'Rejected';
-    appliedAt: Date;
-    approvedBy?: string;
-    rejectionReason?: string;
-    daysCount: number;  // Days count based on startDate and endDate
-  } 
+

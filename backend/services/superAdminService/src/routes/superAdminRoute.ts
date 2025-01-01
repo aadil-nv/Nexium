@@ -13,5 +13,4 @@ superAdminRouter.get('/all-serevice-request',authenticateToken,(req,res,next)=>s
 superAdminRouter.patch('/update-status/:id',authenticateToken, (req, res, next) => superAdminController.updateServiceRequestStatus(req, res,));
 
 
-
 export default superAdminRouter;

@@ -6,82 +6,86 @@ import IAttendanceRepository from "../../repository/interface/IAttendanceReposit
 import { IAttendanceEntry, IEmployeeAttendance } from "entities/attendanceEntities";
 import { calculateWorkingDaysWithHolidays } from "../../utils/calculateWorkingDaysWithHolidays";
 import { calculateDeductions } from "../../utils/calculateDeductions";
-import { count } from "console";
 import { IPayrollDTO } from "../../dto/IPayrollDTO"
+import ILeaveRepository from "../../repository/interface/ILeaveRepository";
+import { calculateTotalPayableMinutes } from "../../utils/calculateTotalPayableMinutes";
 @injectable()
 export default class PayrollService implements IPayrollService {
   constructor(
     @inject("IPayrollRepository") private _payrollRepository: IPayrollRepository,
     @inject("IEmployeeRepository") private _employeeRepository: IEmployeeRepository,
-    @inject("IAttendanceRepository") private _attendanceRepository: IAttendanceRepository
+    @inject("IAttendanceRepository") private _attendanceRepository: IAttendanceRepository,
+    @inject("ILeaveRepository") private _leaveRepository: ILeaveRepository
   ) {}
 
   async updatePayroll(employeeId: string): Promise<any> {
-    
     try {
       const currentDate = new Date(); // Get today's date
       const year = currentDate.getFullYear(); // Get the current year
       const month = currentDate.getMonth(); // Get the current month (0-11, so no need to add 1)
+      const payrollCriteria = await this._payrollRepository.getPayrollCriteria();
       const employeeData = await this._employeeRepository.getProfile(employeeId);
       const attendanceData = await this._attendanceRepository.getPreviousMonthAttendance(employeeId);
       const MonthlyWorkingDays: any = calculateWorkingDaysWithHolidays(new Date().getMonth(), new Date().getFullYear(), "IN");
-      const bankAccount = '1234-4567-8901-2345';
-      const bankName = "Axis Bank";
-      const bankBranch = "Mumbai";
-      const bankIfsc = "UTIB0001234";
+      const preAprrovedLeaves = await this._leaveRepository.approvedLasmonthLeaves(employeeId);
+      console.log("preAprrovedLeaves==============================", preAprrovedLeaves);
+      
+  
+      const bankAccount = employeeData.personalDetails.bankAccountNumber;
+      const bankIfsc = employeeData.personalDetails.ifscCode;
       const employeeName = employeeData.personalDetails.employeeName.toUpperCase();
-      const bonuses = 1000;
-      const payDate = new Date(year, month, 5);
-      const pfAccount = '1234-4567-8901-2345';
+      const bonuses = payrollCriteria.allowances.bonus;
+      const payDate = payrollCriteria.payDay;
+      const pfAccount = employeeData.professionalDetails.pfAccount;
+      const esiAccount = employeeData.professionalDetails.esiAccount;
       let approvedLeaveDaysMinutes: number = 0;
-
-
-
+  console.log("attendanceData=====================########################=========", attendanceData);
+  
       const attendanceArray = Array.isArray(attendanceData) ? attendanceData : [attendanceData];
       const basicSalary = employeeData.professionalDetails.salary;
       const workShift = employeeData.professionalDetails.workTime;
-
+  
       const workTimeMapping: { [key: string]: number } = {
         fullTime: 480,
         partTime: 240,
         contract: 540,
         temporary: 420,
       };
-
-      const requiredMinutesPerDay = workTimeMapping[workShift] || 480; 
-
+  
+      const requiredMinutesPerDay = workTimeMapping[workShift] || 480;
+  
+      const preApprovedLeavesPaidMinutes = calculateTotalPayableMinutes(preAprrovedLeaves, workShift);
+  
+      console.log("preApprovedLeavesPaidMinutes!!!!!!!!!!!!!!!!!!!!!!!!!!!", preApprovedLeavesPaidMinutes);
+  
       const totalPresentDays = attendanceArray.reduce((total, obj: any) => {
         const count = obj.attendance.filter((att: IAttendanceEntry) => att.status === "Present").length;
         return total + count;
       }, 0);
-            
-
+  
       const totalApprovedLeaves = attendanceArray.reduce((total, obj: any) => {
-        const count = obj.attendance.filter((att: IAttendanceEntry) => att.leaveStatus === "Approved").length;
+        const count = obj.attendance.filter((att: IAttendanceEntry) => att.leaveStatus === "Approved" && att.status === "Absent").length;
         return total + count;
       }, 0);
-      
-
+  
       approvedLeaveDaysMinutes = totalApprovedLeaves * requiredMinutesPerDay;
-
+  
       const totalAbsentDays = attendanceArray.reduce((total, obj: any) => {
         const count = obj.attendance.filter((att: IAttendanceEntry) => att.leaveStatus !== "Approved" && att.status === "Absent").length;
         return total + count;
       }, 0);
-      
-
+  
       const totalMinutesRequiredForTheMonth = requiredMinutesPerDay * MonthlyWorkingDays;
-
+  
       const totalWorkedMinutes = attendanceArray
         .flatMap((employee) => employee.attendance)
         .reduce((total, att) => total + (att.minutes || 0), 0);
-
-      const grossSalary = (basicSalary / totalMinutesRequiredForTheMonth * totalWorkedMinutes + approvedLeaveDaysMinutes) + bonuses;
-
-      const totalDeductions = calculateDeductions(grossSalary, basicSalary);
-      const { pf, tax, otherDeductions, totalDeductions: totalDeducts, netSalary } = totalDeductions;
-      
-
+  
+      const grossSalary = (basicSalary / totalMinutesRequiredForTheMonth * totalWorkedMinutes + approvedLeaveDaysMinutes + preApprovedLeavesPaidMinutes);
+  
+      const allDeduction = calculateDeductions(grossSalary, basicSalary, payrollCriteria.deductions);
+      const { tax, pf, professionalTax, esiFund, otherDeductions, totalDeductions, netSalary } = allDeduction;
+  
       const monthPayrllData = {
         totalWorkedMinutes,
         totalPresentDays,
@@ -92,30 +96,27 @@ export default class PayrollService implements IPayrollService {
         pf,
         tax,
         otherDeductions,
-        totalDeductions: totalDeducts,
+        totalDeductions: totalDeductions,
         netSalary,
         bankAccount,
-        bankName,
-        bankBranch,
         payDate,
         employeeName,
       };
-
-      console.log(`"monthPayrllData"`.bgGreen, monthPayrllData);
-      
-
-      
+  
+      console.log("monthPayrllData".bgGreen, monthPayrllData); // This will now log properly
+  
       await this._payrollRepository.updatePayroll(employeeId, monthPayrllData);
     } catch (error) {
       console.error(error);
       throw error;
     }
   }
+  
 
   async getPayroll(employeeId: string): Promise<IPayrollDTO> {
     try {
       const currentDate = new Date();
-      if (currentDate.getDate() === 21) {
+      if (currentDate.getDate() === 1) {
         await this.updatePayroll(employeeId);
       }
   
@@ -166,8 +167,6 @@ export default class PayrollService implements IPayrollService {
             otherDeductions: latestPayroll.otherDeductions ?? 0, // Default to 0 if undefined
             totalDeductions: latestPayroll.totalDeductions ?? 0, // Default to 0 if undefined
             bankAccount: latestPayroll.bankAccount ?? '', // Default to empty string if undefined
-            bankName: latestPayroll.bankName ?? '', // Default to empty string if undefined
-            bankBranch: latestPayroll.bankBranch ?? '', // Default to empty string if undefined
             employeeName: latestPayroll.employeeName ?? 'Unknown', // Handle undefined employeeName
             _id: latestPayroll._id
           }
@@ -231,8 +230,6 @@ export default class PayrollService implements IPayrollService {
             otherDeductions: latestPayroll.otherDeductions ?? 0, // Default to 0 if undefined
             totalDeductions: latestPayroll.totalDeductions ?? 0, // Default to 0 if undefined
             bankAccount: latestPayroll.bankAccount ?? '', // Default to empty string if undefined
-            bankName: latestPayroll.bankName ?? '', // Default to empty string if undefined
-            bankBranch: latestPayroll.bankBranch ?? '', // Default to empty string if undefined
             employeeName: latestPayroll.employeeName ?? 'Unknown', // Handle undefined employeeName
             _id: latestPayroll._id
           }
