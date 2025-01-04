@@ -8,29 +8,34 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { generatePayslip } from '../../utils/generatePayslip';
 
-interface PayrollData {
-  employeeName: string;
-  position: string;
-  salary: string;
-  date: string;
-  leaveDays: number;
-  workingHours: number;
-  presentDays: number;
-  netSalary: number;
+// Define the types for the payroll response
+interface Payroll {
+  payDate: string;
   month: string;
   year: string;
-  payDate: string;
+  totalWorkedMinutes: number;
+  totalPresentDays: number;
+  totalAbsentDays: number;
+  netSalary: number;
+  paymentStatus: string;
+  paymentMethod: string;
+  employeeName: string;
+  _id: string;
+}
+
+interface PayrollResponse {
+  employeeId: string;
+  payroll: Payroll[];
 }
 
 const Payroll = () => {
   const { themeColor } = useTheme();
-  const [payrollData, setPayrollData] = useState<any>([]);
+  const [payrollData, setPayrollData] = useState<Payroll[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredData, setFilteredData] = useState<any>([]); // State for filtered data
+  const [filteredData, setFilteredData] = useState<Payroll[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [monthlyPayslipData, setMonthlyPayslipData] = useState<any>(null);
   const itemsPerPage = 10;
 
   const tableFields = [
@@ -41,18 +46,20 @@ const Payroll = () => {
     { header: 'Leave Days', field: 'totalAbsentDays' },
     { header: 'Net Salary', field: 'netSalary' },
     { header: 'Pay Date', field: 'payDate' },
-    { header: 'Action', field: 'action' }
+    { header: 'Action', field: 'action' },
   ];
 
   const getMonthName = (monthNumber: string) => [
-    'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+    'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December',
   ][parseInt(monthNumber) - 1];
 
   useEffect(() => {
     setLoading(true);
-    employeeInstance.get('/employee/api/payroll/get-payroll')
-      .then(response => {
+    employeeInstance
+      .get<PayrollResponse>('/employee/api/payroll/get-payroll')
+      .then((response) => {
         setPayrollData(response.data.payroll);
+        setFilteredData(response.data.payroll); // Initialize filtered data
         setLoading(false);
       })
       .catch((err) => {
@@ -65,7 +72,7 @@ const Payroll = () => {
     if (searchQuery === '') {
       setFilteredData(payrollData);
     } else {
-      const filtered = payrollData.filter((item: any) =>
+      const filtered = payrollData.filter((item) =>
         item.employeeName.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredData(filtered);
@@ -74,34 +81,31 @@ const Payroll = () => {
 
   const exportToPDF = () => {
     const doc = new jsPDF();
-    const tableColumns = tableFields.map(field => field.header);
-    const tableRows = filteredData.map((data: any) =>
+    const tableColumns = tableFields.map((field) => field.header);
+    const tableRows = filteredData.map((data) =>
       tableFields.map(({ field }) => {
         if (field === 'month') return getMonthName(data.month);
         if (field === 'netSalary') return data.netSalary.toFixed(2);
         if (field === 'payDate') return new Date(data.payDate).toISOString().split('T')[0];
-        return data[field];
+        return data[field as keyof Payroll] || '';
       })
     );
-    
-    autoTable(doc, { // Pass the `doc` as the first argument
+
+    autoTable(doc, {
       head: [tableColumns],
       body: tableRows,
     });
-    
+
     doc.save('payroll.pdf');
   };
-  
-  
 
   const downloadPayslip = (payrollId: string) => {
-    console.log('employeeId', payrollId);
-
-    employeeInstance.get(`/employee/api/payroll/download-parollMonthly/${payrollId}`)
+    console.log("payrollId !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", payrollId);
+    
+    employeeInstance
+      .get(`/employee/api/payroll/download-parollMonthly/${payrollId}`)
       .then((response) => {
         if (response.data) {
-          console.log('response.data', response.data);
-          setMonthlyPayslipData(response.data);
           generatePayslip(response.data); // Generate and download payslip as PDF
         } else {
           console.error('No data received in the response');
@@ -114,9 +118,9 @@ const Payroll = () => {
 
   const handlePagination = (direction: string) => {
     if (direction === 'next') {
-      setCurrentPage(prevPage => prevPage + 1);
+      setCurrentPage((prevPage) => prevPage + 1);
     } else {
-      setCurrentPage(prevPage => prevPage - 1);
+      setCurrentPage((prevPage) => prevPage - 1);
     }
   };
 
@@ -134,7 +138,7 @@ const Payroll = () => {
       <div className="p-5 max-w-full mx-auto bg-white text-gray-800 rounded-lg shadow-lg">
         <div className="flex flex-col lg:flex-row justify-between items-center mb-4 space-y-4 lg:space-y-0 lg:space-x-4">
           <div className="flex space-x-3">
-            <motion.button onClick={() => exportToPDF()} className="flex items-center bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+            <motion.button onClick={exportToPDF} className="flex items-center bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
               <FaFilePdf className="mr-2" /> Download PDF
             </motion.button>
           </div>
@@ -147,7 +151,7 @@ const Payroll = () => {
               className="px-3 py-2 border rounded-md"
               placeholder="Search by employee name"
             />
-            <motion.button onClick={() => {}} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            <motion.button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
               <FaSearch />
             </motion.button>
           </div>
@@ -171,7 +175,9 @@ const Payroll = () => {
               <thead style={{ backgroundColor: themeColor }} className="text-white">
                 <tr>
                   {tableFields.map(({ header }, index) => (
-                    <th key={index} className="px-4 py-2 text-xs sm:text-sm text-left">{header}</th>
+                    <th key={index} className="px-4 py-2 text-xs sm:text-sm text-left">
+                      {header}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -180,14 +186,14 @@ const Payroll = () => {
                   <motion.tr key={i} className={`bg-gray-${i % 2 === 0 ? '100' : '200'} hover:bg-gray-300`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
                     {tableFields.map(({ field }, index) => (
                       <td key={index} className="px-4 py-2 text-xs sm:text-sm text-gray-800">
-                        {field === 'month' ? getMonthName(data.month) :
+                        {field === 'month' ? data.month :
                           field === 'netSalary' ? data.netSalary.toFixed(2) :
                           field === 'payDate' ? new Date(data.payDate).toISOString().split('T')[0] :
                           field === 'action' ? (
                             <motion.button onClick={() => downloadPayslip(data._id)} className="flex items-center bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700">
                               <FaDownload className="mr-2" /> Download Payslip
                             </motion.button>
-                          ) : data[field]}
+                          ) : data[field as keyof Payroll]}
                       </td>
                     ))}
                   </motion.tr>

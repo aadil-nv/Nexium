@@ -14,7 +14,7 @@ businessOwnerRouter.post("/register", (req, res,next) => businessOwnerController
 
 businessOwnerRouter.post("/otp-validation", (req, res,next) => businessOwnerController.validateOtp(req, res,next));
 
-businessOwnerRouter.post("/create-checkout-session", (req, res) => businessOwnerController.createCheckoutSession(req, res));
+// businessOwnerRouter.post("/create-checkout-session", (req, res) => businessOwnerController.createCheckoutSession(req, res));
 
 businessOwnerRouter.post("/forgot-password", (req, res) => businessOwnerController.forgotPassword(req, res));
 

@@ -27,7 +27,7 @@ import IPayrollService from "../service/interface/IPayrollService";
 import PayrollService from "../service/implementation/payrollService";
 import IPayrollRepository from "../repository/interface/IPayrollRepository";
 import PayrollRepository from "../repository/implementation/payrollRepository";
-import { IPayroll } from "../entities/payrollEntities"; 
+import { IEmployeePayroll } from "../entities/payrollEntities"; 
 import payrollModel from "../models/payrollModel";
 
 import DepartmentController from "../controllers/implementation/departmentController";
@@ -113,7 +113,7 @@ container.bind<ILeaveRepository>("ILeaveRepository").to(LeaveRepository);
 
 
 
-container.bind<mongoose.Model<IPayroll>>("IPayroll").toConstantValue(payrollModel);
+container.bind<mongoose.Model<IEmployeePayroll>>("IEmployeePayroll").toConstantValue(payrollModel);
 container.bind<mongoose.Model<IEmployee>>("IEmployee").toConstantValue(EmployeeModel);
 container.bind<mongoose.Model<IEmployeeAttendance>>("IEmployeeAttendance").toConstantValue(AttendanceModel);
 container.bind<mongoose.Model<IDepartment>>("IDepartment").toConstantValue(DepartmentModel);

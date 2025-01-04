@@ -1,33 +1,59 @@
 export interface IPayrollDTO {
-    employeeId: string;
-    message: string;
-    success: boolean;
-    payroll: Array<{
-      month: string;
-      year: number;
-      salary: number;
-      bonuses: number;
-      deductions: number;
-      grossSalary: number;
-      netSalary: number;
-      payDate: Date;
-      paymentStatus: 'Paid' | 'Pending' | 'Failed';
-      paymentMethod: 'Bank Transfer' | 'Cash' | 'Cheque';
-      taxInfo: {
-        taxRate: number;
-        taxAmount: number;
-      };
-      totalWorkedMinutes: number;
-      totalPresentDays: number;
-      totalApprovedLeaves: number;
-      totalAbsentDays: number;
-      basicSalary: number;
-      pf: number;
-      tax: number;
-      otherDeductions: number;
-      totalDeductions: number;
-      bankAccount: string;
-      employeeName: string;
-      _id?:any
-    }>;
-  }
+  employeeId: any;
+  message: string;
+  success: boolean;
+
+  companyName?: string;
+  payroll: Array<{
+    payDate: Date;
+    month: string;
+    year: string;
+    basicSalary: number;
+    grossSalary: number;
+    monthlyWorkingDays: number;
+    totalMinutesRequiredForTheMonth: number;
+    totalWorkedMinutes: number;
+    totalPresentDays: number;
+    totalAbsentDays: number;
+    totalApprovedLeaves: number;
+    approvedLeaveDaysMinutes: number;
+    preApprovedLeavesPaidMinutes: number;
+    incentiveAmount: number;
+    bonusPayable: number;
+    totalDeductions: number;
+    pf: number;
+    professionalTax: number;
+    esiFund: number;
+    netSalary: number;
+    paymentStatus: any; // Enum for payment status
+    paymentMethod: any; // Enum for payment method
+    employeeName: string;
+    bankAccount: any;
+    pfAccount: any;
+    esiAccount: any;
+    uanNumber: any;
+    bankIfsc: any;
+    _id?: any; // Optional ID for reference
+  }>;
+}
+
+export interface IGetPayRollDTO {
+  employeeId: any;
+  message?: string;
+  success?: boolean;
+
+  companyName?: string;
+  payroll: Array<{
+    payDate: Date;
+  month: string;
+  year: string;
+  totalWorkedMinutes: number;
+  totalPresentDays: number;
+  totalAbsentDays: number;
+  netSalary: number;
+  paymentStatus: string;
+  paymentMethod: string;
+  employeeName: string;
+  _id: any;
+  }>;
+}

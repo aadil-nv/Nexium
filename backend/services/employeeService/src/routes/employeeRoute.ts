@@ -11,6 +11,7 @@ const employeeController = container.get<IEmployeeController>("IEmployeeControll
 
 
 employeeRouter.post("/refresh-token",(req, res)=> employeeController.setNewAccessToken (req, res));
+employeeRouter.post("/logout",tokenAutharaise,(req, res)=> employeeController.logout (req, res));
 
 employeeRouter.get("/get-profile",tokenAutharaise,(req, res)=> employeeController.getProfile (req, res));
 employeeRouter.get('/get-personalinfo',tokenAutharaise,(req, res)=> employeeController.getPersonalInfo(req, res));

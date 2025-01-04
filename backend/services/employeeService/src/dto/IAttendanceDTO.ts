@@ -5,7 +5,6 @@ export interface IAttendanceResponceDTO {
 }
 
 export interface IApprovedLeaveDTO {
-
     sickLeave: number;
     casualLeave: number;
     maternityLeave: number;

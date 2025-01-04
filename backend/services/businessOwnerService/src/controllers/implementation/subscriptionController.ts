@@ -34,4 +34,18 @@ export default class SubscriptionController implements ISubscriptionController {
             return res.status(500).json({ error: "Internal Server Error" });
         }
     }
+
+    async getInvoices(req: CustomRequest, res: Response): Promise<Response> {
+        console.log(`"Controller: getInvoices ========================="`.bgRed);
+        
+        try {
+            const businessOwnerId = req?.user?.businessOwnerData?._id;
+            console.log("subscriptionId============%%%%====&&&&==========",  businessOwnerId);
+
+            const response = await this._subscriptionService.getInvoices(businessOwnerId as string );
+            return res.status(200).json(response);
+        } catch (error) {
+            return res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
 }

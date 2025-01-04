@@ -5,6 +5,9 @@ import IBusinessOwnerRepository from "../../repository/interface/IBusinessOwnerR
 import { ISubscriptionDTO } from "../../dto/subscriptionDTO";
 import { ObjectId } from "mongodb";
 import mongoose from "mongoose";
+import Stripe from "stripe"
+
+const stripe = new Stripe(process.env.STRIP_SECRET_KEY as string);
 
 @injectable()
 export default class SubscriptionService implements ISubscriptionService {
@@ -69,6 +72,45 @@ export default class SubscriptionService implements ISubscriptionService {
         } catch (error) {
             console.error("Error fetching all subscriptions:", error);
             throw new Error("Could not fetch subscriptions.");
+        }
+    }
+
+    async getInvoices(businessOwnerId: string): Promise<any> {
+        
+        try {
+            // Convert businessOwnerId (string) to ObjectId
+            const objectId = new mongoose.Types.ObjectId(businessOwnerId);
+    
+            // Fetch business owner data from the repository
+            const businessOwnerData = await this._businessOwnerRepository.findOne({ _id: objectId });
+
+            // Ensure business owner data exists and extract subscription and customer details
+            if (!businessOwnerData || !businessOwnerData?.subscription?.customerId) {
+                throw new Error('Business owner data or customer ID not found');
+            }
+
+            const customerId = businessOwnerData?.subscription?.customerId;
+            console.log("customerId>>>>>>>>>>>>>>", customerId);
+
+            const customer = await stripe.customers.retrieve(customerId);
+
+            console.log(`customer>>>>>>>>>>>>>>`.bgWhite, customer);
+            
+            
+
+            // Fetch invoices from Stripe for the customer
+            const invoices = await stripe.invoices.list({
+                customer: customerId,
+                limit: 10, 
+            });
+            console.log(`"invoices>>>>>>>>>>>>>>"`.bgMagenta, invoices);
+            
+
+            // Return the invoices to the caller
+            return invoices.data;
+        } catch (error) {
+            console.error('Error fetching invoices:', error);
+            throw new Error('Could not fetch invoices.');
         }
     }
 }

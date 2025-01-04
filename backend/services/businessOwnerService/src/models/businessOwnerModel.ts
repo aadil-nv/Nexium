@@ -86,13 +86,17 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
     },
     role: {
       type: String,
+      default: "businessOwner",
     },
-
+   
 
     subscription: {
       subscriptionId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Subscription', // Assuming 'Subscription' is the name of the model you're referencing
+      },
+      customerId: {
+        type: String,
       },
       startDate: {
         type: Date,

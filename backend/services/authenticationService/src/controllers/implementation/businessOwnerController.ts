@@ -103,27 +103,27 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
   }
 
-  async createCheckoutSession(req: Request, res: Response): Promise<Response> {
-    const { plan, amount, currency, email } = req.body;
+  // async createCheckoutSession(req: Request, res: Response): Promise<Response> {
+  //   const { plan, amount, currency, email } = req.body;
 
-    try {
-      const result = await this._businessOwnerService.createCheckoutSession(plan, amount, currency, email);
+  //   try {
+  //     const result = await this._businessOwnerService.createCheckoutSession(plan, amount, currency, email);
 
-      res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
-         maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
-      res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
-         maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+  //     res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
+  //        maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+  //     res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
+  //        maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
 
-      const response = result.planName === 'Trial' 
-        ? { message: result.message, success: result.success, role: result.role, planName: result.planName }
-        : { sessionId: result.session.id, success: result.success, planName: result.planName };
+  //     const response = result.planName === 'Trial' 
+  //       ? { message: result.message, success: result.success, role: result.role, planName: result.planName }
+  //       : { sessionId: result.session.id, success: result.success, planName: result.planName };
 
-      return res.status(200).json(response);
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      return res.status(500).json({ message: 'Failed to create checkout session', error });
-    }
-  }
+  //     return res.status(200).json(response);
+  //   } catch (error) {
+  //     console.error('Error creating checkout session:', error);
+  //     return res.status(500).json({ message: 'Failed to create checkout session', error });
+  //   }
+  // }
 
   async forgotPassword(req: Request, res: Response): Promise<Response> {
     try {

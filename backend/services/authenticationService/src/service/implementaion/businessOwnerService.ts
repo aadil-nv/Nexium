@@ -149,7 +149,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
           const businessOwnerName = `${businessOwner._id}`;
           const businessOwnerDB = mongoose.connection.useDb(businessOwnerName);
       
-          (await businessOwnerDB.createCollection("companyDetails")).insertOne(businessOwner)
+          (await businessOwnerDB.createCollection("businessOwners")).insertOne(businessOwner)
       
           // Generate OTP and send it
           const otp = generateOtp();
@@ -211,99 +211,99 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
     }
     
-    async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponse> {
-        try {
-            const rabbitMQMessager = new RabbitMQMessager();
-            await rabbitMQMessager.init();
+    // async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponse> {
+    //     try {
+    //         const rabbitMQMessager = new RabbitMQMessager();
+    //         await rabbitMQMessager.init();
     
-            if (plan.planName === 'Trial') {
-                return this.processTrialPlan(plan, email, rabbitMQMessager);
-            }
+    //         if (plan.planName === 'Trial') {
+    //             return this.processTrialPlan(plan, email, rabbitMQMessager);
+    //         }
     
-            return this.processPaidPlan(plan, amount, currency, email, rabbitMQMessager);
+    //         return this.processPaidPlan(plan, amount, currency, email, rabbitMQMessager);
     
-        } catch (error) {
-            console.error('Error in createCheckoutSession:', error);
-            throw new Error('Failed to process the request: ' + error);
-        }
-    }
+    //     } catch (error) {
+    //         console.error('Error in createCheckoutSession:', error);
+    //         throw new Error('Failed to process the request: ' + error);
+    //     }
+    // }
     
-    private async processTrialPlan(plan: any, email: string, rabbitMQMessager: RabbitMQMessager): Promise<IPaymentIntentResponse> {
-        const subscription: ISubscription = {
-            subscriptionId: plan._id,
-            startDate: new Date(),
-            endDate: new Date(new Date().setDate(new Date().getDate() + 30)), // 30 days trial
-            status: 'Active',
-        };
+    // private async processTrialPlan(plan: any, email: string, rabbitMQMessager: RabbitMQMessager): Promise<IPaymentIntentResponse> {
+    //     const subscription: ISubscription = {
+    //         subscriptionId: plan._id,
+    //         startDate: new Date(),
+    //         endDate: new Date(new Date().setDate(new Date().getDate() + 30)), // 30 days trial
+    //         status: 'Active',
+    //     };
 
-        console.log(`subscription:===>`.bgCyan, subscription);
+    //     console.log(`subscription:===>`.bgCyan, subscription);
         
     
-        const businessOwnerData = await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
-        console.log(`businessOwnerData: ${JSON.stringify(businessOwnerData)}`.bgCyan);
+    //     const businessOwnerData = await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
+    //     console.log(`businessOwnerData: ${JSON.stringify(businessOwnerData)}`.bgCyan);
         
-        if (!businessOwnerData) {
-            throw new Error('Company not found');
-        }
+    //     if (!businessOwnerData) {
+    //         throw new Error('Company not found');
+    //     }
     
-        const accessToken = generateAccessToken({ businessOwnerData });
-        const refreshToken = generateRefreshToken({ businessOwnerData });
-        console.log("datta sneding throu rabitmq started.....", businessOwnerData);
+    //     const accessToken = generateAccessToken({ businessOwnerData });
+    //     const refreshToken = generateRefreshToken({ businessOwnerData });
+    //     console.log("datta sneding throu rabitmq started.....", businessOwnerData);
         
-        rabbitMQMessager.sendToMultipleQueues({ businessOwnerData });
+    //     rabbitMQMessager.sendToMultipleQueues({ businessOwnerData });
     
-        return {
-            message: 'Subscription updated successfully',
-            success: true,
-            role: businessOwnerData.role,
-            planName: plan.planName,
-            accessToken,
-            refreshToken,
-        };
-    }
+    //     return {
+    //         message: 'Subscription updated successfully',
+    //         success: true,
+    //         role: businessOwnerData.role,
+    //         planName: plan.planName,
+    //         accessToken,
+    //         refreshToken,
+    //     };
+    // }
     
-    private async processPaidPlan(plan: any, amount: number, currency: string, email: string, rabbitMQMessager: RabbitMQMessager): Promise<IPaymentIntentResponse> {
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            line_items: [{
-                price_data: {
-                    currency: currency,
-                    product_data: { name: plan.planName, description: `Payment for ${plan.features} Plan` },
-                    unit_amount: amount,
-                },
-                quantity: 1,
-            }],
-            mode: 'payment',
-            success_url: 'http://localhost:5173/business-owner/dashboard',
-            cancel_url: 'http://localhost:5173/plan',
-        });
+    // private async processPaidPlan(plan: any, amount: number, currency: string, email: string, rabbitMQMessager: RabbitMQMessager): Promise<IPaymentIntentResponse> {
+    //     const session = await stripe.checkout.sessions.create({
+    //         payment_method_types: ['card'],
+    //         line_items: [{
+    //             price_data: {
+    //                 currency: currency,
+    //                 product_data: { name: plan.planName, description: `Payment for ${plan.features} Plan` },
+    //                 unit_amount: amount,
+    //             },
+    //             quantity: 1,
+    //         }],
+    //         mode: 'payment',
+    //         success_url: 'http://localhost:5173/business-owner/dashboard',
+    //         cancel_url: 'http://localhost:5173/plan',
+    //     });
     
-        console.log('Stripe Session Created:', session);
+    //     console.log('Stripe Session Created:', session);
     
-        const oldBusinessOwnerData = await this.businessOwnerRepository.findByEmail(email);
-        if (!oldBusinessOwnerData) {
-            throw new Error('Business owner not found');
-        }
+    //     const oldBusinessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+    //     if (!oldBusinessOwnerData) {
+    //         throw new Error('Business owner not found');
+    //     }
     
-        console.log(`oldBusinessOwnerData: ${JSON.stringify(oldBusinessOwnerData)}`.bgCyan);
-        console.log(`%%%%%%%%%%%%%%%%%`.bgRed,oldBusinessOwnerData.subscription.status);
+    //     console.log(`oldBusinessOwnerData: ${JSON.stringify(oldBusinessOwnerData)}`.bgCyan);
+    //     console.log(`%%%%%%%%%%%%%%%%%`.bgRed,oldBusinessOwnerData.subscription.status);
     
-        if (oldBusinessOwnerData.subscription.status == "Pending" ) {
-            const subscription: ISubscription = {
-                subscriptionId: plan._id,
-                startDate: new Date(),
-                endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
-                status: 'Active',
-            };
-            await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
-        }
-        const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
-        const accessToken = generateAccessToken({ businessOwnerData });
-        const refreshToken = generateRefreshToken({ businessOwnerData });
-        rabbitMQMessager.sendToMultipleQueues({ businessOwnerData });
+    //     if (oldBusinessOwnerData.subscription.status == "Pending" ) {
+    //         const subscription: ISubscription = {
+    //             subscriptionId: plan._id,
+    //             startDate: new Date(),
+    //             endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
+    //             status: 'Active',
+    //         };
+    //         await this.businessOwnerRepository.updateSubscriptionByEmail(email, subscription);
+    //     }
+    //     const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+    //     const accessToken = generateAccessToken({ businessOwnerData });
+    //     const refreshToken = generateRefreshToken({ businessOwnerData });
+    //     rabbitMQMessager.sendToMultipleQueues({ businessOwnerData });
     
-        return { session, success: true, planName: plan.planName, accessToken, refreshToken };
-    }
+    //     return { session, success: true, planName: plan.planName, accessToken, refreshToken };
+    // }
        
     async resendOtp(email: string): Promise<{ success: boolean; message: string }> {
         const otp = generateOtp();

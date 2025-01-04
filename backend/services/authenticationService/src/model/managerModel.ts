@@ -52,6 +52,7 @@ const managerSchema: Schema<IManager> = new Schema(
     isActive: { type: Boolean, default: true },
     isVerified: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
+    role: { type: String, default: "manager" },
     businessOwnerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'BusinessOwner',

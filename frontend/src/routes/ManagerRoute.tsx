@@ -22,9 +22,10 @@ import Documents from "../components/global/Documents";
 import Securitie from "../components/global/Securitie";
 import Settings from "../components/global/Settings";
 import LeaveSettings from "../components/manager/dashboard/LeaveSettings";
-import Chat from "../components/global/Chat";
+import Chat from "../components/chat/Chat";
 import Meeting from "../components/global/Meeting";
 import PreAppliedLeaves from "../components/manager/dashboard/PreAppliedLeaves";
+import Projects from "../components/manager/dashboard/Projects";
 
 
 const MangerRoutes = () => {
@@ -53,9 +54,11 @@ const MangerRoutes = () => {
           <Route path="chat" element={<Chat />} />
           <Route path="meeting" element={<Meeting />} />
           <Route path="pre-applied-leaves" element={<PreAppliedLeaves />} />
+          <Route path="projects" element={<Projects />} />
 
 
         <Route path="settings" element={<Notifications />} />
+
         {/* <Route path="onboarding-employee-list" element={<OnBordingEmployeeList />} /> */}
         {/* <Route path="pre-boarding" element={<PreBoarding />} /> */}
         {/* <Route path="interview" element={<Interview />} /> */}

@@ -39,7 +39,7 @@ const targets = {
   manager: process.env.MANAGER_API_BASE_URL,
   employee: process.env.EMPLOYEE_API_BASE_URL,
   payment: process.env.PAYMENT_API_BASE_URL,
-  notification: process.env.NOTIFICATION_API_BASE_URL
+  chatService: process.env.CHAT_API_BASE_URL
 };
 
 console.log("Targets:sssfsdfsds ", targets.payment);
@@ -50,7 +50,7 @@ app.use('/superAdmin', createProxyMiddleware({ target: targets.superAdmin, chang
 app.use('/manager', createProxyMiddleware({ target: targets.manager, changeOrigin: true}));
 app.use('/employee', createProxyMiddleware({ target: targets.employee, changeOrigin: true }));
 app.use('/payment', createProxyMiddleware({ target: targets.payment, changeOrigin: true}));
-app.use('/notification', createProxyMiddleware({ target: targets.notification, changeOrigin: true}));
+app.use('/chatService', createProxyMiddleware({ target: targets.chatService, changeOrigin: true}));
 
 const port = process.env.GATEWAY_PORT 
 app.listen(port, () => console.log(`Gateway server running on http://localhost:${port}`.bgMagenta.bold));

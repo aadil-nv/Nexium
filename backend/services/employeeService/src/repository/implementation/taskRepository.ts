@@ -299,5 +299,28 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
         }
     }
     
-      
+    async getPreviousMonthCompletedTasks(employeeId: string): Promise<number> {
+        try {
+            const now = new Date();
+            const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const endOfPreviousMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+            console.log("Start of previous month:", startOfPreviousMonth);
+            console.log("End of previous month:", endOfPreviousMonth);
+            
+            
+    
+            const taskCount = await this.taskModel.countDocuments({
+                employeeId: employeeId,
+                isApproved: true,
+                dueDate: { $gte: startOfPreviousMonth, $lte: endOfPreviousMonth }
+            }).exec();
+    
+            return taskCount;
+        } catch (error) {
+            console.error("Error fetching previous month completed tasks with approval:", error); 
+            throw new Error("Could not retrieve previous month completed tasks with approval");
+        }
+    }
+    
 }

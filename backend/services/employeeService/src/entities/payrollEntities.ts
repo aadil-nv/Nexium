@@ -1,35 +1,41 @@
 import { Document, Schema } from "mongoose";
 
-export interface IPayroll extends Document {
-  employeeId: Schema.Types.ObjectId;  // Reference to the employee
+interface IEmployeeDetails {
+  employeeId: string;
+  employeeName: string;
+  bankAccount: string;
+  bankIfsc: string;
+  pfAccount: string;
+  esiAccount: string;
+  uanNumber: string;
+}
 
-  payroll: Array<{
-    month: string;  // Month in the format "YYYY-MM"
-    year: number;
-    salary: number;
-    bonuses: number;
-    deductions: number;
-    grossSalary: number;
-    netSalary: number;
-    payDate: Date;
-    paymentStatus: 'Paid' | 'Pending' | 'Failed';
-    paymentMethod: 'Bank Transfer' | 'Cash' | 'Cheque';
-    taxInfo: {
-      taxRate: number;
-      taxAmount: number;
-    };
-    totalWorkedMinutes?: number;  // Total worked minutes (optional)
-    totalPresentDays?: number;    // Total present days (optional)
-    totalApprovedLeaves?: number;  // Total approved leaves (optional)
-    totalAbsentDays?: number;     // Total absent days (optional)
-    basicSalary?: number;        // Basic salary (optional)
-    pf?: number;                 // Provident fund (optional)
-    tax?: number;                // Tax (optional)
-    otherDeductions?: number;    // Other deductions (optional)
-    totalDeductions?: number;    // Total deductions (optional)
-    bankAccount?: string;        // Bank account (optional)
-    bankBranch?: string;         // Bank branch (optional)
-    employeeName?: string;       // Employee name (optional)
-    _id?: Schema.Types.ObjectId ;
-  }>;
+interface IPayrollDetails {
+  payDate: Date;
+  month: string;
+  year: string;
+  basicSalary: number;
+  grossSalary: number;
+  monthlyWorkingDays: number;
+  totalMinutesRequiredForTheMonth: number;
+  totalWorkedMinutes: number;
+  totalPresentDays: number;
+  totalAbsentDays: number;
+  totalApprovedLeaves: number;
+  approvedLeaveDaysMinutes: number;
+  preApprovedLeavesPaidMinutes: number;
+  incentiveAmount: number;
+  bonusPayable: number;
+  totalDeductions: number;
+  pf: number;
+  professionalTax: number;
+  esiFund: number;
+  netSalary: number;
+  paymentStatus: string; // Enum: 'Paid', 'Pending', 'Failed'
+  paymentMethod: string; // Enum: 'Bank Transfer', 'Cash', 'Cheque'
+}
+
+export interface IEmployeePayroll extends Document {
+  employeeDetails: IEmployeeDetails;
+  payrollDetails: IPayrollDetails;
 }

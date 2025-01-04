@@ -92,6 +92,10 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Subscription', // Assuming 'Subscription' is the name of the model you're referencing
       },
+      customerId: {
+        type: String,
+
+      },
       startDate: {
         type: Date,
       },

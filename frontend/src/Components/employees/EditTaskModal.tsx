@@ -1,17 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Input, DatePicker, Button, Select, Row, Col } from 'antd';
 import moment from 'moment';
-import { employeeInstance } from '../../services/employeeInstance'; // Ensure this is correctly imported
-import { toast } from 'react-toastify'; // Ensure React-Toastify is imported
+import { employeeInstance } from '../../services/employeeInstance';
+import { toast } from 'react-toastify';
 
 interface ITaskDTO {
-  _id?: string;
-  employeeId: string;
-  dueDate: Date;
-  tasks: {
-    title: string;
-    description?: string;
-    priority?: 'low' | 'medium' | 'high'; // Priority field limited to these options
+  _id: string;
+  employeeProfilePicture: string;
+  employeeName: string;
+  dueDate: string;
+  assignedBy: string;
+  assigenedDate: string;
+  taskName: string;
+  isApproved?: boolean;
+  tasks: { 
+    title: string; 
+    priority: "low" | "medium" | "high";
+    description: string;
+    isCompleted: boolean;
+    _id: string;
+    taskStatus?: "backlog" | "inProgress" | "codeReview" | "qaTesting" | "blocked" | "completed" | "deployed" | "approved";
+    response?: string;
   }[];
 }
 
@@ -22,26 +31,34 @@ interface TaskModalProps {
   onSave: (task: any) => void;
 }
 
+const taskStatusColors = {
+  backlog: '#808080',
+  inProgress: '#1890ff',
+  codeReview: '#722ed1',
+  qaTesting: '#faad14',
+  blocked: '#f5222d',
+  completed: '#52c41a',
+  deployed: '#13c2c2',
+  approved: '#389e0d'
+};
+
 const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCancel, onSave }) => {
   const [taskData, setTaskData] = useState<any | null>(null);
 
   useEffect(() => {
     if (selectedTask) {
-      setTaskData(selectedTask); // Initialize taskData when selectedTask changes
+      setTaskData(selectedTask);
     }
   }, [selectedTask]);
 
   const handleTaskUpdate = (index: number, field: string, value: any) => {
     if (taskData) {
       const updatedTasks = [...taskData.tasks];
-
-      // Ensure that the 'priority' field can only have valid values
       if (field === 'priority' && (value === 'low' || value === 'medium' || value === 'high')) {
         updatedTasks[index] = { ...updatedTasks[index], [field]: value };
       } else if (field !== 'priority') {
         updatedTasks[index] = { ...updatedTasks[index], [field]: value };
       }
-
       setTaskData({ ...taskData, tasks: updatedTasks });
     }
   };
@@ -51,7 +68,8 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
       const newTask = {
         title: '',
         description: '',
-        priority: 'low', // Default to 'low' as a valid priority value
+        priority: 'low',
+        taskStatus: 'backlog'
       };
       setTaskData({
         ...taskData,
@@ -69,56 +87,148 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
 
   const handleSave = async () => {
     if (taskData) {
-      console.log("taskdatais -----------",taskData);
-      
       try {
-        // Send the updated task data to the backend
         const response = await employeeInstance.post(`/employee/api/task/update-task/${taskData._id}`, taskData);
-        
         if (response.status === 200) {
-          toast.success('Task updated successfully!'); // Show success message
-          onSave(taskData); // Pass updated task data back to parent
+          toast.success('Task updated successfully!');
+          onSave(taskData);
         }
       } catch (error) {
-        toast.error('Failed to update task!'); // Show error message if API fails
+        toast.error('Failed to update task!');
       }
     }
   };
 
   const renderTasks = () => {
     return taskData?.tasks.map((task, index) => (
-      <div key={index} style={{ marginBottom: 16 }}>
+      <div
+        key={index}
+        style={{
+          marginBottom: 24,
+          padding: 20,
+          borderRadius: 8,
+          border: '1px solid #d9d9d9',
+          backgroundColor: '#fafafa',
+        }}
+      >
         <Row gutter={16}>
           <Col span={24}>
-            <Input
-              value={task.title}
-              onChange={(e) => handleTaskUpdate(index, 'title', e.target.value)}
-              placeholder={`Task ${index + 1} Title`}
-              style={{ marginBottom: 8 }}
-            />
+            <div style={{ marginBottom: 8 }}>
+              <label style={{ display: 'block', marginBottom: 4, color: '#666' }}>
+                Task Title
+              </label>
+              <Input
+                value={task.title}
+                onChange={(e) => handleTaskUpdate(index, 'title', e.target.value)}
+                placeholder={`Enter title for task ${index + 1}`}
+                style={{ borderRadius: 4 }}
+              />
+            </div>
           </Col>
           <Col span={24}>
-            <Input
-              value={task.description}
-              onChange={(e) => handleTaskUpdate(index, 'description', e.target.value)}
-              placeholder={`Task ${index + 1} Description`}
-              style={{ marginBottom: 8 }}
-            />
+            <div style={{ marginBottom: 8 }}>
+              <label style={{ display: 'block', marginBottom: 4, color: '#666' }}>
+                Description
+              </label>
+              <Input.TextArea
+                value={task.description}
+                onChange={(e) => handleTaskUpdate(index, 'description', e.target.value)}
+                placeholder={`Enter description for task ${index + 1}`}
+                style={{ borderRadius: 4 }}
+                rows={3}
+              />
+            </div>
           </Col>
           <Col span={12}>
-            <Select
-              value={task.priority}
-              onChange={(value) => handleTaskUpdate(index, 'priority', value)}
-              style={{ width: '100%' }}
-              placeholder="Priority"
-            >
-              <Select.Option value="low">Low</Select.Option>
-              <Select.Option value="medium">Medium</Select.Option>
-              <Select.Option value="high">High</Select.Option>
-            </Select>
+            <div style={{ marginBottom: 8 }}>
+              <label style={{ display: 'block', marginBottom: 4, color: '#666' }}>
+                Priority
+              </label>
+              <Select
+                value={task.priority}
+                onChange={(value) => handleTaskUpdate(index, 'priority', value)}
+                style={{ width: '100%', borderRadius: 4 }}
+              >
+                <Select.Option value="low">Low</Select.Option>
+                <Select.Option value="medium">Medium</Select.Option>
+                <Select.Option value="high">High</Select.Option>
+              </Select>
+            </div>
           </Col>
-          <Col span={12} style={{ textAlign: 'right' }}>
-            <Button  onClick={() => handleDeleteTask(index)} style={{ marginTop: 8 ,backgroundColor:'red', color:"white"}}>
+          <Col span={12}>
+            <div style={{ marginBottom: 8 }}>
+              <label style={{ display: 'block', marginBottom: 4, color: '#666' }}>
+                Status
+              </label>
+              <Select
+                value={task.taskStatus}
+                onChange={(value) => handleTaskUpdate(index, 'taskStatus', value)}
+                style={{ width: '100%', borderRadius: 4 }}
+              >
+                {Object.entries(taskStatusColors).map(([status, color]) => (
+                  <Select.Option key={status} value={status}>
+                    <span style={{ color }}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </span>
+                  </Select.Option>
+                ))}
+              </Select>
+            </div>
+          </Col>
+          {task.response && (
+            <Col span={24}>
+              <div style={{ marginBottom: 8 }}>
+                <label style={{ display: 'block', marginBottom: 4, color: '#666' }}>
+                  Employee Response
+                </label>
+                <Input
+                  value={task.response}
+                  onChange={(e) => handleTaskUpdate(index, 'response', e.target.value)}
+                  placeholder={`Enter title for task ${index + 1}`}
+                  style={{ borderRadius: 4 }}
+                  readOnly
+                />
+              </div>
+            </Col>
+          )}
+          {/* Status with Animated Icon */}
+          <Col span={24}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                marginTop: 16,
+                gap: 8,
+              }}
+            >
+              <span
+                className="animate-bounce"
+                style={{
+                  fontSize: 24,
+                  color: task.isCompleted ? '#4CAF50' : '#FF4D4F',
+                }}
+              >
+                {task.isCompleted ? '✅' : '❌'}
+              </span>
+              <span style={{ fontSize: 16, fontWeight: 500 }}>
+                {task.isCompleted ? 'Completed' : 'Not Completed'}
+              </span>
+            </div>
+          </Col>
+          <Col span={24} style={{ textAlign: 'right' }}>
+            <Button
+              onClick={() => handleDeleteTask(index)}
+              style={{
+                backgroundColor: '#ff4d4f',
+                color: 'white',
+                border: 'none',
+                borderRadius: 4,
+                marginTop: 8,
+              }}
+              type="primary"
+              danger
+            >
               Delete Task
             </Button>
           </Col>
@@ -126,36 +236,79 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
       </div>
     ));
   };
+  
 
   return (
     <Modal
-      title="Edit Task"
-      visible={visible}
-      onCancel={onCancel}
-      onOk={handleSave}
-      width={600}
-      okText="Save"
-      cancelText="Cancel"
-    >
+    title={
+      <div style={{ display: 'flex' }}>
+        <div style={{ fontSize: 20, fontWeight: 700 }}>Edit Task</div>
+        {/* <div style={{ fontSize: 16, fontWeight: 500, color: '#4CAF50'}}>Active</div> */}
+      </div>
+    }
+    visible={visible}
+    onCancel={onCancel}
+    onOk={handleSave}
+    width={800}
+    okText="Save Changes"
+    cancelText="Cancel"
+    bodyStyle={{ maxHeight: '70vh', overflowY: 'auto', padding: '24px', marginBottom: 20 }}
+  >
+  
       {taskData && (
-        <>
-          <Input
-            value={taskData._id}
-            disabled
-            placeholder="Employee ID"
-            style={{ marginBottom: 10 }}
-          />
-          <DatePicker
-            value={moment(taskData.dueDate)}
-            onChange={(date) => setTaskData({ ...taskData, dueDate: date?.toDate() || new Date() })}
-            style={{ marginBottom: 16 }}
-            placeholder="Due Date"
-          />
-          {renderTasks()}
-          <Button type="dashed" onClick={handleAddTask} style={{ width: '100%', marginTop: 16 }}>
-            Add New Task
+        <div style={{ backgroundColor: 'white', padding: '20px' }}>
+          <Row gutter={16}>
+            <Col span={12}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 4, color: '#666' }}>Employee Name</label>
+                <Input
+                  value={taskData.employeeName}
+                  disabled
+                  style={{ backgroundColor: '#f5f5f5', borderRadius: 4 }}
+                />
+              </div>
+            </Col>
+            <Col span={12}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', marginBottom: 4, color: '#666' }}>Task Name</label>
+                <Input
+                  value={taskData.taskName}
+                  disabled
+                  style={{ backgroundColor: '#f5f5f5', borderRadius: 4 }}
+                />
+              </div>
+            </Col>
+            <Col span={24}>
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: 'block', marginBottom: 4, color: '#666' }}>Due Date</label>
+                <DatePicker
+                  value={moment(taskData.dueDate)}
+                  onChange={(date) => setTaskData({ ...taskData, dueDate: date?.toDate() || new Date() })}
+                  style={{ width: '100%', borderRadius: 4 }}
+                />
+              </div>
+            </Col>
+          </Row>
+          
+          <div style={{ marginBottom: 16 }}>
+            <h3 style={{ borderBottom: '1px solid #f0f0f0', paddingBottom: 8, marginBottom: 16 }}>
+              Task Items
+            </h3>
+            {renderTasks()}
+          </div>
+          
+          <Button
+            type="dashed"
+            onClick={handleAddTask}
+            style={{
+              width: '100%',
+              height: 40,
+              borderRadius: 4
+            }}
+          >
+            + Add New Task
           </Button>
-        </>
+        </div>
       )}
     </Modal>
   );

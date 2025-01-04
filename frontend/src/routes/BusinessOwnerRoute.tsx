@@ -18,6 +18,7 @@ import Securitie from "../components/global/Securitie";
 import SuccessPage from "../components/ui/SuccessPage";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import Settings from "../components/global/Settings";
+import Chat from "../components/chat/Chat";
 
 const BusinessOwnerRoutes = () => {
   const navigate = useNavigate(); // Initialize navigate
@@ -44,6 +45,8 @@ const BusinessOwnerRoutes = () => {
           <Route path="documents" element={<Documents />} />
           <Route path="security" element={<Securitie />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="chat" element={<Chat />} />
+
           
           <Route
             path="success"

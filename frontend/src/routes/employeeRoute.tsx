@@ -16,7 +16,7 @@ import Attendance from "../components/employees/Attendance";
 import Task from "../components/employees/Task";
 import MyTask from "../components/employees/MyTask";
 import Settings from "../components/global/Settings";
-import Chat from "../components/global/Chat";
+import Chat from "../components/chat/Chat";
 import Meeting from "../components/global/Meeting";
 import MyTaskList from "../components/employees/MyTaskList";
 import Leaves from "../components/employees/employeeLeave";

@@ -44,6 +44,7 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
     }
   }
 
+
   private async processPaidPlan(businessOwnerId: string, plan: any, email: string): Promise<any> {
 
     console.log("businessOwnerId:", businessOwnerId);
@@ -52,23 +53,27 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
     
     try {
       const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price_data: {
-              currency: "usd",
-              product_data: { name: plan.planName, description: `Payment for ${plan.features} Plan` },
-              unit_amount: plan.price * 100,
+        payment_method_types: ['card'],
+        line_items: [{
+          price_data: {
+            currency: "usd",
+            product_data: { 
+              name: plan.planName, 
+              description: `Payment for ${plan.features} Plan` 
             },
-            quantity: 1,
+            unit_amount: plan.price,
+            recurring: {
+              interval: 'month', // Adjust to 'year' if your subscription is annual
+            },
           },
-        ],
-        mode: "payment",
-        success_url: "http://localhost:5173/business-owner/success",
-        cancel_url: "http://localhost:5173/business-owner/subscriptions",
-        payment_intent_data: {
+          quantity: 1,
+        }],
+        mode: 'subscription',
+        subscription_data: {
           metadata: { planId: plan._id, email },
         },
+        success_url: 'http://localhost:5173/business-owner/success',
+        cancel_url: 'http://localhost:5173/plan',
       });
       if (!session) throw new Error("Failed to create Stripe session");
       return { session, success: true, planName: plan.planName };
@@ -78,10 +83,20 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
   }
 
   async handleWebhook(session: any): Promise<IBusinessOwnerDocument> {
+
+    console.log(`session: ${JSON.stringify(session.subscription_details)}`.bgCyan);
+    
       
     try {
-      const { planId,email} = session.metadata;
+      const { planId,email} = session.subscription_details.metadata;
+
+      console.log(`"==========Email========"`.bgRed,email);
+      console.log(`"==========PlanId========"`.bgRed,planId);
+      
       console.log("==============sessionId=============",session);
+
+      console.log("==============Customer=============",session.customer);
+      
       
       if (!session.paid) throw new Error("Payment not successful");
 
@@ -93,6 +108,7 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
       const newPlan = await this.repository.findNewSubscriptionPlan(planId);
       const subscription: ISubscription = {
         subscriptionId: new Types.ObjectId(newPlan[0]._id),
+        customerId: session.customer,
         startDate: new Date(),
         endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
         status: "Active",
@@ -120,49 +136,39 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
 
 private async processCheckoutPlan(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponseDTO> {
   const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [{
-          price_data: {
-              currency: currency,
-              product_data: { name: plan.planName, description: `Payment for ${plan.features} Plan` },
-              unit_amount: amount,
-          },
-          quantity: 1,
-      }],
-      mode: 'payment',
-      success_url: 'http://localhost:5173/business-owner/success',
-      cancel_url: 'http://localhost:5173/plan',
-      payment_intent_data: {
-        metadata: { planId: plan._id, email },
-      }
+    payment_method_types: ['card'],
+    line_items: [{
+      price_data: {
+        currency: currency,
+        product_data: { 
+          name: plan.planName, 
+          description: `Payment for ${plan.features} Plan` 
+        },
+        unit_amount: amount,
+        recurring: {
+          interval: 'month', // Adjust to 'year' if your subscription is annual
+        },
+      },
+      quantity: 1,
+    }],
+    mode: 'subscription',
+    subscription_data: {
+      metadata: { planId: plan._id, email },
+    },
+    success_url: 'http://localhost:5173/business-owner/success',
+    cancel_url: 'http://localhost:5173/plan',
   });
 
   console.log('Stripe Session Created:', session);
 
-  // const oldBusinessOwnerData = await this.repository.findByEmail(email);
-  // if (!oldBusinessOwnerData) {
-  //     throw new Error('Business owner not found');
-  // }
-  // const businessOwnerId = oldBusinessOwnerData._id.toString();
-
-  // console.log(`oldBusinessOwnerData: ${JSON.stringify(oldBusinessOwnerData)}`.bgCyan);
-  // console.log(`%%%%%%%%%%%%%%%%%`.bgRed,oldBusinessOwnerData.subscription.status);
-
-  // if (oldBusinessOwnerData.subscription.status == "Pending" ) {
-  //     const subscription: ISubscription = {
-  //         subscriptionId: plan._id,
-  //         startDate: new Date(),
-  //         endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
-  //         status: 'Active',
-  //     };
-  //     await this.repository.updateSubscriptionById(businessOwnerId, subscription);
-  // }
-  // const businessOwnerData = await this.repository.findByEmail(email);
-  // const accessToken = generateAccessToken({ businessOwnerData });
-  // const refreshToken = generateRefreshToken({ businessOwnerData });
-
-  return { session, success: true, message: 'Checkout session created successfully'};
+  return { 
+    session, 
+    success: true, 
+    message: 'Checkout session created successfully'
+  };
 }
+
+
 
 
 }

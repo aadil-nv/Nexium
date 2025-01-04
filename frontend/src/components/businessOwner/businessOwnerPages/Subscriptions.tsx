@@ -25,6 +25,7 @@ const SubscriptionPage: React.FC = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [stripeLoading, setStripeLoading] = useState<boolean>(false); // Loading state for stripe process
+  const [invoiseData, setInvoiseData] = useState<any[]>([]);
   const stripePromise = loadStripe('pk_test_51QA84MG0KgrlY5FBKX5uMqGIPF0QRwCB52FMUeaO4mMIqlaHjWaellTk26kdZYqYgM1USvDyz7jwfoAIL5Wovdpw00AYg8dWct');
 
   useEffect(() => {
@@ -42,7 +43,14 @@ const SubscriptionPage: React.FC = () => {
       .get('/businessOwner/api/subscription/get-all-subscriptions')
       .then((response) => setAllSubscriptionPlans(response.data.subscriptions))
       .catch(console.error);
+    businessOwnerInstance
+      .get('/businessOwner/api/subscription/invoices')
+      .then((response) => setInvoiseData(response.data))
+      .catch(console.error);
   }, []);
+
+  console.log("invoiose data is ====>>>>>",invoiseData);
+  
   
   const handleUpgrade = () => {
     if (currentPlan) {
@@ -143,7 +151,7 @@ const SubscriptionPage: React.FC = () => {
           )}
         </div>
 
-        {/* <div className="w-full md:w-2/3">
+        <div className="w-full md:w-2/3">
           <Card className="shadow-md rounded-lg p-6 h-full flex flex-col justify-between" title="Next Month's Bill">
             <div>
               <p className="text-gray-700 font-semibold">Due Date: January 1, 2025</p>
@@ -153,12 +161,12 @@ const SubscriptionPage: React.FC = () => {
               Pay Now
             </Button>
           </Card>
-        </div> */}
+        </div>
       </div>
 
-      {/* <div>
+      <div>
         <DemoTable />
-      </div> */}
+      </div>
 
       <Modal title="Choose a Plan" visible={modalVisible} onCancel={() => setModalVisible(false)} footer={null}>
         {visiblePlans.length > 0 ? (

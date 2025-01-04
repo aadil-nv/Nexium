@@ -16,7 +16,7 @@ interface Task {
   employeeName: string;
   dueDate: string;
   assignedBy: string;
-  assigenedData: string;
+  assigenedDate: string;
   taskName: string;
   isApproved?: boolean;
   tasks: { 
@@ -151,8 +151,16 @@ const Task: React.FC = () => {
       dataIndex: 'dueDate',
       key: 'dueDate',
       align: 'center' as const,
-      render: (dueDate: string) => new Date(dueDate).toLocaleDateString(),
-    },
+      render: (dueDate: string) => {
+        const formattedDate = new Intl.DateTimeFormat('en-US', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        }).format(new Date(dueDate));
+        return formattedDate;
+      },
+    }
+    ,
     {
       title: 'Tasks',
       key: 'tasks',
@@ -161,7 +169,8 @@ const Task: React.FC = () => {
         const totalTasks = record.tasks.length;
         const completedTasks = record.tasks.filter((task: any) => task.isCompleted).length;
         const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-  
+        const isOverdue = new Date(record.dueDate) < new Date();
+    
         return (
           <div>
             <div style={{ marginTop: 8 }}>
@@ -171,33 +180,81 @@ const Task: React.FC = () => {
               />
               <span style={{ marginTop: 4 }}>{`Completed ${completedTasks} of ${totalTasks} tasks`}</span>
             </div>
-  
-            {/* Approval Button */}
-            <div style={{ marginTop: '10px' }}>
-              {record.isApproved ? (
-                <Button
-                  type="primary"
-                  icon={<CheckCircleOutlined />}
-                  onClick={() => handleApproval(record._id, record.isApproved)}
-                  style={{ width: 120, backgroundColor: 'green', borderColor: 'green' }}
-                >
-                  Approved
-                </Button>
-              ) : (
-                <Button
-                  type="default"
-                  icon={<ClockCircleOutlined />}
-                  onClick={() => handleApproval(record._id, record.isApproved)}
-                  style={{ width: 120, backgroundColor: 'orange', borderColor: 'orange' }}
-                >
-                  Approve
-                </Button>
-              )}
-            </div>
+    
+            {/* Only show buttons if overdue */}
+            {isOverdue && (
+              <div style={{ marginTop: '10px' }}>
+                {record.isApproved ? (
+                  <Button
+                    type="primary"
+                    icon={<CheckCircleOutlined />}
+                    onClick={() => handleApproval(record._id, record.isApproved)}
+                    style={{ width: 120, backgroundColor: 'red', borderColor: 'red' }}
+                  >
+                    Reject
+                  </Button>
+                ) : (
+                  <Button
+                    type="default"
+                    icon={<ClockCircleOutlined />}
+                    onClick={() => handleApproval(record._id, record.isApproved)}
+                    style={{ width: 120, backgroundColor: 'orange', borderColor: 'orange' }}
+                  >
+                    Approve
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         );
       },
     },
+    {
+      title: 'Status',
+      key: 'status',
+      align: 'center' as const,
+      render: (_: unknown, record: any) => {
+        const isOverdue = new Date(record.dueDate) < new Date();
+        const isApproved = record.isApproved;
+        const totalTasks = record.tasks.length;
+        const completedTasks = record.tasks.filter((task: any) => task.isCompleted).length;
+
+        console.log("-----------------------",isOverdue ,isApproved , totalTasks , completedTasks);
+        
+    
+        const getStatus = () => {
+          if (isOverdue && isApproved && completedTasks === totalTasks) {
+            return { status: 'Task Completed', icon: '✅' };
+          }
+          if (!isOverdue && !isApproved && completedTasks === totalTasks) {
+            return { status: 'Not Approved', icon: '❌' };
+          }
+          if (!isOverdue && !isApproved && completedTasks !== totalTasks) {
+            return { status: 'Progressing', icon: '🔄' };
+          }
+          if (isOverdue && !isApproved && completedTasks !== totalTasks) {
+            return { status: 'Task Due', icon: '⏰' };
+          }
+          if (isOverdue && !isApproved && completedTasks === totalTasks) {
+            return { status: 'Not Approved', icon: '❌' };
+          }
+          // Default case for unhandled scenarios
+          return { status: 'Unknown Status', icon: '❓' };
+        };
+    
+        const { status, icon } = getStatus();
+    
+        return (
+          <div className="flex items-center gap-2">
+            <span className="animate-bounce">{icon}</span>
+            <span>{status}</span>
+          </div>
+        );
+      }
+    }
+    
+    ,
+    
     {
       title: 'Action',
       key: 'action',

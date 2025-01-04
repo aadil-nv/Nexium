@@ -68,11 +68,12 @@ export const managerLinks: LinkItem[] = [
   { title: 'Employees', route: '/manager/employees', icon: 'fi fi-tr-employees' },
   { title: 'Departments', route: '/manager/departments', icon: 'fi fi-tr-department-structure' },
   { title: 'Leaves', route: '/manager/leaves', icon: 'fi fi-tr-house-leave' },
+  { title: 'Projects', route: '/manager/projects', icon: 'fi fi-tr-checklist-task-budget' },
   { title: 'Announcements', route: '/manager/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   { title: 'Chat', route: '/manager/chat', icon: 'fi fi-tr-messages' },
   { title: 'Meetings', route: '/manager/meeting', icon: 'fi fi-tr-circle-video' },
-  { title: 'Payroll Settings', route: '/manager/payroll-settings', icon: "fi fi-tr-calendar-salary" },
-  { title: 'Leave Settings', route: '/manager/leave-settings', icon: 'fi fi-tr-spring-calendar' },
+  { title: 'Payroll Policy', route: '/manager/payroll-settings', icon: "fi fi-tr-calendar-salary" },
+  { title: 'Leave Policy', route: '/manager/leave-settings', icon: 'fi fi-tr-spring-calendar' },
   { title: 'Pre Applied Leaves', route: '/manager/pre-applied-leaves', icon: 'fi fi-tr-spring-calendar' },
 
 ];

@@ -43,6 +43,7 @@ export interface IManager extends Document {
   isActive?: boolean;
   isVerified?: boolean;
   isBlocked?: boolean;
+  role?: string;
   businessOwnerId?: mongoose.Schema.Types.ObjectId;
   subscriptionId?: mongoose.Schema.Types.ObjectId;
   createdAt?: Date;

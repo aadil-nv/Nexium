@@ -56,17 +56,28 @@ export default class BusinessOwnerPaymentController
   }
 
   async handleWebhook(req: CustomRequest, res: Response): Promise<Response> {
+    console.log(`HItting handleWebhook======CONTROLLER============`.bgMagenta);
+    
     const signature = req.headers["stripe-signature"];
+    console.log(`signature: ${signature}`.bgRed);
+    
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    console.log(`webhookSecret: ${webhookSecret}`.bgRed);
 
     if (!webhookSecret || !req.body) {
+      console.log("Missing webhook secret or body".red);
+      
       return res.status(HttpStatusCode.BAD_REQUEST).send({ message: "Missing webhook secret or body" });
     }
 
     try {
       const event = Stripe.webhooks.constructEvent(req.body as any, signature as string, webhookSecret);
 
-      if (event.type === "charge.updated") {
+      console.log(`event: is==>}`.bgRed, event);
+      
+
+      if (event.type ==='invoice.payment_succeeded') {
+        console.log("Received charge.updated event".green);
         const session = event.data.object;
         await this._businessOwnerPaymentService.handleWebhook(session);
         return res.status(HttpStatusCode.OK).json({ message: "Webhook processed successfully" });

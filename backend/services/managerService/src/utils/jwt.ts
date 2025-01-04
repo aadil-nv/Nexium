@@ -18,13 +18,13 @@ export const generateRefreshToken = (data: object): string => {
     return jwt.sign(
         data, 
         REFRESH_TOKEN_SECRET,
-        { expiresIn: '4m' }
+        { expiresIn: '5m' }
     );
 };
 
 export const verifyRefreshToken = (token: string): JwtPayload | null => {
     try {
-        return jwt.verify(token, "Admin@123") as JwtPayload; // Verify refresh token
+        return jwt.verify(token, REFRESH_TOKEN_SECRET) as JwtPayload; // Verify refresh token
     } catch {
         return null;
     }

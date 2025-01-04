@@ -141,9 +141,7 @@ export default class LeaveRepository extends BaseRepository<IAppliedLeave> imple
                 },
             ]);
     
-            if (appliedLeaves.length === 0) {
-                throw new Error('No approved leaves found for the last month');
-            }
+           
     
             return appliedLeaves;
         } catch (error) {

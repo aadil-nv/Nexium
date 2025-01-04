@@ -40,7 +40,7 @@ app.use(cors({
   credentials: true,               // Allow cookies to be sent
 }));
 
-app.use("/webhook", express.raw({ type: 'application/json' }), webhookRouter);
+app.use("/webhook", express.raw({ type: 'application/json'}), webhookRouter);
 // Middlewares
 app.use(express.json());  // Body parser for JSON
 app.use(cookieParser());  // Cookie parser for handling cookies

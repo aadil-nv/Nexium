@@ -9,5 +9,6 @@ const subscriptionController = container.get<ISubscriptionController>("ISubscrip
 
 subscriptionRouter.get('/get-subscription',authenticateToken ,(req, res, next) => subscriptionController.getSubscription(req, res));
 subscriptionRouter.get('/get-all-subscriptions',authenticateToken ,(req, res, next) => subscriptionController.getAllSubscriptions(req, res));
+subscriptionRouter.get('/invoices',authenticateToken ,(req, res, next) => subscriptionController.getInvoices(req, res));
 
 export default subscriptionRouter

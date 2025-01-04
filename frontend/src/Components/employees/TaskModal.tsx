@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, DatePicker, Button, Select, Row, Col, Divider, notification } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, CalendarOutlined, UserOutlined, FileTextOutlined } from '@ant-design/icons';
 import { Moment } from 'moment';
 import moment from 'moment';
 import { employeeInstance } from '../../services/employeeInstance';
-import { useDispatch } from 'react-redux'; // Add useDispatch to dispatch actions
-import { addTask } from '../../redux/slices/taskSlice'; // Import the addTask action
+import { useDispatch } from 'react-redux';
+import { addTask } from '../../redux/slices/taskSlice';
 
-// Define ITaskDTO structure
 interface ITaskDTO {
   employeeId: string;
   dueDate: Date;
@@ -24,31 +23,33 @@ interface ITaskDTO {
 interface TaskModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSave: (taskData: ITaskDTO) => void; // Expecting ITaskDTO
+  onSave: (taskData: ITaskDTO) => void;
 }
 
+const priorityColors = {
+  low: '#52c41a',
+  medium: '#faad14',
+  high: '#f5222d'
+};
+
 const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
-  const dispatch = useDispatch(); // Initialize dispatch
+  const dispatch = useDispatch();
+  const [employeeId, setEmployeeId] = useState<string>('');
+  const [dueDate, setDueDate] = useState<Moment | null>(null);
+  const [taskName, setTaskName] = useState<string>('');
+  const [tasks, setTasks] = useState<{ title: string; description?: string; priority?: 'low' | 'medium' | 'high' }[]>([{ title: '', description: '', priority: 'low' }]);
+  const [availableEmployees, setAvailableEmployees] = useState<{ _id: string, name: string, profilePicture?: string }[]>([]);
 
-  const [employeeId, setEmployeeId] = useState<string>(''); // Track employeeId
-  const [dueDate, setDueDate] = useState<Moment | null>(null); // Track due date
-  const [taskName, setTaskName] = useState<string>(''); // Track task name
-  const [tasks, setTasks] = useState<{ title: string; description?: string; priority?: 'low' | 'medium' | 'high' }[]>([{ title: '', description: '', priority: 'low' }]); // Tasks state
-  const [availableEmployees, setAvailableEmployees] = useState<{ _id: string, name: string, profilePicture?: string }[]>([]); // Available employees state
-
-  // Fetch employees without tasks when the modal is opened
   useEffect(() => {
     if (visible) {
       const fetchEmployeesWithoutTask = async () => {
         try {
           const response = await employeeInstance.get('/employee/api/task/get-employee-without-task');
           if (Array.isArray(response.data)) {
-            setAvailableEmployees(response.data); // Populate available employees
-          } else {
-            console.error('Expected an array of employees, but got:', response.data);
+            setAvailableEmployees(response.data);
           }
         } catch (error) {
-          console.error('Error fetching employees without tasks:', error);
+          console.error('Error fetching employees:', error);
         }
       };
       fetchEmployeesWithoutTask();
@@ -72,20 +73,20 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
 
   const handleSave = async () => {
     if (!employeeId || !dueDate || !taskName) {
-      console.error("Missing employeeId, dueDate, or taskName");
+      notification.error({
+        message: 'Required Fields Missing',
+        description: 'Please fill in all required fields.',
+      });
       return;
     }
 
     const employee = availableEmployees.find((emp) => emp._id === employeeId);
-    if (!employee) {
-      console.error('Employee not found');
-      return;
-    }
+    if (!employee) return;
 
     const taskData: ITaskDTO = {
       employeeId,
-      employeeName: employee.name, // Send employee name
-      employeeProfilePicture: employee.profilePicture, // Send employee profile picture
+      employeeName: employee.name,
+      employeeProfilePicture: employee.profilePicture,
       dueDate: dueDate.toDate(),
       taskName,
       tasks,
@@ -93,105 +94,186 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
 
     try {
       const response = await employeeInstance.post('/employee/api/task/assign-task-to-employee', taskData);
-      console.log('response===========================', response);
-
-      // Dispatch the action to add the task to Redux store
-      dispatch(addTask(response.data)); // Adding the task to Redux after successful task assignment
-
+      dispatch(addTask(response.data));
       notification.success({
-        message: 'Tasks Assigned Successfully',
-        description: 'The tasks have been assigned to the selected employee.',
+        message: 'Success',
+        description: 'Tasks assigned successfully.',
       });
-      setEmployeeId(''); // Clear employee ID
-      setDueDate(null); // Clear due date
-      setTaskName(''); // Clear task name
-      setTasks([{ title: '', description: '', priority: 'low' }]); // R
-
-     
+      setEmployeeId('');
+      setDueDate(null);
+      setTaskName('');
+      setTasks([{ title: '', description: '', priority: 'low' }]);
       onCancel();
     } catch (error) {
       notification.error({
-        message: 'Error Assigning Tasks',
-        description: 'There was an error assigning the tasks. Please try again.',
+        message: 'Error',
+        description: 'Failed to assign tasks.',
       });
+    }
+  };
+
+  const modalStyle = {
+    '.ant-modal-content': {
+      borderRadius: '12px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+    }
+  };
+
+  const inputStyle = {
+    borderRadius: '6px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+    '.ant-input': {
+      padding: '8px 12px'
     }
   };
 
   return (
     <Modal
-      title="Assign Tasks to Employee"
+      title={
+        <div style={{ fontSize: '20px', fontWeight: 600, color: '#1f1f1f', padding: '8px 0' }}>
+          Assign Tasks to Employee
+        </div>
+      }
       visible={visible}
       onCancel={onCancel}
       onOk={handleSave}
-      style={{ maxWidth: '800px', width: '90%' }}
+      width={800}
+      bodyStyle={{ 
+        padding: '24px',
+        borderRadius: '12px'
+      }}
     >
-      <Select
-        placeholder="Select Employee"
-        value={employeeId}
-        onChange={(value) => setEmployeeId(value)}
-        style={{ width: '100%', marginBottom: '1rem' }}
-      >
-        {availableEmployees.map((employee) => (
-          <Select.Option key={employee._id} value={employee._id}>
-            {employee.name}
-          </Select.Option>
-        ))}
-      </Select>
-
-      <DatePicker
-        placeholder="Due Date"
-        value={dueDate}
-        onChange={(date) => setDueDate(date)}
-        style={{ width: '100%', marginBottom: '1rem' }}
-      />
-
-      <Input
-        placeholder="Task Name"
-        value={taskName}
-        onChange={(e) => setTaskName(e.target.value)}
-        style={{ width: '100%', marginBottom: '1rem' }}
-      />
-
-      <Divider>Tasks</Divider>
-      {tasks.map((task, index) => (
-        <Row key={index} gutter={16} style={{ marginBottom: '1rem' }}>
-          <Col xs={24} sm={12} md={8}>
-            <Input
-              placeholder="Task Title"
-              value={task.title}
-              onChange={(e) => handleTaskChange(index, 'title', e.target.value)}
-            />
+      <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px', marginBottom: '24px' }}>
+        <Row gutter={[16, 16]}>
+          <Col span={24}>
+            <div style={{ marginBottom: '8px' }}>
+              <label style={{ color: '#666', marginBottom: '4px', display: 'block' }}>
+                Employee
+              </label>
+              <Select
+                placeholder="Select Employee"
+                value={employeeId}
+                onChange={setEmployeeId}
+                style={{ width: '100%', ...inputStyle }}
+                suffixIcon={<UserOutlined />}
+              >
+                {availableEmployees.map(employee => (
+                  <Select.Option key={employee._id} value={employee._id}>
+                    {employee.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </div>
           </Col>
-          <Col xs={24} sm={12} md={8}>
-            <Input
-              placeholder="Description"
-              value={task.description}
-              onChange={(e) => handleTaskChange(index, 'description', e.target.value)}
-            />
+          
+          <Col span={12}>
+            <div style={{ marginBottom: '8px' }}>
+              <label style={{ color: '#666', marginBottom: '4px', display: 'block' }}>
+                Due Date
+              </label>
+              <DatePicker
+                placeholder="Select Due Date"
+                value={dueDate}
+                onChange={setDueDate}
+                style={{ width: '100%', ...inputStyle }}
+                suffixIcon={<CalendarOutlined />}
+              />
+            </div>
           </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Select
-              placeholder="Priority"
-              value={task.priority}
-              onChange={(value) => handleTaskChange(index, 'priority', value)}
-            >
-              <Select.Option value="low">Low</Select.Option>
-              <Select.Option value="medium">Medium</Select.Option>
-              <Select.Option value="high">High</Select.Option>
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} md={4}>
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => removeTask(index)}
-              disabled={tasks.length === 1}
-            />
+          
+          <Col span={12}>
+            <div style={{ marginBottom: '8px' }}>
+              <label style={{ color: '#666', marginBottom: '4px', display: 'block' }}>
+                Task Name
+              </label>
+              <Input
+                placeholder="Enter Task Name"
+                value={taskName}
+                onChange={(e) => setTaskName(e.target.value)}
+                style={inputStyle}
+                prefix={<FileTextOutlined />}
+              />
+            </div>
           </Col>
         </Row>
-      ))}
-      <Button type="dashed" onClick={addTaskItem} icon={<PlusOutlined />} style={{ width: '100%' }}>
+      </div>
+
+      <Divider style={{ margin: '16px 0', borderColor: '#e8e8e8' }}>
+        <span style={{ color: '#666', fontWeight: 500 }}>Task Details</span>
+      </Divider>
+
+      <div style={{ maxHeight: '400px', overflowY: 'auto', padding: '8px' }}>
+        {tasks.map((task, index) => (
+          <div
+            key={index}
+            style={{
+              backgroundColor: '#fff',
+              padding: '16px',
+              borderRadius: '8px',
+              marginBottom: '16px',
+              border: '1px solid #e8e8e8',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+            }}
+          >
+            <Row gutter={[16, 16]} align="middle">
+              <Col xs={24} sm={24} md={8}>
+                <Input
+                  placeholder="Task Title"
+                  value={task.title}
+                  onChange={(e) => handleTaskChange(index, 'title', e.target.value)}
+                  style={inputStyle}
+                />
+              </Col>
+              <Col xs={24} sm={24} md={8}>
+                <Input.TextArea
+                  placeholder="Description"
+                  value={task.description}
+                  onChange={(e) => handleTaskChange(index, 'description', e.target.value)}
+                  style={{ ...inputStyle, minHeight: '60px' }}
+                />
+              </Col>
+              <Col xs={20} sm={20} md={6}>
+                <Select
+                  placeholder="Priority"
+                  value={task.priority}
+                  onChange={(value) => handleTaskChange(index, 'priority', value)}
+                  style={{ width: '100%', ...inputStyle }}
+                >
+                  {Object.entries(priorityColors).map(([priority, color]) => (
+                    <Select.Option key={priority} value={priority}>
+                      <span style={{ color }}>{priority.charAt(0).toUpperCase() + priority.slice(1)}</span>
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Col>
+              <Col xs={4} sm={4} md={2} style={{ textAlign: 'right' }}>
+                <Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => removeTask(index)}
+                  disabled={tasks.length === 1}
+                  style={{ borderRadius: '6px' }}
+                />
+              </Col>
+            </Row>
+          </div>
+        ))}
+      </div>
+
+      <Button
+        type="dashed"
+        onClick={addTaskItem}
+        icon={<PlusOutlined />}
+        style={{
+          width: '100%',
+          marginTop: '16px',
+          borderRadius: '6px',
+          height: '40px',
+          borderColor: '#1890ff',
+          color: '#1890ff'
+        }}
+      >
         Add Task
       </Button>
     </Modal>

@@ -1,6 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IBusinessOwnerDocument } from "../entities/businessOwnerEntities"; 
-import { CompanyIncorporationDocType, BusinessOwnerIDProofType } from "../utils/enums";
+import { IBusinessOwnerDocument } from "../entities/businessOwnerEntities"; // Adjust the import path as needed
 
 
 
@@ -23,9 +22,9 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       personalWebsite: {
         type: String,
       },
-      profileImage: {
+      profilePicture: {
         type: String,
-        default: "https://example.com/default-profile-image.png",
+       
       },
     },
 
@@ -35,7 +34,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       companyLogo: {
         type: String,
-        default: "https://example.com/default-logo.png",
+       
       },
       companyRegistrationNumber: {
         type: String,
@@ -48,20 +47,19 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       },
       
       // Documents Object
-      documents: {
-        companyIncorporationDocument: {
-          type: String,
-          enum: Object.values(CompanyIncorporationDocType),
+    },
+    documents: {
+      companyCertificate: 
+        {
+          documentName: { type: String },
+          documentUrl: { type: String },
+          documentSize: { type: String },
+          uploadedAt: { type: Date },
         },
-        businessOwnerIdProof: {
-          type: String,
-          enum: Object.values(BusinessOwnerIDProofType),
-        },
-      },
     },
 
     address: {
-      streetAddress: {
+      street: {
         type: String,
       },
       city: {
@@ -88,13 +86,17 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
     },
     role: {
       type: String,
+      default: "businessOwner",
     },
 
 
     subscription: {
       subscriptionId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Subscription', 
+        ref: 'Subscription', // Assuming 'Subscription' is the name of the model you're referencing
+      },
+      customerId: {
+        type: String,
       },
       startDate: {
         type: Date,
