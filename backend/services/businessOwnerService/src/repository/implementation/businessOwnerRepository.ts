@@ -45,7 +45,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
  
   
     try {
-      // Define the fields allowed to be updated
+      const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
       const allowedFields: (keyof IPersonalDetailsDTO)[] = ["businessOwnerName", "email", "personalWebsite", "phone"];
   
       // Extract only the allowed fields from the incoming data
@@ -77,7 +77,15 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
       if (!result) {
         throw new Error(`No business owner found with ID: ${businessOwnerId}`);
       }
-  
+
+      console.log("Business Owner Data:+++++++++++++++++++++++++++>>>", result);
+      
+      const businessOwner = _switchDb.model('BusinessOwner', BusinessOwnerModel.schema);
+       await businessOwner.findByIdAndUpdate(
+        businessOwnerId,
+        { $set: result }, // Save the file path
+        { new: true }
+      );
   
       return result;
     } catch (error) {

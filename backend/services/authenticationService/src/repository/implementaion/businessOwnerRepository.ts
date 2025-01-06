@@ -108,6 +108,29 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
     }
   }
 
+ async  updateBusinessOwner(businessOwnerId: any, businessOwnerData: Partial<IBusinessOwnerDocument>): Promise<any>{
+  console.log("businessOwner data --- repo", businessOwnerData);
+  console.log("businessOwner id --- repo", businessOwnerId);
+  
+  
+  try {
+    
+    const updatedBusinessOwner = await businessOwnerModel.findOneAndUpdate(
+      { _id: businessOwnerId },
+      { $set: businessOwnerData },
+      { new: true }
+    ).exec();
+  
+    return updatedBusinessOwner;
+    
+  } catch (error) {
+    console.error("Error updating business owner:", error);
+    throw new Error(error instanceof Error ? error.message : "Unknown error occurred.");
+    
+  }
+ }
+  
+
   
 
   

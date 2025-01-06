@@ -1,57 +1,149 @@
 import { inject , injectable } from "inversify";
 import  IChatService from "../interface/IChatService";
-import { IChatResponseDTO, IReceiverDTO, ISetNewAccessTokenDTO } from "../../dto/chatDTO";
+import { IChatResponseDTO, ICreateGroupDTO, IGetAllGroupsDTO, IReceiverDTO, ISetNewAccessTokenDTO } from "../../dto/chatDTO";
 import  IChatRepository  from "../../repository/interface/IChatRepository";
 import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
+import { log } from "util";
 
 @injectable()
 
 export default  class ChatService implements IChatService {
     constructor(@inject("IChatRepository") private _chatRepository: IChatRepository) {}
-    async createChat(chat: any): Promise<IChatResponseDTO> {
+
+    
+    async getAllReceiver(myId: string): Promise<IReceiverDTO[]> {
         try {
-            const createdChat = await this._chatRepository.createChat(chat);
+            const employees = await this._chatRepository.findAllEmployees(myId);
+            const managers = await this._chatRepository.findAllManagers();
+            const businessOwners = await this._chatRepository.findAllBusinessOwners();
+            const lastSeen = new Date();
+
+            const buisinessOwnereDTO: IReceiverDTO[] = businessOwners.map(businessOner => ({
+                senderId: myId,
+                receiverId: businessOner._id,
+                receiverName: businessOner.personalDetails.businessOwnerName,
+                reciverPosition: businessOner.role, 
+                status: true,
+                lastSeen: lastSeen,
+                receiverProfilePicture: businessOner.personalDetails.profilePicture
+                    ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOner.personalDetails.profilePicture}`
+                    : businessOner.personalDetails.profilePicture,
+            }));
+
+    
+            // Map employee data
+            const employeeDTO: IReceiverDTO[] = employees.map(employee => ({
+                senderId: myId,
+                receiverId: employee._id,
+                receiverName: employee.personalDetails.employeeName,
+                reciverPosition: employee.professionalDetails.position,
+                status: employee.isActive,
+                lastSeen: lastSeen,
+                receiverProfilePicture: employee.personalDetails.profilePicture
+                    ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
+                    : employee.personalDetails.profilePicture,
+            }));
+    
+            // Map manager data
+            const managerDTO: IReceiverDTO[] = managers.map(manager => ({
+                senderId: myId,
+                receiverId: manager._id,
+                receiverName: manager.personalDetails.managerName,
+                reciverPosition : manager.role,
+                status: manager.isActive,
+                lastSeen: lastSeen,
+                receiverProfilePicture: manager.personalDetails.profilePicture
+                    ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${manager.personalDetails.profilePicture}`
+                    : manager.personalDetails.profilePicture,
+            }));
+    
+            
+            const receiverDTO = [...employeeDTO, ...managerDTO, ...buisinessOwnereDTO].filter(
+                receiver => receiver.receiverId.toString() !== myId
+            );
+
+            
+    
+            return receiverDTO;
+        } catch (error) {
+            throw new Error("Error getting all receivers");
+        }
+    }
+
+    async getAllGroups(myId: string): Promise<IGetAllGroupsDTO[]> {
+        try {
+            // Fetch all the groups from the repository
+            const groups = await this._chatRepository.findAllGroups(myId);
+    
+            // Map the groups to the IGetAllGroupsDTO format
+            const groupsDTO: IGetAllGroupsDTO[] = groups.map(group => ({
+                senderId: myId,
+                groupId: group._id.toString(), // Convert ObjectId to string
+                groupName: group.groupName || '', // Ensure groupName is a string
+                groupAdmin: group.groupAdmin ? group.groupAdmin.toString() : '', // Ensure groupAdmin is a string
+                participants: group.participants.map(participant => participant.toString()), // Convert ObjectId to string
+                chatType: group.chatType,
+            }));
+    
+            return groupsDTO;
+        } catch (error) {
+            throw new Error("Error getting all groups");
+        }
+    }
+    
+    
+
+    async createChat(myId: string, receiverId: string): Promise<ICreateGroupDTO> {
+        try {
+            const createdChat = await this._chatRepository.createChat(myId, receiverId);
+
+            console.log("Created chat:======>", createdChat);
+            
+    
+            // Assuming createdChat contains data like groupId, groupName, etc.
             return {
-                message: "Chat created successfully",
+                chatId: createdChat._id,        // Convert ObjectId to string
+                groupName: createdChat.groupName || '',
+                participants: createdChat.participants.map((participant: any) => participant.toString()), // Convert ObjectId array to string[]
+                chatType: createdChat.chatType,
+                groupAdmin: createdChat.groupAdmin,  // Convert ObjectId to string, handle undefined
+                success: true
+            };
+        } catch (error: any) {
+            throw new Error("Error creating chat: " + error.message);
+        }
+    }
+    
+    
+
+    async createMessage(message: any, myId: string): Promise<IChatResponseDTO> {
+        try {
+            const createdMessage = await this._chatRepository.createMessage(message, myId);
+            return {
+                message: "Message created successfully",
                 success: true
             }
             
         } catch (error) {
-            throw new Error("Error creating chat");
+            throw new Error("Error creating message");
             
         }
     }
 
-    async getAllReceiver(): Promise<IReceiverDTO[]> {
-        // console.log("getAllReceiver called service layer {{{{{{}}}}}}}}}}}}}");
-        
+    async createGroup(data: any, myId: string): Promise<IChatResponseDTO> {
         try {
-            const employees = await this._chatRepository.findAllEmployees();
-            const managers = await this._chatRepository.findAllManagers();
-            // console.log(`getAllReceiver employees: ${employees}`.bgCyan,managers);
-            
-            const businessOwners = await this._chatRepository.findAllBusinessOwners();
-            // console.log(`getAllReceiver businessOwners: ${businessOwners}`.bgCyan,businessOwners);
-            
-
-            const lastSeend = new Date();
-            // console.log("getAllReceiver response:---> ",employees);
-            
-
-            const receiverDTO: IReceiverDTO[] = employees.map(receiver => ({
-                receiverId: receiver._id,
-                receiverName: receiver.personalDetails.employeeName,
-                status: receiver.isActive, 
-                lastSeen: lastSeend  ,
-                receiverProfilePicture: receiver.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${receiver.personalDetails.profilePicture}` : receiver.personalDetails.profilePicture
-            }))
-            return receiverDTO;
+            const createdGroup = await this._chatRepository.createGroup(data, myId);
+            return {
+                message: "Group created successfully",
+                success: true
+            }
             
         } catch (error) {
-            throw new Error("Error getting all employees");
+            throw new Error("Error creating group");
             
         }
-    }
+    }   
+
     async setNewAccessToken(refreshToken: string): Promise<ISetNewAccessTokenDTO> {
         try {
             const decoded = verifyRefreshToken(refreshToken);

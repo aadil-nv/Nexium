@@ -3,21 +3,25 @@ import { inject, injectable } from 'inversify';
 import IConsumer from '../interface/IConsumer';
 import IManagerService from '../../../service/interfaces/IManagerService';
 import IEmployeeService from '../../../service/interfaces/IEmployeeService';
+import IBusinessOwnerService from 'service/interfaces/IBusinessOwnerService';
 
 @injectable()
 export default class Consumer implements IConsumer {
   private _managerService: IManagerService;
   private _employeeService: IEmployeeService; // Declare _employeeService
+  private _busienessOwnerService: IBusinessOwnerService;
   private _connection: amqp.Connection | null = null;
   private _channel: amqp.Channel | null = null;
 
   // Inject IManagerService and IEmployeeService in the constructor
   constructor(
     @inject("IManagerService") managerService: IManagerService,
-    @inject("IEmployeeService") employeeService: IEmployeeService
+    @inject("IEmployeeService") employeeService: IEmployeeService,
+    @inject("IBusinessOwnerService") busienessOwnerService: IBusinessOwnerService
   ) {
     this._managerService = managerService;
     this._employeeService = employeeService; // Initialize _employeeService
+    this._busienessOwnerService = busienessOwnerService
   }
 
   async receiveFromQueue() {
@@ -54,6 +58,11 @@ export default class Consumer implements IConsumer {
             
             if (data.employee){
               await this._employeeService.updateEmployee(data.employee);
+            }
+            if(data.updatedBusinessOwnerData){
+              console.log("data ---------------QUEUE", data.updatedBusinessOwnerData);
+              
+              await this._busienessOwnerService.updateBusinessOwner(data.updatedBusinessOwnerData);
             }
 
             this._channel?.ack(msg);

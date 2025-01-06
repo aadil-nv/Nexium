@@ -51,5 +51,6 @@ export interface IPaymentIntentResponse {
     updateSubscriptionByEmail(email: string, subscription: ISubscription): Promise<IBusinessOwnerDocument | null>;
     updateOtp(email: string, otp: string): Promise<void>;
     updatePassword(email: string, hashedPassword: string): Promise<void>;
+    updateBusinessOwner(businessOwnerId: any, businessOwnerData: Partial<IBusinessOwnerDocument>): Promise<any>;
   }
   

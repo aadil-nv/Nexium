@@ -5,15 +5,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useTheme from '../../hooks/useTheme';
 import ChatPeoples from './ChatPeople';
 import ChatWindow from './ChatWindow';
-import { Employee, Message } from '../../interface/ChatInterface';
+import { Employee, Message, Group } from '../../interface/ChatInterface';
 import { chatInstance } from '../../services/chatInstance';
 
 const { Header, Content, Sider } = Layout;
 
+interface ChatTarget {
+  chatId?: string;
+  senderId: string;
+  id: string;
+  name: string;
+  avatar?: string;
+  type: 'private' | 'group';
+  status?: boolean;
+}
+
 const MainLayout: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [selectedUser, setSelectedUser] = useState<Employee | null>(null);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedTarget, setSelectedTarget] = useState<ChatTarget | null>(null);
   const [messageInput, setMessageInput] = useState<string>('');
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth <= 768);
   const [siderVisible, setSiderVisible] = useState<boolean>(!isMobile);
@@ -21,9 +32,8 @@ const MainLayout: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const { isActiveMenu, themeColor } = useTheme();
 
-  // Memoized format function to prevent unnecessary recalculations
-  const formatLastSeen = useCallback((date: Date | undefined) => {
-    if (!date || isNaN(date.getTime())) return 'Invalid date';
+  const formatLastSeen = useCallback((date: any) => {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) return 'Invalid date';
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 60000);
     if (diff < 60) return `${diff} minutes ago`;
@@ -31,39 +41,58 @@ const MainLayout: React.FC = () => {
     return `${Math.floor(diff / 1440)} days ago`;
   }, []);
 
-  // Optimized data fetching with error handling and caching
+  const fetchGroups = async () => {
+    try {
+      const groupsResponse = await chatInstance.get('/chatService/api/chat/get-all-groups');
+      console.log('groupsResponse.data', groupsResponse.data);
+      
+      if (groupsResponse.data) {
+        setGroups(groupsResponse.data);
+        const firstEmployee = groupsResponse.data[0];
+          setSelectedTarget({
+            senderId: firstEmployee.senderId,
+            id: firstEmployee.groupId,
+            name: firstEmployee.groupName,
+            type: 'group',
+            status: firstEmployee.status
+          });
+      }
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
     const controller = new AbortController();
-
-    const fetchEmployees = async () => {
+  
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const cachedData = sessionStorage.getItem('chatEmployees');
-        
-        if (cachedData) {
-          const parsedData = JSON.parse(cachedData);
-          if (isMounted) {
-            setEmployees(parsedData);
-            setSelectedUser(parsedData[0]);
-            setLoading(false);
-          }
-        }
-
-        const response = await chatInstance.get('/chatService/api/chat/get-all-receiver', {
+  
+        // Fetch employees
+        const employeesResponse = await chatInstance.get('/chatService/api/chat/get-all-receiver', {
           signal: controller.signal
         });
-
-        if (isMounted) {
-          setEmployees(response.data);
-          if (response.data.length > 0) {
-            setSelectedUser(response.data[0]);
-          }
-          sessionStorage.setItem('chatEmployees', JSON.stringify(response.data));
+        if (employeesResponse.data && isMounted) {
+          setEmployees(employeesResponse.data);
+          const firstEmployee = employeesResponse.data[0];
+          setSelectedTarget({
+            senderId: firstEmployee.senderId,
+            id: firstEmployee.receiverId,
+            name: firstEmployee.receiverName,
+            avatar: firstEmployee.receiverProfilePicture,
+            type: 'private',
+            status: firstEmployee.status
+          });
         }
+  
+        // Fetch groups
+        await fetchGroups();
+        
       } catch (error) {
         if (error.name !== 'AbortError') {
-          console.error('Error fetching employees:', error);
+          console.error('Error fetching data:', error);
         }
       } finally {
         if (isMounted) {
@@ -71,16 +100,15 @@ const MainLayout: React.FC = () => {
         }
       }
     };
-
-    fetchEmployees();
-
+  
+    fetchData();
+  
     return () => {
       isMounted = false;
       controller.abort();
     };
   }, []);
 
-  // Debounced resize handler
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     
@@ -100,22 +128,6 @@ const MainLayout: React.FC = () => {
     };
   }, []);
 
-  const handleSendMessage = useCallback(() => {
-    if (!messageInput.trim()) return;
-
-    const newMessage: Message = {
-      id: Date.now(),
-      text: messageInput,
-      sender: 'You',
-      timestamp: new Date(),
-      status: 'sent',
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    setMessageInput('');
-  }, [messageInput]);
-
-  // Animation variants
   const slideVariants = {
     hidden: { x: -300, opacity: 0 },
     visible: { x: 0, opacity: 1 },
@@ -152,10 +164,12 @@ const MainLayout: React.FC = () => {
               >
                 <ChatPeoples
                   employees={employees}
-                  setSelectedUser={setSelectedUser}
+                  groups={groups}
+                  setSelectedTarget={setSelectedTarget}
                   isMobile={isMobile}
                   setSiderVisible={setSiderVisible}
                   formatLastSeen={formatLastSeen}
+                  refreshGroups={fetchGroups}
                 />
               </motion.div>
             )}
@@ -173,10 +187,12 @@ const MainLayout: React.FC = () => {
               >
                 <ChatPeoples
                   employees={employees}
-                  setSelectedUser={setSelectedUser}
+                  groups={groups}
+                  setSelectedTarget={setSelectedTarget}
                   isMobile={isMobile}
                   setSiderVisible={setSiderVisible}
                   formatLastSeen={formatLastSeen}
+                  refreshGroups={fetchGroups}
                 />
               </motion.div>
             )}
@@ -201,19 +217,26 @@ const MainLayout: React.FC = () => {
               color: '#fff',
             }}
           >
-            {selectedUser && (
+            {selectedTarget && (
               <motion.div
                 style={{ display: 'flex', alignItems: 'center' }}
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
-                <Badge dot={selectedUser.status}>
-                  <Avatar src={selectedUser.receiverProfilePicture} size={40} />
+                <Badge dot={selectedTarget.type === 'private' ? selectedTarget.status : undefined}>
+                  {selectedTarget.avatar ? (
+                    <Avatar src={selectedTarget.avatar} size={40} />
+                  ) : (
+                    <Avatar size={40}>{selectedTarget.name.charAt(0)}</Avatar>
+                  )}
                 </Badge>
-                <div style={{ marginLeft: 16 }}>
-                  <div>{selectedUser.receiverName}</div>
-                </div>
+                <Badge style={{ marginLeft: 16 ,}}>
+                  <div className='font-semibold  ' style={{ fontSize: '16px' ,color: '#fff'}}>{selectedTarget.name}</div>
+                  {selectedTarget.type === 'group' && (
+                    <div style={{ fontSize: '12px', color: '#fff' }}>Group Chat</div>
+                  )}
+                </Badge>
               </motion.div>
             )}
             {isMobile && (
@@ -234,7 +257,7 @@ const MainLayout: React.FC = () => {
           <AnimatePresence mode="wait">
             {loading ? (
               <Skeleton active paragraph={{ rows: 6 }} />
-            ) : selectedUser ? (
+            ) : selectedTarget ? (
               <motion.div
                 key="chat-window"
                 initial="hidden"
@@ -244,10 +267,13 @@ const MainLayout: React.FC = () => {
                 transition={{ duration: 0.3 }}
               >
                 <ChatWindow
+                  chatId={selectedTarget.chatId}
+                  senderId={selectedTarget.senderId}
+                  targetId={selectedTarget.id}
+                  targetType={selectedTarget.type}
                   messages={messages}
                   messageInput={messageInput}
                   setMessageInput={setMessageInput}
-                  handleSendMessage={handleSendMessage}
                   showEmojiPicker={showEmojiPicker}
                   setShowEmojiPicker={setShowEmojiPicker}
                   scrollToBottom={() => {}}
@@ -255,7 +281,7 @@ const MainLayout: React.FC = () => {
               </motion.div>
             ) : (
               <motion.div
-                key="no-user"
+                key="no-target"
                 initial="hidden"
                 animate="visible"
                 exit="exit"
@@ -263,7 +289,7 @@ const MainLayout: React.FC = () => {
                 transition={{ duration: 0.3 }}
                 style={{ textAlign: 'center' }}
               >
-                Please select a user to start chatting.
+                Please select a user or group to start chatting.
               </motion.div>
             )}
           </AnimatePresence>

@@ -174,7 +174,7 @@ export default class EmployeeService implements IEmployeeService {
              await rabbitMQMessager.init();
 
             const employee = await this._employeeRepository.updateProfile(employeeId, data);
-            rabbitMQMessager.sendToMultipleQueues({ employee });
+            await rabbitMQMessager.sendToMultipleQueues({ employee });
 
             if (!employee) {throw new Error("Employee not found")}
     

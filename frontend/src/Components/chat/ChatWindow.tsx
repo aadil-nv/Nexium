@@ -1,59 +1,111 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Input, Button, Space, Card, Typography } from 'antd';
 import { SendOutlined, SmileOutlined, CheckOutlined } from '@ant-design/icons';
-import { Message } from '../../interface/ChatInterface';
 import useTheme from '../../hooks/useTheme';
+import socket from '../../config/socket';
+import { chatInstance } from '../../services/chatInstance';
+import {Message ,ChatWindowProps} from "../../interface/ChatInterface"
 
-const { Text } = Typography;
 
-interface ChatWindowProps {
-  messages: Message[];
-  messageInput: string;
-  setMessageInput: (input: string) => void;
-  handleSendMessage: () => void;
-  showEmojiPicker: boolean;
-  setShowEmojiPicker: (value: boolean) => void;
-  scrollToBottom: () => void;
-}
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
+  chatId,
+  senderId,
+  targetId,
+  targetType,
   messages,
   messageInput,
   setMessageInput,
-  handleSendMessage,
   showEmojiPicker,
   setShowEmojiPicker,
   scrollToBottom,
 }) => {
+
+  console.log("senderId:", senderId);
+  console.log("targetId:", targetId);
+  console.log("targetType:", targetType);
+  console.log("chatId:", chatId);
+  
+  
   const { isActiveMenu, themeColor, themeMode } = useTheme();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
 
   const backgroundColor = themeMode === 'dark' ? '#1f1f1f' : '#ffffff';
   const inputBackgroundColor = themeMode === 'dark' ? '#333' : '#fff';
 
-  // Scroll to the bottom when new messages are added
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const endpoint = targetType === 'group' 
+          ? `/chatService/api/chat/group-messages/${targetId}`
+          : `/chatService/api/chat/messages/${targetId}`;
+        
+        const response = await chatInstance.get<Message[]>(endpoint);
+        setChatMessages(response.data);
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    };
+
+    if (targetId) {
+      fetchMessages();
+    }
+  }, [targetId, targetType]);
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [chatMessages]);
+
+  useEffect(() => {
+    socket.on('newMessage', (newMessage: Message) => {
+      setChatMessages((prev) => [...prev, newMessage]);
+    });
+
+    return () => {
+      socket.off('newMessage');
+    };
+  }, []);
+
+  const handleSendMessage = () => {
+    if (!messageInput.trim()) return;
+
+    const newMessage: Message = {
+      id: senderId, // Generate temporary ID
+      targetId,
+      targetType,
+      text: messageInput,
+      timestamp: new Date(),
+      sender: senderId,
+      status: 'sent',
+      senderName: 'You' // Optional: Add if needed for consistency
+    };
+
+    // Emit message via Socket.IO
+    socket.emit('sendMessage', newMessage);
+
+    // Update the chat messages state locally
+    setChatMessages((prev) => [...prev, newMessage]);
+    setMessageInput('');
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Chat Messages Container */}
       <div
         style={{
           flex: 1,
           overflowY: 'auto',
           padding: '5px',
           backgroundColor: backgroundColor,
-          maxHeight: 'calc(85vh - 120px)', // Set maxHeight to make the chat area scrollable
+          maxHeight: 'calc(85vh - 120px)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
         }}
       >
-        {messages.map((msg) => (
+        {chatMessages.map((msg) => (
           <div
             key={msg.id}
             style={{
@@ -66,13 +118,22 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             <Card
               size="small"
               style={{
-                maxWidth: '80%', // Ensuring the message card is not too wide
+                maxWidth: '80%',
                 backgroundColor: msg.sender === 'You' ? themeColor : '#f5f5f5',
                 color: msg.sender === 'You' ? '#fff' : '#333',
-                borderRadius: '8px', // Adding border-radius for rounded corners
-                padding: '8px 12px', // Adding padding for better spacing
+                borderRadius: '8px',
+                padding: '8px 12px',
               }}
             >
+              {targetType === 'group' && msg.sender !== 'You' && msg.senderName && (
+                <div style={{ 
+                  fontSize: '12px', 
+                  color: '#666',
+                  marginBottom: '4px'
+                }}>
+                  {msg.senderName}
+                </div>
+              )}
               <div style={{ fontSize: '14px', wordWrap: 'break-word' }}>
                 {msg.text}
               </div>
@@ -84,7 +145,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   color: msg.sender === 'You' ? '#fff' : '#333',
                 }}
               >
-                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {new Date(msg.timestamp).toLocaleTimeString([], { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
                 {msg.sender === 'You' && (
                   <CheckOutlined style={{ marginLeft: 8, color: '#fff' }} />
                 )}
@@ -95,7 +159,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Section */}
       <div
         style={{
           borderTop: '1px solid #f0f0f0',

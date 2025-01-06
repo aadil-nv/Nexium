@@ -77,4 +77,5 @@ export default interface IBusinessOwnerService {
   resendOtp(email: string): Promise<{ success: boolean; message: string }>;
   forgotPassword(email: string): Promise<{ success: boolean; message: string; email?: string }>;
   addNewPassword(email: string, password: string): Promise<{ success: boolean; message: string }>;
+  updateBusinessOwner( businessOwnerData: any): Promise<any>
 }

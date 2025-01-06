@@ -6,6 +6,7 @@ import { IPersonalDetailsDTO, ICompanyDetailsDTO, IAddressDTO, IResponseDTO, IDo
 import { uploadTosS3 } from '../../middlewares/multer-s3';
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { ID } from "aws-sdk/clients/s3";
+import RabbitMQMessager from "../../events/rabbitmq/implementation/producer";
 
 @injectable()
 export default class BusinessOwnerService implements IBusinessOwnerService {
@@ -60,7 +61,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     return fileUrl;
   }
   
-
   async setNewAccessToken(refreshToken: string): Promise<IResponseDTO> {
     try {
       const decoded = verifyRefreshToken(refreshToken);
@@ -178,7 +178,12 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
   async updatePersonalDetails(businessOwnerId: string, data: any): Promise<IResponseDTO> {
 
     try {
-      await this._businessOwnerRepository.updateDetails(businessOwnerId, data);
+      const rabbitMQMessager = new RabbitMQMessager();
+      await rabbitMQMessager.init();
+      const updatedBusinessOwnerData = await this._businessOwnerRepository.updateDetails(businessOwnerId, data);
+      console.log("updatedBusinessOwnerData", updatedBusinessOwnerData);
+      
+      await rabbitMQMessager.sendToMultipleQueues({ updatedBusinessOwnerData });
       return { success: true, message: "Personal details updated successfully!" };
     } catch (error:any) {
       throw new Error(error.message || "Error while updating personal details");

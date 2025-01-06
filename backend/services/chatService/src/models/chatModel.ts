@@ -1,14 +1,41 @@
-import mongoose, { Schema, Document } from 'mongoose';
-import {IChat} from "../entities/chatEntities"
-
+import mongoose, { Schema, Document } from "mongoose";
+import { IChat } from "../entities/chatEntities";
 
 const ChatSchema: Schema = new Schema<IChat>({
-    isGroupChat: { type: Boolean, default: false },
-    participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }],
-    groupName: { type: String }, // Only for group chats
-    messages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }],
-  });
-  
-  const Chat = mongoose.model<IChat>('Chat', ChatSchema);
-  
-  export default Chat;
+  chatType: {
+    type: String,
+    enum: ["private", "group"],
+    required: true,
+  },
+  participants: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  ],
+  groupName: {
+    type: String,
+    trim: true,
+  },
+  groupAdmin: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+  },
+  lastMessage: {
+    type: Schema.Types.ObjectId,
+    ref: "Message",
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
+const Chat = mongoose.model<IChat>("Chat", ChatSchema);
+
+export default Chat;
