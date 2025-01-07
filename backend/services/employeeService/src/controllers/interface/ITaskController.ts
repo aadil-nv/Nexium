@@ -13,5 +13,6 @@ export default interface ITaskController {
     updateTaskApproval(req:CustomRequest , res:Response):Promise<Response>
     getTaskListOfEmployee(req:CustomRequest , res:Response):Promise<Response>
     updateCompletedTask(req:CustomRequest , res:Response):Promise<Response>
+    reassignTask(req:CustomRequest , res:Response):Promise<Response>
 
 }

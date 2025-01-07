@@ -20,6 +20,7 @@ import Chat from "../components/chat/Chat";
 import Meeting from "../components/global/Meeting";
 import MyTaskList from "../components/employees/MyTaskList";
 import Leaves from "../components/employees/employeeLeave";
+import Project from "../components/employees/Project";
 
 const BusinessOwnerRoutes = () => {
 
@@ -40,6 +41,8 @@ const BusinessOwnerRoutes = () => {
             <Route path="notifications" element={<Notifications />} />
             <Route path="announcements" element={<Announcements />} />
             <Route path="tasks" element={<Task />} />
+            <Route path="projects" element={<Project />} />
+            
 
             <Route path="task/:id" element={<MyTask />} />
             <Route path="task-list" element={<MyTaskList />} />

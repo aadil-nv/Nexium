@@ -132,5 +132,130 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
             throw error;
         }
     }
+
+    async findAllPrivateChats(myId: string): Promise<IChat[]> {
+        try {
+          const isValidId = mongoose.Types.ObjectId.isValid(myId);
+          if (!isValidId) {
+            console.log("Invalid myId:", myId);
+            return [];
+          }
+      
+          const allPrivateChats = await this._chatModel.aggregate([
+            {
+              $match: {
+                chatType: "private",
+                participants: { $in: [new mongoose.Types.ObjectId(myId)] }, // Correct way to query participants array
+              },
+            },
+            // Lookup for employees
+            {
+              $lookup: {
+                from: "employees", // Ensure the correct collection name
+                localField: "participants",
+                foreignField: "_id",
+                as: "employeeDetails", // Alias for employee details
+              },
+            },
+            // Lookup for managers
+            {
+              $lookup: {
+                from: "managers", // Ensure the correct collection name
+                localField: "participants",
+                foreignField: "_id",
+                as: "managerDetails", // Alias for manager details
+              },
+            },
+            // Lookup for business owners
+            {
+              $lookup: {
+                from: "businessowners", // Ensure the correct collection name
+                localField: "participants",
+                foreignField: "_id",
+                as: "businessOwnerDetails", // Alias for business owner details
+              },
+            },
+            {
+              $unwind: {
+                path: "$employeeDetails",
+                preserveNullAndEmptyArrays: true, // If there's no employee, it won't cause an error
+              },
+            },
+            {
+              $unwind: {
+                path: "$managerDetails",
+                preserveNullAndEmptyArrays: true, // If there's no manager, it won't cause an error
+              },
+            },
+            {
+              $unwind: {
+                path: "$businessOwnerDetails",
+                preserveNullAndEmptyArrays: true, // If there's no business owner, it won't cause an error
+              },
+            },
+            {
+              $project: {
+                chatType: 1,
+                groupName: 1,
+                groupAdmin: 1,
+                lastMessage: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                participantDetails: {
+                  $cond: {
+                    if: { $ne: [{ $type: "$employeeDetails" }, "missing"] }, // If employeeDetails exists
+                    then: "$employeeDetails",
+                    else: {
+                      $cond: {
+                        if: { $ne: [{ $type: "$managerDetails" }, "missing"] }, // If managerDetails exists
+                        then: "$managerDetails",
+                        else: "$businessOwnerDetails", // Otherwise, fallback to businessOwnerDetails
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ]);
+      
+          return allPrivateChats;
+        } catch (error) {
+          console.log("Error getting all private chats:", error);
+          throw error;
+        }
+      }
+
+
+      
+      async findChatId(myId: string, receiverId: string, chatType: string): Promise<IChat> {
+          try {
+              // Query the Chat model to find a chat with matching participants and chatType
+              const chat = await this._chatModel.findOne({
+                  chatType,
+                  participants: { $all: [myId, receiverId] }, // Ensure both participants are in the array
+              });
+      
+              // If chat found, return its _id, otherwise return null
+              if (!chat) {
+                  throw new Error("Chat not found");
+              }
+
+              return chat
+
+          } catch (error) {
+              console.error("Error finding chat:", error);
+              throw new Error("Error finding chat");
+          }
+      }
+      
+      
+      
+      
+      
+    
+    
+    
+    
+    
     
 }

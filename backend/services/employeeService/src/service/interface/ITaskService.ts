@@ -14,4 +14,5 @@ export default interface ITaskService {
     updateTaskApproval(data:object ,employeeId:string): Promise<ITaskDTO>;
     getTaskListOfEmployee(employeeId:string):Promise<IGetEmployeeTaskDTO[]>
     updateCompletedTask(data:object ,taskId:string): Promise<ITaskDTO>;
+    reassignTask(taskId:string , taskData:object): Promise<ITaskDTO>;
 }

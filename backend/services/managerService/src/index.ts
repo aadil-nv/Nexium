@@ -17,7 +17,7 @@ import { createStream } from 'rotating-file-stream';
 import path from 'path';
 import fs from 'fs';
 import leaveRoutes from './routes/leaveRouter';
-// import projectRoutes from 'routes/projectRoute';
+import projectRoutes from './routes/projectRoute';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -55,7 +55,7 @@ app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/leave',leaveRoutes)
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/payroll', payrollRoutes);
-// app.use('/api/projects', projectRoutes);
+app.use('/api/projects', projectRoutes);
 
 
 app.listen(PORT, () => {

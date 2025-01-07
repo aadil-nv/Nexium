@@ -150,4 +150,23 @@ export default class TaskController implements ITaskController {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
         }
     }
+
+    async reassignTask(req: CustomRequest, res: Response): Promise<Response> {
+        console.log(`"hitting REasssign task employee=============================="`.bgMagenta);
+        
+        try {
+            console.log(`"taskData from the body "`.bgRed,req.body);
+            
+            const taskId = req.params.id;
+            console.log("taskId------------------------",taskId);
+            
+            const taskData = req.body;
+            const task = await this.taskService.reassignTask(taskId, taskData);
+            return res.status(HttpStatusCode.OK).json(task);
+            
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
+            
+        }
+    }
 }

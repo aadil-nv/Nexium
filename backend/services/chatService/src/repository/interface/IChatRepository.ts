@@ -4,7 +4,7 @@ import IBaseRepository from "./IBaseRepository";
 import IEmployee from "../../entities/employeeEntities";
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntities";
 import { IManager } from "../../entities/managerEntities";
-import { IMessage } from "entities/messageEntities";
+import { IMessage } from "../../entities/messageEntities";
 
 export default interface IChatRepository extends BaseRepository<IChat>{
     createChat( myId: string, receiverId: string): Promise<IChat>
@@ -14,4 +14,6 @@ export default interface IChatRepository extends BaseRepository<IChat>{
     findAllManagers(): Promise<IManager[]>
     findAllBusinessOwners(): Promise<IBusinessOwnerDocument[]>
     findAllGroups(myId: string): Promise<IChat[]>
+    findAllPrivateChats(myId: string): Promise<IChat[]>
+    findChatId(myId: string, receiverId: string, chatType: string): Promise<IChat>
 }

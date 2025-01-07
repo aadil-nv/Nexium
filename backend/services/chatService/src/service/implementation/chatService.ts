@@ -1,9 +1,12 @@
 import { inject , injectable } from "inversify";
 import  IChatService from "../interface/IChatService";
-import { IChatResponseDTO, ICreateGroupDTO, IGetAllGroupsDTO, IReceiverDTO, ISetNewAccessTokenDTO } from "../../dto/chatDTO";
+import { IChatResponseDTO, ICreateGroupDTO, IGetAllGroupsDTO, IPrivateChatDTO, IReceiverDTO, ISetNewAccessTokenDTO } from "../../dto/chatDTO";
 import  IChatRepository  from "../../repository/interface/IChatRepository";
 import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
 import { log } from "util";
+import IEmployee from "entities/employeeEntities";
+import { IManager } from "entities/managerEntities";
+import { IBusinessOwnerDocument } from "entities/businessOwnerEntities";
 
 @injectable()
 
@@ -90,6 +93,142 @@ export default  class ChatService implements IChatService {
             throw new Error("Error getting all groups");
         }
     }
+
+    async getAllPrivateChats(myId: string): Promise<IPrivateChatDTO[]> {
+        try {
+            // Log the incoming user ID
+            console.log("Getting private chats for user ID:", myId);
+    
+            // Fetch private chats from the repository and populate participants
+            const privateChats = await this._chatRepository.findAllPrivateChats(myId);
+    
+            console.log("Raw privateChats from DB:", JSON.stringify(privateChats, null, 2));
+            console.log("Number of private chats found:", privateChats?.length || 0);
+    
+            // Add validation to ensure privateChats exists and is an array
+            if (!privateChats || !Array.isArray(privateChats)) {
+                console.log("Invalid privateChats structure:", privateChats);
+                throw new Error("No private chats found or invalid data structure");
+            }
+    
+            // Log chats that pass the filter
+            const validChats = privateChats.filter(chat => {
+                const isValid = chat && chat.participants && Array.isArray(chat.participants);
+                if (!isValid) {
+                    console.log("Filtered out invalid chat:", chat);
+                }
+                return isValid;
+            });
+    
+            console.log("Number of valid chats after filtering:", validChats.length);
+    
+            // Map privateChats to the IPrivateChatDTO structure
+            const privateChatDTOs: IPrivateChatDTO[] = validChats.map(chat => {
+                console.log("Processing chat:", {
+                    chatId: chat._id,
+                    participantsCount: chat.participants.length,
+                    participantIds: chat.participants.map(p => p._id.toString())
+                });
+    
+                // Find the receiver by excluding the current user's ID from participants
+                const receiver = chat.participants.find(
+                    (participant) => participant && participant._id && 
+                    participant._id.toString() !== myId
+                );
+    
+                console.log("Found receiver:", receiver ? {
+                    id: receiver._id,
+                    type: this.isEmployee(receiver) ? 'Employee' :
+                          this.isManager(receiver) ? 'Manager' :
+                          this.isBusinessOwner(receiver) ? 'BusinessOwner' : 'Unknown'
+                } : 'No receiver found');
+    
+                if (!receiver) {
+                    console.log("Chat with missing receiver:", chat);
+                    throw new Error(`Receiver not found in chat participants for chat ID: ${chat._id}`);
+                }
+    
+                // Rest of the code remains the same...
+                let receiverName = "Unknown";
+                if (this.isEmployee(receiver)) {
+                    receiverName = receiver.personalDetails?.employeeName || "Unknown";
+                } else if (this.isManager(receiver)) {
+                    receiverName = receiver.personalDetails?.managerName || "Unknown";
+                } else if (this.isBusinessOwner(receiver)) {
+                    receiverName = receiver.personalDetails?.businessOwnerName || "Unknown";
+                }
+    
+                let receiverPosition = "Unknown";
+                if (this.isEmployee(receiver)) {
+                    receiverPosition = receiver.professionalDetails?.position || "Unknown";
+                } else if (this.isManager(receiver)) {
+                    receiverPosition = receiver.role || "Unknown";
+                } else if (this.isBusinessOwner(receiver)) {
+                    receiverPosition = receiver.role || "Unknown";
+                }
+    
+                let isActiveStatus = false;
+                if (this.isEmployee(receiver)) {
+                    isActiveStatus = receiver.isActive;
+                } else if (this.isManager(receiver)) {
+                    isActiveStatus = receiver.isActive as boolean;
+                } else if (this.isBusinessOwner(receiver)) {
+                    isActiveStatus = true;
+                }
+    
+                let receiverProfilePicture: string | undefined;
+                if (this.isEmployee(receiver)) {
+                    receiverProfilePicture = receiver.personalDetails?.profilePicture;
+                } else if (this.isManager(receiver)) {
+                    receiverProfilePicture = receiver.personalDetails?.profilePicture;
+                } else if (this.isBusinessOwner(receiver)) {
+                    receiverProfilePicture = receiver.personalDetails?.profilePicture;
+                }
+    
+                const dto = {
+                    chatId: chat._id,
+                    chatType: chat.chatType,
+                    reciverId: receiver._id.toString(),
+                    reciverName: receiverName,
+                    reciverPosition: receiverPosition,
+                    status: isActiveStatus,
+                    receiverProfilePicture: receiverProfilePicture
+                        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${receiverProfilePicture}`
+                        : undefined,
+                };
+    
+                console.log("Created DTO:", dto);
+                return dto;
+            });
+    
+            console.log("Final privateChatDTOs:", JSON.stringify(privateChatDTOs, null, 2));
+    
+            return privateChatDTOs;
+        } catch (error:any) {
+            console.error("Error getting all private chats:", error);
+            throw new Error(`Error getting all private chats: ${error.message}`);
+        }
+    }
+    // Type guards for checking the specific types
+    private isEmployee(receiver: any): receiver is IEmployee {
+        return receiver && receiver.personalDetails && 'employeeName' in receiver.personalDetails;
+    }
+    
+    private isManager(receiver: any): receiver is IManager {
+        return receiver && receiver.personalDetails && 'managerName' in receiver.personalDetails;
+    }
+    
+    private isBusinessOwner(receiver: any): receiver is IBusinessOwnerDocument {
+        return receiver && receiver.personalDetails && 'businessOwnerName' in receiver.personalDetails;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
     
     
 
@@ -179,6 +318,28 @@ export default  class ChatService implements IChatService {
             throw new Error("Invalid token data");
         } catch (error) {
             throw new Error("Error setting new access token");
+        }
+    }
+
+    async findChatId(myId: string, receiverId: string, chatType: string): Promise<any> {
+        console.log("findChatId called with myId:", myId, "receiverId:", receiverId, "chatType:", chatType);
+        
+        try {
+            const chat = await this._chatRepository.findChatId(myId, receiverId, chatType);
+
+            if (!chat) {
+                throw new Error("Chat not found");
+
+
+            }
+            console.log(`"Chat found:==========??"`.bgRed, chat);
+            
+            return chat._id
+
+            
+        } catch (error) {
+            throw new Error("Error finding chat");
+            
         }
     }
     

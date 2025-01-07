@@ -17,4 +17,5 @@ export default interface IEmployeeRepository extends BaseRepository<any>  {
     getEmployeeWithOutDepartment(): Promise<IEmployee[]>
     removeEmployee(employeeId: string): Promise<any>
     updateCredentials(employeeId: string ,credentials: any): Promise<any>
+    getAllTeamLeads(): Promise<IEmployee[]>
 }

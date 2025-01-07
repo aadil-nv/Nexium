@@ -50,3 +50,14 @@ export interface ICreateGroupDTO {
     groupAdmin: any; // Use ObjectId
     success: boolean;
 }
+
+export interface IPrivateChatDTO {
+  chatId: any;
+  chatType: 'private' | 'group';
+  reciverId: string;
+  reciverName: string;
+  reciverPosition: string;
+  status: boolean | undefined;
+  receiverProfilePicture: string | undefined
+
+}

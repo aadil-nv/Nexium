@@ -41,6 +41,19 @@ export default class ChatController implements IChatController {
         }
     }
 
+    async getAllPrivateChats(req: CustomRequest, res: Response): Promise<Response> {
+        try {
+            const myId = this.getMyId(req);
+            if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
+            const response = await this._chatService.getAllPrivateChats(myId);
+            console.log(`"response is ===>"`.bgRed,response);
+            
+            return res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting chats", error });
+        }
+    }
+
     async createChat(req: CustomRequest, res: Response): Promise<Response> {
         // console.log(`hitting createChat: ${JSON.stringify(req.body)}`.bgRed);
         

@@ -206,8 +206,6 @@ export default class ManagerController implements IManagerController {
 
 
  async updateManagerProfilePicture(req: CustomRequest, res: Response): Promise<Response> {
-
-
   
     try {
       const managerId = req?.user?.managerData?._id;
@@ -215,7 +213,11 @@ export default class ManagerController implements IManagerController {
         return res
           .status(400)
           .json({ message: "Business owner ID not provided in cookies" });
+
       }
+
+      console.log("req.file from mager profule puictre -------->", req.file);
+      
       const result = await this._managerService.updateManagerProfilePicture(managerId, req.file as Express.Multer.File);
       return res.status(200).json(result);
     } catch (error) {

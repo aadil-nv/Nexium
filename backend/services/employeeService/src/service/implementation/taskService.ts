@@ -107,8 +107,6 @@ export default class TaskService implements ITaskService {
     }
   }
   
-  
-
   async getAllTasks(teamLeadId : string): Promise<ITaskDTO[]> {
     try {
       const tasks = await this.taskRepository.getAllTasks(teamLeadId)
@@ -350,6 +348,39 @@ export default class TaskService implements ITaskService {
     } catch (error: any) {
       console.error("Error updating task completion:", error.message);
       throw new Error("Error updating task completion");
+    }
+  }
+
+  async reassignTask( taskId: string , taskData:object): Promise<ITaskDTO> {
+    try {
+      const result = await this.taskRepository.reassignTask(taskId , taskData);
+      if (!result) throw new Error("Error reassigning task");
+  
+      return {
+        _id: result._id,
+        employeeId: result.employeeId.toString(),
+        employeeName: result.employeeName,
+        taskName: result.taskName,
+        employeeProfilePicture: result.employeeProfilePicture
+          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result.employeeProfilePicture}`
+          : result.employeeProfilePicture,
+        dueDate: result.dueDate,
+        assignedBy: result.assignedBy.toString(),
+        assignedDate: result.assignedDate,
+        isApproved: result.isApproved,
+        tasks: result.tasks.map((item: any) => ({
+          title: item.title,
+          description: item.description || "",
+          isCompleted: item.isCompleted ?? false,
+          priority: item.priority || "low", 
+          taskStatus: item.taskStatus,
+          response:item.response,
+          _id: item._id,
+        })),
+      };
+    } catch (error: any) {
+      console.error("Error reassigning task:", error.message);
+      throw new Error("Error reassigning task");
     }
   }
 

@@ -73,6 +73,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (!messageInput.trim()) return;
 
     const newMessage: Message = {
+      chatId ,
       id: senderId, // Generate temporary ID
       targetId,
       targetType,

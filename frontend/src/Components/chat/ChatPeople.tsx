@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { List, Badge, Avatar, Button, Space, Typography, message, Tabs } from 'antd';
+import React, { useState } from 'react';
+import { List, Badge, Avatar, Button, Space, Typography, message, Modal, Input, Checkbox, Tabs } from 'antd';
 import { Employee, Group } from '../../interface/ChatInterface';
-import { UsergroupAddOutlined, ClockCircleOutlined, CheckOutlined, TeamOutlined, UserOutlined, UserAddOutlined } from '@ant-design/icons';
+import { UsergroupAddOutlined, ClockCircleOutlined, CheckOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
 import { chatInstance } from '../../services/chatInstance';
 import { motion } from 'framer-motion';
-import NewChatModal from './NewChatModal';
-import NewGroupModal from './NewGroupModal';
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -41,34 +39,17 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
   refreshGroups
 }) => {
   const { themeColor } = useTheme();
-  const [isGroupModalVisible, setIsGroupModalVisible] = useState(false);
-  const [isChatModalVisible, setIsChatModalVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [groupName, setGroupName] = useState('');
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('1');
   const [chatId, setChatId] = useState<string>('');
-  const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
 
-  useEffect(() => {
-    fetchAllEmployees();
-  }, []);
-
-  const fetchAllEmployees = async () => {
+  const handleUserSelect   = async (emp: Employee) => {
     try {
-      const response = await chatInstance.get('/chatService/api/chat/get-all-receiver');
-      setAllEmployees(response.data);
-    } catch (error) {
-      console.error('Error fetching employees:', error);
-      message.error('Failed to fetch employees');
-    }
-  };
-
-  const handleUserSelect = async (emp: Employee) => {
-    try {
-      const response = await chatInstance.post(`/chatService/api/chat/create-chat/${emp.receiverId}`);
-      const newChatId = response.data.chatId;
-      setChatId(newChatId);
-
       setSelectedTarget({
-        chatId: newChatId,
+        chatId: chatId,
         senderId: emp.senderId,
         id: emp.receiverId,
         name: emp.receiverName,
@@ -76,14 +57,14 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
         type: 'private',
         status: emp.status
       });
+      isMobile && setSiderVisible(false);
+     const response = await chatInstance.post(`/chatService/api/chat/create-chat/${emp.receiverId}`)
+     .then(response => setChatId(response.data.chatId))
+     .catch(error => console.error('Error creating chat:', error));
 
-      if (isMobile) {
-        setSiderVisible(false);
-      }
-      setIsChatModalVisible(false);
     } catch (error) {
       console.error('Error creating chat:', error);
-      message.error('Failed to create chat');
+      // message.error('Failed to create chat. Please try again.');
     }
   };
 
@@ -97,6 +78,46 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
       type: 'group'
     });
     isMobile && setSiderVisible(false);
+  };
+
+  const createGroup = async () => {
+    if (!groupName.trim()) {
+      return message.error('Please enter a group name');
+    }
+    if (selectedMembers.length < 2) {
+      return message.error('Please select at least 2 members');
+    }
+
+    setLoading(true);
+    try {
+      const response = await chatInstance.post('/chatService/api/chat/create-group', {
+        groupName: groupName,
+        members: selectedMembers
+      });
+      
+      // Refresh the groups list
+      await refreshGroups();
+      
+      message.success('Group created successfully');
+      setIsModalVisible(false);
+      setGroupName('');
+      setSelectedMembers([]);
+      
+      // Switch to groups tab
+      setActiveTab('2');
+    } catch (error) {
+      console.error('Error creating group:', error);
+      message.error('Failed to create group. Please try again.');
+    }
+    setLoading(false);
+  };
+
+  const toggleMember = (memberId: string) => {
+    setSelectedMembers(prev => 
+      prev.includes(memberId) 
+        ? prev.filter(id => id !== memberId)
+        : [...prev, memberId]
+    );
   };
 
   return (
@@ -118,7 +139,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
             tab={<span><UserOutlined /> People</span>}
             key="1"
           >
-            <div className="overflow-y-auto" style={{ height: 'calc(100vh - 340px)' }}>
+            <div className="overflow-y-auto" style={{ height: 'calc(100vh - 280px)' }}>
               <List
                 dataSource={employees}
                 renderItem={(emp) => (
@@ -140,7 +161,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
                           <Space direction="vertical" size={0}>
                             <span className="font-medium">{emp.receiverName}</span>
                             <span className="text-xs text-gray-500">{emp.receiverPosition || 'Employee'}</span>
-                          </Space>
+                            </Space>
                         }
                         description={
                           emp.status ? (
@@ -161,107 +182,110 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
             tab={<span><TeamOutlined /> Groups</span>}
             key="2"
           >
-            <div className="overflow-y-auto" style={{ height: 'calc(100vh - 340px)' }}>
-              <List
-                dataSource={groups}
-                renderItem={(group) => (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <List.Item
-                      onClick={() => handleGroupSelect(group)}
-                      className="cursor-pointer p-4 hover:bg-gray-50 rounded-lg mb-2 transition-all"
+            <div className="flex flex-col h-full">
+              <div className="overflow-y-auto flex-grow" style={{ height: 'calc(100vh - 340px)' }}>
+                <List
+                  dataSource={groups}
+                  renderItem={(group) => (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
                     >
-                      <List.Item.Meta
-                        avatar={
-                          group.avatar ? (
-                            <Avatar src={group.avatar} size={40} />
-                          ) : (
-                            <Avatar style={{ backgroundColor: themeColor }} size={40}>
-                              {group.groupName.charAt(0)}
-                            </Avatar>
-                          )
-                        }
-                        title={
-                          <Space direction="vertical" size={0}>
-                            <span className="font-medium">{group.groupName}</span>
-                            <span className="text-xs text-gray-500">{group.members} members</span>
-                          </Space>
-                        }
-                        description={
-                          <Space>
-                            <span className="text-gray-500">{group.lastMessage}</span>
-                          </Space>
-                        }
-                      />
-                    </List.Item>
-                  </motion.div>
-                )}
-              />
+                      <List.Item
+                        onClick={() => handleGroupSelect(group)}
+                        className="cursor-pointer p-4 hover:bg-gray-50 rounded-lg mb-2 transition-all"
+                      >
+                        <List.Item.Meta
+                          avatar={
+                            group.avatar ? (
+                              <Avatar src={group.avatar} size={40} />
+                            ) : (
+                              <Avatar style={{ backgroundColor: themeColor }} size={40}>
+                                {group.groupName.charAt(0)}
+                              </Avatar>
+                            )
+                          }
+                          title={
+                            <Space direction="vertical" size={0}>
+                              <span className="font-medium">{group.groupName}</span>
+                              <span className="text-xs text-gray-500">{group.members} members</span>
+                            </Space>
+                          }
+                          description={
+                            <Space>
+                              <span className="text-gray-500">{group.lastMessage}</span>
+                            </Space>
+                          }
+                        />
+                      </List.Item>
+                    </motion.div>
+                  )}
+                />
+              </div>
+              <div >
+                <Button
+                  type="primary"
+                  icon={<UsergroupAddOutlined />}
+                  onClick={() => setIsModalVisible(true)}
+                  block
+                  style={{ 
+                    backgroundColor: themeColor, 
+                    borderRadius: '10px',
+                    height: '40px',
+                  }}
+                >
+                  Create Group
+                </Button>
+              </div>
             </div>
           </TabPane>
         </Tabs>
-
-        <div 
-          style={{ 
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: '16px',
-            backgroundColor: 'white',
-            borderTop: '1px solid #f0f0f0'
-          }}
-        >
-          <Space direction="vertical" style={{ width: '100%' }} size="middle">
-            {activeTab === '2' && (
-              <Button
-                type="primary"
-                icon={<UsergroupAddOutlined />}
-                onClick={() => setIsGroupModalVisible(true)}
-                style={{ 
-                  backgroundColor: themeColor, 
-                  borderRadius: '10px',
-                  height: '40px',
-                }}
-                block
-              >
-                Create Group
-              </Button>
-            )}
-            <Button
-              type="primary"
-              icon={<UserAddOutlined />}
-              onClick={() => setIsChatModalVisible(true)}
-              style={{ 
-                backgroundColor: themeColor, 
-                borderRadius: '10px',
-                height: '40px',
-              }}
-              block
-            >
-              Start New Chat
-            </Button>
-          </Space>
-        </div>
       </motion.div>
 
-      <NewGroupModal
-        isVisible={isGroupModalVisible}
-        onClose={() => setIsGroupModalVisible(false)}
-        employees={employees}
-        themeColor={themeColor}
-        refreshGroups={refreshGroups}
-        setActiveTab={setActiveTab}
-      />
-
-      <NewChatModal
-        isVisible={isChatModalVisible}
-        onClose={() => setIsChatModalVisible(false)}
-        allEmployees={allEmployees}
-        handleUserSelect={handleUserSelect}
-      />
+      <Modal
+        title="Create New Group"
+        open={isModalVisible}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setGroupName('');
+          setSelectedMembers([]);
+        }}
+        onOk={createGroup}
+        confirmLoading={loading}
+        okText="Create Group"
+        okButtonProps={{ style: { backgroundColor: themeColor } }}
+      >
+        <Space direction="vertical" className="w-full">
+          <Input
+            placeholder="Enter group name"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            className="mb-4"
+          />
+          
+          <List
+            className="max-h-[300px] overflow-auto"
+            dataSource={employees}
+            renderItem={(emp) => (
+              <List.Item>
+                <Checkbox
+                  checked={selectedMembers.includes(emp.receiverId)}
+                  onChange={() => toggleMember(emp.receiverId)}
+                  className="w-full"
+                >
+                  <Space>
+                    <Avatar src={emp.receiverProfilePicture} size={32} />
+                    <Space direction="vertical" size={0}>
+                      <span>{emp.receiverName}</span>
+                      <span className="text-xs text-gray-500">{emp.receiverPosition || 'Employee'}</span>
+                    </Space>
+                  </Space>
+                </Checkbox>
+              </List.Item>
+            )}
+          />
+        </Space>
+      </Modal>
     </div>
   );
 };

@@ -292,5 +292,22 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
             throw new Error("Failed to update employee credentials");
         }
     }
+
+    async getAllTeamLeads(): Promise<IEmployee[]> {
+        try {
+            // Fetch employees with position "Team Lead"
+            const employees = await this.employeeModel.find({
+                "professionalDetails.position": "Team Lead"
+               
+            });
+    
+            return employees;
+        } catch (error) {
+            console.error("Error in getAllTeamLeads repository:", error);
+            throw new Error("Failed to fetch all team leads.");
+        }
+    }
+    
+    
     
 }

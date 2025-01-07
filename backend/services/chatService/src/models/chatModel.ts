@@ -9,21 +9,25 @@ const ChatSchema: Schema = new Schema<IChat>({
   },
   participants: [
     {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+      type:  mongoose.Schema.Types.ObjectId,
+      ref: "participantModel",
       required: true,
     },
   ],
+  participantModel: {
+    type: String,
+    enum: ['BusinessOwner', 'Manager', 'Employee'],
+  },
   groupName: {
     type: String,
     trim: true,
   },
   groupAdmin: {
-    type: Schema.Types.ObjectId,
+    type:  mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
   lastMessage: {
-    type: Schema.Types.ObjectId,
+    type:  mongoose.Schema.Types.ObjectId,
     ref: "Message",
   },
   createdAt: {

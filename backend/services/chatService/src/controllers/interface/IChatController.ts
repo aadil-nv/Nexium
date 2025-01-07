@@ -8,6 +8,7 @@ export default interface IChatController {
     getAllReceiver(req: CustomRequest, res: Response): Promise<Response>;
     createGroup(req: CustomRequest, res: Response): Promise<Response>;
     getAllGroups(req: CustomRequest, res: Response): Promise<Response>;
+    getAllPrivateChats(req: CustomRequest, res: Response): Promise<Response>;
 
 
 

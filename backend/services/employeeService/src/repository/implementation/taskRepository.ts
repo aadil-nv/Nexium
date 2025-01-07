@@ -322,5 +322,40 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
             throw new Error("Could not retrieve previous month completed tasks with approval");
         }
     }
+
+    async reassignTask(taskId: string, taskData: any): Promise<ITask> {
+        try {
+            // Fetch employee details
+            const employee = await employeeModel.findById(taskData.employeeId);
+            if (!employee) {
+                throw new Error(`Employee not found with ID: ${taskData.employeeId}`);
+            }
+    
+            // Update the task with new employeeId and employeeName
+            const result = await this.taskModel.findOneAndUpdate(
+                { _id: taskId }, // Match by taskId
+                { 
+                    $set: { 
+                        employeeId: taskData.employeeId, 
+                        employeeName: employee.personalDetails.employeeName || ""  // Update employeeName
+                    } 
+                }, // Update fields in the task
+                { new: true } // Return the updated document
+            ).exec();
+    
+            if (!result) {
+                throw new Error(`Task with ID ${taskId} not found or update failed`);
+            }
+    
+            console.log(`Updated task: ${JSON.stringify(result)}`);
+    
+            // Return the updated task object
+            return result;
+        } catch (error) {
+            console.error("Error updating task approval:", error);
+            throw new Error("Error updating task approval");
+        }
+    }
+    
     
 }

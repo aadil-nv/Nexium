@@ -10,8 +10,7 @@ export default class MessageService implements IMessageService {
     async createMessage(message: any, myId: string): Promise<IMessageDTO> {
         try {
             const createdMessage = await this._messageRepository.createMessage(message, myId);
-            return {
-               
+            return {  
                 success: true
             }
             

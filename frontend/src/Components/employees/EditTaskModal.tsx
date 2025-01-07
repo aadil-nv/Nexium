@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 
 interface ITaskDTO {
   _id: string;
+  employeeId: string;
   employeeProfilePicture: string;
   employeeName: string;
   dueDate: string;
@@ -44,12 +45,33 @@ const taskStatusColors = {
 
 const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCancel, onSave }) => {
   const [taskData, setTaskData] = useState<any | null>(null);
+  const [availableEmployees, setAvailableEmployees] = useState<{ _id: string, name: string }[]>([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
+  const [isReassigning, setIsReassigning] = useState(false);
 
   useEffect(() => {
     if (selectedTask) {
       setTaskData(selectedTask);
+      setSelectedEmployeeId(selectedTask.employeeId);
     }
   }, [selectedTask]);
+
+  useEffect(() => {
+    if (visible) {
+      fetchAvailableEmployees();
+    }
+  }, [visible]);
+
+  const fetchAvailableEmployees = async () => {
+    try {
+      const response = await employeeInstance.get('/employee/api/task/get-employee-without-task');
+      if (Array.isArray(response.data)) {
+        setAvailableEmployees(response.data);
+      }
+    } catch (error) {
+      toast.error('Failed to fetch available employees');
+    }
+  };
 
   const handleTaskUpdate = (index: number, field: string, value: any) => {
     if (taskData) {
@@ -82,6 +104,40 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
     if (taskData) {
       const updatedTasks = taskData.tasks.filter((_, i) => i !== index);
       setTaskData({ ...taskData, tasks: updatedTasks });
+    }
+  };
+
+  const handleReassign = async () => {
+    if (selectedEmployeeId === taskData.employeeId) {
+      toast.info('Please select a different employee to reassign');
+      return;
+    }
+
+    try {
+      await employeeInstance.patch(`/employee/api/task/reassign-task/${taskData._id}`, {
+        employeeId: selectedEmployeeId
+      });
+      
+      toast.success('Task reassigned successfully!');
+      setIsReassigning(false);
+      
+      // Update local state with new employee data
+      const newEmployee = availableEmployees.find(emp => emp._id === selectedEmployeeId);
+      if (newEmployee) {
+        setTaskData({
+          ...taskData,
+          employeeId: selectedEmployeeId,
+          employeeName: newEmployee.name
+        });
+      }
+      
+      onSave({
+        ...taskData,
+        employeeId: selectedEmployeeId,
+        employeeName: newEmployee?.name
+      });
+    } catch (error) {
+      toast.error('Failed to reassign task');
     }
   };
 
@@ -191,7 +247,6 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
               </div>
             </Col>
           )}
-          {/* Status with Animated Icon */}
           <Col span={24}>
             <div
               style={{
@@ -236,36 +291,70 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
       </div>
     ));
   };
-  
 
   return (
     <Modal
-    title={
-      <div style={{ display: 'flex' }}>
-        <div style={{ fontSize: 20, fontWeight: 700 }}>Edit Task</div>
-        {/* <div style={{ fontSize: 16, fontWeight: 500, color: '#4CAF50'}}>Active</div> */}
-      </div>
-    }
-    visible={visible}
-    onCancel={onCancel}
-    onOk={handleSave}
-    width={800}
-    okText="Save Changes"
-    cancelText="Cancel"
-    bodyStyle={{ maxHeight: '70vh', overflowY: 'auto', padding: '24px', marginBottom: 20 }}
-  >
-  
+      title={
+        <div style={{ display: 'flex' }}>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>Edit Task</div>
+        </div>
+      }
+      visible={visible}
+      onCancel={onCancel}
+      onOk={handleSave}
+      width={800}
+      okText="Save Changes"
+      cancelText="Cancel"
+      bodyStyle={{ maxHeight: '70vh', overflowY: 'auto', padding: '24px', marginBottom: 20 }}
+    >
       {taskData && (
         <div style={{ backgroundColor: 'white', padding: '20px' }}>
           <Row gutter={16}>
             <Col span={12}>
               <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', marginBottom: 4, color: '#666' }}>Employee Name</label>
-                <Input
-                  value={taskData.employeeName}
-                  disabled
-                  style={{ backgroundColor: '#f5f5f5', borderRadius: 4 }}
-                />
+                <label style={{ display: 'block', marginBottom: 4, color: '#666' }}>Employee</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {isReassigning ? (
+                    <Select
+                      style={{ width: '100%' }}
+                      value={selectedEmployeeId}
+                      onChange={setSelectedEmployeeId}
+                      placeholder="Select new employee"
+                    >
+                      <Select.Option value={taskData.employeeId}>
+                        {taskData.employeeName} (Current)
+                      </Select.Option>
+                      {availableEmployees.map(emp => (
+                        <Select.Option key={emp._id} value={emp._id}>
+                          {emp.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  ) : (
+                    <Input
+                      value={taskData.employeeName}
+                      disabled
+                      style={{ backgroundColor: '#f5f5f5', borderRadius: 4, flex: 1 }}
+                    />
+                  )}
+                  <Button
+                    type={isReassigning ? "primary" : "default"}
+                    onClick={() => {
+                      if (isReassigning) {
+                        handleReassign();
+                      } else {
+                        setIsReassigning(true);
+                      }
+                    }}
+                  >
+                    {isReassigning ? "Confirm" : "Reassign"}
+                  </Button>
+                  {isReassigning && (
+                    <Button onClick={() => setIsReassigning(false)}>
+                      Cancel
+                    </Button>
+                  )}
+                </div>
               </div>
             </Col>
             <Col span={12}>

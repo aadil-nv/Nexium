@@ -40,6 +40,7 @@ export const superAdminLinks: LinkItem[] = [
 export const teamLeedLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/employee/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
   { title: 'Attendance', route: '/employee/attendance', icon: 'fi fi-tr-skill' },
+  { title: 'Projects', route: '/employee/projects', icon: 'fi fi-tr-checklist-task-budget' },
   { title: 'Department', route: '/employee/team', icon: 'fi fi-tr-department-structure' },
   { title: 'Tasks', route: '/employee/tasks', icon: 'fi fi-tr-responsability' } ,
   { title: 'Payroll', route: '/employee/payroll', icon: 'fi fi-tr-payroll' },

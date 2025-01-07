@@ -62,6 +62,16 @@ import {IEmployeeLeave} from "../entities/employeeLeaveEntities";
 import AppliedLeaveModel from "../models/appliedLeaveModel";
 import {IAppliedLeave} from "../entities/appliedLeaveEntities"
 
+import ProjectController from "../controllers/implementation/projectController";
+import ProjectService from "../service/implementation/projectService";
+import ProjectRepository from "../repository/implementation/projectRepository";
+
+import IProjectService from "../service/interface/IProjectService";
+import IProjectController from "../controllers/interface/IProjectController";
+import IProjectRepository from "../repository/interface/IProjectRepository";
+
+import ProjectModel from "../models/projectModel";
+import { IProject } from "../entities/projectEntities";
 
 const container = new Container();
 
@@ -110,6 +120,12 @@ container.bind<typeof PayrollCriteriaModel>("IPayrollCriteria").toConstantValue(
 
 container.bind<typeof EmployeeLeaveModel>("IEmployeeLeave").toConstantValue(EmployeeLeaveModel);
 container.bind<typeof AppliedLeaveModel>("IAppliedLeave").toConstantValue(AppliedLeaveModel);
+
+container.bind<IProjectController>("IProjectController").to(ProjectController);
+container.bind<IProjectRepository>("IProjectRepository").to(ProjectRepository);
+container.bind<IProjectService>("IProjectService").to(ProjectService);
+
+container.bind<typeof ProjectModel>("IProject").toConstantValue(ProjectModel);
 
 
 

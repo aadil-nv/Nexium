@@ -9,6 +9,7 @@ export interface Group {
 }
 
 export interface Message {
+  chatId?: string;
   id: string;
   targetId: string;
   targetType: 'private' | 'group';
