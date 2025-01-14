@@ -9,8 +9,11 @@ export default interface IChatController {
     createGroup(req: CustomRequest, res: Response): Promise<Response>;
     getAllGroups(req: CustomRequest, res: Response): Promise<Response>;
     getAllPrivateChats(req: CustomRequest, res: Response): Promise<Response>;
-
-
+    getAllGroupMembers(req: CustomRequest, res: Response): Promise<Response>;
+    getGroupDetails(req: CustomRequest, res: Response): Promise<Response>;
+    getAllUnAddedUsers(req: CustomRequest, res: Response): Promise<Response>;
+    updateGroup(req: CustomRequest, res: Response): Promise<Response>;
+    deleteGroup(req: CustomRequest, res: Response): Promise<Response>;
 
     setNewAccessToken(req: Request, res: Response): Promise<Response>;
     logout(req: Request, res: Response): Promise<Response>;

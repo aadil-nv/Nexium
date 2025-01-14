@@ -2,23 +2,27 @@ export interface Group {
   senderId: string;
   groupId: string;
   groupName: string;
-  members: string[];
+  participants: string[];
   lastMessage: string;
   timestamp: Date;
   avatar?: string;
+
 }
 
 export interface Message {
-  chatId?: string;
+  senderId: string;
+  chatId?: string | undefined;
+  receiverId: string;
   id: string;
-  targetId: string;
   targetType: 'private' | 'group';
   text: string;
   timestamp: Date;
-  sender: string;
   senderName?: string;
-  status: 'sent' | 'delivered' | 'read';
+  status: MessageStatus;
+  readBy: string[];
 }
+type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read';
+
 
 
 export interface sendMessage {
@@ -31,7 +35,8 @@ export interface sendMessage {
 }
 
 
-export interface Employee {
+export interface  Employee {
+  chatId: string;
   senderId: string;
   receiverId: string;
   receiverName: string;

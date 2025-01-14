@@ -1,3 +1,4 @@
+import { IChat } from "entities/chatEntities";
 import mongoose from "mongoose";
 import { ObjectId } from "mongoose";
 
@@ -52,12 +53,110 @@ export interface ICreateGroupDTO {
 }
 
 export interface IPrivateChatDTO {
-  chatId: any;
-  chatType: 'private' | 'group';
-  reciverId: string;
-  reciverName: string;
-  reciverPosition: string;
-  status: boolean | undefined;
-  receiverProfilePicture: string | undefined
+    senderId: string;
+    chatId: string;
+    chatType: "private" | "group";
+    receiverId: string;
+    receiverName: string;
+    receiverPosition: string;
+    status: boolean;
+    receiverProfilePicture?: string;
+    lastMessage?: mongoose.Types.ObjectId;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+
+export interface IParticipantDetails {
+    _id: mongoose.Types.ObjectId;
+    personalDetails?: {
+        employeeName?: string;
+        managerName?: string;
+        businessOwnerName?: string;
+        profilePicture?: string;
+    };
+    professionalDetails?: {
+        position?: string;
+    };
+    role?: string;
+    isActive?: boolean;
+}
+
+export interface IChatWithDetails extends IChat {
+    participantDetails: IParticipantDetails;
+}
+
+export interface IMembersDTO{
+    _id: string;
+    name: string;
+    profilePicture: string;
+    position: string;
+}
+
+
+export interface IGroupMember {
+    _id: string;
+    name: string;
+    role: string;
+    position?: string; // Optional as businessOwners may not have it
+    isActive: boolean;
+}
+
+export interface IGroupMemberDetails {
+    employees: IGroupMember[];
+    managers: IGroupMember[];
+    businessOwners: IGroupMember[];
+}
+
+export interface IChatWithGroupDetails {
+    _id: string;
+    chatType: string;
+    groupName: string;
+    participants: string[]; // List of participant IDs
+    groupAdmin: string;
+    groupMemberDetails: IGroupMemberDetails;
+    lastMessage?: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+
+
+export interface IMembers {
+    _id: string;
+    name: string;
+    profilePicture: string;
+    position: string;
+}
+
+export interface IGroupDTO{
+    _id: string;
+    groupName: string;
+    groupAdmin: string;
+    participants: IMembers[];
+    chatType: string;
+}
+
+export interface IParticipant {
+    _id: string;
+    personalDetails?: {
+        employeeName?: string;
+        managerName?: string;
+        businessOwnerName?: string;
+        profilePicture?: string;
+    };
+    professionalDetails?: {
+        position?: string;
+    };
+    role?: string;
+    isActive?: boolean;
+}
+
+
+export interface IUnAddedUsersDTO {
+    _id: any;
+    name: string;
+    profilePicture?: string | undefined
+    position: string;
 
 }

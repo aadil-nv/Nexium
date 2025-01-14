@@ -1,12 +1,14 @@
 import { inject , injectable } from "inversify";
 import  IChatService from "../interface/IChatService";
-import { IChatResponseDTO, ICreateGroupDTO, IGetAllGroupsDTO, IPrivateChatDTO, IReceiverDTO, ISetNewAccessTokenDTO } from "../../dto/chatDTO";
+import { IChatResponseDTO, IChatWithDetails, ICreateGroupDTO, IGetAllGroupsDTO,
+     IGroupDTO, IMembers, IMembersDTO, IParticipantDetails, IPrivateChatDTO, IReceiverDTO, ISetNewAccessTokenDTO ,IParticipant, 
+     IUnAddedUsersDTO} from "../../dto/chatDTO";
 import  IChatRepository  from "../../repository/interface/IChatRepository";
 import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
-import { log } from "util";
-import IEmployee from "entities/employeeEntities";
-import { IManager } from "entities/managerEntities";
-import { IBusinessOwnerDocument } from "entities/businessOwnerEntities";
+
+
+
+
 
 @injectable()
 
@@ -64,8 +66,6 @@ export default  class ChatService implements IChatService {
             const receiverDTO = [...employeeDTO, ...managerDTO, ...buisinessOwnereDTO].filter(
                 receiver => receiver.receiverId.toString() !== myId
             );
-
-            
     
             return receiverDTO;
         } catch (error) {
@@ -96,150 +96,89 @@ export default  class ChatService implements IChatService {
 
     async getAllPrivateChats(myId: string): Promise<IPrivateChatDTO[]> {
         try {
-            // Log the incoming user ID
-            console.log("Getting private chats for user ID:", myId);
-    
-            // Fetch private chats from the repository and populate participants
             const privateChats = await this._chatRepository.findAllPrivateChats(myId);
+            
     
-            console.log("Raw privateChats from DB:", JSON.stringify(privateChats, null, 2));
-            console.log("Number of private chats found:", privateChats?.length || 0);
+            const mappedChats: IPrivateChatDTO[] = privateChats
+                .map(chat => {
+                    try {
+                        const typedChat = chat as IChatWithDetails;
+                        const receiver = this.findReceiver(typedChat.participantDetails, myId);
+
+                        
     
-            // Add validation to ensure privateChats exists and is an array
-            if (!privateChats || !Array.isArray(privateChats)) {
-                console.log("Invalid privateChats structure:", privateChats);
-                throw new Error("No private chats found or invalid data structure");
-            }
+                        if (!receiver) {
+                            console.warn(`Skipping chat ${chat._id} - receiver not found`);
+                            return null; 
+                        }
     
-            // Log chats that pass the filter
-            const validChats = privateChats.filter(chat => {
-                const isValid = chat && chat.participants && Array.isArray(chat.participants);
-                if (!isValid) {
-                    console.log("Filtered out invalid chat:", chat);
-                }
-                return isValid;
-            });
-    
-            console.log("Number of valid chats after filtering:", validChats.length);
-    
-            // Map privateChats to the IPrivateChatDTO structure
-            const privateChatDTOs: IPrivateChatDTO[] = validChats.map(chat => {
-                console.log("Processing chat:", {
-                    chatId: chat._id,
-                    participantsCount: chat.participants.length,
-                    participantIds: chat.participants.map(p => p._id.toString())
-                });
-    
-                // Find the receiver by excluding the current user's ID from participants
-                const receiver = chat.participants.find(
-                    (participant) => participant && participant._id && 
-                    participant._id.toString() !== myId
-                );
-    
-                console.log("Found receiver:", receiver ? {
-                    id: receiver._id,
-                    type: this.isEmployee(receiver) ? 'Employee' :
-                          this.isManager(receiver) ? 'Manager' :
-                          this.isBusinessOwner(receiver) ? 'BusinessOwner' : 'Unknown'
-                } : 'No receiver found');
-    
-                if (!receiver) {
-                    console.log("Chat with missing receiver:", chat);
-                    throw new Error(`Receiver not found in chat participants for chat ID: ${chat._id}`);
-                }
-    
-                // Rest of the code remains the same...
-                let receiverName = "Unknown";
-                if (this.isEmployee(receiver)) {
-                    receiverName = receiver.personalDetails?.employeeName || "Unknown";
-                } else if (this.isManager(receiver)) {
-                    receiverName = receiver.personalDetails?.managerName || "Unknown";
-                } else if (this.isBusinessOwner(receiver)) {
-                    receiverName = receiver.personalDetails?.businessOwnerName || "Unknown";
-                }
-    
-                let receiverPosition = "Unknown";
-                if (this.isEmployee(receiver)) {
-                    receiverPosition = receiver.professionalDetails?.position || "Unknown";
-                } else if (this.isManager(receiver)) {
-                    receiverPosition = receiver.role || "Unknown";
-                } else if (this.isBusinessOwner(receiver)) {
-                    receiverPosition = receiver.role || "Unknown";
-                }
-    
-                let isActiveStatus = false;
-                if (this.isEmployee(receiver)) {
-                    isActiveStatus = receiver.isActive;
-                } else if (this.isManager(receiver)) {
-                    isActiveStatus = receiver.isActive as boolean;
-                } else if (this.isBusinessOwner(receiver)) {
-                    isActiveStatus = true;
-                }
-    
-                let receiverProfilePicture: string | undefined;
-                if (this.isEmployee(receiver)) {
-                    receiverProfilePicture = receiver.personalDetails?.profilePicture;
-                } else if (this.isManager(receiver)) {
-                    receiverProfilePicture = receiver.personalDetails?.profilePicture;
-                } else if (this.isBusinessOwner(receiver)) {
-                    receiverProfilePicture = receiver.personalDetails?.profilePicture;
-                }
-    
-                const dto = {
-                    chatId: chat._id,
-                    chatType: chat.chatType,
-                    reciverId: receiver._id.toString(),
-                    reciverName: receiverName,
-                    reciverPosition: receiverPosition,
-                    status: isActiveStatus,
-                    receiverProfilePicture: receiverProfilePicture
-                        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${receiverProfilePicture}`
-                        : undefined,
-                };
-    
-                console.log("Created DTO:", dto);
-                return dto;
-            });
-    
-            console.log("Final privateChatDTOs:", JSON.stringify(privateChatDTOs, null, 2));
-    
-            return privateChatDTOs;
+                        return this.mapToDTO(typedChat, receiver , myId);
+                    } catch (error:any) {
+                        console.error(`Error mapping chat ${chat._id}: ${error.message}`);
+                        return null; 
+                    }
+                })
+                .filter((chat): chat is IPrivateChatDTO => chat !== null); 
+            return mappedChats;
         } catch (error:any) {
-            console.error("Error getting all private chats:", error);
-            throw new Error(`Error getting all private chats: ${error.message}`);
+            console.error("Error in getAllPrivateChats: ", error.message);
+            throw new Error(`Failed to get private chats: ${error.message}`);
         }
     }
-    // Type guards for checking the specific types
-    private isEmployee(receiver: any): receiver is IEmployee {
-        return receiver && receiver.personalDetails && 'employeeName' in receiver.personalDetails;
+    
+    private findReceiver(participant: IParticipantDetails, currentmyId: string): IParticipantDetails | null {
+        return participant._id.toString() !== currentmyId ? participant : null;
     }
-    
-    private isManager(receiver: any): receiver is IManager {
-        return receiver && receiver.personalDetails && 'managerName' in receiver.personalDetails;
+
+    private mapToDTO(chat: IChatWithDetails, receiver: IParticipantDetails , myId: string): IPrivateChatDTO {
+        const receiverName = this.getReceiverName(receiver);
+        const receiverPosition = this.getReceiverPosition(receiver);
+        const status = this.getReceiverStatus(receiver);
+        const profilePicture = receiver.personalDetails?.profilePicture;
+
+        return {
+            senderId:myId,
+            chatId: chat._id.toString(),
+            chatType: chat.chatType,
+            receiverId: receiver._id.toString(),
+            receiverName,
+            receiverPosition,
+            status,
+            receiverProfilePicture: profilePicture 
+                ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${profilePicture}`
+                : undefined,
+            lastMessage: chat.lastMessage,
+            createdAt: chat.createdAt,
+            updatedAt: chat.updatedAt
+        };
     }
-    
-    private isBusinessOwner(receiver: any): receiver is IBusinessOwnerDocument {
-        return receiver && receiver.personalDetails && 'businessOwnerName' in receiver.personalDetails;
+
+    private getReceiverName(receiver: IParticipantDetails): string {
+        const details = receiver.personalDetails;
+        return details?.employeeName ||
+            details?.managerName ||
+            details?.businessOwnerName ||
+            'Unknown';
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+    private getReceiverPosition(receiver: IParticipantDetails): string {
+        return receiver.professionalDetails?.position ||
+            receiver.role ||
+            'Unknown';
+    }
+
+    private getReceiverStatus(receiver: IParticipantDetails): boolean {
+        if ('isActive' in receiver) {
+            return !!receiver.isActive;
+        }
+        return true; 
+    }
+
 
     async createChat(myId: string, receiverId: string): Promise<ICreateGroupDTO> {
         try {
             const createdChat = await this._chatRepository.createChat(myId, receiverId);
-
-            console.log("Created chat:======>", createdChat);
-            
-    
-            // Assuming createdChat contains data like groupId, groupName, etc.
+        
             return {
                 chatId: createdChat._id,        // Convert ObjectId to string
                 groupName: createdChat.groupName || '',
@@ -321,26 +260,239 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async findChatId(myId: string, receiverId: string, chatType: string): Promise<any> {
-        console.log("findChatId called with myId:", myId, "receiverId:", receiverId, "chatType:", chatType);
-        
+    async findChatId(myId: string, receiverId: string, chatType: string): Promise<any> {        
         try {
             const chat = await this._chatRepository.findChatId(myId, receiverId, chatType);
 
             if (!chat) {
                 throw new Error("Chat not found");
 
-
-            }
-            console.log(`"Chat found:==========??"`.bgRed, chat);
-            
+            }           
             return chat._id
-
-            
         } catch (error) {
             throw new Error("Error finding chat");
             
         }
     }
+
+    async getChatParticipants(chatId: string): Promise<any> {
+    
+        try {
+            const chat = await this._chatRepository.getChatParticipants(chatId);
+    
+            if (!chat) {
+                throw new Error("Chat not found");
+            }
+    
+    
+            // You can return just the participants or the entire chat object
+            return chat.participants;
+        } catch (error) {
+            console.error("Error in service layer:", error);
+            throw new Error("Error retrieving chat participants");
+        }
+    }
+
+    async getAllGroupMembers(groupId: string): Promise<IMembersDTO[]> {
+        try {
+            const groupDetails = await this._chatRepository.getAllGroupMembers(groupId);
+    
+            const participants = groupDetails.participants;
+    
+            const membersDTO: IMembersDTO[] = [];
+    
+            for (const participantId of participants) {
+                let member: any = null;
+    
+                member = groupDetails.groupMemberDetails.employees.find((emp: any) => emp._id.toString() === participantId.toString());
+                if (!member) {
+                    member = groupDetails.groupMemberDetails.managers.find((mgr: any) => mgr._id.toString() === participantId.toString());
+                }
+                if (!member) {
+                    member = groupDetails.groupMemberDetails.businessOwners.find((owner: any) => owner._id.toString() === participantId.toString());
+                }
+    
+                if (member) {
+                    membersDTO.push({
+                        _id: member._id.toString(),
+                        name: member.personalDetails.employeeName || member.personalDetails.managerName || member.personalDetails.businessOwnerName || 'Unknown',
+                        profilePicture: member.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${member.personalDetails.profilePicture}` : member.personalDetails.profilePicture,
+                        position: member.professionalDetails.position || member.role || 'Unknown',
+                    });
+                }
+            }
+    
+            return membersDTO;
+        } catch (error) {
+            console.error("Error in service layer:", error);
+            throw new Error("Error retrieving group members");
+        }
+    }
+
+    async getGroupDetails(groupId: string): Promise<IGroupDTO> {
+        try {
+            const groupDetails = await this._chatRepository.getGroupDetails(groupId);
+    
+            if (!groupDetails) {
+                throw new Error("Group details not found");
+            }
+    
+            const participants = groupDetails.participants || [];
+            const membersDTO: IMembers[] = [];
+    
+            for (const participantId of participants) {
+                let member: any = null;
+    
+                if (groupDetails.groupMemberDetails) {
+                    const { employees = [], managers = [], businessOwners = [] } = groupDetails.groupMemberDetails;
+    
+                    member = employees.find((emp: any) => emp._id?.toString() === participantId.toString()) ||
+                             managers.find((mgr: any) => mgr._id?.toString() === participantId.toString()) ||
+                             businessOwners.find((owner: any) => owner._id?.toString() === participantId.toString());
+                }
+    
+                if (member) {
+                    const name = member.name || 'Unknown';
+                    const profilePicture = member.profilePicture 
+                        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${member.profilePicture}` 
+                        : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png";
+    
+                    const position = member.position || member.role || 'Unknown';
+    
+                    membersDTO.push({
+                        _id: member._id?.toString(),
+                        name,
+                        profilePicture,
+                        position,
+                    });
+                }
+            }
+    
+            return {
+                _id: groupDetails._id?.toString(),
+                groupName: groupDetails.groupName || 'Unnamed Group',
+                participants: membersDTO,
+                chatType: groupDetails.chatType || 'Unknown',
+                groupAdmin: groupDetails.groupAdmin || 'Unknown',
+            };
+        } catch (error) {
+            console.error("Error in service layer:", error);
+            throw new Error("Error retrieving group members");
+        }
+    }
+
+    async deleteGroup(groupId: string): Promise<void> {
+        try {
+            await this._chatRepository.deleteGroup(groupId);
+        } catch (error) {
+            console.error("Error in service layer:", error);
+            throw new Error("Error deleting group");
+        }
+    }
+    
+    
+    
+    async getAllUnAddedUsers(groupId: string, myId: string): Promise<IUnAddedUsersDTO[]> {
+        try {
+            const employees = await this._chatRepository.findAllEmployees(myId);
+            const managers = await this._chatRepository.findAllManagers();
+            const businessOwners = await this._chatRepository.findAllBusinessOwners();
+            const chatData = await this._chatRepository.getChatParticipants(groupId);
+            const chatParticipants = (chatData.participants || []).map((p: any) => p.toString());
+        
+            const buisinessOwnereDTO: IUnAddedUsersDTO[] = businessOwners.map(businessOwner => ({
+                _id: businessOwner._id,
+                name: businessOwner.personalDetails.businessOwnerName,
+                position: businessOwner.role || "Business Owner", // Provide a default value
+                profilePicture: businessOwner.personalDetails.profilePicture
+                    ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOwner.personalDetails.profilePicture}`
+                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", // Fallback for undefined profilePicture
+            }));
+    
+            const employeeDTO: IUnAddedUsersDTO[] = employees.map(employee => ({
+                _id: employee._id,
+                name: employee.personalDetails.employeeName,
+                position: employee.professionalDetails.position || "Employee", // Provide a default value
+                profilePicture: employee.personalDetails.profilePicture
+                    ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
+                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", // Fallback for undefined profilePicture
+            }));
+    
+            const managerDTO: IUnAddedUsersDTO[] = managers.map(manager => ({
+                _id: manager._id,
+                name: manager.personalDetails.managerName,
+                position: manager.role || "Manager", // Provide a default value
+                profilePicture: manager.personalDetails.profilePicture
+                    ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${manager.personalDetails.profilePicture}`
+                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", // Fallback for undefined profilePicture
+            }));
+    
+            const receiverDTO = [...employeeDTO, ...managerDTO, ...buisinessOwnereDTO].filter(
+                receiver => receiver._id.toString() !== myId && !chatParticipants.includes(receiver._id.toString())
+            );
+        
+            return receiverDTO;
+        } catch (error) {
+            console.error("Error in getAllUnAddedUsers:", error);
+            throw new Error("Error getting all unadded users");
+        }
+    }
+
+    async updateGroup(groupId: string, data: any): Promise<IGroupDTO> {
+        try {
+            const groupDetails = await this._chatRepository.updateGroup(groupId, data);
+            if (!groupDetails) {
+                throw new Error("Group details not found");
+            }
+    
+            const participants = groupDetails.participants || [];
+            const membersDTO: IMembers[] = [];
+    
+            for (const participantId of participants) {
+                let member: any = null;
+    
+                if (groupDetails.groupMemberDetails) {
+                    const { employees = [], managers = [], businessOwners = [] } = groupDetails.groupMemberDetails;
+    
+                    member = employees.find((emp: any) => emp._id?.toString() === participantId.toString()) ||
+                             managers.find((mgr: any) => mgr._id?.toString() === participantId.toString()) ||
+                             businessOwners.find((owner: any) => owner._id?.toString() === participantId.toString());
+                }
+    
+                if (member) {
+                    const name = member.name || 'Unknown';
+                    const profilePicture = member.profilePicture 
+                        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${member.profilePicture}` 
+                        : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png";
+    
+                    const position = member.position || member.role || 'Unknown';
+    
+                    membersDTO.push({
+                        _id: member._id?.toString(),
+                        name,
+                        profilePicture,
+                        position,
+                    });
+                }
+            }
+    
+            return {
+                _id: groupDetails._id?.toString(),
+                groupName: groupDetails.groupName || 'Unnamed Group',
+                participants: membersDTO,
+                chatType: groupDetails.chatType || 'Unknown',
+                groupAdmin: groupDetails.groupAdmin || 'Unknown',
+            };
+            
+        } catch (error) {
+            console.error("Error in updateGroup:", error);
+            throw new Error("Error updating group");
+        }
+    }
+    
+    
+    
+    
+    
     
 }

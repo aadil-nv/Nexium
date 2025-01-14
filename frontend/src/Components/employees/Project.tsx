@@ -1,162 +1,237 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Input, Select, Button, Card, Badge, Pagination } from 'antd';
-import { DownloadOutlined, SearchOutlined, FilterOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Input, Select, Button, Card, Badge, Pagination, Modal, Upload, message, Spin } from "antd";
+import { SearchOutlined, EyeOutlined, UploadOutlined } from "@ant-design/icons";
+import axios from "axios"
+import { employeeInstance } from "../../services/employeeInstance";
 
 const { Option } = Select;
 
-// Demo data
-const projectsData = [
-  {
-    id: 1,
-    title: "E-commerce Platform Redesign",
-    status: "In Progress",
-    deadline: "2025-02-15",
-    priority: "High",
-    assignedTo: "John Doe",
-    attachmentUrl: "/files/project1.pdf",
-    description: "Redesign the user interface of our e-commerce platform",
-  },
-  {
-    id: 2,
-    title: "Mobile App Development",
-    status: "Pending",
-    deadline: "2025-03-20",
-    priority: "Medium",
-    assignedTo: "Jane Smith",
-    attachmentUrl: "/files/project2.pdf",
-    description: "Develop a native mobile app for iOS and Android",
-  },
-  {
-    id: 3,
-    title: "Database Optimization",
-    status: "Completed",
-    deadline: "2025-01-30",
-    priority: "Low",
-    assignedTo: "Mike Johnson",
-    attachmentUrl: "/files/project3.pdf",
-    description: "Optimize database queries for better performance",
-  }
-];
+interface Project {
+  projectId: any;
+  projectName: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  managerStatus: string;
+  assignedBy: string;
+  assignedEmployee: {
+    employeeId: string;
+    employeeName: string;
+    employeeFiles: { fileName: string; fileUrl: string; uploadedAt: string }[];
+  };
+  projectFiles: { fileName: string; fileUrl: string; uploadedAt: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
 
-const statusColors = {
-  'Completed': '#52c41a',
-  'In Progress': '#1890ff',
-  'Pending': '#faad14'
+const getStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    "In Progress": "#1890ff",
+    "Completed": "#52c41a",
+    "Pending": "#faad14",
+    "Under Evaluation": "#722ed1",
+    "Rejected": "#f5222d",
+    "Approved": "#52c41a"
+  };
+  return colors[status] || "#d9d9d9";
 };
 
-const priorityColors = {
-  'High': '#ff4d4f',
-  'Medium': '#faad14',
-  'Low': '#52c41a'
-};
-
-export default function Project() {
-  const [projects, setProjects] = useState(projectsData);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+const ProjectDashboard: React.FC = () => {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"All" | string>("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [showFilesModal, setShowFilesModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const pageSize = 6;
 
-  const handleStatusChange = (projectId, newStatus) => {
-    setProjects(projects.map(project =>
-      project.id === projectId ? { ...project, status: newStatus } : project
-    ));
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await employeeInstance.get('/employee/api/project/get-all-projects');
+      setProjects(response.data);
+    } catch (err) {
+      setError('Failed to fetch projects. Please try again later.');
+      message.error('Error loading projects');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredProjects = projects
-    .filter(project => 
-      project.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (statusFilter === 'All' || project.status === statusFilter)
-    );
+  const handleStatusChange = async (projectId: string, newStatus: string) => {
+    try {
+      setLoading(true);
+      const response = await employeeInstance.patch(
+        `/employee/api/project/update-project-status/${projectId}`,
+        { status: newStatus }
+      );
+      
+      if (response.data) {
+        setProjects(projects.map(project =>
+          project.projectId === projectId ? { ...project, status: newStatus } : project
+        ));
+        message.success('Project status updated successfully');
+      } else {
+        throw new Error('Failed to update status');
+      }
+    } catch (err) {
+      console.error('Error updating project status:', err);
+      message.error('Failed to update project status. Please try again.');
+      await fetchProjects();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (projectId: string, file: any) => {
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await employeeInstance.post(
+        `/employee/api/project/update-employeefiles/${projectId}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (response.data) {
+        message.success(`File ${file.name} uploaded successfully`);
+        await fetchProjects(); // Refresh projects to get updated file list
+        setSelectedProject(null); // Close the modal
+      } else {
+        throw new Error('Failed to upload file');
+      }
+    } catch (err) {
+      console.error('Error uploading file:', err);
+      message.error('Failed to upload file. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const filteredProjects = projects.filter(
+    (p) =>
+      p.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (statusFilter === "All" || p.status === statusFilter)
+  );
 
   const paginatedProjects = filteredProjects.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
 
-  const downloadFile = (url) => {
-    // In a real application, implement actual file download logic
-    console.log(`Downloading file from: ${url}`);
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-center">
+          <h3 className="text-red-500 mb-4">{error}</h3>
+          <Button type="primary" onClick={fetchProjects}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8 flex flex-wrap gap-4 items-center justify-between">
+    <div className="p-8 max-w-7xl mx-auto bg-gray-50 min-h-screen">
+      <div className="mb-8 flex gap-4 items-center">
         <Input
           placeholder="Search projects..."
           prefix={<SearchOutlined />}
-          style={{ width: 250 }}
           onChange={(e) => setSearchTerm(e.target.value)}
+          className="shadow-sm"
+          style={{ width: 300 }}
         />
         <Select
           defaultValue="All"
+          onChange={(value) => setStatusFilter(value)}
+          className="shadow-sm"
           style={{ width: 150 }}
-          onChange={setStatusFilter}
-          prefix={<FilterOutlined />}
         >
           <Option value="All">All Status</Option>
-          <Option value="Completed">Completed</Option>
-          <Option value="In Progress">In Progress</Option>
-          <Option value="Pending">Pending</Option>
+          <Option value="notStarted">Not Started</Option>
+          <Option value="inProgress">In Progress</Option>
+          <Option value="completed">Completed</Option>
+          <Option value="onHold">On Hold</Option>
+          <Option value="cancelled">Cancelled</Option>
         </Select>
       </div>
 
-      <motion.div
-        layout
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
+      <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <AnimatePresence>
           {paginatedProjects.map((project) => (
             <motion.div
-              key={project.id}
+              key={project.projectId}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
+              whileHover={{ y: -5 }}
             >
               <Card
-                hoverable
-                className="h-full"
-                title={
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold truncate">{project.title}</span>
-                    <Badge
-                      color={statusColors[project.status]}
-                      text={project.status}
-                    />
-                  </div>
-                }
+                className="hover:shadow-xl transition-shadow duration-300"
+                style={{ 
+                  background: 'linear-gradient(to bottom right, #ffffff, #f0f2f5)',
+                  borderRadius: '12px',
+                  border: '1px solid #e8e8e8'
+                }}
               >
                 <div className="space-y-4">
-                  <p className="text-gray-600">{project.description}</p>
-                  
-                  <div className="flex justify-between items-center">
-                    <Badge color={priorityColors[project.priority]} text={project.priority} />
-                    <span className="text-gray-500">Due: {project.deadline}</span>
-                  </div>
-                  
-                  <div className="text-gray-600">
-                    Assigned to: {project.assignedTo}
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-lg font-semibold truncate max-w-[60%]">
+                      {project.projectName}
+                    </h3>
+                    <Badge color={getStatusColor(project.managerStatus)} text={project.managerStatus} />
                   </div>
 
-                  <div className="flex justify-between items-center pt-4">
+                  <p className="text-gray-600 line-clamp-2">{project.description}</p>
+
+                  <div className="flex justify-between text-sm text-gray-500">
+                    <span>Start: {new Date(project.startDate).toLocaleDateString()}</span>
+                    <span>End: {new Date(project.endDate).toLocaleDateString()}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center gap-2 pt-2">
                     <Select
                       value={project.status}
                       style={{ width: 130 }}
-                      onChange={(value) => handleStatusChange(project.id, value)}
+                      onChange={(value) => handleStatusChange(project.projectId, value)}
                     >
-                      <Option value="Pending">Pending</Option>
-                      <Option value="In Progress">In Progress</Option>
-                      <Option value="Completed">Completed</Option>
+                      <Option value="notStarted">Not Started</Option>
+                      <Option value="inProgress">In Progress</Option>
+                      <Option value="completed">Completed</Option>
+                      <Option value="onHold">On Hold</Option>
+                      <Option value="cancelled">Cancelled</Option>
                     </Select>
 
-                    <Button
+                    <Button 
                       type="primary"
-                      icon={<DownloadOutlined />}
-                      onClick={() => downloadFile(project.attachmentUrl)}
+                      icon={<EyeOutlined />}
+                      onClick={() => setSelectedProject(project)}
                     >
-                      Download
+                      Details
                     </Button>
                   </div>
                 </div>
@@ -166,15 +241,124 @@ export default function Project() {
         </AnimatePresence>
       </motion.div>
 
-      <div className="mt-8 flex justify-center">
+      {filteredProjects.length > pageSize && (
         <Pagination
           current={currentPage}
           total={filteredProjects.length}
           pageSize={pageSize}
           onChange={setCurrentPage}
           showSizeChanger={false}
+          className="mt-8 flex justify-center"
         />
-      </div>
+      )}
+
+      <Modal
+        title={selectedProject?.projectName}
+        open={!!selectedProject}
+        onCancel={() => setSelectedProject(null)}
+        footer={null}
+        width={700}
+      >
+        {selectedProject && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6"
+          >
+            <div>
+              <Badge color={getStatusColor(selectedProject.managerStatus)} text={selectedProject.managerStatus} />
+            </div>
+
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">Project Details</h4>
+              <p className="text-gray-700">{selectedProject.description}</p>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                  <p className="text-gray-500">Start Date</p>
+                  <p className="font-medium">
+                    {new Date(selectedProject.startDate).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-500">End Date</p>
+                  <p className="font-medium">
+                    {new Date(selectedProject.endDate).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold">Assigned Employee</h4>
+              <p>{selectedProject.assignedEmployee.employeeName}</p>
+              {selectedProject.assignedEmployee.employeeFiles.length > 0 ? (
+                <Button
+                  onClick={() => setShowFilesModal(true)}
+                  type="primary"
+                  ghost
+                >
+                  View Employee Files
+                </Button>
+              ) : (
+                <Upload
+                  customRequest={({ file }) => handleFileUpload(selectedProject.projectId, file)}
+                  showUploadList={false}
+                >
+                  <Button 
+                    type="primary"
+                    icon={<UploadOutlined />}
+                    loading={uploading}
+                  >
+                    Upload Employee File
+                  </Button>
+                </Upload>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold">Project Files</h4>
+              {selectedProject.projectFiles.map((file, index) => (
+                <Button
+                  key={index}
+                  href={file.fileUrl}
+                  target="_blank"
+                  type="primary"
+                  ghost
+                >
+                  {file.fileName}
+                </Button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </Modal>
+
+      <Modal
+        title="Employee Files"
+        open={showFilesModal}
+        onCancel={() => setShowFilesModal(false)}
+        footer={null}
+      >
+        {selectedProject && (
+          <div className="space-y-4">
+            {selectedProject.assignedEmployee.employeeFiles.map((file, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <span>{file.fileName}</span>
+                <Button
+                  href={file.fileUrl}
+                  target="_blank"
+                  type="primary"
+                  ghost
+                >
+                  Download
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
     </div>
   );
-}
+};
+
+export default ProjectDashboard;

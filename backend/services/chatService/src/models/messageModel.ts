@@ -4,18 +4,20 @@ import { IMessage } from "../entities/messageEntities";
 const MessageSchema: Schema = new Schema<IMessage>({
   content: {
     type: String,
-    required: true,
     trim: true,
   },
   sender: {
     type: Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+    ref: "sendersModel"
+  
+  },
+  sendersModel: {
+    type: String,
+    enum: ['BusinessOwner', 'Manager', 'Employee'],
   },
   chatId: {
     type: Schema.Types.ObjectId,
-    ref: "Chat",
-    required: true,
+    ref: "Chat"
   },
   attachments: [
     {
@@ -29,7 +31,7 @@ const MessageSchema: Schema = new Schema<IMessage>({
   readBy: [
     {
       type: Schema.Types.ObjectId,
-      ref: "User",
+       ref: "sendersModel"
     },
   ],
   createdAt: {

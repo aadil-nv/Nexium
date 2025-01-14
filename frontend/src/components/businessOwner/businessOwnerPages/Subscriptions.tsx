@@ -151,7 +151,7 @@ const SubscriptionPage: React.FC = () => {
           )}
         </div>
 
-        <div className="w-full md:w-2/3">
+        {/* <div className="w-full md:w-2/3">
           <Card className="shadow-md rounded-lg p-6 h-full flex flex-col justify-between" title="Next Month's Bill">
             <div>
               <p className="text-gray-700 font-semibold">Due Date: January 1, 2025</p>
@@ -161,7 +161,7 @@ const SubscriptionPage: React.FC = () => {
               Pay Now
             </Button>
           </Card>
-        </div>
+        </div> */}
       </div>
 
       <div>

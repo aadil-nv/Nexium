@@ -17,6 +17,7 @@ import { createStream } from 'rotating-file-stream';
 import path from 'path';
 import fs from 'fs';
 import { connectConsumer } from './events/connect';
+import projectRoutes from './routes/projectRoute';
 
 
 
@@ -60,6 +61,7 @@ app.use('/api/department', departmentRoutes);
 app.use('/api/task', taskRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/leave',leaveRoutes);
+app.use('/api/project',projectRoutes)
 
 
 

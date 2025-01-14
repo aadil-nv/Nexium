@@ -12,6 +12,9 @@ import path from 'path';
 import fs from 'fs';
 import { Server } from 'socket.io';
 import { initializeChatSocket } from './config/chatSocket';
+import messageRoutes from './routes/messageRoute';
+import notificationRoutes from './routes/notificationRoute';
+import meetingRoutes from './routes/meetingRoute';
 
 const app = express();
 const PORT = process.env.PORT 
@@ -49,7 +52,7 @@ const accessLogStream = createStream('access.log', {
 
 // Middleware setup
 app.use(morgan('combined', { stream: accessLogStream }));
-app.use(morgan('dev'));
+// app.use(morgan('tiny'));
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true,
@@ -64,3 +67,6 @@ app.get('/', (req, res) => {
 
 // Use chat routes
 app.use('/api/chat', chatRoutes);
+app.use('/api/message', messageRoutes);
+app. use('/api/notification', notificationRoutes);
+app. use('/api/meeting', meetingRoutes);

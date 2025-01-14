@@ -3,7 +3,7 @@ import { Modal, Space, Input, List, Checkbox, Avatar, message } from 'antd';
 import { Employee } from '../../interface/ChatInterface';
 import { chatInstance } from '../../services/chatInstance';
 
-interface NewGroupModalProps {
+interface CreateGroupModalProps {
   isVisible: boolean;
   onClose: () => void;
   employees: Employee[];
@@ -12,7 +12,7 @@ interface NewGroupModalProps {
   setActiveTab: (tab: string) => void;
 }
 
-const NewGroupModal: React.FC<NewGroupModalProps> = ({
+const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   isVisible,
   onClose,
   employees,
@@ -23,6 +23,12 @@ const NewGroupModal: React.FC<NewGroupModalProps> = ({
   const [groupName, setGroupName] = React.useState('');
   const [selectedMembers, setSelectedMembers] = React.useState<string[]>([]);
   const [loading, setLoading] = React.useState(false);
+
+  const handleClose = () => {
+    setGroupName('');
+    setSelectedMembers([]);
+    onClose();
+  };
 
   const toggleMember = (memberId: string) => {
     setSelectedMembers(prev => 
@@ -43,7 +49,7 @@ const NewGroupModal: React.FC<NewGroupModalProps> = ({
     setLoading(true);
     try {
       await chatInstance.post('/chatService/api/chat/create-group', {
-        groupName,
+        groupName: groupName,
         members: selectedMembers
       });
       
@@ -53,15 +59,9 @@ const NewGroupModal: React.FC<NewGroupModalProps> = ({
       setActiveTab('2');
     } catch (error) {
       console.error('Error creating group:', error);
-      message.error('Failed to create group');
+      message.error('Failed to create group. Please try again.');
     }
     setLoading(false);
-  };
-
-  const handleClose = () => {
-    onClose();
-    setGroupName('');
-    setSelectedMembers([]);
   };
 
   return (
@@ -108,4 +108,4 @@ const NewGroupModal: React.FC<NewGroupModalProps> = ({
   );
 };
 
-export default NewGroupModal;
+export default CreateGroupModal;

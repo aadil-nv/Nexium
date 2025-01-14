@@ -29,12 +29,10 @@ export default class ChatController implements IChatController {
     }
 
     async getAllGroups(req: CustomRequest, res: Response): Promise<Response> {
-        
         try {
             const myId = this.getMyId(req);
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
             const response = await this._chatService.getAllGroups(myId);
-            
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting groups", error });
@@ -45,9 +43,7 @@ export default class ChatController implements IChatController {
         try {
             const myId = this.getMyId(req);
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
-            const response = await this._chatService.getAllPrivateChats(myId);
-            console.log(`"response is ===>"`.bgRed,response);
-            
+            const response = await this._chatService.getAllPrivateChats(myId);            
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting chats", error });
@@ -64,6 +60,8 @@ export default class ChatController implements IChatController {
             // console.log("receiverId:========>", receiverId);
             
             const response = await this._chatService.createChat( myId, receiverId);
+            // console.log("response_________ from create chat", response);
+            
             return res.status(HttpStatusCode.CREATED).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error creating chat", error });
@@ -88,6 +86,59 @@ export default class ChatController implements IChatController {
             return res.status(HttpStatusCode.CREATED).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error creating group", error });
+        }
+    }
+
+    async getAllGroupMembers(req: CustomRequest, res: Response): Promise<Response> {
+        try {
+            const groupId = req.params.id;
+            const response = await this._chatService.getAllGroupMembers(groupId);
+            return res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting group members", error });
+        }
+    }
+
+    async getGroupDetails(req: CustomRequest, res: Response): Promise<Response> {        
+        try {
+            const groupId = req.params.id;
+            const response = await this._chatService.getGroupDetails(groupId);
+            
+            return res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting group details", error });
+        }
+    }
+
+    async getAllUnAddedUsers(req: CustomRequest, res: Response): Promise<Response> {
+        try {
+            const groupId = req.params.id;
+            const myId = this.getMyId(req);
+            const response = await this._chatService.getAllUnAddedUsers(groupId , myId);
+            return res.status(HttpStatusCode.OK).json(response);
+        } catch (error:any) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error.message });
+        }
+    }
+
+    async updateGroup(req: CustomRequest, res: Response): Promise<Response> {
+        try {
+            const groupId = req.params.id;
+            const response = await this._chatService.updateGroup(groupId, req.body);
+        
+            return res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error updating group", error });
+        }
+    }
+
+    async deleteGroup(req: CustomRequest, res: Response): Promise<Response> {
+        try {
+            const groupId = req.params.id;
+            const response = await this._chatService.deleteGroup(groupId);
+            return res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error deleting group", error });
         }
     }
 
@@ -121,4 +172,6 @@ export default class ChatController implements IChatController {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error logging out" });
         }
     }
+
+   
 }

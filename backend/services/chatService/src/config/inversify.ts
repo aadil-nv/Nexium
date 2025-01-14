@@ -31,6 +31,28 @@ import MessageRepository from "../repository/implementation/messageRepository";
 import MessageController from "../controllers/implementation/messageController";
 import MessageService from "../service/implementation/messageSerice";
 
+import { INotification } from "../entities/notificationEntities";
+import NotificationModel from "../models/notificationModel";
+
+import INotificationRepository from "../repository/interface/INotificationRepository";
+import INotificationService from "../service/interface/INotificationService";
+import NotificationRepository from "../repository/implementation/notificationRepository";
+import NotificationService from "../service/implementation/notificationService";
+import INotificationController from "../controllers/interface/INotificationController";
+import NotificationController from "../controllers/implementation/notificationController";
+
+
+import {IMeeting} from "../entities/meetingEntities"
+import MeetingModel from "../models/meetingModel"
+
+
+import IMeetingRepository from "../repository/interface/IMeetingRepository";
+import IMeetingService from "../service/interface/IMeetingService";
+import IMeetingController from "../controllers/interface/IMeetingController";
+import MeetingRepository from "../repository/implementation/meetingRepository";
+import MeetingService from "../service/implementation/meetingService";
+import MeetingController from "../controllers/implementation/meetingController";
+
 
 
 const container = new Container();
@@ -46,11 +68,23 @@ container.bind<IMessageController>("IMessageController").to(MessageController);
 container.bind<IMessageService>("IMessageService").to(MessageService);
 container.bind<IMessageRepository>("IMessageRepository").to(MessageRepository);
 
+
+container.bind<INotificationController>("INotificationController").to(NotificationController);
+container.bind<INotificationService>("INotificationService").to(NotificationService);
+container.bind<INotificationRepository>("INotificationRepository").to(NotificationRepository);
+
+
+container.bind<IMeetingController>("IMeetingController").to(MeetingController);
+container.bind<IMeetingService>("IMeetingService").to(MeetingService);
+container.bind<IMeetingRepository>("IMeetingRepository").to(MeetingRepository);
+
 container.bind<typeof ChatModel>("IChat").toConstantValue(ChatModel);
 container.bind<typeof EmployeeModel>("IEmployee").toConstantValue(EmployeeModel);
 container.bind<typeof BusinessOwnerModel>("IBusinessOwnerDocument").toConstantValue(BusinessOwnerModel);
 container.bind<typeof ManagerModel>("IManager").toConstantValue(ManagerModel);
 container.bind<typeof MessageModel>("IMessage").toConstantValue(MessageModel);
+container.bind<typeof NotificationModel>("INotification").toConstantValue(NotificationModel);
+container.bind<typeof MeetingModel>("IMeeting").toConstantValue(MeetingModel);
 
 
 

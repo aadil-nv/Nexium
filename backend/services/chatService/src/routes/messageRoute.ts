@@ -8,6 +8,8 @@ const messageRouter = Router();
 const messageController = container.get<IMessageController>("IMessageController");
 
 
-messageRouter.post('/create-message/:id',authenticateToken, (req, res ,next) => messageController.createMessage(req, res));
+// messageRouter.post('/create-message/:id',authenticateToken, (req, res ,next) => messageController.createMessage(req, res));
+messageRouter.get('/get-all-messages/:id',authenticateToken, (req, res ,next) => messageController.getAllMessages(req, res));
+messageRouter.delete('/delete-message/:id',authenticateToken, (req, res ,next) => messageController.deleteMessage(req, res));
 
 export default messageRouter;

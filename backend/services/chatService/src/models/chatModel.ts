@@ -4,14 +4,12 @@ import { IChat } from "../entities/chatEntities";
 const ChatSchema: Schema = new Schema<IChat>({
   chatType: {
     type: String,
-    enum: ["private", "group"],
-    required: true,
+    enum: ["private", "group"]
   },
   participants: [
     {
       type:  mongoose.Schema.Types.ObjectId,
       ref: "participantModel",
-      required: true,
     },
   ],
   participantModel: {

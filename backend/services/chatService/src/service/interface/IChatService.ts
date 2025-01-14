@@ -1,4 +1,4 @@
-import {IChatResponseDTO, IGetAllGroupsDTO, IPrivateChatDTO, IReceiverDTO, ISetNewAccessTokenDTO} from "../../dto/chatDTO"
+import {IChatResponseDTO, IGetAllGroupsDTO, IGroupDTO, IPrivateChatDTO, IReceiverDTO, ISetNewAccessTokenDTO, IUnAddedUsersDTO} from "../../dto/chatDTO"
 
 export default  interface IChatService {
     getAllReceiver(myId: string): Promise<IReceiverDTO[]>
@@ -9,5 +9,11 @@ export default  interface IChatService {
     createGroup(myId: string ,data: any): Promise<IChatResponseDTO>;
     setNewAccessToken(refreshToken: string): Promise<ISetNewAccessTokenDTO>
     findChatId(myId: string, receiverId: string, chatType: string): Promise<any>
+    getChatParticipants(chatId: string): Promise<any> 
+    getAllGroupMembers(groupId: string): Promise<any>
+    getGroupDetails(groupId: string): Promise<IGroupDTO>
+    getAllUnAddedUsers(groupId: string, myId: string): Promise<IUnAddedUsersDTO[]>
+    updateGroup(groupId: string, data: any): Promise<IGroupDTO>
+    deleteGroup(groupId: string): Promise<any>
 
 }

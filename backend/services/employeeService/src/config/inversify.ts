@@ -74,6 +74,16 @@ import {IAppliedLeave} from "../entities/appliedLeaveEntities"
 import PayrollCriteriaModel from "../models/payrollCriteriaModel";
 import {IPayrollCriteria} from "../entities/payrollCriteriaEntities"
 
+import ProjectController from "../controllers/implementation/projectController";
+import ProjectService from "../service/implementation/projectService";
+import ProjectRepository from "../repository/implementation/projectRepository";
+
+import IProjectService from "../service/interface/IProjectService";
+import IProjectController from "../controllers/interface/IProjectController";
+import IProjectRepository from "../repository/interface/IProjectRepository";
+
+import ProjectModel from "../models/projectModel";
+import { IProject } from "../entities/projectEntities";
 const container = new Container();
 
 
@@ -111,8 +121,13 @@ container.bind<ILeaveController>("ILeaveController").to(LeaveController);
 container.bind<ILeaveService>("ILeaveService").to(LeaveService);
 container.bind<ILeaveRepository>("ILeaveRepository").to(LeaveRepository);
 
+container.bind<IProjectController>("IProjectController").to(ProjectController);
+container.bind<IProjectRepository>("IProjectRepository").to(ProjectRepository);
+container.bind<IProjectService>("IProjectService").to(ProjectService);
 
 
+
+container.bind<mongoose.Model<IProject>>("IProject").toConstantValue(ProjectModel);
 container.bind<mongoose.Model<IEmployeePayroll>>("IEmployeePayroll").toConstantValue(payrollModel);
 container.bind<mongoose.Model<IEmployee>>("IEmployee").toConstantValue(EmployeeModel);
 container.bind<mongoose.Model<IEmployeeAttendance>>("IEmployeeAttendance").toConstantValue(AttendanceModel);

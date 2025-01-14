@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { List, Badge, Avatar, Button, Space, Typography, message, Modal, Input, Checkbox, Tabs } from 'antd';
 import { Employee, Group } from '../../interface/ChatInterface';
-import { UsergroupAddOutlined, ClockCircleOutlined, CheckOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+import { UsergroupAddOutlined, ClockCircleOutlined, CheckOutlined, TeamOutlined, UserOutlined, MessageOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
 import { chatInstance } from '../../services/chatInstance';
 import { motion } from 'framer-motion';
@@ -10,8 +10,9 @@ const { Title } = Typography;
 const { TabPane } = Tabs;
 
 interface ChatTarget {
-  chatId?: string;
+  chatId: string;
   senderId: string;
+  receiverId: string[];
   id: string;
   name: string;
   avatar?: string;
@@ -30,7 +31,7 @@ interface ChatPeoplesProps {
 }
 
 const ChatPeoples: React.FC<ChatPeoplesProps> = ({
-  employees,
+  employees: initialEmployees,
   groups,
   setSelectedTarget,
   isMobile,
@@ -39,32 +40,73 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
   refreshGroups
 }) => {
   const { themeColor } = useTheme();
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isGroupModalVisible, setIsGroupModalVisible] = useState(false);
+  const [isStartChatModalVisible, setIsStartChatModalVisible] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('1');
   const [chatId, setChatId] = useState<string>('');
+  const [availablePeople, setAvailablePeople] = useState<Employee[]>([]);
+  const [existingChats, setExistingChats] = useState<Employee[]>(initialEmployees);
 
-  const handleUserSelect   = async (emp: Employee) => {
+  useEffect(() => {
+    fetchAvailablePeople();
+  }, []);
+
+  useEffect(() => {
+    setExistingChats(initialEmployees);
+  }, [initialEmployees]);
+
+  const fetchAvailablePeople = async () => {
     try {
+      const response = await chatInstance.get('/chatService/api/chat/get-all-receiver');
+      // Filter out people who are already in existing chats
+      const newAvailablePeople = response.data.filter((person: Employee) => 
+        !existingChats.some(existingPerson => existingPerson.receiverId === person.receiverId)
+      );
+      setAvailablePeople(response.data);
+    } catch (error) {
+      console.error('Error fetching available people:', error);
+      message.error('Failed to fetch available people');
+    }
+  };
+
+  const handleUserSelect = async (emp: Employee) => {
+    try {
+      const response = await chatInstance.post(`/chatService/api/chat/create-chat/${emp.receiverId}`);
+      setChatId(response.data.chatId);
+      
+      // Add the selected person to existing chats
+      setExistingChats(prevChats => {
+        // Check if the person is already in the list
+        if (!prevChats.some(chat => chat.receiverId === emp.receiverId)) {
+          return [...prevChats, emp];
+        }
+        return prevChats;
+      });
+
+      // Remove the selected person from available people
+      setAvailablePeople(prevPeople => 
+        prevPeople.filter(person => person.receiverId !== emp.receiverId)
+      );
+      
       setSelectedTarget({
-        chatId: chatId,
+        chatId: response.data.chatId,
         senderId: emp.senderId,
+        receiverId: [emp.receiverId],
         id: emp.receiverId,
         name: emp.receiverName,
         avatar: emp.receiverProfilePicture,
         type: 'private',
         status: emp.status
       });
+      
       isMobile && setSiderVisible(false);
-     const response = await chatInstance.post(`/chatService/api/chat/create-chat/${emp.receiverId}`)
-     .then(response => setChatId(response.data.chatId))
-     .catch(error => console.error('Error creating chat:', error));
-
+      setIsStartChatModalVisible(false);
     } catch (error) {
       console.error('Error creating chat:', error);
-      // message.error('Failed to create chat. Please try again.');
+      message.error('Failed to create chat. Please try again.');
     }
   };
 
@@ -72,6 +114,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
     setSelectedTarget({
       chatId: group.groupId,
       senderId: group.senderId,
+      receiverId: group.participants,
       id: group.groupId,
       name: group.groupName,
       avatar: group.avatar,
@@ -90,20 +133,17 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
 
     setLoading(true);
     try {
-      const response = await chatInstance.post('/chatService/api/chat/create-group', {
+      await chatInstance.post('/chatService/api/chat/create-group', {
         groupName: groupName,
         members: selectedMembers
       });
       
-      // Refresh the groups list
       await refreshGroups();
       
       message.success('Group created successfully');
-      setIsModalVisible(false);
+      setIsGroupModalVisible(false);
       setGroupName('');
       setSelectedMembers([]);
-      
-      // Switch to groups tab
       setActiveTab('2');
     } catch (error) {
       console.error('Error creating group:', error);
@@ -139,9 +179,9 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
             tab={<span><UserOutlined /> People</span>}
             key="1"
           >
-            <div className="overflow-y-auto" style={{ height: 'calc(100vh - 280px)' }}>
+            <div className="overflow-y-auto" style={{ height: 'calc(100vh - 340px)' }}>
               <List
-                dataSource={employees}
+                dataSource={existingChats}
                 renderItem={(emp) => (
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -161,7 +201,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
                           <Space direction="vertical" size={0}>
                             <span className="font-medium">{emp.receiverName}</span>
                             <span className="text-xs text-gray-500">{emp.receiverPosition || 'Employee'}</span>
-                            </Space>
+                          </Space>
                         }
                         description={
                           emp.status ? (
@@ -176,6 +216,19 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
                 )}
               />
             </div>
+            <Button
+              type="primary"
+              icon={<MessageOutlined />}
+              onClick={() => setIsStartChatModalVisible(true)}
+              block
+              style={{ 
+                backgroundColor: themeColor, 
+                borderRadius: '10px',
+                height: '40px',
+              }}
+            >
+              Start New Chat
+            </Button>
           </TabPane>
 
           <TabPane 
@@ -208,7 +261,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
                           title={
                             <Space direction="vertical" size={0}>
                               <span className="font-medium">{group.groupName}</span>
-                              <span className="text-xs text-gray-500">{group.members} members</span>
+                              <span className="text-xs text-gray-500">{group.participants.length} members</span>
                             </Space>
                           }
                           description={
@@ -222,31 +275,30 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
                   )}
                 />
               </div>
-              <div >
-                <Button
-                  type="primary"
-                  icon={<UsergroupAddOutlined />}
-                  onClick={() => setIsModalVisible(true)}
-                  block
-                  style={{ 
-                    backgroundColor: themeColor, 
-                    borderRadius: '10px',
-                    height: '40px',
-                  }}
-                >
-                  Create Group
-                </Button>
-              </div>
+              <Button
+                type="primary"
+                icon={<UsergroupAddOutlined />}
+                onClick={() => setIsGroupModalVisible(true)}
+                block
+                style={{ 
+                  backgroundColor: themeColor, 
+                  borderRadius: '10px',
+                  height: '40px',
+                }}
+              >
+                Create Group
+              </Button>
             </div>
           </TabPane>
         </Tabs>
       </motion.div>
 
+      {/* Group Creation Modal */}
       <Modal
         title="Create New Group"
-        open={isModalVisible}
+        open={isGroupModalVisible}
         onCancel={() => {
-          setIsModalVisible(false);
+          setIsGroupModalVisible(false);
           setGroupName('');
           setSelectedMembers([]);
         }}
@@ -265,7 +317,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
           
           <List
             className="max-h-[300px] overflow-auto"
-            dataSource={employees}
+            dataSource={availablePeople}
             renderItem={(emp) => (
               <List.Item>
                 <Checkbox
@@ -286,8 +338,37 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
           />
         </Space>
       </Modal>
+
+      {/* Start Chat Modal */}
+      <Modal
+        title="Start New Chat"
+        open={isStartChatModalVisible}
+        onCancel={() => setIsStartChatModalVisible(false)}
+        footer={null}
+      >
+        <List
+          className="max-h-[400px] overflow-auto"
+          dataSource={availablePeople}
+          renderItem={(person) => (
+            <List.Item
+              onClick={() => handleUserSelect(person)}
+              className="cursor-pointer hover:bg-gray-50"
+            >
+              <List.Item.Meta
+                avatar={
+                  <Badge dot status={person.status ? 'success' : 'default'}>
+                    <Avatar src={person.receiverProfilePicture} size={40} />
+                  </Badge>
+                }
+                title={person.receiverName}
+                description={person.receiverPosition || 'Employee'}
+              />
+            </List.Item>
+          )}
+        />
+      </Modal>
     </div>
   );
 };
 
-export default ChatPeoples
+export default ChatPeoples;

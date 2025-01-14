@@ -42,7 +42,8 @@ const targets = {
   chatService: process.env.CHAT_API_BASE_URL
 };
 
-console.log("Targets:sssfsdfsds ", targets.payment);
+console.log("Targets:sssjkubgbjkhsds ", targets.payment);
+console.log("Targets:sssjkubgbjkhsds ", targets.payment);
 
 app.use('/authentication', createProxyMiddleware({ target: targets.authentication, changeOrigin: true}));
 app.use('/businessOwner', createProxyMiddleware({ target: targets.businessOwner, changeOrigin: true}));

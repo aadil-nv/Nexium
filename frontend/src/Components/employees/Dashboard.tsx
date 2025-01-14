@@ -51,8 +51,8 @@ export default function Dashboard() {
   const statistics = [
     { id: 1, title: 'Days Worked', value: dashboardData.presentDays, icon: <CalendarOutlined /> },
     { id: 2, title: 'Absences', value: dashboardData.absentDays, icon: <UserOutlined /> },
-    { id: 3, title: 'Minutes Worked Today', value: dashboardData.todayWorkedMinutes || 0, icon: <CheckCircleOutlined /> },
-    { id: 4, title: 'Leaves Left', value: dashboardData.remainingLeaves, icon: <BarChartOutlined /> },
+    { id: 3, title: 'Projects', value: 2 , icon: <CheckCircleOutlined /> },
+    { id: 4, title: 'Leaves Left', "value": "10", icon: <BarChartOutlined /> },
   ];
 
   const lineChartData = dashboardData.perDayWorkedMinutes.map((entry: { date: string; workedMinutes: number }) => ({

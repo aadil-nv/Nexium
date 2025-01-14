@@ -7,6 +7,7 @@ import IEmployee from "../../entities/employeeEntities";
 import { IManager } from "../../entities/managerEntities";
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntities";
 import { IMessage } from "entities/messageEntities";
+import { IChatWithDetails, IChatWithGroupDetails } from "dto/chatDTO";
 
 @injectable()
 
@@ -133,98 +134,91 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         }
     }
 
-    async findAllPrivateChats(myId: string): Promise<IChat[]> {
-        try {
-          const isValidId = mongoose.Types.ObjectId.isValid(myId);
-          if (!isValidId) {
-            console.log("Invalid myId:", myId);
-            return [];
-          }
-      
-          const allPrivateChats = await this._chatModel.aggregate([
-            {
-              $match: {
-                chatType: "private",
-                participants: { $in: [new mongoose.Types.ObjectId(myId)] }, // Correct way to query participants array
-              },
-            },
-            // Lookup for employees
-            {
-              $lookup: {
-                from: "employees", // Ensure the correct collection name
-                localField: "participants",
-                foreignField: "_id",
-                as: "employeeDetails", // Alias for employee details
-              },
-            },
-            // Lookup for managers
-            {
-              $lookup: {
-                from: "managers", // Ensure the correct collection name
-                localField: "participants",
-                foreignField: "_id",
-                as: "managerDetails", // Alias for manager details
-              },
-            },
-            // Lookup for business owners
-            {
-              $lookup: {
-                from: "businessowners", // Ensure the correct collection name
-                localField: "participants",
-                foreignField: "_id",
-                as: "businessOwnerDetails", // Alias for business owner details
-              },
-            },
-            {
-              $unwind: {
-                path: "$employeeDetails",
-                preserveNullAndEmptyArrays: true, // If there's no employee, it won't cause an error
-              },
-            },
-            {
-              $unwind: {
-                path: "$managerDetails",
-                preserveNullAndEmptyArrays: true, // If there's no manager, it won't cause an error
-              },
-            },
-            {
-              $unwind: {
-                path: "$businessOwnerDetails",
-                preserveNullAndEmptyArrays: true, // If there's no business owner, it won't cause an error
-              },
-            },
-            {
-              $project: {
-                chatType: 1,
-                groupName: 1,
-                groupAdmin: 1,
-                lastMessage: 1,
-                createdAt: 1,
-                updatedAt: 1,
-                participantDetails: {
-                  $cond: {
-                    if: { $ne: [{ $type: "$employeeDetails" }, "missing"] }, // If employeeDetails exists
-                    then: "$employeeDetails",
-                    else: {
-                      $cond: {
-                        if: { $ne: [{ $type: "$managerDetails" }, "missing"] }, // If managerDetails exists
-                        then: "$managerDetails",
-                        else: "$businessOwnerDetails", // Otherwise, fallback to businessOwnerDetails
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          ]);
-      
-          return allPrivateChats;
-        } catch (error) {
-          console.log("Error getting all private chats:", error);
-          throw error;
+    async findAllPrivateChats(userId: string): Promise<IChatWithDetails[]> {
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            throw new Error('Invalid user ID provided');
         }
-      }
-
+    
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+    
+        const pipeline = [
+            {
+                $match: {
+                    chatType: "private",
+                    participants: { $elemMatch: { $eq: userObjectId } } // Include chats where userId is a participant
+                }
+            },
+            {
+                $addFields: {
+                    otherParticipant: {
+                        $arrayElemAt: [
+                            {
+                                $filter: {
+                                    input: "$participants",
+                                    as: "participant",
+                                    cond: { $ne: ["$$participant", userObjectId] } // Get the other participant's ID
+                                }
+                            },
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: "employees",
+                    localField: "otherParticipant",
+                    foreignField: "_id",
+                    as: "employeeDetails"
+                }
+            },
+            {
+                $lookup: {
+                    from: "managers",
+                    localField: "otherParticipant",
+                    foreignField: "_id",
+                    as: "managerDetails"
+                }
+            },
+            {
+                $lookup: {
+                    from: "businessowners",
+                    localField: "otherParticipant",
+                    foreignField: "_id",
+                    as: "businessOwnerDetails"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    chatType: 1,
+                    participants: 1,
+                    lastMessage: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    participantDetails: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$employeeDetails" }, 0] },
+                            then: { $arrayElemAt: ["$employeeDetails", 0] },
+                            else: {
+                                $cond: {
+                                    if: { $gt: [{ $size: "$managerDetails" }, 0] },
+                                    then: { $arrayElemAt: ["$managerDetails", 0] },
+                                    else: { $arrayElemAt: ["$businessOwnerDetails", 0] }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ];
+    
+        try {
+            return await this._chatModel.aggregate(pipeline);
+        } catch (error: any) {
+            throw new Error(`Failed to fetch private chats: ${error.message}`);
+        }
+    }
 
       
       async findChatId(myId: string, receiverId: string, chatType: string): Promise<IChat> {
@@ -250,12 +244,237 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
       
       
       
-      
-      
+      async getChatParticipants(chatId: string): Promise<IChat | null> {
+        try {
+            const chat = await this._chatModel.findById(chatId).exec();
+            return chat;
+        } catch (error) {
+            console.error("Error getting chat participants:", error);
+            throw new Error("Error retrieving chat participants");
+        }
+    }
+
+    async getAllGroupMembers(groupId: string): Promise<IChatWithGroupDetails> {
+        if (!mongoose.Types.ObjectId.isValid(groupId)) {
+            throw new Error('Invalid group ID provided');
+        }
+    
+        const groupObjectId = new mongoose.Types.ObjectId(groupId);
+    
+        const pipeline = [
+            {
+                $match: {
+                    _id: groupObjectId // Match the specific group by ID
+                }
+            },
+            {
+                $lookup: {
+                    from: "employees",
+                    localField: "participants",
+                    foreignField: "_id",
+                    as: "employeeDetails"
+                }
+            },
+            {
+                $lookup: {
+                    from: "managers",
+                    localField: "participants",
+                    foreignField: "_id",
+                    as: "managerDetails"
+                }
+            },
+            {
+                $lookup: {
+                    from: "businessowners",
+                    localField: "participants",
+                    foreignField: "_id",
+                    as: "businessOwnerDetails"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    chatType: 1,
+                    participants: 1,
+                    lastMessage: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    groupMemberDetails: {
+                        employees: "$employeeDetails",
+                        managers: "$managerDetails",
+                        businessOwners: "$businessOwnerDetails"
+                    }
+                }
+            }
+        ];
+    
+        try {
+            const [result] = await this._chatModel.aggregate(pipeline).exec();
+    
+            if (!result) {
+                throw new Error("Group not found");
+            }
+    
+            return result;
+        } catch (error: any) {
+            console.error("Error getting group members:", error);
+            throw new Error(`Failed to fetch group members: ${error.message}`);
+        }
+    }
+
+    async getGroupDetails(groupId: string): Promise<IChatWithGroupDetails> {
+        if (!mongoose.Types.ObjectId.isValid(groupId)) {
+            throw new Error("Invalid group ID provided");
+        }
+    
+        const groupObjectId = new mongoose.Types.ObjectId(groupId);
+    
+        const pipeline = [
+            {
+                $match: {
+                    _id: groupObjectId // Match the specific group by ID
+                }
+            },
+            {
+                $lookup: {
+                    from: "employees",
+                    localField: "participants",
+                    foreignField: "_id",
+                    as: "employeeDetails"
+                }
+            },
+            {
+                $lookup: {
+                    from: "managers",
+                    localField: "participants",
+                    foreignField: "_id",
+                    as: "managerDetails"
+                }
+            },
+            {
+                $lookup: {
+                    from: "businessowners",
+                    localField: "participants",
+                    foreignField: "_id",
+                    as: "businessOwnerDetails"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    chatType: 1,
+                    groupName: 1,
+                    participants: 1,
+                    groupAdmin: 1,
+                    lastMessage: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    groupMemberDetails: {
+                        employees: {
+                            $map: {
+                                input: "$employeeDetails",
+                                as: "employee",
+                                in: {
+                                    _id: "$$employee._id",
+                                    name: "$$employee.personalDetails.employeeName",
+                                    profilePicture: "$$employee.personalDetails.profilePicture",
+                                    role: "$$employee.role",
+                                    position: "$$employee.professionalDetails.position",
+                                    isActive: "$$employee.isActive"
+                                }
+                            }
+                        },
+                        managers: {
+                            $map: {
+                                input: "$managerDetails",
+                                as: "manager",
+                                in: {
+                                    _id: "$$manager._id",
+                                    name: "$$manager.personalDetails.managerName",
+                                    profilePicture: "$$manager.personalDetails.profilePicture",
+                                    role: "$$manager.role",
+                                    position: "$$manager.professionalDetails.designation",
+                                    isActive: "$$manager.isActive"
+                                }
+                            }
+                        },
+                        businessOwners: {
+                            $map: {
+                                input: "$businessOwnerDetails",
+                                as: "businessOwner",
+                                in: {
+                                    _id: "$$businessOwner._id",
+                                    name: "$$businessOwner.personalDetails.businessOwnerName",
+                                    profilePicture: "$$businessOwner.personalDetails.profilePicture",
+                                    role: "$$businessOwner.role",
+                                    isActive: "$$businessOwner.isActive"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+        ];
+    
+        try {
+            const [result] = await this._chatModel.aggregate(pipeline).exec();
+            
+            if (!result) {
+                throw new Error("Group not found");
+            }
+
+            return result;
+        } catch (error: any) {
+            console.error("Error getting group members:", error);
+            throw new Error(`Failed to fetch group members: ${error.message}`);
+        }
+    }
     
     
-    
-    
-    
+   async getAllUnAddedUsers(groupId: string): Promise<any> {
+        try {
+            const allReceiver = await this._chatModel.find({ _id: groupId }).exec();
+            return allReceiver;
+            
+        } catch (error) {
+            console.log("Error getting all employees:", error);
+            throw error;
+            
+        }
+    }
+
+    async updateGroup(groupId: string, data: any): Promise<any> {
+        try {
+            const updatedGroup = await this._chatModel.findOneAndUpdate({ _id: groupId }, data, { new: true }).exec();
+            return updatedGroup;
+            
+        } catch (error) {
+            console.log("Error updating group:", error);
+            throw error;
+            
+        }
+    }
+
+    async deleteGroup(groupId: string): Promise<any> {
+        try {
+            const deletedGroup = await this._chatModel.findOneAndDelete({ _id: groupId }).exec();
+            return deletedGroup;
+            
+        } catch (error) {
+            console.log("Error deleting group:", error);
+            throw error;
+            
+        }
+    }
+
+
     
 }
+    
+    
+    
+      
+      
+    
+    
