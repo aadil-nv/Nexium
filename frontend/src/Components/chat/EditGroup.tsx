@@ -164,7 +164,7 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
         removedMembers: removedMembers
       };
 
-      const response = await chatInstance.post(`/chatService/api/chat/update-group/${groupId}`, updatedGroupData);
+      const response = await chatInstance.patch(`/chatService/api/chat/update-group/${groupId}`, updatedGroupData);
       
       // Update the newGroupDetails with the response data
       setNewGroupDetails({

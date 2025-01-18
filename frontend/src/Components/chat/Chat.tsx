@@ -47,8 +47,9 @@ const MainLayout: React.FC = () => {
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [loadingMembers, setLoadingMembers] = useState<boolean>(false);
   const { isActiveMenu, themeColor } = useTheme();
-  const {employee} = useAuth();
+  const {employee ,businessOwner,manager,superAdmin} = useAuth();
   const isEmployee = employee?.isAuthenticated;
+  const senderName = employee?.employeeName || businessOwner?.companyName || manager?.managerName
 
   const formatLastSeen = useCallback((date: any) => {
     if (!date || !(date instanceof Date) || isNaN(date.getTime())) return 'Invalid date';
@@ -390,6 +391,7 @@ const MainLayout: React.FC = () => {
                 transition={{ duration: 0.3 }}
               >
                 <ChatWindow
+                 senderName={senderName}
                   chatId={selectedTarget.chatId || ''}
                   senderId={selectedTarget.senderId}
                   targetId={selectedTarget.receiverId}

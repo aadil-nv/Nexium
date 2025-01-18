@@ -61,7 +61,7 @@ const Sidebar = () => {
 <img
   src={companyLogo}
   alt="Business Owner Logo"
-  className="w-10 h-12 object-cover rounded-full" // Circular image styling
+  className="w-10 h-10 object-cover rounded-full" // Circular image styling
 />
 
   

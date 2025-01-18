@@ -17,10 +17,11 @@ import Task from "../components/employees/Task";
 import MyTask from "../components/employees/MyTask";
 import Settings from "../components/global/Settings";
 import Chat from "../components/chat/Chat";
-import Meeting from "../components/global/Meeting";
+import Meeting from "../components/meeting/Meeting";
 import MyTaskList from "../components/employees/MyTaskList";
 import Leaves from "../components/employees/employeeLeave";
 import Project from "../components/employees/Project";
+import JoinMeeting from "../components/meeting/JoinMeeting";
 
 const BusinessOwnerRoutes = () => {
 
@@ -51,6 +52,8 @@ const BusinessOwnerRoutes = () => {
             <Route path="settings" element={<Settings />} />
             <Route path="chat" element={<Chat />} />
             <Route path="meeting" element={<Meeting />} />
+            <Route path="join-meeting" element={<JoinMeeting />} />
+
 
             
           </Route>

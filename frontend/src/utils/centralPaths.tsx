@@ -26,6 +26,7 @@ export const businessOwnerLinks: LinkItem[] = [
   { title: 'Announcements', route: '/business-owner/announcements', icon: 'fi fi-tr-megaphone-announcement-leader' },
   { title: 'Chat', route: '/business-owner/chat', icon: 'fi fi-tr-messages' },
   { title: 'Meetings', route: '/business-owner/meeting', icon: 'fi fi-tr-circle-video' },
+
 ];
 
 export const superAdminLinks: LinkItem[] = [
@@ -51,6 +52,7 @@ export const teamLeedLinks: LinkItem[] = [
 
 
 ];
+
 export const employeeLinks: LinkItem[] = [
   { title: 'Dashboard', route: '/employee/dashboard', icon: 'fi fi-tr-dashboard-monitor' },
   { title: 'Attendance', route: '/employee/attendance', icon: 'fi fi-tr-skill' },
@@ -103,6 +105,7 @@ export const managerTabs = [
   { key: "3", tab: "Address", component: <Address /> },
   { key: "4", tab: "Documents", component: <Documents /> },
   { key: "5", tab: "Securities", component: <Securitie /> },
+  
 ];
 export const employeeTabs = [
   { key: "1", tab: "Personal Details", component: <PersonalDetailes /> },

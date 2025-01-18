@@ -46,6 +46,7 @@ export  interface IDropdownMenuProps {
     onLogoutClick: () => void;
     onProfileClick: () => void;
     onSettingsClick: () => void;
+    onOptionSelect: () => void;
   }
 
     

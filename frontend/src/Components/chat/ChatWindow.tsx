@@ -50,9 +50,11 @@ interface ChatWindowProps {
   showEmojiPicker: boolean;
   setShowEmojiPicker: (show: boolean) => void;
   scrollToBottom: () => void;
+  senderName?: string
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
+  senderName,
   chatId,
   senderId,
   targetId,
@@ -125,10 +127,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const handleDeleteMessage = async () => {
     try {
       if (!messageToDelete) return;
+      console.log('messageToDelete======>', messageToDelete);
+      
 
       await chatInstance.delete(`/chatService/api/message/delete-message/${messageToDelete}`);
       
-      // Emit delete event to socket
+
       socket.emit('messageDeleted', {
         chatId,
         messageId: messageToDelete,
@@ -172,9 +176,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       targetType: targetType,
       createdAt: new Date().toISOString(),
       status: 'sending' as MessageStatus,
+      senderName: senderName
     };
 
     socket.emit('sendMessage', apiMessage, (acknowledgement: MessageAcknowledgement) => {
+
+    });
+    socket.on('messageAcknowledgement', (acknowledgement: MessageAcknowledgement) => {
+      console.log("acknowledgement ------>", acknowledgement);
+      
       setChatMessages((prev) =>
         prev.map((msg) =>
           msg.messageId === newMessage.messageId
@@ -182,14 +192,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             : msg
         )
       );
-    });
+    })
+
+    console.log("chat messages ------>", chatMessages);
+    
 
     setMessageInput('');
     scrollToBottom();
   };
 
   const convertApiMessageToMessage = (apiMessage: ApiMessage): Message => {
-    console.log("API MEssage ", apiMessage);
     
     const status: MessageStatus = apiMessage.readBy.includes(targetId[0]) ? 'read' : 'delivered';
 

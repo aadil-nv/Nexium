@@ -23,12 +23,13 @@ import Securitie from "../components/global/Securitie";
 import Settings from "../components/global/Settings";
 import LeaveSettings from "../components/manager/dashboard/LeaveSettings";
 import Chat from "../components/chat/Chat";
-import Meeting from "../components/global/Meeting";
+import Meeting from "../components/meeting/Meeting";
 import PreAppliedLeaves from "../components/manager/dashboard/PreAppliedLeaves";
 import Projects from "../components/manager/dashboard/Projects";
-
+import JoinMeeting from "../components/meeting/JoinMeeting";
 
 const MangerRoutes = () => {
+
   return (
     <Routes>
      <Route element={<ManagerPrivateRoute />}>
@@ -56,6 +57,7 @@ const MangerRoutes = () => {
           <Route path="pre-applied-leaves" element={<PreAppliedLeaves />} />
           <Route path="projects" element={<Projects />} />
 
+          <Route path="join-meeting" element={<JoinMeeting />} />
 
         <Route path="settings" element={<Notifications />} />
 

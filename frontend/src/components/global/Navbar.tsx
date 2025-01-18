@@ -1,120 +1,318 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { MdKeyboardArrowDown } from "react-icons/md";
-import { Dropdown, Menu, Button, notification } from "antd"; // Import from antd
+import { MdNotificationsNone } from "react-icons/md";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from 'react-hot-toast';
+import { Alert } from "antd";
 import useAuth from "../../hooks/useAuth";
 import useTheme from "../../hooks/useTheme";
+import NotificationMenu from "./NotificationMenu";
 import DropdownMenu from "./DropDown";
-import { handleLogout, handleProfileClick, onSettingsClick, NavButton, toggleMenu } from "../../utils/navbarFunctions"; 
+import { handleLogout, handleProfileClick, onSettingsClick, NavButton, toggleMenu } from "../../utils/navbarFunctions";
 import images from "../../images/images";
+import socket from '../../config/socket';
+import { chatInstance } from '../../services/chatInstance';
 
-export default function Navbar() {
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+interface INotification {
+  _id: string;
+  message: string;
+  title: string;
+  type: string;
+  description: string;
+  read: boolean;
+  createdAt?: string;
+}
+
+export default function Navbar(): JSX.Element {
+  const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
+  const [showNotifications, setShowNotifications] = useState<boolean>(false);
+  const [notifications, setNotifications] = useState<INotification[]>([]);
+
   const { businessOwner, superAdmin, manager, employee } = useAuth();
   const { isActiveMenu, themeColor } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const defaultProfileImage = "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png";
 
-  const userName = businessOwner.isAuthenticated? businessOwner?.companyName:
-                   superAdmin.isAuthenticated? "Super Admin": 
-                   manager.isAuthenticated? manager?.managerName: 
-                   employee.isAuthenticated? employee?.employeeName: "Guest";
+  useEffect(() => {
+    fetchNotifications();
+
+    socket.on('notification', (newNotification: INotification) => {
+      toast.success(newNotification.message, {
+        duration: 4000,
+        position: 'top-right',
+      });
+    });
+
+    return () => {
+      socket.off('notification');
+    };
+  }, []);
+
+  const fetchNotifications = async (): Promise<void> => {
+    try {
+      const response = await chatInstance.get<INotification[]>("/chatService/api/notification/get-all-notifications");
+      setNotifications(response.data);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      toast.error("Failed to fetch notifications");
+    }
+  };
+
+  const handleNotificationClick = async (notificationId: string): Promise<void> => {
+    try {
+      setNotifications(prev =>
+        prev.map(notification =>
+          notification._id === notificationId
+            ? { ...notification, read: true }
+            : notification
+        )
+      );
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      toast.error("Failed to mark notification as read");
+    }
+  };
+
+  const clearNotification = async (notificationId: string): Promise<void> => {
+    try {
+      await chatInstance.delete(`/chatService/api/notification/delete-notification/${notificationId}`);
+      setNotifications(prev =>
+        prev.filter(notification => notification._id !== notificationId)
+      );
+      toast.success("Notification removed");
+    } catch (error) {
+      console.error("Error removing notification:", error);
+      toast.error("Failed to remove notification");
+    }
+  };
+
+  const clearAllNotifications = async (): Promise<void> => {
+    try {
+      await chatInstance.delete("/chatService/api/notification/clear-all-notifications");
+      setNotifications([]);
+      toast.success("All notifications cleared");
+    } catch (error) {
+      console.error("Error clearing notifications:", error);
+      toast.error("Failed to clear notifications");
+    }
+  };
+
+  const defaultProfileImage = "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png";
+  
+  const userName = businessOwner.isAuthenticated ? businessOwner?.companyName :
+    superAdmin.isAuthenticated ? "Super Admin" :
+      manager.isAuthenticated ? manager?.managerName :
+        employee.isAuthenticated ? employee?.employeeName : "Guest";
 
   const profileImage = businessOwner.isAuthenticated
     ? businessOwner.businessOwnerProfilePicture || defaultProfileImage
     : superAdmin.isAuthenticated
-    ? images.superadmin
-    : manager.isAuthenticated
-    ? manager.managerProfilePicture || defaultProfileImage
-    : employee.isAuthenticated
-    ? employee.employeeProfilePicture || defaultProfileImage
-    : defaultProfileImage;
+      ? images.superadmin
+      : manager.isAuthenticated
+        ? manager.managerProfilePicture || defaultProfileImage
+        : employee.isAuthenticated
+          ? employee.employeeProfilePicture || defaultProfileImage
+          : defaultProfileImage;
 
-  const toggleMenuFunc = () => toggleMenu(dispatch, isActiveMenu);
-  const handleProfile = () => handleProfileClick({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employee, dispatch, navigate });
-  const handleSettings = () => onSettingsClick({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employee, dispatch, navigate });
-  const handleLogoutAction = () => handleLogout({ isBusinessOwner: businessOwner, isSuperAdmin: superAdmin, isManager: manager, isEmployee: employee, dispatch, navigate });
+  const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Demo notification data
-  const notificationData = [
-    { key: "1", message: "New task assigned", description: "You have a new task assigned to you." },
-    { key: "2", message: "Reminder: Meeting tomorrow", description: "Don't forget about the meeting tomorrow at 10 AM." },
-    { key: "3", message: "System update", description: "The system will undergo maintenance tonight." }
-  ];
-
-  // Notification click handler
-  const handleNotificationClick = (item: any) => {
-    notification.info({
-      message: item.message,
-      description: item.description,
+  const handleProfileClickWrapper = () => {
+    handleProfileClick({
+      isBusinessOwner: businessOwner,
+      isSuperAdmin: superAdmin,
+      isManager: manager,
+      isEmployee: employee,
+      dispatch,
+      navigate
     });
   };
 
-  // Menu for notifications
-  const notificationMenu = (
-    <Menu>
-      {notificationData.map(item => (
-        <Menu.Item key={item.key} onClick={() => handleNotificationClick(item)}>
-          {item.message}
-        </Menu.Item>
-      ))}
-    </Menu>
-  );
+  const handleSettingsClickWrapper = () => {
+    onSettingsClick({
+      isBusinessOwner: businessOwner,
+      isSuperAdmin: superAdmin,
+      isManager: manager,
+      isEmployee: employee,
+      dispatch,
+      navigate
+    });
+  };
+
+  const handleLogoutWrapper = () => {
+    handleLogout({
+      isBusinessOwner: businessOwner,
+      isSuperAdmin: superAdmin,
+      isManager: manager,
+      isEmployee: employee,
+      dispatch,
+      navigate
+    });
+  };
 
   return (
-    <div className={`flex items-center justify-between p-2 h-16 bg-gray-100 shadow-sm fixed top-0 z-50 ${isActiveMenu ? "w-[calc(100%-250px)]" : "w-full"}`}>
-      <NavButton title="Menu" customFunc={toggleMenuFunc} icon={<i className="fi fi-tr-bars-staggered" />} themeColor={themeColor} />
-      <div className="flex items-center space-x-3">
-      <Dropdown overlay={notificationMenu} trigger={['click']}>
-          <Button 
-            icon={<i className="fi fi-tr-bell" />} 
-            style={{
-              border: "none", 
-              background: "transparent", 
-              fontSize: "20px",  // Increase font size
-              padding: "8px 16px",  // Increase padding to make button bigger
-              color: themeColor,    // Apply theme color to the icon
-            }} 
-          />
-        </Dropdown>
-        <Dropdown overlay={notificationMenu} trigger={['click']}>
-          <Button 
-            icon={<i className="fi fi-tr-megaphone" />} 
-            style={{
-              border: "none", 
-              background: "transparent", 
-              fontSize: "20px",  // Increase font size
-              padding: "8px 16px",  // Increase padding to make button bigger
-              color: themeColor,    // Apply theme color to the icon
-            }} 
-          />
-        </Dropdown>
-
+    <motion.div
+      initial={{ y: -10, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className={`flex items-center justify-between p-2 h-16 bg-white shadow-sm fixed top-0 z-40 ${
+        isActiveMenu ? "w-[calc(100%-250px)]" : "w-full"
+      }`}
+    >
+      <NavButton
+        title="Menu"
+        customFunc={() => toggleMenu(dispatch, isActiveMenu)}
+        icon={<span>☰</span>}
+        themeColor={themeColor}
+      />
+      
+      <div className="flex items-center space-x-4">
         <div className="relative">
-          <button type="button" className="flex items-center gap-2 p-1 hover:bg-gray-300 rounded-lg" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-            <img src={profileImage} alt="Profile" className="rounded-full w-8 h-8 md:w-9 md:h-9" />
-            <span className="text-xs md:text-sm" style={{ color: themeColor }}>{userName}</span>
-            <MdKeyboardArrowDown className="text-lg md:text-xl" style={{ color: themeColor }} />
-          </button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="flex items-center justify-center relative"
+            style={{
+              background: `${themeColor}10`,
+              padding: "8px",
+              borderRadius: "12px",
+              color: themeColor,
+            }}
+          >
+            <MdNotificationsNone size={24} />
+            {unreadCount > 0 && (
+              <span 
+                className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center text-xs text-white rounded-full"
+                style={{ backgroundColor: themeColor }}
+              >
+                {unreadCount}
+              </span>
+            )}
+          </motion.button>
 
-          {showProfileMenu && (
-            <DropdownMenu themeColor={themeColor} onProfileClick={handleProfile} onSettingsClick={handleSettings} onLogoutClick={() => setShowLogoutConfirm(true)} />
-          )}
+          <NotificationMenu 
+            notifications={notifications}
+            onNotificationClick={handleNotificationClick}
+            onClearNotification={clearNotification}
+            onClearAll={clearAllNotifications}
+            themeColor={themeColor}
+            isOpen={showNotifications}
+            onClose={() => setShowNotifications(false)}
+          />
         </div>
 
-        {showLogoutConfirm && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center" style={{ borderColor: themeColor }}>
-              <p className="text-lg mb-4" style={{ color: themeColor }}>Are you sure you want to logout?</p>
-              <button className="px-4 py-2 rounded mr-2" style={{ backgroundColor: themeColor, color: "white" }} onClick={handleLogoutAction}>Yes, Logout</button>
-              <button className="bg-gray-300 px-4 py-2 rounded" onClick={() => setShowLogoutConfirm(false)}>Cancel</button>
+        <motion.div 
+          className="relative"
+          whileHover={{ scale: 1.02 }}
+        >
+          <motion.button
+            type="button"
+            className="flex items-center gap-3 p-2 rounded-lg"
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            style={{ backgroundColor: `${themeColor}10` }}
+            whileHover={{ backgroundColor: `${themeColor}20` }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <motion.img
+              src={profileImage}
+              alt="Profile"
+              className="rounded-full w-8 h-8 md:w-9 md:h-9 object-cover border-2"
+              style={{ borderColor: themeColor }}
+              whileHover={{ scale: 1.1 }}
+            />
+            <span className="hidden sm:inline text-sm font-medium" style={{ color: themeColor }}>
+              {userName}
+            </span>
+            <motion.div
+              animate={{ rotate: showProfileMenu ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              ▼
+            </motion.div>
+          </motion.button>
+
+          <AnimatePresence>
+            {showProfileMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.2 }}
+              >
+               <DropdownMenu
+  themeColor={themeColor}
+  onProfileClick={handleProfileClickWrapper}
+  onSettingsClick={handleSettingsClickWrapper}
+  onLogoutClick={() => setShowLogoutConfirm(true)}
+  onOptionSelect={() => setShowProfileMenu(false)} // Add this line
+/>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        <AnimatePresence>
+  {showLogoutConfirm && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed left-0 top-0 w-screen h-screen bg-black bg-opacity-50 flex items-center justify-center z-50"
+      style={{
+        position: 'fixed',
+        left: '0',
+        top: '0',
+        right: '0',
+        bottom: '0',
+        margin: '0',
+        padding: '0'
+      }}
+      onClick={() => setShowLogoutConfirm(false)}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="bg-white rounded-lg p-4 m-4 max-w-sm w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Alert
+          message="Confirm Logout"
+          description={
+            <div className="mt-2">
+              <p className="mb-4">Are you sure you want to logout?</p>
+              <div className="flex justify-end gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 text-sm"
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-4 py-2 rounded-lg text-white text-sm"
+                  style={{ backgroundColor: themeColor }}
+                  onClick={handleLogoutWrapper}
+                >
+                  Logout
+                </motion.button>
+              </div>
             </div>
-          </div>
-        )}
+          }
+          type="warning"
+          showIcon
+          className="border-none shadow-none"
+        />
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }
