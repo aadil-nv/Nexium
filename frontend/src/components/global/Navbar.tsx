@@ -56,7 +56,7 @@ export default function Navbar(): JSX.Element {
       setNotifications(response.data);
     } catch (error) {
       console.error("Error fetching notifications:", error);
-      toast.error("Failed to fetch notifications");
+      // toast.error("Failed to fetch notifications");
     }
   };
 
@@ -71,7 +71,7 @@ export default function Navbar(): JSX.Element {
       );
     } catch (error) {
       console.error("Error marking notification as read:", error);
-      toast.error("Failed to mark notification as read");
+      // toast.error("Failed to mark notification as read");
     }
   };
 
@@ -95,7 +95,7 @@ export default function Navbar(): JSX.Element {
       toast.success("All notifications cleared");
     } catch (error) {
       console.error("Error clearing notifications:", error);
-      toast.error("Failed to clear notifications");
+      // toast.error("Failed to clear notifications");
     }
   };
 
@@ -280,6 +280,7 @@ export default function Navbar(): JSX.Element {
       >
         <Alert
           message="Confirm Logout"
+          style={{backgroundColor:"white"}}
           description={
             <div className="mt-2">
               <p className="mb-4">Are you sure you want to logout?</p>

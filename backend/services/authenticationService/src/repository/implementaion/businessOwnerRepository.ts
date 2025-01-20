@@ -108,9 +108,7 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
     }
   }
 
- async  updateBusinessOwner(businessOwnerId: any, businessOwnerData: Partial<IBusinessOwnerDocument>): Promise<any>{
-  console.log("businessOwner data --- repo", businessOwnerData);
-  console.log("businessOwner id --- repo", businessOwnerId);
+ async  updateBusinessOwner(businessOwnerId: any, businessOwnerData: Partial<IBusinessOwnerDocument>): Promise<any>{  
   
   
   try {
@@ -129,6 +127,16 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
     
   }
  }
+
+ async findBusinessOwnerById(id: string): Promise<IBusinessOwnerDocument | null> {
+  try {
+    const businessOwner = await businessOwnerModel.findById(id).exec();
+    return businessOwner;
+  } catch (error) {
+    console.error("Error finding business owner by ID:", error);
+    throw new Error("Failed to find business owner by ID");
+  }
+}
   
 
   

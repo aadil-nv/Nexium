@@ -22,6 +22,9 @@ interface NotificationMenuProps {
   onClose: () => void;
 }
 
+
+
+
 const NotificationMenu: React.FC<NotificationMenuProps> = ({ 
   notifications, 
   onNotificationClick, 
@@ -31,6 +34,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({
   isOpen,
   onClose 
 }) => {
+  console.log('+=====notifications+++++=', notifications);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -181,7 +185,7 @@ const NotificationMenu: React.FC<NotificationMenuProps> = ({
                                 {item.message}
                               </div>
                               <div className="text-sm md:text-xs text-gray-500 mt-1 line-clamp-2">
-                                {item.description}
+                                {item.title}
                               </div>
                             </div>
                             

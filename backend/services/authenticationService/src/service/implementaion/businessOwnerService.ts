@@ -54,21 +54,19 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
           // Check if the account is blocked
           if (businessOwnerData.isBlocked) {
             console.log("Account is blocked");
-            return { success: false, message: "Invalid email or password", isVerified: false };
+            return { success: false, message: "Your account has been blocked. Please contact support for assistance.", isVerified: false };
           }
       
           // Check if the account is verified
           if (!businessOwnerData.isVerified) {
-            console.log("Account is not verified");
             const otp = generateOtp();
             await this.sendOtp(businessOwnerData.personalDetails.email, otp);
-             
-            return { 
-              success: false, 
-              message: "Account not verified. Check your email for OTP", 
-              isVerified: false, 
+          
+            return {
+              success: false,
+              message: "Your account is not verified. An OTP has been sent to your email for verification.", 
+              isVerified: false,
               email: businessOwnerData.personalDetails.email,
-           
             };
           }
       
@@ -262,7 +260,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
 
     async updateBusinessOwner( businessOwnerData: any): Promise<any> {
-      console.log("hittiong service update dbusinessiness ownwe data---------------------", businessOwnerData);
       
         try {
           const businessOwnerId = businessOwnerData._id;

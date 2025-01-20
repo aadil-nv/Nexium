@@ -43,8 +43,6 @@ export default class MessageService implements IMessageService {
         }
     }
     
-
-
     async getAllMessages(chatRoomId: string, myId: string): Promise<IMessageDTO[]> {
         try {
             const messages: IMessage[] = await this._messageRepository.getAllMessages(chatRoomId);
@@ -111,8 +109,4 @@ export default class MessageService implements IMessageService {
         }
     }
     
-
-    
-    
-    
-    }
+}

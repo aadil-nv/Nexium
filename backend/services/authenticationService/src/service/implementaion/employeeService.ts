@@ -8,6 +8,7 @@ import OtpModel from "../../model/otpModel";
 import generateOtp from "../../utils/otp";
 import { IValidateOtpDTO } from "../../dto/employeeDTO";
 import { log } from "console";
+import IBusinessOwnerRepository from "repository/interfaces/IBusinessOwnerRepository";
 
 
 const transporter = nodemailer.createTransport({
@@ -20,8 +21,12 @@ const transporter = nodemailer.createTransport({
 @injectable()
 export default class EmployeeService implements IEmployeeService {
     private _employeeRepository: IEmployeeRepository;
-    constructor(@inject("IEmployeeRepository") employeeRepository: IEmployeeRepository) {
+    private _businessOwnerRepository: IBusinessOwnerRepository
+    constructor(
+      @inject("IEmployeeRepository") employeeRepository: IEmployeeRepository,
+      @inject("IBusinessOwnerRepository") businessOwnerRepository: IBusinessOwnerRepository) {
         this._employeeRepository = employeeRepository;
+        this._businessOwnerRepository = businessOwnerRepository
     }
 
     async employeeLogin(email: string, password: string): Promise<any> {
@@ -49,13 +54,13 @@ export default class EmployeeService implements IEmployeeService {
           }
   
           // Compare passwords
-          const isPasswordValid = password === employeeData.employeeCredentials.companyPassword; // You might want to use bcrypt.compare here
+          const isPasswordValid = password === employeeData.employeeCredentials.companyPassword; 
   
           if (!isPasswordValid) {
               return { success: false, message: "Invalid email or password. Please try again." };
           }
   
-          // Generate access and refresh tokens
+          const businessOwnerData = await this._businessOwnerRepository.findBusinessOwnerById(employeeData.businessOwnerId);
           const accessToken = generateAccessToken({ employeeData });
           const refreshToken = generateRefreshToken({ employeeData });
   
@@ -72,7 +77,7 @@ export default class EmployeeService implements IEmployeeService {
 
               employeeName: employeeData.personalDetails.employeeName,
               eployeeProfilePicture:employeeData.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`:employeeData.personalDetails.profilePicture ,
-              companyLogo:employeeData.professionalDetails.companyLogo? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.professionalDetails.companyLogo}`:employeeData.professionalDetails.companyLogo,
+              companyLogo:businessOwnerData?.companyDetails.companyLogo? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOwnerData?.companyDetails.companyLogo}`:businessOwnerData?.companyDetails.companyLogo,
               employeePosition: employeeData.professionalDetails.position,
               companyName: employeeData.professionalDetails.companyName
           };
@@ -210,5 +215,7 @@ export default class EmployeeService implements IEmployeeService {
       throw error;
     }
   }
+
+  
 
 }

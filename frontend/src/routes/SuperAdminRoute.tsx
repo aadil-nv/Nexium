@@ -6,7 +6,6 @@ import BusinessOwnersList from "../components/superAdmin/AdminPages/BusinessOwne
 import AllPlans from "../components/superAdmin/AdminPages/AllPlans";
 import DashBoardLayout from "../pages/superAdminPages/superAdminDashBoardLayout";
 import ServiceSupport from "../components/superAdmin/AdminPages/ServiceSupport";
-import Announcements from "../components/global/Announcements";
 import Notifications from "../components/global/Notifications";
 import SuperAdminPrivateRoute from "../routes/SuperAdminPrivateRoute"; // Import the private route
 import Profile from "../components/global/Profile";
@@ -20,7 +19,6 @@ const SuperAdminRoutes = () => {
         <Route path="businessowners" element={<BusinessOwnersList />} />
         <Route path="plans" element={<AllPlans />} />
         <Route path="service-requests" element={<ServiceSupport />} />
-        <Route path="announcements" element={<Announcements />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<Profile />} />
         <Route path="settings" element={<Settings />} />

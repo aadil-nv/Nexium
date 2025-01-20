@@ -172,7 +172,8 @@ export default class AttendanceService implements IAttendanceService {
             throw error;
         }
   
-      }
+    }
+    
     async applyLeave(data: any, employeeId: any): Promise<any> {
         console.log("Apply Leave Data:", data);
     

@@ -11,17 +11,17 @@ export default class MeetingService implements IMeetingService {
   constructor(@inject("IMeetingRepository") private _meetingRepository: IMeetingRepository,
               @inject("IChatRepository") private _chatRepository: IChatRepository) {}
 
-            async getAllMeetings(myId: string): Promise<IGetAllMeetingsDTO[]> {
-    try {
+    async getAllMeetings(myId: string): Promise<IGetAllMeetingsDTO[]> {
+      try {
         // Fetch meetings from the repository
         const meetings: IMeetingDetails[] = await this._meetingRepository.getAllMeetings(myId);
-        console.log(`Meetings from repository:`, meetings);
+        // console.log(`Meetings from repository:`, meetings.map((meeting: IMeetingDetails) => meeting.participants));
 
         // Transform meetings into DTOs
         const meetingDTOs: IGetAllMeetingsDTO[] = meetings
             .map((meeting) => {
                 try {
-                    const receiver = this.findReceiver(meeting.participants, myId);
+                    const receiver = this.findReceiver(meeting.participants, myId ,meeting.scheduledBy);
                     if (!receiver) {
                         console.warn(`Skipping meeting ${meeting._id} - no valid receiver found`);
                         return null;
@@ -39,13 +39,14 @@ export default class MeetingService implements IMeetingService {
         console.error("Error getting all meetings:", error.message);
         throw new Error(`Failed to get all meetings: ${error.message}`);
     }
-}
+     }
 
-private findReceiver(participants: IParticipantDetails[], myId: string): IParticipantDetails | null {
+
+    private findReceiver(participants: IParticipantDetails[], myId: string , scheduledBy: IParticipantDetails) : IParticipantDetails | null {
     return participants.find((participant) => participant._id.toString() !== myId) || null;
-}
+    }
 
-private mapToDTO(meeting: IMeetingDetails, receiver: IParticipantDetails, myId: string): IGetAllMeetingsDTO {
+    private mapToDTO(meeting: IMeetingDetails, receiver: IParticipantDetails, myId: string): IGetAllMeetingsDTO {
     const dto: IGetAllMeetingsDTO = {
         _id: meeting._id.toString(),
         meetingTitle: meeting.meetingTitle,
@@ -68,46 +69,40 @@ private mapToDTO(meeting: IMeetingDetails, receiver: IParticipantDetails, myId: 
         updatedAt: meeting.updatedAt,
     };
 
-    console.log(`Mapped DTO:`, dto);
+    // console.log(`Mapped DTO:`, dto);
     return dto;
-}
+    }
 
-private getReceiverName(participant: IParticipantDetails): string {
-    console.log("Participant:", participant);
+    private getReceiverName(participant: IParticipantDetails): string {
     return (
         participant.personalDetails?.employeeName ||
         participant.personalDetails?.managerName ||
         participant.personalDetails?.businessOwnerName ||
         "Unknown"
     );
-}
+    }
 
-private getReceiverPosition(participant: IParticipantDetails): string {
+    private getReceiverPosition(participant: IParticipantDetails): string {
     return participant.professionalDetails?.position || participant.role || "Unknown";
-}
+    }
 
-private getProfilePicture(participant: IParticipantDetails): string | undefined {
+    private getProfilePicture(participant: IParticipantDetails): string | undefined {
     return participant.personalDetails?.profilePicture;
-}
+    }
 
-private formatProfilePicture(profilePicture?: string): string | undefined {
+   private formatProfilePicture(profilePicture?: string): string | undefined {
     return profilePicture
         ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${profilePicture}`
         : undefined;
-}
+   }
 
             
-              
-              
 
-
-
-    async createMeeting(meeting: any, myId: string): Promise<IMeetingsDTO> {
+   async createMeeting(meeting: any, myId: string): Promise<IMeetingsDTO> {
     try {
-      // Call repository method to create the meeting
+     
       const createdMeeting = await this._meetingRepository.createMeeting(meeting, myId);
 
-      // Map the returned data to ensure it matches IMeetingsDTO
       const mappedMeeting: IMeetingsDTO = {
         _id: createdMeeting._id, // Convert ObjectId to string
         meetingTitle: createdMeeting.meetingTitle,

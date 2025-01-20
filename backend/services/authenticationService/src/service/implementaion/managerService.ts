@@ -177,9 +177,9 @@ export default class ManagerService implements IManagerService {
     }
     await this.sendOtp(email, otp);
     return { success: true, message: 'OTP has been sent successfully.' };
-}
+  }
 
-async blockManager(managerData: any): Promise<IResponseDTO> {
+    async blockManager(managerData: any): Promise<IResponseDTO> {
   try {
  
     
@@ -217,6 +217,22 @@ async blockManager(managerData: any): Promise<IResponseDTO> {
 
     throw error;
   }
-}
+    }
+
+    async updateManger(managerData: any): Promise<any> {
+      console.log("employee data---------------to rabbbbbbbb", managerData);
+      
+      try {
+          const maangerId = managerData._id;
+          console.log("employeeId", maangerId);
+          
+        return this._managerRepository.update(maangerId, managerData);
+      } catch (error) {
+        console.error('Error in updateEmployee service:', error);
+        throw error;
+      }
+    }
+
+
 
 }

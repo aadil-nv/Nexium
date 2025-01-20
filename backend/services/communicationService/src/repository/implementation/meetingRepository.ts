@@ -86,57 +86,72 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
                 },
             },
             {
+                $addFields: {
+                    participantDetails: {
+                        $map: {
+                            input: "$participants",
+                            as: "participantId",
+                            in: {
+                                $let: {
+                                    vars: {
+                                        employeeMatch: {
+                                            $filter: {
+                                                input: "$employeeDetails",
+                                                cond: { $eq: ["$$this._id", "$$participantId"] }
+                                            }
+                                        },
+                                        managerMatch: {
+                                            $filter: {
+                                                input: "$managerDetails",
+                                                cond: { $eq: ["$$this._id", "$$participantId"] }
+                                            }
+                                        },
+                                        businessOwnerMatch: {
+                                            $filter: {
+                                                input: "$businessOwnerDetails",
+                                                cond: { $eq: ["$$this._id", "$$participantId"] }
+                                            }
+                                        }
+                                    },
+                                    in: {
+                                        $cond: [
+                                            { $gt: [{ $size: "$$employeeMatch" }, 0] },
+                                            { $arrayElemAt: ["$$employeeMatch", 0] },
+                                            {
+                                                $cond: [
+                                                    { $gt: [{ $size: "$$managerMatch" }, 0] },
+                                                    { $arrayElemAt: ["$$managerMatch", 0] },
+                                                    { $arrayElemAt: ["$$businessOwnerMatch", 0] }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
                 $project: {
                     _id: 1,
                     meetingTitle: 1,
                     meetingDate: 1,
                     meetingTime: 1,
                     meetingLink: 1,
-                    participants: {
-                        $map: {
-                            input: "$participants",
-                            as: "participant",
-                            in: {
-                                $mergeObjects: [
-                                    { _id: "$$participant" },
-                                    {
-                                        
-                                            $cond: [
-                                                { $gt: [{ $size: "$employeeDetails" }, 0] },
-                                                { $arrayElemAt: ["$employeeDetails", 0] },
-                                                {
-                                                    $cond: [
-                                                        { $gt: [{ $size: "$managerDetails" }, 0] },
-                                                        { $arrayElemAt: ["$managerDetails", 0] },
-                                                        { $arrayElemAt: ["$businessOwnerDetails", 0] },
-                                                    ],
-                                                },
-                                            ],
-                                        
-                                    },
-                                ],
-                            },
-                        },
-                    },
+                    participants: "$participantDetails",
                     scheduledBy: {
-                        $mergeObjects: [
-                            { _id: "$scheduledBy" },
+                        $cond: [
+                            { $gt: [{ $size: "$scheduledByEmployee" }, 0] },
+                            { $arrayElemAt: ["$scheduledByEmployee", 0] },
                             {
-                               
-                                    $cond: [
-                                        { $gt: [{ $size: "$scheduledByEmployee" }, 0] },
-                                        { $arrayElemAt: ["$scheduledByEmployee", 0] },
-                                        {
-                                            $cond: [
-                                                { $gt: [{ $size: "$scheduledByManager" }, 0] },
-                                                { $arrayElemAt: ["$scheduledByManager", 0] },
-                                                { $arrayElemAt: ["$scheduledByBusinessOwner", 0] },
-                                            ],
-                                        },
-                                    ],
-                                
-                            },
-                        ],
+                                $cond: [
+                                    { $gt: [{ $size: "$scheduledByManager" }, 0] },
+                                    { $arrayElemAt: ["$scheduledByManager", 0] },
+                                    { $arrayElemAt: ["$scheduledByBusinessOwner", 0] }
+                                ]
+                            }
+                        ]
                     },
                     createdAt: 1,
                     updatedAt: 1,

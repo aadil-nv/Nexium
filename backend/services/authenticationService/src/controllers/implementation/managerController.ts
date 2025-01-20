@@ -19,7 +19,6 @@ export default class ManagerController implements IManagerController {
         res.cookie('refreshToken', refreshToken, cookieOptions);
     }
     
-
     async managerLogin(req: Request, res: Response): Promise<Response> {
         try {
             const { email, password } = req.body;
@@ -43,7 +42,7 @@ export default class ManagerController implements IManagerController {
                 data: result,
                 success: true,
                 managerName: result.managerName,
-                managerProfilePicture: result.managerProfilePicture,
+                managerProfilePicture: result.managerProfilePicture  ,
                 companyLogo : result.companyLogo,
                 managerType: result.managerType,
                 companyName : result.companyName

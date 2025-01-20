@@ -53,21 +53,16 @@ export default function LandingLoginPage() {
           companyName: data.companyName,
           businessOwnerProfilePicture: data.profilePicture,
           companyLogo: data.companyLogo,
-       
-
         }));
        
-      
         navigate('/business-owner/dashboard');
       } else {
         // Handle specific cases for blocked or unverified accounts
         if (data.message === "Account is blocked. Please contact admin") {
           setCredentialError(data.message); // Display block message
         } else if (data.isVerified === false && data.email) {
-          // Navigate to OTP page if account is unverified
           navigate('/otp', { state: { email: data.email } });
         } else {
-          // General error message
           setCredentialError(data.message || 'Invalid email or password');
         }
       }
@@ -76,10 +71,9 @@ export default function LandingLoginPage() {
       console.error("Error during login:", error);
   
       if (error.response?.data?.email && error.response?.data?.isVerified === false) {
-        // Navigate to OTP page if unverified and email is provided
         navigate('/otp', { state: { email: error.response.data.email } });
       } else {
-        setCredentialError(errorMessage); // Display any other server error message
+        setCredentialError(errorMessage); 
       }
     }
   };

@@ -56,3 +56,88 @@ export interface ITaskDTO {
       taskStatus?: "backlog" |"inProgress" | "codeReview" | "qaTesting"| "completed" | "deployed"; // Optional, the task status
     }[];
  }
+
+ export interface IGetTaskDashboardData {
+   totalTasks: number;
+   completedTasks: number;
+   pendingTasks: number;
+   tasksByStatus: Record<string, number>;
+   monthWiseCompletedTasks: Array<{
+     month: string;
+     completedCount: number;
+   }>;
+
+ }
+
+
+ export interface MonthlyStatCount {
+   status: string;
+   count: number;
+ }
+ 
+ export interface TaskStatusCount {
+   _id: string;
+   count: number;
+ }
+ 
+ export interface MonthlyTaskData {
+   month: string;
+   completed: number;
+   inProgress: number;
+   backlog: number;
+   blocked: number;
+   total: number;
+   totalCompleted: number;
+ }
+ 
+ export interface TaskStats {
+   completed: number;
+   inProgress: number;
+   backlog: number;
+   blocked: number;
+   codeReview: number;
+   qaTesting: number;
+   deployed: number;
+   approved: number;
+ }
+ 
+ export interface TaskPriorities {
+   high: number;
+   medium: number;
+   low: number;
+ }
+ 
+ export interface DashboardResponse {
+   employee: {
+     name: string | undefined;
+     profilePicture: string | undefined;
+   };
+   monthlyTaskData: MonthlyTaskData[];
+   currentTaskStats: TaskStats;
+   taskPriorities: TaskPriorities;
+   totalTasks: number;
+   totalCompletedTasks: number;
+   lastUpdated: Date;
+ }
+ 
+ // Aggregation result interfaces
+ export interface MonthlyAggregationResult {
+   _id: {
+     month: number;
+     year: number;
+   };
+   statusCounts: {
+     status: string;
+     count: number;
+   }[];
+   totalTasks: number;
+   totalCompletedTasks: number;
+ }
+ 
+ export interface StatusAggregationResult {
+   _id: string;
+   count: number;
+   completedCount: number;
+ }
+ 
+ 

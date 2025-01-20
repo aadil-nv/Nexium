@@ -9,6 +9,7 @@ import IManagerProfileDTO from "../../dto/IManagerDTO";
 import IEmployee from "../../entities/employeeEntities";
 import { ID } from "aws-sdk/clients/s3";
 import { IDocumentDTO } from "../../dto/IEmployeesDTO";
+import RabbitMQMessager from "../../events/implementation/producer";
 
 @injectable()
 export default class ManagerService implements IManagerService {
@@ -219,11 +220,17 @@ export default class ManagerService implements IManagerService {
 
   async updateManagerProfilePicture(managerId: string, file: Express.Multer.File): Promise<any> {
     try {
+      // const rabbitMQMessager = new RabbitMQMessager();
+      // await rabbitMQMessager.init();
       const imageUrl = await this.uploadFileToS3(managerId, file, "profileImage");
 
       console.log("==============imageUrl======================", imageUrl);
       
-      await this._managerRepository.uploadProfilePicture(managerId, imageUrl);
+      const updatedManagerData = await this._managerRepository.uploadProfilePicture(managerId, imageUrl);
+      console.log(`updatedManagerData: ${JSON.stringify(updatedManagerData)}`.bgWhite.bold);
+      
+      // await rabbitMQMessager.sendToMultipleQueues({ updatedManagerData });
+
       return { success: true, message: 'Image uploaded successfully!', data: { imageUrl:`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${imageUrl}` } };
     } catch (error:any) {
       throw new Error(error.message || 'Error while uploading image');

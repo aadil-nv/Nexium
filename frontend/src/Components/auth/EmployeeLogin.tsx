@@ -56,6 +56,7 @@ const EmployeeLogin: React.FC = () => {
               companyName: response?.data.companyName }));
 
         await employeeInstance.post("/employee/api/attendance/update-attendance");
+        
         navigate("/employee/dashboard");
       }
     } catch (err) {

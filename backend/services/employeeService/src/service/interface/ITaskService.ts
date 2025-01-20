@@ -1,5 +1,5 @@
 import { ITask } from "entities/taskEntities";
-import { ITaskDTO ,IGetEmployeeWithoutTaskDTO, ITaskResponceDTO, IGetEmployeeTaskDTO} from "../../dto/ITaskDTO";
+import { ITaskDTO ,IGetEmployeeWithoutTaskDTO, ITaskResponceDTO, IGetEmployeeTaskDTO, IGetTaskDashboardData} from "../../dto/ITaskDTO";
 
 
 export default interface ITaskService {
@@ -15,4 +15,6 @@ export default interface ITaskService {
     getTaskListOfEmployee(employeeId:string):Promise<IGetEmployeeTaskDTO[]>
     updateCompletedTask(data:object ,taskId:string): Promise<ITaskDTO>;
     reassignTask(taskId:string , taskData:object): Promise<ITaskDTO>;
+    // getTaskDashboardData(employeeId: string): Promise<IGetTaskDashboardData>
+
 }

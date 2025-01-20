@@ -11,7 +11,6 @@ import Documents from "../components/global/Documents";
 import Securitie from "../components/global/Securitie";
 import Notifications from "../components/global/Notifications";
 import Payroll from "../components/employees/Payroll";
-import Announcements from "../components/global/Announcements";
 import Attendance from "../components/employees/Attendance";
 import Task from "../components/employees/Task";
 import MyTask from "../components/employees/MyTask";
@@ -22,6 +21,7 @@ import MyTaskList from "../components/employees/MyTaskList";
 import Leaves from "../components/employees/employeeLeave";
 import Project from "../components/employees/Project";
 import JoinMeeting from "../components/meeting/JoinMeeting";
+import TeamLeadDashBoard from  "../components/employees/TeamLeadDashboard"
 
 const BusinessOwnerRoutes = () => {
 
@@ -40,9 +40,10 @@ const BusinessOwnerRoutes = () => {
             <Route path="documents" element={<Documents />} />
             <Route path="security" element={<Securitie />} />
             <Route path="notifications" element={<Notifications />} />
-            <Route path="announcements" element={<Announcements />} />
             <Route path="tasks" element={<Task />} />
             <Route path="projects" element={<Project />} />
+            <Route path="teamlead-dashboard" element={<TeamLeadDashBoard />} />
+            
             
 
             <Route path="task/:id" element={<MyTask />} />

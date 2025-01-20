@@ -134,6 +134,21 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
           throw error;
         }
       }
+
+
+      async updateManager(managerId: any, managerData: any): Promise<any> {
+        try {
+            // Ensure `isVerified` is not updated
+            const { isVerified, ...updateData } = managerData;
+    
+            // Update the manager details without modifying the isVerified field
+            return this._managerModel.updateOne({ _id: managerId }, { $set: updateData });
+        } catch (error) {
+            console.error('Error in updateManager service:', error);
+            throw error;
+        }
+    }
+    
       
       
 }

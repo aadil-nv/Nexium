@@ -189,11 +189,15 @@ export default class EmployeeService implements IEmployeeService {
 
   async updateProfilePicture(employeeId: string, file: Express.Multer.File): Promise<IEmployeeResponseDTO> {
         try {
+          const rabbitMQMessager = new RabbitMQMessager();
+          await rabbitMQMessager.init();
           const imageUrl = await this.uploadFileToS3(employeeId, file, "profilePicture");
 
             const employee = await this._employeeRepository.updateProfilePicture(employeeId, imageUrl);
             if (!employee) {throw new Error("Employee not found")}
             const profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
+            await rabbitMQMessager.sendToMultipleQueues({ employee });
+
     
             return { success: true,data: profilePicture,  message: "Profile updated successfully" };
         } catch (error: any) {
@@ -265,6 +269,8 @@ export default class EmployeeService implements IEmployeeService {
     throw new Error('Could not upload document.');
   }
   }
+
+  
 
 
 }

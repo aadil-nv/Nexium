@@ -21,8 +21,6 @@ import projectRoutes from './routes/projectRoute';
 
 
 
-
-
 const app = express(); 
 const PORT = process.env.PORT || 3000;
 
@@ -34,7 +32,7 @@ if (!fs.existsSync(logDirectory)) {
 
 // Set up log file rotation
 const accessLogStream = createStream('access.log', {
-    interval: '7d',
+    interval: process.env.LOG_INTERVAL,
     path: logDirectory,
   });
 
@@ -44,8 +42,9 @@ app.use(morgan('dev'));
 // connectDB(); 
 
 app.use(cors({
-  origin: 'http://localhost:5173', // replace with your frontend domain
+  origin: process.env.CLIENT_ORIGIN, // replace with your frontend domain
   credentials: true, // Allow cookies to be sent with requests
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 app.use(express.json()); 
 app.use(cookieParser());

@@ -203,13 +203,13 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
                             <span className="text-xs text-gray-500">{emp.receiverPosition || 'Employee'}</span>
                           </Space>
                         }
-                        description={
-                          emp.status ? (
-                            <Space><CheckOutlined className="text-green-500" /> Active now</Space>
-                          ) : (
-                            <Space><ClockCircleOutlined className="text-gray-400" /> Last seen {formatLastSeen(emp.lastSeen)}</Space>
-                          )
-                        }
+                        // description={
+                        //   emp.status ? (
+                        //     <Space><CheckOutlined className="text-green-500" /> Active now</Space>
+                        //   ) : (
+                        //     <Space><ClockCircleOutlined className="text-gray-400" /> Last seen {formatLastSeen(emp.lastSeen)}</Space>
+                        //   )
+                        // }
                       />
                     </List.Item>
                   </motion.div>

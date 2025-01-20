@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 import { 
   FaCalendar, 
   FaUserTimes, 
-  FaClock, 
+  FaClock,
+  FaProjectDiagram,
+  FaHourglassHalf,
   FaCheckCircle,
-  FaTasks,
-  FaExclamationCircle,
-  FaHourglassHalf
+  FaPause
 } from 'react-icons/fa';
 import {
   AreaChart,
@@ -25,19 +25,23 @@ import {
 import { employeeInstance } from '../../services/employeeInstance';
 import { Spin } from 'antd';
 
-interface TaskStats {
-  completed: number;
-  inProgress: number;
-  backlog: number;
-  blocked: number;
-  codeReview: number;
-  qaTesting: number;
-  deployed: number;
-  approved: number;
+interface Project {
+  projectName: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  assignedEmployee: string;
+}
+
+interface MonthlyProject {
+  month: string;
+  completedCount: number;
 }
 
 interface DashboardData {
   employeeId: string;
+  totalNetSalary: string;
   absentDays: number;
   presentDays: number;
   totalHoursWorked: string;
@@ -47,27 +51,12 @@ interface DashboardData {
     workedMinutes: number;
   }>;
   dashboardData: {
-    employee: {
-      name: string;
-      profilePicture: string;
-    };
-    monthlyTaskData: Array<{
-      month: string;
-      completed: number;
-      inProgress: number;
-      backlog: number;
-      blocked: number;
-      total: number;
-    }>;
-    currentTaskStats: TaskStats;
-    taskPriorities: {
-      high: number;
-      medium: number;
-      low: number;
-    };
-    totalTasks: number;
-    totalCompletedTasks: number;
-    lastUpdated: string;
+    totalProjects: number;
+    completedProjects: number;
+    inProgressProjects: number;
+    onHoldProjects: number;
+    monthWiseCompletedProjects: MonthlyProject[];
+    recentProjects: Project[];
   };
 }
 
@@ -154,24 +143,24 @@ export default function Dashboard() {
     </motion.div>
   );
 
-  // Colors for task priority pie chart
-  const PRIORITY_COLORS = {
-    high: '#ef4444',
-    medium: '#f59e0b',
-    low: '#10b981'
-  };
-
-  const priorityData = [
-    { name: 'High', value: dashboardData.dashboardData.taskPriorities.high },
-    { name: 'Medium', value: dashboardData.dashboardData.taskPriorities.medium },
-    { name: 'Low', value: dashboardData.dashboardData.taskPriorities.low }
+  // Project status data for pie chart
+  const projectStatusData = [
+    { name: 'Completed', value: dashboardData.dashboardData.completedProjects },
+    { name: 'In Progress', value: dashboardData.dashboardData.inProgressProjects },
+    { name: 'On Hold', value: dashboardData.dashboardData.onHoldProjects }
   ];
 
-  const getCurrentMonth = () => {
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const now = new Date();
-    return months[now.getMonth()];
+  const PROJECT_STATUS_COLORS = {
+    Completed: '#10b981',
+    'In Progress': '#3b82f6',
+    'On Hold': '#f59e0b'
   };
+
+  // Transform monthly data for area chart
+  const monthlyData = dashboardData.dashboardData.monthWiseCompletedProjects.map(item => ({
+    month: item.month,
+    completed: item.completedCount
+  }));
 
   return (
     <motion.div
@@ -181,7 +170,7 @@ export default function Dashboard() {
       transition={{ duration: 1 }}
     >
       <div>
-        <h1 className=''>Employee Dashboard</h1>
+        <h1 className="text-2xl font-bold mb-6">Employee Dashboard</h1>
       </div>
 
       {/* Stats Cards */}
@@ -194,61 +183,61 @@ export default function Dashboard() {
         />
         <StatCard
           icon={<FaUserTimes />}
-          title={`Absent Days (${getCurrentMonth()})`}
+          title="Days Absent"
           value={dashboardData.absentDays}
           bgColor="bg-gradient-to-r from-red-400 to-red-600"
         />
         <StatCard
-          icon={<FaCheckCircle />}
-          title="Completed Tasks"
-          value={dashboardData.dashboardData.totalCompletedTasks}
-          bgColor="bg-gradient-to-r from-green-400 to-green-600"
+          icon={<FaProjectDiagram />}
+          title="Total Projects"
+          value={dashboardData.dashboardData.totalProjects}
+          bgColor="bg-gradient-to-r from-purple-400 to-purple-600"
         />
         <StatCard
-          icon={<FaTasks />}
-          title="Total Tasks"
-          value={dashboardData.dashboardData.totalTasks}
-          bgColor="bg-gradient-to-r from-purple-400 to-purple-600"
+          icon={<FaCheckCircle />}
+          title="Completed Projects"
+          value={dashboardData.dashboardData.completedProjects}
+          bgColor="bg-gradient-to-r from-green-400 to-green-600"
         />
       </div>
 
-      {/* Task Statistics */}
+      {/* Project Statistics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <ChartContainer title="Task Status" icon={<FaTasks />}>
+        <ChartContainer title="Project Status" icon={<FaProjectDiagram />}>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-gray-600">Active Tasks</p>
+              <p className="text-sm text-gray-600">In Progress</p>
               <h3 className="text-2xl font-bold text-blue-600">
-                {dashboardData.dashboardData.currentTaskStats.inProgress}
+                {dashboardData.dashboardData.inProgressProjects}
               </h3>
             </div>
             <div className="p-4 bg-green-50 rounded-lg">
               <p className="text-sm text-gray-600">Completed</p>
               <h3 className="text-2xl font-bold text-green-600">
-                {dashboardData.dashboardData.currentTaskStats.completed}
+                {dashboardData.dashboardData.completedProjects}
               </h3>
             </div>
             <div className="p-4 bg-yellow-50 rounded-lg">
-              <p className="text-sm text-gray-600">In Review</p>
+              <p className="text-sm text-gray-600">On Hold</p>
               <h3 className="text-2xl font-bold text-yellow-600">
-                {dashboardData.dashboardData.currentTaskStats.codeReview}
+                {dashboardData.dashboardData.onHoldProjects}
               </h3>
             </div>
-            <div className="p-4 bg-red-50 rounded-lg">
-              <p className="text-sm text-gray-600">Blocked</p>
-              <h3 className="text-2xl font-bold text-red-600">
-                {dashboardData.dashboardData.currentTaskStats.blocked}
+            <div className="p-4 bg-purple-50 rounded-lg">
+              <p className="text-sm text-gray-600">Total</p>
+              <h3 className="text-2xl font-bold text-purple-600">
+                {dashboardData.dashboardData.totalProjects}
               </h3>
             </div>
           </div>
         </ChartContainer>
 
-        <ChartContainer title="Task Priorities" icon={<FaExclamationCircle />}>
+        <ChartContainer title="Project Distribution" icon={<FaPause />}>
           <div className="h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={priorityData}
+                  data={projectStatusData}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
@@ -256,8 +245,11 @@ export default function Dashboard() {
                   outerRadius={80}
                   label
                 >
-                  {priorityData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PRIORITY_COLORS[entry.name.toLowerCase() as keyof typeof PRIORITY_COLORS]} />
+                  {projectStatusData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={PROJECT_STATUS_COLORS[entry.name as keyof typeof PROJECT_STATUS_COLORS]} 
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -268,20 +260,16 @@ export default function Dashboard() {
         </ChartContainer>
       </div>
 
-      {/* Monthly Task Trend */}
+      {/* Monthly Project Trend */}
       <div className="grid grid-cols-1 gap-6">
-        <ChartContainer title="Monthly Task Progress" icon={<FaHourglassHalf />}>
+        <ChartContainer title="Monthly Completed Projects" icon={<FaHourglassHalf />}>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={dashboardData.dashboardData.monthlyTaskData}>
+              <AreaChart data={monthlyData}>
                 <defs>
                   <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorInProgress" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -292,21 +280,45 @@ export default function Dashboard() {
                 <Area
                   type="monotone"
                   dataKey="completed"
-                  name="Completed Tasks"
+                  name="Completed Projects"
                   stroke="#10b981"
                   fillOpacity={1}
                   fill="url(#colorCompleted)"
                 />
-                <Area
-                  type="monotone"
-                  dataKey="inProgress"
-                  name="In Progress"
-                  stroke="#3b82f6"
-                  fillOpacity={1}
-                  fill="url(#colorInProgress)"
-                />
               </AreaChart>
             </ResponsiveContainer>
+          </div>
+        </ChartContainer>
+      </div>
+
+      {/* Recent Projects */}
+      <div className="mt-6">
+        <ChartContainer title="Recent Projects" icon={<FaProjectDiagram />}>
+          <div className="grid gap-4">
+            {dashboardData.dashboardData.recentProjects.map((project, index) => (
+              <div 
+                key={index}
+                className="p-4 bg-gray-50 rounded-lg"
+              >
+                <h3 className="font-bold text-lg">{project.projectName}</h3>
+                <p className="text-gray-600 mt-1">{project.description}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="text-sm text-gray-500">
+                    Start: {new Date(project.startDate).toLocaleDateString()}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    End: {new Date(project.endDate).toLocaleDateString()}
+                  </span>
+                  <span className={`text-sm px-2 py-1 rounded ${
+                    project.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    project.status === 'inProgress' ? 'bg-blue-100 text-blue-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {project.status}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </ChartContainer>
       </div>

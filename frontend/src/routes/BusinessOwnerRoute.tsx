@@ -8,7 +8,6 @@ import Subscriptions from "../components/businessOwner/businessOwnerPages/Subscr
 import ServiceRequests from "../components/global/ServiceRequests";
 import EmployeeList from "../components/businessOwner/businessOwnerPages/EmployeeList";
 import Notifications from "../components/global/Notifications";
-import Announcements from "../components/global/Announcements";
 import DemoTable from "../components/businessOwner/businessOwnerPages/DemoTable";
 import Profile from "../components/global/Profile";
 import PersonalDetailes from "../components/global/PersonalDetailes";
@@ -39,7 +38,6 @@ const BusinessOwnerRoutes = () => {
           <Route path="subscriptions" element={<Subscriptions />} />
           <Route path="service-requests" element={<ServiceRequests />} />
           <Route path="notifications" element={<Notifications />} />
-          <Route path="announcements" element={<Announcements />} />
           <Route path="demo" element={<DemoTable />} />
           <Route path="profile" element={<Profile />} />
           <Route path="personaldetails" element={<PersonalDetailes />} />
@@ -48,16 +46,9 @@ const BusinessOwnerRoutes = () => {
           <Route path="security" element={<Securitie />} />
           <Route path="settings" element={<Settings />} />
           <Route path="chat" element={<Chat />} />
-          <Route path="meting" element={<MeetingScheduler />} />
-          <Route path="join-meeting" element={<JoinMeeting />} />
-
-
-
-          
-          <Route
-            path="success"
-            element={<SuccessPage message="Success" onClose={handleSuccessClose} />}
-          />
+          <Route path="meeting" element={<MeetingScheduler />} />
+          <Route path="join-meeting" element={<JoinMeeting />} />          
+          <Route path="success"element={<SuccessPage message="Success" onClose={handleSuccessClose} />}/>
         </Route>
       </Route>
     </Routes>

@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Table, InputNumber, Button, Skeleton, message } from 'antd';
-import { SaveOutlined } from '@ant-design/icons';  // Import Save icon
-import axios from 'axios';  // Import axios for making API requests
+import { motion } from 'framer-motion';
+import { message } from 'antd';
 import { managerInstance } from '../../../services/managerInstance';
 
-export default function LeaveSettings() {
-  // Default leave types data
-  const defaultLeaveTypes = [
+// Theme color and derived colors
+const themeColor = '#4f46e5';
+
+interface LeaveType {
+  id: number;
+  name: string;
+  default: number;
+}
+
+interface FormData {
+  [key: string]: number;
+}
+
+const LeaveSettings: React.FC = () => {
+  const defaultLeaveTypes: LeaveType[] = [
     { id: 1, name: 'Sick Leave', default: 0 },
     { id: 2, name: 'Casual Leave', default: 0 },
     { id: 3, name: 'Maternity Leave', default: 0 },
@@ -19,146 +30,163 @@ export default function LeaveSettings() {
     { id: 10, name: 'Study Leave', default: 0 },
   ];
 
-  // State to hold leave types fetched from the API or default data
-  const [leaveTypes, setLeaveTypes] = useState<any[]>(defaultLeaveTypes);
-  const [updatedLeaves, setUpdatedLeaves] = useState<any[]>([]); // Updated leaves for input
-  const [leaveId, setLeaveId] = useState<string>(''); // To hold the ID for updating
-  const [loading, setLoading] = useState<boolean>(false); // Loading state for skeleton
-  const [isDataEmpty, setIsDataEmpty] = useState<boolean>(false); // Empty data state
+  const [formData, setFormData] = useState<FormData>({});
+  const [initialFormData, setInitialFormData] = useState<FormData>({});
+  const [leaveId, setLeaveId] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
+  const [saving, setSaving] = useState<boolean>(false);
 
-  // Fetch leave types from the API when the component mounts
   useEffect(() => {
-    const fetchLeaveTypes = async () => {
-      setLoading(true);  // Show loading spinner
-      try {
-        const response = await managerInstance.get('/manager/api/leave/get-all-leavetypes');
-        const leaveData = response.data[0];
-
-        // If data is empty, set the empty state to true
-        if (!leaveData) {
-          setIsDataEmpty(true);
-          setLoading(false);
-          return;
-        }
-
-        // Set the leave types data fetched from the API
-        setLeaveId(response.data[0]._id); // Store the ID for update
-        delete leaveData._id;  // Remove _id from the data
-        setLeaveTypes(leaveData);
-
-        // Convert the data into an array format suitable for the Table component
-        setUpdatedLeaves(
-          Object.keys(leaveData).map((key) => ({
-            name: key,  // Set leave type name (e.g., 'sickLeave')
-            maxDays: leaveData[key],  // Set maxDays value
-          }))
-        );
-      } catch (error) {
-        console.error('Error fetching leave types:', error);
-      } finally {
-        setLoading(false);  // Hide loading spinner after fetching data
-      }
-    };
-
     fetchLeaveTypes();
-  }, []);  // Empty dependency array to run only once when component mounts
+  }, []);
 
-  // Handler for updating maxDays
-  const handleUpdate = (name: string, newCount: number) => {
-    setUpdatedLeaves((prev) =>
-      prev.map((leave) =>
-        leave.name === name ? { ...leave, maxDays: newCount } : leave
-      )
-    );
-  };
-
-  // Function to save changes to the API
-  const saveChanges = async () => {
-    setLoading(true); // Show loading spinner while saving
+  const fetchLeaveTypes = async () => {
     try {
-      // Prepare the updated leave types in the correct format for the API
-      const updatedData = updatedLeaves.reduce((acc: any, leave: any) => {
-        acc[leave.name] = leave.maxDays;
-        return acc;
-      }, {});
-
-      // Send the updated leave types to the API
-      await managerInstance.post(`/manager/api/leave/update-leavetypes/${leaveId}`, updatedData);
-      message.success('Leave Types Updated Successfully!'); // Success message
-      setLeaveTypes(updatedData); // Update state with the new data
-    } catch (error) {
-      console.error('Error updating leave types:', error);
-      message.error('Error updating leave types!'); // Error message
+      const response = await managerInstance.get('/manager/api/leave/get-all-leavetypes');
+      const leaveData = response.data[0];
+      
+      if (leaveData) {
+        setLeaveId(leaveData._id);
+        const cleanData = { ...leaveData };
+        delete cleanData._id;
+        setFormData(cleanData);
+        setInitialFormData(cleanData);
+      }
+    } catch (err) {
+      message.error('Failed to fetch leave types');
     } finally {
-      setLoading(false); // Hide loading spinner after saving
+      setLoading(false);
     }
   };
 
-  const columns = [
-    {
-      title: 'Leave Type',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Max Days',
-      dataIndex: 'maxDays',
-      key: 'maxDays',
-      render: (value: number, record: any) => (
-        <InputNumber
-          min={0}
-          value={value}
-          onChange={(newValue) => handleUpdate(record.name, newValue!)}
-        />
-      ),
-    },
-  ];
+  const handleInputChange = (name: string, value: number) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const hasChanges = () => {
+    return JSON.stringify(formData) !== JSON.stringify(initialFormData);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!hasChanges()) {
+      message.warning('No changes detected to save');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await managerInstance.post(`/manager/api/leave/update-leavetypes/${leaveId}`, formData);
+      setInitialFormData(formData);
+      message.success('Leave settings updated successfully!');
+    } catch (err) {
+      message.error('Failed to update leave settings');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
-    <div style={{ padding: '24px', position: 'relative' }}>
-      {/* Heading with custom color */}
-      <h2 style={{ 
-        marginBottom: '20px', 
-        textAlign: 'center', 
-        color: '#1890ff'  // Set heading color to blue
-      }}>
-        Leave Settings
-      </h2>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8"
+    >
+      <div className="max-w-7xl mx-auto">
+        <div className="md:flex md:items-center md:justify-between mb-8">
+          <motion.div 
+            initial={{ x: -20 }}
+            animate={{ x: 0 }}
+            className="flex-1 min-w-0"
+          >
+            <h2 className="text-3xl font-bold leading-7 text-gray-900 sm:text-4xl sm:truncate">
+              Leave Settings
+            </h2>
+            <p className="mt-2 text-sm text-gray-500">
+              Configure maximum days allowed for each leave type
+            </p>
+          </motion.div>
+        </div>
 
-      {/* Button placed in the top right corner */}
-      <Button
-        type="primary"
-        icon={<SaveOutlined />}  // Add icon inside the button
-        onClick={saveChanges}
-        style={{
-          position: 'absolute',
-          top: '24px',
-          right: '24px',
-          zIndex: 10,  // Ensure the button is always on top
-          padding: '10px 20px',
-          fontSize: '16px',
-          backgroundColor: '#52c41a',  // Green button color
-          borderColor: '#52c41a',
-        }}
-        loading={loading} // Show loading spinner on the button
-      >
-        Save Changes
-      </Button>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <div key={n} className="bg-white rounded-lg shadow-sm p-6 animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                <div className="h-8 bg-gray-200 rounded"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Object.entries(formData).map(([name, days], index) => (
+                <motion.div
+                  key={name}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                >
+                  <div className="p-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      {name.replace(/([A-Z])/g, ' $1').trim()}
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={days}
+                      onChange={(e) => handleInputChange(name, Number(e.target.value))}
+                      className="block w-full px-4 py-3 text-black rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-opacity-50 focus:ring-indigo-500 focus:border-indigo-500"
+                      style={{ borderColor: themeColor }}
+                    />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
 
-      {/* Show Skeleton while loading */}
-      {loading ? (
-        <Skeleton active />
-      ) : (
-        // Table for leave types
-        <Table
-          dataSource={updatedLeaves.length > 0 ? updatedLeaves : leaveTypes}
-          columns={columns}
-          rowKey="name"  // Set rowKey to 'name' because we don't have an 'id'
-          pagination={false}
-          style={{ marginTop: '60px' }}  // Adjust margin so it doesn't overlap the button
-          locale={{ emptyText: isDataEmpty ? 'No leave types available' : 'No data' }} // Empty data message
-        />
-      )}
-    </div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="flex justify-end"
+            >
+              <button
+                type="submit"
+                disabled={saving}
+                className={`
+                  px-6 py-3 rounded-lg text-white font-medium shadow-sm
+                  transition-all duration-200
+                  ${hasChanges()
+                    ? 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-md'
+                    : 'bg-gray-400 cursor-not-allowed'
+                  }
+                `}
+                style={{ backgroundColor: hasChanges() ? themeColor : undefined }}
+              >
+                {saving ? (
+                  <div className="flex items-center">
+                    <motion.span
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="inline-block w-5 h-5 border-2 border-white rounded-full border-t-transparent mr-2"
+                    />
+                    Saving...
+                  </div>
+                ) : (
+                  'Save Changes'
+                )}
+              </button>
+            </motion.div>
+          </form>
+        )}
+      </div>
+    </motion.div>
   );
-}
+};
+
+export default LeaveSettings;

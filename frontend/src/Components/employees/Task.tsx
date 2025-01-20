@@ -170,6 +170,7 @@ const Task: React.FC = () => {
         const completedTasks = record.tasks.filter((task: any) => task.isCompleted).length;
         const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
         const isOverdue = new Date(record.dueDate) < new Date();
+        const isCompleted = totalTasks === completedTasks
     
         return (
           <div>
@@ -182,7 +183,7 @@ const Task: React.FC = () => {
             </div>
     
             {/* Only show buttons if overdue */}
-            {isOverdue && (
+            {isCompleted && (
               <div style={{ marginTop: '10px' }}>
                 {record.isApproved ? (
                   <Button
@@ -238,6 +239,10 @@ const Task: React.FC = () => {
           if (isOverdue && !isApproved && completedTasks === totalTasks) {
             return { status: 'Not Approved', icon: '❌' };
           }
+          if(isApproved && completedTasks=== totalTasks){
+            return { status: 'Task Completed', icon: '✅' };
+
+          }
           // Default case for unhandled scenarios
           return { status: 'Unknown Status', icon: '❓' };
         };
@@ -252,9 +257,7 @@ const Task: React.FC = () => {
         );
       }
     }
-    
     ,
-    
     {
       title: 'Action',
       key: 'action',

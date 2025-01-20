@@ -64,6 +64,9 @@ export default class Consumer implements IConsumer {
               
               await this._busienessOwnerService.updateBusinessOwner(data.updatedBusinessOwnerData);
             }
+            if(data.updatedManagerData){
+              await this._managerService.updateManger(data.updatedManagerData);
+            }
 
             this._channel?.ack(msg);
           } catch (err) {

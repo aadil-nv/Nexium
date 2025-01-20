@@ -7,6 +7,8 @@ import  IEmployee  from "../../entities/employeeEntities";
 import {  isSunday,format } from 'date-fns';
 import { ObjectId } from "mongodb";
 import { IEmployeeLeave } from "../../entities/employeeLeaveEntities";
+import moment from 'moment'; // Import moment.js for date manipulation.
+
 
 
 
@@ -115,7 +117,6 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
         }
     }
     
-
     async findAttendanceByEmployeeId(employeeId: string): Promise<any> {
 
 
@@ -319,51 +320,59 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
       }
     }
     
-      
-      
+    async getAttendanceDashboardData(employeeId: string): Promise<any> {
+  try {
+    const employeeAttendance = await this._employeeAttendanceModel.findOne({ employeeId });
 
-      async getAttendanceDashboardData(employeeId: string): Promise<any> {
-        try {
-          const employeeAttendance = await this._employeeAttendanceModel.findOne({ employeeId });
-      
-          if (!employeeAttendance) {
-            throw new Error(`No attendance records found for employee ID ${employeeId}`);
-          }
-      
-          const attendance = employeeAttendance.attendance;
-      
-          const absentDays = attendance.filter((entry) => entry.status === "Absent").length;
-          const presentDays = attendance.filter((entry) => entry.status === "Present").length;
-      
-          const totalMinutesWorked = attendance.reduce((sum, entry) => sum + (entry.minutes || 0), 0);
-          const totalHoursWorked = totalMinutesWorked / 60;
-      
-          const approvedLeaves = attendance.filter(
-            (entry) => entry.status === "Absent" && entry.leaveStatus === "Approved"
-          ).length;
-      
-          const perDayWorkedMinutes = attendance
-            .filter((entry) => entry.minutes > 0)
-            .map((entry) => ({
-              date: entry.date,
-              workedMinutes: entry.minutes,
-            }));
-      
-          return {
-            absentDays,
-            presentDays,
-            totalHoursWorked: totalHoursWorked.toFixed(2),
-            approvedLeaves,
-            perDayWorkedMinutes,
-          };
-        } catch (error) {
-          console.error(error);
-          throw error;
-        }
-      }
-      
-    
-     async fetchApprovedLeaves(employeeId: string): Promise<IEmployeeLeave> {
+    if (!employeeAttendance) {
+      throw new Error(`No attendance records found for employee ID ${employeeId}`);
+    }
+
+    const attendance = employeeAttendance.attendance;
+
+    // Get the start and end of the current month
+    const startOfMonth = moment().startOf('month').format('YYYY-MM-DD');
+    const endOfMonth = moment().endOf('month').format('YYYY-MM-DD');
+
+    // Filter attendance for the current month
+    const currentMonthAttendance = attendance.filter((entry) =>
+      moment(entry.date).isBetween(startOfMonth, endOfMonth, undefined, '[]')
+    );
+
+    const absentDays = currentMonthAttendance.filter((entry) => entry.status === 'Absent').length;
+    const presentDays = currentMonthAttendance.filter((entry) => entry.status === 'Present').length;
+
+    const totalMinutesWorked = currentMonthAttendance.reduce(
+      (sum, entry) => sum + (entry.minutes || 0),
+      0
+    );
+    const totalHoursWorked = totalMinutesWorked / 60;
+
+    const approvedLeaves = currentMonthAttendance.filter(
+      (entry) => entry.status === 'Absent' && entry.leaveStatus === 'Approved'
+    ).length;
+
+    const perDayWorkedMinutes = currentMonthAttendance
+      .filter((entry) => entry.minutes > 0)
+      .map((entry) => ({
+        date: entry.date,
+        workedMinutes: entry.minutes,
+      }));
+
+    return {
+      absentDays,
+      presentDays,
+      totalHoursWorked: totalHoursWorked.toFixed(2),
+      approvedLeaves,
+      perDayWorkedMinutes,
+    };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+    }
+
+    async fetchApprovedLeaves(employeeId: string): Promise<IEmployeeLeave> {
         try {
           const employeeLeave = await this._employeeLeaveModel.findOne({ employeeId });
       
@@ -376,6 +385,6 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
           console.error(error);
           throw error;
         }
-      }
+    }
 
 }

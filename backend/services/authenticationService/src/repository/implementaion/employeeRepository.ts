@@ -13,7 +13,7 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
         super(_employeeModel);
     }
 
-    async findByCredentialEmail(email: string): Promise<any> {
+    async findByCredentialEmail(email: string): Promise<IEmployeeDocument> {
         try {
           const employee = await this._employeeModel.findOne({ 'employeeCredentials.companyEmail': email });
           
@@ -67,12 +67,17 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
       async updateEmployee(employee: any): Promise<any> {
         try {
             const employeeId = employee.employeeId;
-          return this._employeeModel.updateOne({ _id: employeeId }, employee);
+            
+            // Ensure `isVerified` is not updated
+            const { isVerified, ...updateData } = employee;
+    
+            return this._employeeModel.updateOne({ _id: employeeId }, { $set: updateData });
         } catch (error) {
-          console.error('Error in updateEmployee service:', error);
-          throw error;
+            console.error('Error in updateEmployee service:', error);
+            throw error;
         }
-      }
+    }
+    
       
 
 }

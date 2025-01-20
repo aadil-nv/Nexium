@@ -16,8 +16,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   ) {this._businessOwnerService = businessOwnerService}
 
   async login(req: Request, res: Response): Promise<Response> {
-  
-  
+
     try {
       const { email, password } = req.body;
       
@@ -26,17 +25,14 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   
       const { success, message, accessToken, refreshToken, isVerified, email: companyEmail ,companyLogo,companyName,profilePicture ,businessOwnerData } =
         await this._businessOwnerService.login(email, password);
-
-       
   
-      // Handle different scenarios based on the response from service layer
       if (!success) {
         if (message === "Account is blocked. Please contact admin") {
           return res.status(403).json({ message });  // Blocked account error
         } 
         if (!isVerified) {
           return res.status(400).json({ 
-            message: "Account not verified. OTP sent to email.", 
+            message: message, 
             email: companyEmail, 
             isVerified: false, 
             success: false 
@@ -45,7 +41,6 @@ export default class BusinessOwnerController implements IBusinessOwnerController
         return res.status(400).json({ message }); // Other error messages (invalid email/password)
       }
   
-      // Set cookies for access and refresh tokens
       res.cookie('refreshToken', refreshToken, { 
         httpOnly: true, 
         secure: process.env.NODE_ENV === 'production', 
@@ -68,7 +63,6 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
   }
   
-
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { companyName, email, password, phone } = req.body;
@@ -103,27 +97,6 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
   }
 
-  // async createCheckoutSession(req: Request, res: Response): Promise<Response> {
-  //   const { plan, amount, currency, email } = req.body;
-
-  //   try {
-  //     const result = await this._businessOwnerService.createCheckoutSession(plan, amount, currency, email);
-
-  //     res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
-  //        maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
-  //     res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
-  //        maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
-
-  //     const response = result.planName === 'Trial' 
-  //       ? { message: result.message, success: result.success, role: result.role, planName: result.planName }
-  //       : { sessionId: result.session.id, success: result.success, planName: result.planName };
-
-  //     return res.status(200).json(response);
-  //   } catch (error) {
-  //     console.error('Error creating checkout session:', error);
-  //     return res.status(500).json({ message: 'Failed to create checkout session', error });
-  //   }
-  // }
 
   async forgotPassword(req: Request, res: Response): Promise<Response> {
     try {

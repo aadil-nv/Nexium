@@ -1,10 +1,9 @@
 import { motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
-import { Table, Select, Spin, message } from 'antd';
-import { CheckCircleOutlined, SyncOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Table, Select, Spin, message, Input, Space, Modal, Button } from 'antd';
+import { CheckCircleOutlined, SyncOutlined, CloseCircleOutlined, SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { superAdminInstance } from '../../../services/superAdminInstance';
 
-// Define interface for service request
 interface ServiceRequest {
   _id: string;
   businessOwnerId: string;
@@ -17,32 +16,96 @@ interface ServiceRequest {
   updatedAt: string;
 }
 
+interface ViewDetailsModalProps {
+  visible: boolean;
+  onClose: () => void;
+  serviceName: string;
+  requestReason: string;
+}
+
+const ViewDetailsModal: React.FC<ViewDetailsModalProps> = ({ visible, onClose, serviceName, requestReason }) => (
+  <Modal
+    title="Request Details"
+    open={visible}
+    onCancel={onClose}
+    footer={[
+      <Button key="close" type="primary" onClick={onClose}>
+        Close
+      </Button>
+    ]}
+  >
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-base font-medium mb-2">Service Name:</h3>
+        <Input value={serviceName} readOnly className="bg-gray-50" />
+      </div>
+      <div>
+        <h3 className="text-base font-medium mb-2">Request Reason:</h3>
+        <Input.TextArea value={requestReason} readOnly className="bg-gray-50" rows={4} />
+      </div>
+    </div>
+  </Modal>
+);
+
 export default function CustomerCare() {
   const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+
+  const fetchServiceRequests = async (page = 1, pageSize = 10) => {
+    setLoading(true);
+    try {
+      const response = await superAdminInstance.get('/superAdmin/api/superadmin/all-serevice-request');
+      const requests = response.data.serviceRequests.serviceRequests;
+      
+      let filteredData = [...requests];
+      
+      if (searchText) {
+        filteredData = filteredData.filter(request => 
+          request.companyName.toLowerCase().includes(searchText.toLowerCase()) ||
+          request.serviceName.toLowerCase().includes(searchText.toLowerCase()) ||
+          request._id.toLowerCase().includes(searchText.toLowerCase())
+        );
+      }
+      
+      if (statusFilter) {
+        filteredData = filteredData.filter(request => 
+          request.status === statusFilter
+        );
+      }
+
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+
+      setServiceRequests(paginatedData);
+      setPagination({
+        ...pagination,
+        current: page,
+        total: filteredData.length,
+      });
+    } catch (error) {
+      message.error('Failed to fetch service requests');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchServiceRequests = async () => {
-      setLoading(true);
-      try {
-        const response = await superAdminInstance.get('/superAdmin/api/superadmin/all-serevice-request');
-        // Access the nested serviceRequests array from the response
-        const requests = response.data.serviceRequests.serviceRequests;
-        setServiceRequests(requests);
-      } catch (error) {
-        message.error('Failed to fetch service requests');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchServiceRequests();
-  }, []);
+    fetchServiceRequests(pagination.current, pagination.pageSize);
+  }, [searchText, statusFilter]);
 
   const handleUpdateStatus = async (newStatus: string, id: string) => {
     setLoading(true);
     try {
-      // Optimistically update the UI
       const updatedRequests = serviceRequests.map((request) => {
         if (request._id === id) {
           return { ...request, status: newStatus };
@@ -51,16 +114,13 @@ export default function CustomerCare() {
       });
       setServiceRequests(updatedRequests);
 
-      // Send the patch request to the server
       await superAdminInstance.patch(`/superAdmin/api/superadmin/update-status/${id}`, { status: newStatus });
-
       message.success('Service request status updated successfully!');
     } catch (error) {
       message.error('Failed to update status');
-      // Rollback the UI update in case of error
       const rollbackRequests = serviceRequests.map((request) => {
         if (request._id === id) {
-          return { ...request, status: 'Pending' }; // Or restore to original status if necessary
+          return { ...request, status: 'Pending' };
         }
         return request;
       });
@@ -68,6 +128,11 @@ export default function CustomerCare() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleViewDetails = (record: ServiceRequest) => {
+    setSelectedRequest(record);
+    setModalVisible(true);
   };
 
   const getStatusColor = (status: string) => {
@@ -107,6 +172,7 @@ export default function CustomerCare() {
       title: 'Company Name',
       dataIndex: 'companyName',
       key: 'companyName',
+      filterable: true,
     },
     {
       title: 'Request ID',
@@ -122,6 +188,23 @@ export default function CustomerCare() {
       title: 'Request Reason',
       dataIndex: 'requestReason',
       key: 'requestReason',
+      width: 300, // Add fixed width to the column
+      render: (text: string, record: ServiceRequest) => (
+        <div className="flex items-center justify-between">
+          <div className="truncate max-w-[180px]">
+            {text}
+          </div>
+          <Button
+            type="primary"
+            icon={<EyeOutlined />}
+            size="small"
+            onClick={() => handleViewDetails(record)}
+            className="ml-2 flex-shrink-0"
+          >
+            View
+          </Button>
+        </div>
+      ),
     },
     {
       title: 'Created At',
@@ -153,15 +236,47 @@ export default function CustomerCare() {
     },
   ];
 
+  const handleTableChange = (pagination: any) => {
+    fetchServiceRequests(pagination.current, pagination.pageSize);
+  };
+
   return (
-    <div>
-      <h1 className="text-2xl text-red-800">Customer Care</h1>
+    <div className="p-4">
+      <h1 className="text-2xl text-red-800 mb-4">Customer Care</h1>
+      
+      <Space className="mb-4" size="middle">
+        <Input
+          placeholder="Search by company, service, or ID"
+          prefix={<SearchOutlined />}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: 300 }}
+        />
+        
+        <Select
+          placeholder="Filter by Status"
+          style={{ width: 200 }}
+          allowClear
+          onChange={setStatusFilter}
+        >
+          <Select.Option value="Pending">Pending</Select.Option>
+          <Select.Option value="In Progress">In Progress</Select.Option>
+          <Select.Option value="Resolved">Resolved</Select.Option>
+        </Select>
+      </Space>
+
       <Spin spinning={loading}>
         <Table
           columns={columns}
           dataSource={serviceRequests}
           rowKey="_id"
-          pagination={false}
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => `Total ${total} items`,
+          }}
+          onChange={handleTableChange}
           components={{
             body: {
               row: ({ children, ...restProps }: any) => (
@@ -179,6 +294,18 @@ export default function CustomerCare() {
           }}
         />
       </Spin>
+
+      {selectedRequest && (
+        <ViewDetailsModal
+          visible={modalVisible}
+          onClose={() => {
+            setModalVisible(false);
+            setSelectedRequest(null);
+          }}
+          serviceName={selectedRequest.serviceName}
+          requestReason={selectedRequest.requestReason}
+        />
+      )}
     </div>
   );
 }

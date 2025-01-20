@@ -11,13 +11,11 @@ export default class DashboardController implements IDashboardController {
     constructor(@inject("IDashboardService") private _dashboardService: IDashboardService) { }
 
     async getAllEmployeesCount(req: CustomRequest, res: Response): Promise<Response> {
-        console.log("hitting getAllEmployeesCount ===============**********==================");
         
        try {
         const employeeId = req.user?.employeeData?._id;
         if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
         const result = await this._dashboardService.getAllDashboardData(employeeId as string);
-        console.log("result-----------------------------------",result);
         if(!result) return res.status(HttpStatusCode.OK).json([]);
         return res.status(HttpStatusCode.OK).json(result);
         

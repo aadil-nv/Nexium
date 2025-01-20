@@ -4,17 +4,10 @@ import DashBoardLayout from "../pages/mangerPages/DashboardLayout";
 import Dashboard from "../components/manager/dashboard/Dashboard";
 import Employees from "../components/manager/dashboard/Employees";
 import Departments from "../components/manager/dashboard/Departments";
-import Attendance from "../components/manager/dashboard/Attendance";
-
 import Payroll from "../components/manager/dashboard/Payroll";
 import Leaves from "../components/manager/dashboard/Leaves";
-import Announcements from "../components/global/Announcements";
 import Notifications from "../components/global/Notifications";
-import ServiceRequests from "../components/global/ServiceRequests";
 import ManagerPrivateRoute from "./ManagerPrivateRoute";
-import OnBordingEmployeeList from "../components/manager/dashboard/OnBordingEmployeeList";
-import PreBoarding from "../components/manager/dashboard/PreBoarding";
-import Interview from "../components/manager/dashboard/Interview";
 import Profile from "../components/global/Profile";
 import PersonalDetailes from "../components/global/PersonalDetailes";
 import Address from "../components/global/Address";
@@ -38,11 +31,9 @@ const MangerRoutes = () => {
         <Route path="employees" element={<Employees />} />
         <Route path="departments" element={<Departments />} />
       
-        {/* <Route path="service-requests" element={<ServiceRequests />} /> */}
         <Route path="payroll-settings" element={<Payroll />} />
         <Route path="leave-settings" element={<LeaveSettings />} />
         <Route path="leaves" element={<Leaves />} />
-        <Route path="announcements" element={<Announcements />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<Profile />} />
         <Route path="settings" element={<Settings />} />

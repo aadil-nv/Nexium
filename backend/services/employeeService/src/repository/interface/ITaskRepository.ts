@@ -17,5 +17,6 @@ export default interface ITaskRepository extends BaseRepository <ITask>{
     updateCompletedTask(data: object  ,employeeId:string): Promise<ITask>
     getPreviousMonthCompletedTasks(employeeId: string): Promise<number>
     reassignTask(taskId:string , taskData:any): Promise<ITask>
+    getTaskDashboardData(employeeId:string):Promise<any>
 
 }

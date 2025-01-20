@@ -6,6 +6,10 @@ import ITaskRepository from "../../repository/interface/ITaskRepository";
 import IEmployee from "../../entities/employeeEntities";
 import employeeModel from "../../models/employeeModel"; // Importing the employee model
 import departmentModel from "../../models/departmentModel";
+import { MonthlyStatCount, TaskStatusCount, MonthlyTaskData, TaskStats,
+     TaskPriorities, DashboardResponse, MonthlyAggregationResult, StatusAggregationResult } from '../../dto/ITaskDTO';
+
+
 
 @injectable()
 export default class TaskRepository extends BaseRepository<ITask> implements ITaskRepository {
@@ -356,6 +360,166 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
             throw new Error("Error updating task approval");
         }
     }
+
+    async getTaskDashboardData(employeeId: string): Promise<DashboardResponse> {
+        try {
+          const employeeObjectId = new mongoose.Types.ObjectId(employeeId);
+          
+          const currentDate = new Date();
+          const twelveMonthsAgo = new Date();
+          twelveMonthsAgo.setMonth(currentDate.getMonth() - 12);
+      
+          // Get monthly stats with completed tasks
+          const monthlyStats = await this.taskModel.aggregate<MonthlyAggregationResult>([
+            {
+              $match: {
+                employeeId: employeeObjectId,
+                createdAt: { $gte: twelveMonthsAgo }
+              }
+            },
+            {
+              $unwind: "$tasks"
+            },
+            {
+              $group: {
+                _id: {
+                  month: { $month: "$createdAt" },
+                  year: { $year: "$createdAt" },
+                  status: "$tasks.taskStatus"
+                },
+                count: { $sum: 1 },
+                completedCount: {
+                  $sum: {
+                    $cond: [{ $eq: ["$tasks.isCompleted", true] }, 1, 0]
+                  }
+                }
+              }
+            },
+            {
+              $group: {
+                _id: {
+                  month: "$_id.month",
+                  year: "$_id.year"
+                },
+                statusCounts: {
+                  $push: {
+                    status: "$_id.status",
+                    count: "$count"
+                  }
+                },
+                totalTasks: { $sum: "$count" },
+                totalCompletedTasks: { $sum: "$completedCount" }
+              }
+            },
+            {
+              $sort: {
+                "_id.year": 1,
+                "_id.month": 1
+              }
+            }
+          ]);
+      
+          // Get current status counts
+          const currentStats = await this.taskModel.aggregate<StatusAggregationResult>([
+            {
+              $match: {
+                employeeId: employeeObjectId
+              }
+            },
+            {
+              $unwind: "$tasks"
+            },
+            {
+              $group: {
+                _id: "$tasks.taskStatus",
+                count: { $sum: 1 },
+                completedCount: {
+                  $sum: {
+                    $cond: [{ $eq: ["$tasks.isCompleted", true] }, 1, 0]
+                  }
+                }
+              }
+            }
+          ]);
+      
+          // Get priority stats
+          const priorityStats = await this.taskModel.aggregate<TaskStatusCount>([
+            {
+              $match: {
+                employeeId: employeeObjectId
+              }
+            },
+            {
+              $unwind: "$tasks"
+            },
+            {
+              $group: {
+                _id: "$tasks.priority",
+                count: { $sum: 1 }
+              }
+            }
+          ]);
+      
+          const monthNames = [
+            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+          ];
+      
+          // Transform monthly data with completed tasks
+          const monthlyData: MonthlyTaskData[] = monthlyStats.map(stat => ({
+            month: `${monthNames[stat._id.month - 1]} ${stat._id.year}`,
+            completed: stat.statusCounts.find(s => s.status === "completed")?.count || 0,
+            inProgress: stat.statusCounts.find(s => s.status === "inProgress")?.count || 0,
+            backlog: stat.statusCounts.find(s => s.status === "backlog")?.count || 0,
+            blocked: stat.statusCounts.find(s => s.status === "blocked")?.count || 0,
+            total: stat.totalTasks,
+            totalCompleted: stat.totalCompletedTasks
+          }));
+      
+          // Calculate current task stats with completed tasks
+          const currentTaskStats: TaskStats = {
+            completed: currentStats.find(s => s._id === "completed")?.count || 0,
+            inProgress: currentStats.find(s => s._id === "inProgress")?.count || 0,
+            backlog: currentStats.find(s => s._id === "backlog")?.count || 0,
+            blocked: currentStats.find(s => s._id === "blocked")?.count || 0,
+            codeReview: currentStats.find(s => s._id === "codeReview")?.count || 0,
+            qaTesting: currentStats.find(s => s._id === "qaTesting")?.count || 0,
+            deployed: currentStats.find(s => s._id === "deployed")?.count || 0,
+            approved: currentStats.find(s => s._id === "approved")?.count || 0
+          };
+      
+          const taskPriorities: TaskPriorities = {
+            high: priorityStats.find(p => p._id === "high")?.count || 0,
+            medium: priorityStats.find(p => p._id === "medium")?.count || 0,
+            low: priorityStats.find(p => p._id === "low")?.count || 0
+          };
+      
+          const employeeDetails = await this.taskModel.findOne({ employeeId })
+            .select('employeeName profilePicture')
+            .lean();
+      
+          const totalCompletedTasks = currentStats.reduce((sum, stat) => 
+            sum + (stat.completedCount || 0), 0);
+      
+          return {
+            employee: {
+              name: employeeDetails?.employeeName,
+              profilePicture: employeeDetails?.employeeProfilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeDetails?.employeeProfilePicture}` : employeeDetails?.employeeProfilePicture
+            },
+            monthlyTaskData: monthlyData,
+            currentTaskStats,
+            taskPriorities,
+            totalTasks: Object.values(currentTaskStats).reduce((a, b) => a + b, 0),
+            totalCompletedTasks,
+            lastUpdated: new Date()
+          };
+      
+        } catch (error: any) {
+          throw new Error(`Error in repository layer: ${error.message}`);
+        }
+      }
+      
+      
     
     
 }

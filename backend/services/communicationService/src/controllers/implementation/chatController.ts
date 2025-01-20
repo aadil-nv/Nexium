@@ -51,14 +51,11 @@ export default class ChatController implements IChatController {
     }
 
     async createChat(req: CustomRequest, res: Response): Promise<Response> {
-        // console.log(`hitting createChat: ${JSON.stringify(req.body)}`.bgRed);
         
         try {
             const myId = this.getMyId(req);
             const receiverId = req.params.id;
-            // console.log("myId:========>", myId);
-            // console.log("receiverId:========>", receiverId);
-            
+
             const response = await this._chatService.createChat( myId, receiverId);
             // console.log("response_________ from create chat", response);
             
@@ -146,6 +143,10 @@ export default class ChatController implements IChatController {
 
     async setNewAccessToken(req: Request, res: Response): Promise<Response> {
         try {
+            // const accessToken = req.cookies?.accessToken;
+            // if (!accessToken) {
+            //     return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access token is missing." });
+            // }
             const { refreshToken } = req.cookies || {};
             const response = await this._chatService.setNewAccessToken(refreshToken);
             if (!response.accessToken) {

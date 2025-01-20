@@ -1,10 +1,10 @@
-// components/MeetingCard.tsx
 import React, { useState, useEffect } from 'react';
 import { Card, Space, Avatar, Tag, Button, Popconfirm, Typography, Tooltip } from 'antd';
 import { VideoCameraOutlined, CalendarOutlined, TeamOutlined, UserOutlined, EditOutlined, DeleteOutlined, CopyOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import dayjs from 'dayjs';
 import { Meeting } from '../../interface/meetingInterface';
+import useAuth from '../../hooks/useAuth';
 
 const { Text } = Typography;
 
@@ -24,7 +24,18 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
   onJoinMeeting,
 }) => {
   const [timeUntilMeeting, setTimeUntilMeeting] = useState<string>('');
+  const { businessOwner, manager, employee } = useAuth();
   const [canJoin, setCanJoin] = useState(false);
+
+  // Separate permissions for edit and delete
+  const hasEditPermission = 
+    businessOwner.isAuthenticated || 
+    manager.isAuthenticated || 
+    (employee.isAuthenticated && employee.position === 'Team Lead');
+
+  const hasDeletePermission = 
+    businessOwner.isAuthenticated || 
+    manager.isAuthenticated;
 
   const getRandomColor = () => {
     const colors = ['blue', 'green', 'cyan', 'purple', 'magenta'];
@@ -36,7 +47,6 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
     const now = dayjs();
     const diffMinutes = meetingTime.diff(now, 'minute');
     
-    // Allow joining 5 minutes before and up to 30 minutes after meeting start
     setCanJoin(diffMinutes >= -30 && diffMinutes <= 120);
 
     if (diffMinutes > 0) {
@@ -56,11 +66,10 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
 
   useEffect(() => {
     updateMeetingStatus();
-    const timer = setInterval(updateMeetingStatus, 60000); // Update every minute
+    const timer = setInterval(updateMeetingStatus, 60000);
     return () => clearInterval(timer);
   }, [meeting.meetingTime]);
 
-  // Render participant avatars in a grid
   const renderParticipants = () => {
     const maxDisplay = 4;
     const remaining = meeting.participants.length - maxDisplay;
@@ -94,6 +103,51 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
     );
   };
 
+  // Generate card actions based on permissions
+  const getCardActions = (): React.ReactNode[] => {
+    const actions: React.ReactNode[] = [];
+
+    // Add edit button for authorized users (including Team Lead)
+    if (hasEditPermission) {
+      actions.push(
+        <Tooltip key="edit" title="Edit Meeting">
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(meeting)}
+          />
+        </Tooltip>
+      );
+    }
+
+    // Add delete button only for business owners and managers
+    if (hasDeletePermission) {
+      actions.push(
+        <Tooltip key="delete" title="Delete Meeting">
+          <Popconfirm
+            title="Are you sure you want to delete this meeting?"
+            onConfirm={() => onDelete(meeting._id)}
+          >
+            <Button type="text" icon={<DeleteOutlined />} danger />
+          </Popconfirm>
+        </Tooltip>
+      );
+    }
+
+    // Copy link button is available for all users
+    actions.push(
+      <Tooltip key="copy" title="Copy Meeting Link">
+        <Button
+          type="text"
+          icon={<CopyOutlined />}
+          onClick={() => onCopyLink(meeting.meetingLink)}
+        />
+      </Tooltip>
+    );
+
+    return actions;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -102,27 +156,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
     >
       <Card
         className="rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
-        actions={[
-          <Button
-            key="edit"
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => onEdit(meeting)}
-          />,
-          <Popconfirm
-            key="delete"
-            title="Delete meeting?"
-            onConfirm={() => onDelete(meeting._id)}
-          >
-            <Button type="text" icon={<DeleteOutlined />} danger />
-          </Popconfirm>,
-          <Button
-            key="copy"
-            type="text"
-            icon={<CopyOutlined />}
-            onClick={() => onCopyLink(meeting.meetingLink)}
-          />,
-        ]}
+        actions={getCardActions()}
         extra={
           <Tag color={getRandomColor()}>
             {dayjs(meeting.meetingTime).format("hh:mm A")}

@@ -1,6 +1,5 @@
-// components/MeetingForm.tsx
 import React from 'react';
-import { Form, Input, DatePicker, TimePicker, Select, Card, Space, Avatar, Button, Typography } from 'antd';
+import { Form, Input, DatePicker, TimePicker, Select, Card, Space, Avatar, Button, Typography, message } from 'antd';
 import type { FormInstance } from 'antd/es/form';
 import { UserOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { Participant, FormValues } from '../../interface/meetingInterface';
@@ -27,6 +26,50 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   onRemoveParticipant,
   onFinish
 }) => {
+  // Get current date and time
+  const now = dayjs();
+
+  // Function to disable past dates in DatePicker
+  const disabledDate = (current: dayjs.Dayjs) => {
+    return current && current.isBefore(now, 'day');
+  };
+
+  // Function to disable past times for the current date in TimePicker
+  const disabledTime = (selectedDate: dayjs.Dayjs | null) => {
+    const currentHour = now.hour();
+    const currentMinute = now.minute();
+
+    if (selectedDate && selectedDate.isSame(now, 'day')) {
+      return {
+        disabledHours: () => Array.from({ length: currentHour }, (_, i) => i),
+        disabledMinutes: (selectedHour: number) => {
+          if (selectedHour === currentHour) {
+            return Array.from({ length: currentMinute }, (_, i) => i);
+          }
+          return [];
+        }
+      };
+    }
+    return {};
+  };
+
+  // Custom validation for the meeting time
+  const validateMeetingTime = (_: any, value: dayjs.Dayjs) => {
+    const selectedDate = form.getFieldValue('meetingDate');
+    
+    if (!selectedDate) {
+      return Promise.reject('Please select a date first');
+    }
+
+    const combinedDateTime = selectedDate.hour(value.hour()).minute(value.minute());
+    
+    if (combinedDateTime.isBefore(now)) {
+      return Promise.reject('Cannot select a past time');
+    }
+    
+    return Promise.resolve();
+  };
+
   const renderParticipantOption = (participant: Participant) => (
     <Select.Option key={participant.userId} value={participant.userId}>
       <Space>
@@ -39,11 +82,25 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
     </Select.Option>
   );
 
+  // Handle form submission with additional validation
+  const handleFinish = (values: FormValues) => {
+    const combinedDateTime = values.meetingDate
+      .hour(values.meetingTime.hour())
+      .minute(values.meetingTime.minute());
+
+    if (combinedDateTime.isBefore(now)) {
+      message.error('Cannot schedule a meeting in the past');
+      return;
+    }
+
+    onFinish(values);
+  };
+
   return (
     <Form
       form={form}
       layout="vertical"
-      onFinish={onFinish} // Using the onFinish prop directly
+      onFinish={handleFinish}
     >
       <Form.Item
         name="meetingTitle"
@@ -56,27 +113,50 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
       <Form.Item
         name="meetingDate"
         label="Meeting Date"
-        rules={[{ required: true, message: "Please select a date" }]}
+        rules={[
+          { required: true, message: "Please select a date" },
+          {
+            validator: (_, value) => {
+              if (value && value.isBefore(now, 'day')) {
+                return Promise.reject('Cannot select a past date');
+              }
+              return Promise.resolve();
+            }
+          }
+        ]}
       >
-        <DatePicker style={{ width: "100%" }} />
+        <DatePicker 
+          style={{ width: "100%" }} 
+          disabledDate={disabledDate}
+          onChange={() => {
+            // Clear time when date changes to prevent invalid combinations
+            form.setFieldValue('meetingTime', null);
+          }}
+        />
       </Form.Item>
       
       <Form.Item
         name="meetingTime"
         label="Meeting Time"
-        rules={[{ required: true, message: "Please select meeting time" }]}
+        rules={[
+          { required: true, message: "Please select meeting time" },
+          { validator: validateMeetingTime }
+        ]}
+        dependencies={['meetingDate']}
       >
         <TimePicker
           format="hh:mm A"
           style={{ width: "100%" }}
           use12Hours
           className="w-full"
+          disabledTime={() => disabledTime(form.getFieldValue('meetingDate'))}
         />
       </Form.Item>
       
       <Form.Item
+        name="participants"
         label="Participants"
-        required
+        rules={[{ required: true, message: "Please select at least one participant" }]}
       >
         <Select
           mode="multiple"

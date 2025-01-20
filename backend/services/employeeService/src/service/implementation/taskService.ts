@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import ITaskRepository from "../../repository/interface/ITaskRepository";
 import ITaskService from "../interface/ITaskService";
-import { ITaskDTO,IGetEmployeeWithoutTaskDTO, ITaskResponceDTO ,IGetEmployeeTaskDTO } from "../../dto/ITaskDTO";
+import { ITaskDTO,IGetEmployeeWithoutTaskDTO, ITaskResponceDTO ,IGetEmployeeTaskDTO, IGetTaskDashboardData } from "../../dto/ITaskDTO";
 import { ITask } from "entities/taskEntities";
 import e from "cors";
 
@@ -383,5 +383,69 @@ export default class TaskService implements ITaskService {
       throw new Error("Error reassigning task");
     }
   }
+  
+  // async getTaskDashboardData(employeeId: string): Promise<IGetTaskDashboardData> {
+  //   try {
+  //     // Fetch task data from the repository
+  //     const taskData = await this.taskRepository.getTaskDashboardData(employeeId);
+  
+  //     // Ensure taskData and taskData.tasks are defined
+  //     if (!taskData || !taskData.tasks) {
+  //       throw new Error("No tasks found for the given employee ID.");
+  //     }
+  
+  //     // Ensure taskData.tasks has the correct type
+  //     const tasks = taskData.tasks as ITask[];
+  
+  //     // Calculate month-wise completed tasks
+  //     const monthWiseCompletedTasks = tasks
+  //       .flatMap(task => task.tasks) // Flattening the nested tasks array
+  //       .filter((task) => task.isCompleted) // Filter only completed tasks
+  //       .reduce((acc: Record<string, number>, task) => {
+  //         const month = new Date(taskData.assignedDate).toLocaleString("default", { month: "long" }); // Use assignedDate from the parent task (taskData)
+  //         acc[month] = (acc[month] || 0) + 1;
+  //         return acc;
+  //       }, {} as Record<string, number>);
+  
+  //     const monthWiseData = Object.entries(monthWiseCompletedTasks).map(([month, completedCount]) => ({
+  //       month,
+  //       completedCount,
+  //     }));
+  
+  //     // Prepare dashboard data
+  //     const dashboardData: IGetTaskDashboardData = {
+  //       totalTasks: tasks.reduce((acc, task) => acc + task.tasks.length, 0), // Count total tasks across all employee tasks
+  //       completedTasks: tasks
+  //         .flatMap(task => task.tasks)
+  //         .filter((task) => task.isCompleted).length, // Count completed tasks
+  //       pendingTasks: tasks
+  //         .flatMap(task => task.tasks)
+  //         .filter((task) => !task.isCompleted).length, // Count pending tasks
+  //       tasksByStatus: tasks
+  //         .flatMap(task => task.tasks)
+  //         .reduce((acc: Record<string, number>, task) => {
+  //           acc[task.taskStatus] = (acc[task.taskStatus] || 0) + 1;
+  //           return acc;
+  //         }, {} as Record<string, number>),
+  //       monthWiseCompletedTasks: monthWiseData,
+        
+  //     };
+  
+  //     console.log("Task dashboard data:", dashboardData);
+  
+  //     return dashboardData;
+  //   } catch (error: any) {
+  //     console.error(`Error in service layer: ${error.message}`);
+  //     throw new Error(`Error in service layer: ${error.message}`);
+  //   }
+  // }
+  
+  
+  
+  
+  
+  
+  
+  
 
 }

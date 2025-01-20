@@ -29,7 +29,7 @@ export default class MeetingController implements IMeetingController {
             
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
             const response = await this._meetingService.getAllMeetings(myId);
-            // console.log("response from getAllMeetings", response);
+            console.log("response from getAllMeetings", response);
             
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error:any) {

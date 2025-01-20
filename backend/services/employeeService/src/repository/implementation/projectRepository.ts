@@ -63,6 +63,20 @@ export default class ProjectRepository extends BaseRepository<IProject> implemen
         }
     }
     
+
+    async getProjectDashboardData(employeeId: string): Promise<any> {
+        try {
+          // Fetch projects assigned to the employee
+          const projects = await this._projectModel.find({
+            'assignedEmployee.employeeId': employeeId,
+          }).exec();
+      
+          return projects;
+        } catch (error: any) {
+          throw new Error(`Error in repository layer: ${error.message}`);
+        }
+      }
+      
     
 
 }

@@ -46,12 +46,24 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
 
 
   private async processPaidPlan(businessOwnerId: string, plan: any, email: string): Promise<any> {
+    console.log(`processPaidPlan====================================`.bgRed.bold);
 
     console.log("businessOwnerId:", businessOwnerId);
     console.log("plan:", plan);
     console.log("email:", email);
     
     try {
+
+      const businessOwner = await this.repository.findBusinessOwnerByEmail(email);
+      if (businessOwner && businessOwner.subscription.subscriptionId === plan._id) {
+        console.log(`You are already subscribed to this plan.`.bgRed.bold);
+        
+        throw new Error("You are already subscribed to this plan.");
+      }
+
+
+
+
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [{
@@ -104,6 +116,7 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
       if (businessOwner.subscription.subscriptionId === planId) {
         throw new Error("Already subscribed to this plan");
       }
+    
 
       const newPlan = await this.repository.findNewSubscriptionPlan(planId);
       const subscription: ISubscription = {
@@ -135,6 +148,8 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
 }
 
 private async processCheckoutPlan(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponseDTO> {
+  console.log(`PROCesssssssssssssssssssssssssssssssssssssssssssssssssssssssss`.bgRed.bold);
+  
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     line_items: [{

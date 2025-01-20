@@ -76,9 +76,6 @@ export default class EmployeeController {
     }
 
     async updateProfilePicture(req: CustomRequest, res: Response): Promise<Response> {
-      console.log("hitting update profilePicture =================================");
-        console.log("file from req============",req.file);
-      
         try {
             const employeeId = req.user?.employeeData?._id;
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
@@ -183,5 +180,5 @@ export default class EmployeeController {
         console.error(error);
         return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
     }
-}
+   }
 }

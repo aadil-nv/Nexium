@@ -20,7 +20,7 @@ if (!fs.existsSync(logDirectory)) {
 
 
 const accessLogStream = createStream('access.log', {
-  interval: '7d',
+  interval: process.env.LOG_INTERVAL,
   path: logDirectory,
 });
 
@@ -29,7 +29,7 @@ app.use(morgan('dev'));
 
 
 app.use(cookieParser());
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true , methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] }));
 
 
 const targets = {
@@ -42,8 +42,6 @@ const targets = {
   chatService: process.env.CHAT_API_BASE_URL
 };
 
-console.log("Targets:sssjkubgbjkhsds ", targets.payment);
-console.log("Targets:sssjkubgbjkhsds ", targets.payment);
 
 app.use('/authentication', createProxyMiddleware({ target: targets.authentication, changeOrigin: true}));
 app.use('/businessOwner', createProxyMiddleware({ target: targets.businessOwner, changeOrigin: true}));

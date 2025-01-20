@@ -14,6 +14,8 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
   console.log("isManager :==> ",isManager)
   console.log("isEmployee :==> ",isEmployee)
   console.log("isBusinessOwner :==> ",isBusinessOwner)
+  console.log("isTeamLead :==> ", employee.position == "Team Lead")
+  
 
   if (isSuperAdmin) {
     return <Navigate to="/super-admin/dashboard" />;
@@ -22,10 +24,12 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
   } else if (isManager) {
     console.log("manager hited from privatrout ********************************************************************** ",)
     return <Navigate to="/manager/dashboard" />;
-  }else if (isEmployee) {
+  }else if (isEmployee &&employee.position !== "Team Lead") {
     return <Navigate to="/employee/dashboard" />;
-  } else {
-  return <>{children}</>;
+  } else if (isEmployee && employee.position == "Team Lead") {
+    return <Navigate to="/employee/teamlead-dashboard" />;
+  }else{
+    return <>{children}</>;
   }
 
 };
