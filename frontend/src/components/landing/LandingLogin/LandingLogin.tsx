@@ -1,65 +1,184 @@
-// LandingLoginPage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../landingPage/theme-provider';
 import { motion } from 'framer-motion';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { FaEye, FaEyeSlash, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { login, setBusinessOwnerData } from '../../../redux/slices/businessOwnerSlice';
+import { loginBusinessOwnerAPI, forgotPassword, changePasswordAPI, validateOtp, resendOtp } from '../../../api/authApi';
+import { toast } from 'react-hot-toast';
+import { ClipLoader } from 'react-spinners';
+import ForgotPasswordForm from '../LandingLogin/ForgotOtp';
+import OtpVerification from '../LandingLogin/VerifyEmail';
+import NewPasswordForm from '../LandingLogin/NewPassword';
+import  LoginForm from "../LandingLogin/LoginForm";
 import { z } from 'zod';
-import { login ,setBusinessOwnerData } from '../../../redux/slices/businessOwnerSlice';
-import { loginBusinessOwnerAPI } from '../../../api/authApi'; // Import the loginUser function
 
-// Zod schema for validation
+interface LoginFormErrors {
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+}
+
+interface LoginResponse {
+  success: boolean;
+  message?: string;
+  companyName?: string |undefined;
+  profilePicture?: string | undefined;
+  companyLogo?: string | undefined;
+  isVerified?: boolean;
+  email?: string;
+}
+
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters long')
 });
 
-export default function LandingLoginPage() {
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+const newPasswordSchema = z.object({
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
+  confirmPassword: z.string().min(6, 'Confirm password must be at least 6 characters long'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Passwords must match',
+  path: ['confirmPassword'],
+});
+
+const LandingLoginPage = () => {
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errors, setErrors] = useState<LoginFormErrors>({});
   const [credentialError, setCredentialError] = useState('');
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordError, setForgotPasswordError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [otp, setOtp] = useState(Array(6).fill(''));
+  const [timeLeft, setTimeLeft] = useState(90);
+  const [isTimerActive, setIsTimerActive] = useState(true);
+  const [otpError, setOtpError] = useState('');
   
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+
+
+  useEffect(() => {
+    if (isTimerActive && timeLeft > 0) {
+      const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+      return () => clearInterval(timer);
+    }
+    setIsTimerActive(false);
+  }, [isTimerActive, timeLeft]);
+
+  const handleOtpChange = (e, index) => {
+    const value = e.target.value;
+    if (/^[0-9]$/.test(value) || value === '') {
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
+
+      if (value && index < otp.length - 1) {
+        document.getElementById(`otp-${index + 1}`)?.focus();
+      }
+    }
+  };
+
+  const handleOtpKeyDown = (e, index) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      document.getElementById(`otp-${index - 1}`)?.focus();
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setTimeLeft(90);
+    setIsTimerActive(true);
+    setOtp(Array(6).fill(''));
+    setOtpError('');
+
+    try {
+      const data = await resendOtp(forgotPasswordEmail);
+      if (data.success) {
+        toast.success('OTP resent successfully');
+      } else {
+        toast.error(data.message || 'Failed to resend OTP');
+      }
+    } catch (error) {
+      toast.error('Error resending OTP');
+    }
+  };
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    const otpString = otp.join('');
+    
+    if (otpString.length !== 6) {
+      setOtpError('Please enter a complete 6-digit OTP');
+      return;
+    }
+
+    try {
+      const data = await validateOtp(forgotPasswordEmail, otpString);
+      if (data.success) {
+        setShowOtpVerification(false);
+        setShowNewPassword(true);
+        setOtpError('');
+        toast.success('OTP verified successfully');
+      } else {
+        setOtpError(data.message || 'Invalid OTP');
+        toast.error(data.message || 'Invalid OTP');
+      }
+    } catch (error) {
+      setOtpError('Error verifying OTP');
+      toast.error('Error verifying OTP');
+    }
+  };
+
+  const formatTimeLeft = () => {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
-    // Validate form inputs
+    
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
-      const errors = result.error.format();
+      const formattedErrors = result.error.format();
       setErrors({
-        email: errors.email?._errors[0],
-        password: errors.password?._errors[0],
+        email: formattedErrors.email?._errors[0],
+        password: formattedErrors.password?._errors[0],
       });
       return;
     }
-  
+
     setErrors({});
     setCredentialError('');
-  
+
     try {
-      const data = await loginBusinessOwnerAPI(email, password);
-      console.log("Login response data:-------------", data);
-  
+      const data: LoginResponse = await loginBusinessOwnerAPI(email, password);
+      
       if (data.success) {
-        // Successful login
         dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
         dispatch(setBusinessOwnerData({
-          companyName: data.companyName,
-          businessOwnerProfilePicture: data.profilePicture,
-          companyLogo: data.companyLogo,
+          companyName: data.companyName || '',
+          businessOwnerProfilePicture: data.profilePicture || '',
+          companyLogo: data.companyLogo || '',
         }));
-       
         navigate('/business-owner/dashboard');
       } else {
-        // Handle specific cases for blocked or unverified accounts
         if (data.message === "Account is blocked. Please contact admin") {
-          setCredentialError(data.message); // Display block message
+          setCredentialError(data.message);
         } else if (data.isVerified === false && data.email) {
           navigate('/otp', { state: { email: data.email } });
         } else {
@@ -68,131 +187,173 @@ export default function LandingLoginPage() {
       }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Something went wrong during login';
-      console.error("Error during login:", error);
-  
+      
       if (error.response?.data?.email && error.response?.data?.isVerified === false) {
         navigate('/otp', { state: { email: error.response.data.email } });
       } else {
-        setCredentialError(errorMessage); 
+        setCredentialError(errorMessage);
       }
     }
   };
-  
 
-  const inputBorderStyle = (field: string) => {
-    if (errors[field]) return 'border-red-500';
-    if (email || password) return 'border-green-500';
-    return 'border-gray-300';
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    
+    const result = forgotPasswordSchema.safeParse({ email: forgotPasswordEmail });
+    if (!result.success) {
+      setForgotPasswordError(result.error.format().email?._errors[0] || 'Invalid email');
+      return;
+    }
+    
+    setForgotPasswordError('');
+    setLoading(true);
+
+    try {
+      const data = await forgotPassword(forgotPasswordEmail);
+      if (data.success) {
+        setShowForgotPassword(false);
+        setShowOtpVerification(true);
+        setTimeLeft(90);
+        setIsTimerActive(true);
+        setOtp(Array(6).fill('')); // Reset OTP input
+        toast.success('OTP sent successfully to your email');
+      } else {
+        setForgotPasswordError(data.message || 'Failed to send OTP');
+        toast.error(data.message || 'Failed to send OTP');
+      }
+    } catch (error) {
+      setForgotPasswordError('An error occurred while sending OTP');
+      toast.error('An error occurred while sending OTP');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleNewPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const result = newPasswordSchema.safeParse({ password, confirmPassword });
+    if (!result.success) {
+      const validationErrors = result.error.format();
+      setErrors({
+        password: validationErrors.password?._errors[0],
+        confirmPassword: validationErrors.confirmPassword?._errors[0],
+      });
+      return;
+    }
+
+    try {
+      const response = await changePasswordAPI(password, email);
+      if (response.success) {
+        setShowSuccessModal(true);
+        setTimeout(() => {
+          setShowNewPassword(false);
+          navigate('/login');
+        }, 3000);
+      } else {
+        toast.error('Failed to change password. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error during password change:', error);
+      toast.error('An error occurred. Please try again.');
+    }
+  };
+
+
+  const getInputStyle = (fieldError?: string): string => {
+    const baseStyle = `w-full px-4 py-3 rounded-lg transition duration-200 outline-none ${
+      theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'
+    }`;
+
+    if (fieldError) {
+      return `${baseStyle} border-2 border-red-500 focus:border-red-500`;
+    }
+
+    return `${baseStyle} border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500`;
+  };
+
+
   return (
-    <div className={`w-full h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
-      <motion.div
-        className={`p-8 rounded-lg w-[90%] max-w-2xl transition-shadow duration-300 ${
-          theme === 'dark' ? 'bg-black shadow-lg shadow-blue-500' : 'bg-white shadow-md shadow-gray-200'
-        }`}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h2 className={`text-3xl font-bold mb-6 text-center ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
-          Login
-        </h2>
-
-        <form onSubmit={handleLogin}>
-          {/* Email input */}
-          <div className='mb-4'>
-            <label className={`block ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`} htmlFor='email'>
-              Email
-            </label>
-            <input
-              className={`mt-1 p-2 border rounded w-full ${
-                theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-              } ${inputBorderStyle('email')} focus:ring focus:ring-blue-200 transition-shadow duration-200 hover:shadow-md`}
-              type='email'
-              id='email'
-              placeholder='Enter your email'
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-            />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+    <div className={`min-h-screen flex ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}>
+      {/* Left side - Image */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <img 
+          src="/api/placeholder/800/600" 
+          alt="Login"
+          className="object-cover w-full h-full"
+        />
+        <div className="absolute inset-0 bg-blue-500 bg-opacity-30 backdrop-blur-sm flex items-center justify-center">
+          <div className="text-white text-center p-8">
+            <h1 className="text-4xl font-bold mb-4">Welcome Back!</h1>
+            <p className="text-xl">Login to access your business dashboard</p>
           </div>
-
-          {/* Password input */}
-          <div className='mb-6 relative'>
-            <label className={`block ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`} htmlFor='password'>
-              Password
-            </label>
-            <input
-              className={`mt-1 p-2 border rounded w-full ${
-                theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-              } ${inputBorderStyle('password')} focus:ring focus:ring-blue-200 transition-shadow duration-200 hover:shadow-md`}
-              type={showPassword ? 'text' : 'password'}
-              id='password'
-              placeholder='Enter your password'
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-            />
-            <button
-              type='button'
-              className="absolute right-2 pt-3"
-              onClick={() => setShowPassword(prev => !prev)}
-            >
-              {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
-            </button>
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-          </div>
-
-          {/* Credential error */}
-          {credentialError && <p className="text-red-500 text-sm mb-4">{credentialError}</p>}
-
-          {/* Login Button */}
-          <button
-            className="w-full bg-blue-500 text-white p-3 rounded mb-4 hover:bg-blue-600 transition-colors shadow-md hover:shadow-lg"
-            type='submit'
-          >
-            Login
-          </button>
-
-          {/* Google Login Button */}
-          <button
-            className={`w-full font-bold py-2 px-4 rounded-md flex items-center justify-center mb-2 focus:outline-none focus:ring-2 ${
-              theme === 'dark' ? 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-400' : 'bg-red-500 hover:bg-red-600 text-white focus:ring-red-400'
-            }`}
-            type='button'
-          >
-            <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google Logo" className="mr-2" />
-            Login with Google
-          </button>
-
-          {/* GitHub Login Button */}
-          <button
-            className={`w-full font-bold py-2 px-4 rounded-md flex items-center justify-center mb-6 focus:outline-none focus:ring-2 ${
-              theme === 'dark' ? 'bg-gray-800 hover:bg-gray-900 text-white focus:ring-gray-400' : 'bg-gray-700 hover:bg-gray-800 text-white focus:ring-gray-400'
-            }`}
-            type='button'
-          >
-            <img src="https://img.icons8.com/material-outlined/24/000000/github.png" alt="GitHub Logo" className="mr-2" />
-            Login with GitHub
-          </button>
-        </form>
-
-        {/* Forgot Password and Sign Up Links */}
-        <div className='mt-4 text-center'>
-          <a href='/verify-email' className={`text-sm hover:underline ${theme === 'dark' ? 'text-blue-400' : 'text-blue-500'}`}>
-            Forgot Password?
-          </a>
         </div>
+      </div>
 
-        <div className='mt-4 text-center'>
-          <p className='text-sm'>
-            Don't have an account?{' '}
-            <a href='/signup' className={`text-sm hover:underline ${theme === 'dark' ? 'text-blue-400' : 'text-blue-500'}`}>
-              Sign Up
-            </a>
-          </p>
-        </div>
-      </motion.div>
+      {/* Right side - Forms */}
+      <div className={`w-full lg:w-1/2 flex items-center justify-center p-8 ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
+        {showOtpVerification ? (
+          <OtpVerification
+            theme={theme}
+            otp={otp}
+            handleOtpChange={handleOtpChange}
+            handleOtpKeyDown={handleOtpKeyDown}
+            otpError={otpError}
+            handleOtpSubmit={handleOtpSubmit}
+            isTimerActive={isTimerActive}
+            formatTimeLeft={formatTimeLeft}
+            handleResendOtp={handleResendOtp}
+            setShowOtpVerification={setShowOtpVerification}
+            setShowForgotPassword={setShowForgotPassword}
+            forgotPasswordEmail={forgotPasswordEmail}
+          />
+        ) : showNewPassword ? (
+          <NewPasswordForm
+            theme={theme}
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
+            showConfirmPassword={showConfirmPassword}
+            setShowConfirmPassword={setShowConfirmPassword}
+            password={password}
+            setPassword={setPassword}
+            confirmPassword={confirmPassword}
+            setConfirmPassword={setConfirmPassword}
+            errors={errors}
+            handleNewPassword={handleNewPassword}
+            setShowNewPassword={setShowNewPassword}
+            showSuccessModal={showSuccessModal}
+            getInputStyle={getInputStyle}
+          />
+        ) : showForgotPassword ? (
+          <ForgotPasswordForm
+            theme={theme}
+            forgotPasswordEmail={forgotPasswordEmail}
+            setForgotPasswordEmail={setForgotPasswordEmail}
+            forgotPasswordError={forgotPasswordError}
+            loading={loading}
+            handleForgotPassword={handleForgotPassword}
+            setShowForgotPassword={setShowForgotPassword}
+            getInputStyle={getInputStyle}
+          />
+        ) : (
+          <LoginForm
+            theme={theme}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
+            errors={errors}
+            credentialError={credentialError}
+            handleLogin={handleLogin}
+            setShowForgotPassword={setShowForgotPassword}
+            getInputStyle={getInputStyle}
+          />
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default LandingLoginPage;

@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-
+import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { IoMenu } from "react-icons/io5";
 import { FaXmark } from "react-icons/fa6";
-import { ModeToggle } from "../../ui/mode-toggle";
-import { useTheme } from "../../landing/landingPage/theme-provider";
-import { Link, useLocation } from "react-router-dom";
-import IMAGES from "../../../images/images";
-
-
+import { ModeToggle } from "../../../components/ui/mode-toggle";
+import { useTheme } from "../../../components/landing/landingPage/theme-provider";
+import images from "../../../images/images";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,131 +23,156 @@ const Navbar = () => {
   const isSignup = location.pathname === "/signup";
   const isHome = location.pathname === "/";
 
-  const buttonStyle =
-    "flex items-center justify-center w-24 h-10 text-center font-bold rounded transform transition-transform duration-300 hover:scale-105 active:scale-95 text-sm";
+  const buttonStyle = "inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500";
 
   return (
-    <nav
-      className={`sticky top-0 z-50 p-4 max-w-screen-2xl mx-auto ${
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className={`sticky top-0 z-50 w-full ${
         theme === "dark" ? "bg-black text-white" : "bg-white text-primary"
-      } shadow`}
+      } shadow-md`}
     >
-      <div className="text-lg container mx-auto flex items-center font-medium">
-        {/* Left: Logo */}
-        <div className="flex items-center">
-          <a href="/">
-            <img
-              src={IMAGES.navBarLogo}
-              alt="Nexium_logo"
-              className="w-24 h-auto max-w-full max-h-16 object-contain"
-            />
-          </a>
-        </div>
-
-        {/* Center: navItems */}
-        <ul className="hidden md:flex flex-1 justify-center space-x-12">
-          {navItems.map(({ link, path }) => (
-            <Link
-              key={link}
-              to={path}
-              className={`block hover:text-gray-300 ${
-                theme === "dark" ? "hover:text-gray-400" : ""
-              }`}
-            >
-              {link}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="flex-shrink-0 relative z-10"
+          >
+            <Link to="/" className="flex items-center">
+              <img
+                src={ images.navBarLogo }
+                alt="Logo"
+                className="h-6 w-auto"
+              />
             </Link>
-          ))}
-        </ul>
+          </motion.div>
 
-        {/* Right: Login and Sign Up */}
-        <div className="hidden md:flex items-center space-x-4">
-          {isHome ? (
-            <>
-              <Link
-                to="/login"
-                className={`${buttonStyle} bg-blue-600 hover:bg-blue-700 text-white`}
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center justify-center space-x-8 flex-1 px-4">
+            {navItems.map(({ link, path }) => (
+              <motion.div
+                key={link}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative"
               >
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                className={`${buttonStyle} bg-transparent border border-blue-600 hover:bg-blue-600 hover:text-white ${
-                  theme === "dark" ? "text-gray-300" : "text-blue-600"
-                }`}
-              >
-                Sign Up
-              </Link>
-            </>
-          ) : (
-            <Link
-              to={isSignup ? "/login" : "/signup"}
-              className={`${buttonStyle} bg-blue-600 hover:bg-blue-700 text-white`}
-            >
-              {isSignup ? "Login" : "Sign Up"}
-            </Link>
-          )}
-        </div>
-
-        {/* Dark Mode Toggle on Right */}
-        <div className="ml-4 hidden md:flex items-center"> {/* Add some left margin for spacing */}
-          <ModeToggle />
-        </div>
-
-        {/* Mobile Menu Button */}
-        <div className="md:hidden ml-auto flex items-center">
-        <div >
-            <ModeToggle />
+                <Link
+                  to={path}
+                  className="text-sm font-medium hover:text-blue-500 transition-colors relative
+                    after:content-[''] after:absolute after:bottom-0 after:left-0 
+                    after:w-0 after:h-0.5 after:bg-blue-500 
+                    after:transition-all hover:after:w-full"
+                >
+                  {link}
+                </Link>
+              </motion.div>
+            ))}
           </div>
-          <button onClick={toggleMenu} className="text-primary focus:outline-none">
-            {isMenuOpen ? (
-              <FaXmark className="w-6 h-6" />
+
+          {/* Desktop Auth Buttons & Theme Toggle */}
+          <div className="hidden md:flex items-center space-x-4">
+            {isHome ? (
+              <>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    to="/login"
+                    className={`${buttonStyle} bg-blue-600 text-white hover:bg-blue-700`}
+                  >
+                    Login
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    to="/signup"
+                    className={`${buttonStyle} border border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900`}
+                  >
+                    Sign Up
+                  </Link>
+                </motion.div>
+              </>
             ) : (
-              <IoMenu className="w-6 h-6" />
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Link
+                  to={isSignup ? "/login" : "/signup"}
+                  className={`${buttonStyle} bg-blue-600 text-white hover:bg-blue-700`}
+                >
+                  {isSignup ? "Login" : "Sign Up"}
+                </Link>
+              </motion.div>
             )}
-          </button>
-          {/* Dark Mode Toggle for Mobile */}
-          
-        </div>
-      </div>
+            <div className="ml-2">
+              <ModeToggle />
+            </div>
+          </div>
 
-      {/* Mobile Menu */}
-      <div
-        className={`md:hidden transition-all duration-500 ease-in-out overflow-hidden ${
-          isMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        <div
-          className={`mt-4 space-y-2 ${
-            theme === "dark" ? "bg-black-900 text-white" : "bg-white text-primary"
-          } p-4 rounded-lg`}
-        >
-          {navItems.map(({ link, path }) => (
-            <Link
-              key={link}
-              to={path}
-              className={`block text-lg hover:text-gray-500 ${
-                theme === "dark" ? "hover:text-gray-400" : ""
-              }`}
+          {/* Mobile Menu Button */}
+          <div className="flex md:hidden items-center space-x-4">
+            <ModeToggle />
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleMenu}
+              className="text-2xl focus:outline-none p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              aria-label="Toggle menu"
             >
-              {link}
-            </Link>
-          ))}
-
-          <Link
-            to="/login"
-            className={`${buttonStyle} bg-blue-600 hover:bg-blue-700 text-white`}
-          >
-            Login
-          </Link>
-          <Link
-            to="/signup"
-            className={`${buttonStyle} bg-transparent border border-green-600 hover:bg-green-600 hover:text-white text-green-600`}
-          >
-            Sign Up
-          </Link>
+              {isMenuOpen ? <FaXmark /> : <IoMenu />}
+            </motion.button>
+          </div>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden overflow-hidden"
+            >
+              <div className="px-2 pt-2 pb-3 space-y-1">
+                {navItems.map(({ link, path }) => (
+                  <motion.div
+                    key={link}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Link
+                      to={path}
+                      className="block px-3 py-2 rounded-md text-base font-medium hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {link}
+                    </Link>
+                  </motion.div>
+                ))}
+                <div className="space-y-2 pt-4">
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link
+                      to="/login"
+                      className="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Login
+                    </Link>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link
+                      to="/signup"
+                      className="block w-full text-center px-4 py-2 border border-blue-600 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Link>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </nav>
+    </motion.nav>
   );
 };
 

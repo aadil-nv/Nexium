@@ -84,6 +84,7 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
     },
     role: {
       type: String,
+      default: "BusinessOwner",
     },
 
 

@@ -1,106 +1,103 @@
-import React, { useState } from 'react';
-import { useTheme } from '../landingPage/theme-provider';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { z } from 'zod';
 import { FaArrowLeft } from 'react-icons/fa';
-import ClipLoader from 'react-spinners/ClipLoader';
-import { useNavigate } from 'react-router-dom';
-import { forgotPassword } from '../../../api/authApi';
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
-});
-
-export default function VerifyEmail() {
-  const { theme } = useTheme();
-  const [email, setEmail] = useState('');
-  const [errors, setErrors] = useState<{ email?: string }>({});
-  const [statusMessage, setStatusMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const result = forgotPasswordSchema.safeParse({ email });
-    if (!result.success) {
-      setErrors({ email: result.error.format().email?._errors[0] });
-      return;
-    }
-    setErrors({});
-    setLoading(true);
-
-    try {
-      const data = await forgotPassword(email);
-      if (data.success) navigate('/forgot-otp', { state: { email: data.email } });
-    } catch {
-      setStatusMessage('An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+const OtpVerification = ({
+  theme,
+  otp,
+  handleOtpChange,
+  handleOtpKeyDown,
+  otpError,
+  handleOtpSubmit,
+  isTimerActive,
+  formatTimeLeft,
+  handleResendOtp,
+  setShowOtpVerification,
+  setShowForgotPassword,
+  forgotPasswordEmail
+}) => {
   return (
-    <div
-      className={`w-full h-screen flex items-center justify-center ${
-        theme === 'dark' ? 'bg-black' : 'bg-white'
-      }`}
+    <motion.div
+      className="w-full max-w-md"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5 }}
     >
-      <motion.div
-        className={`p-8 rounded-lg w-[90%] max-w-md ${
-          theme === 'dark' ? 'bg-black shadow-blue-500' : 'bg-white shadow-gray-200'
-        }`}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h2
-          className={`text-3xl font-bold mb-6 text-center ${
-            theme === 'dark' ? 'text-white' : 'text-gray-800'
-          }`}
-        >
-          Forgot Password
+      <div className="mb-10">
+        <h2 className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+          Enter OTP
         </h2>
+        <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+          Please enter the verification code sent to {forgotPasswordEmail}
+        </p>
+      </div>
 
-        <form onSubmit={handleForgotPassword}>
-          <div className="mb-4">
-            <label
-              className={`block ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`}
-              htmlFor="email"
-            >
-              Enter your email
-            </label>
+      <form onSubmit={handleOtpSubmit} className="space-y-6">
+        <div className="flex justify-center gap-2">
+          {otp.map((digit, index) => (
             <input
-              className={`mt-1 p-2 border rounded w-full ${
-                theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-              } ${errors.email ? 'border-red-500' : email ? 'border-green-500' : 'border-gray-300'}`}
-              type="email"
-              id="email"
-              placeholder="Enter your email"
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
+              key={index}
+              id={`otp-${index}`}
+              type="text"
+              value={digit}
+              onChange={(e) => handleOtpChange(e, index)}
+              onKeyDown={(e) => handleOtpKeyDown(e, index)}
+              className={`w-12 h-12 text-center text-2xl rounded-lg border ${
+                theme === 'dark' 
+                  ? 'bg-gray-800 text-white border-gray-700' 
+                  : 'bg-white text-gray-900 border-gray-300'
+              }`}
+              maxLength={1}
+              autoFocus={index === 0}
             />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-          </div>
-
-          {statusMessage && <p className="text-blue-500 text-sm mb-4">{statusMessage}</p>}
-
-          <button
-            className="w-full bg-blue-500 text-white p-3 rounded mb-4 hover:bg-blue-600 flex items-center justify-center"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? <ClipLoader color="#fff" size={25} /> : 'Reset password'}
-          </button>
-        </form>
-
-        <div className="text-center text-sm flex items-center justify-center">
-          <FaArrowLeft className="mr-2 text-blue-500" />
-          <a className="text-blue-500" href="/login">
-            Back to Login
-          </a>
+          ))}
         </div>
-      </motion.div>
-    </div>
+
+        {otpError && (
+          <div className="p-3 rounded-lg bg-red-100 text-red-700 text-sm">
+            {otpError}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition duration-200 transform hover:scale-[1.02]"
+        >
+          Verify OTP
+        </button>
+
+        <div className="text-center">
+          {isTimerActive ? (
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+              Resend OTP in {formatTimeLeft()}
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={handleResendOtp}
+              className="text-blue-500 hover:text-blue-600 text-sm"
+            >
+              Resend OTP
+            </button>
+          )}
+        </div>
+
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setShowOtpVerification(false);
+              setShowForgotPassword(true);
+            }}
+            className="flex items-center justify-center mx-auto text-blue-500 hover:text-blue-600"
+          >
+            <FaArrowLeft className="mr-2" />
+            Back to Forgot Password
+          </button>
+        </div>
+      </form>
+    </motion.div>
   );
-}
+};
+
+export default OtpVerification;

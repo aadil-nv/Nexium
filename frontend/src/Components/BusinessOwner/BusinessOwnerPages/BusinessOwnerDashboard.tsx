@@ -17,7 +17,6 @@ export default function BusinessOwnerDashboard() {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    // Fetch the dashboard data from the API
     businessOwnerInstance
       .get('/businessOwner/api/dashboard/dashboard-data')
       .then((response) => {

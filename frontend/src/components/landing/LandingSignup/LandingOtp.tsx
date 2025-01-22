@@ -1,28 +1,138 @@
-import React, { useState, useEffect, Suspense } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../../components/landing/landingPage/theme-provider';
 import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { signUpResendOtp,SignUpValidateOtp } from '../../../api/authApi'; // Import the API functions
+import { signUpResendOtp, SignUpValidateOtp } from '../../../api/authApi';
 
-const LoadingSpinner = () => (
-  <div className="flex justify-center items-center h-full">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
-  </div>
-);
-
-const LandingOtp: React.FC = () => {
+const LandingOtp = () => {
   const { theme } = useTheme();
   const [otp, setOtp] = useState(Array(6).fill(''));
   const [timeLeft, setTimeLeft] = useState(90);
   const [isTimerActive, setIsTimerActive] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const email = (location.state as { email: string })?.email;
 
+// Animation variants for the container
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      when: "beforeChildren",
+      staggerChildren: 0.2,
+      duration: 0.6
+    }
+  }
+};
+
+// Animation variants for individual items
+const itemVariants = {
+  hidden: { y: 50, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { type: "spring", stiffness: 100 }
+  }
+};
+
+// Fixed floating animation
+const floatingVariants = {
+  initial: { y: 0 },
+  animate: {
+    y: [-10, 0, -10],
+    transition: {
+      duration: 2,
+      repeat: Infinity,
+      repeatType: "mirror" as const,
+      ease: "easeInOut"
+    }
+  }
+};
+
+// Fixed pulse animation
+const pulseVariants = {
+  initial: { scale: 1 },
+  animate: {
+    scale: [1, 1.02, 1],
+    transition: {
+      duration: 2,
+      repeat: Infinity,
+      repeatType: "mirror" as const,
+      ease: "easeInOut"
+    }
+  }
+};
+
+// New shimmer animation for inputs
+const shimmerVariants = {
+  initial: { opacity: 0.3 },
+  animate: {
+    opacity: [0.3, 1, 0.3],
+    transition: {
+      duration: 1.5,
+      repeat: Infinity,
+      repeatType: "mirror" as const,
+      ease: "easeInOut"
+    }
+  }
+};
+
+// New bounce animation for error messages
+const errorVariants = {
+  initial: { x: -10, opacity: 0 },
+  animate: { 
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 200,
+      damping: 10
+    }
+  },
+  exit: {
+    x: 10,
+    opacity: 0,
+    transition: {
+      duration: 0.2
+    }
+  }
+};
+
+// New success animation for the verify button
+const successVariants = {
+  initial: { scale: 1 },
+  success: {
+    scale: [1, 1.2, 1],
+    backgroundColor: ["#2563eb", "#22c55e", "#2563eb"],
+    transition: {
+      duration: 0.5,
+      ease: "easeInOut"
+    }
+  }
+};
+
+// Loading spinner animation
+const spinnerVariants = {
+  initial: { rotate: 0 },
+  animate: {
+    rotate: 360,
+    transition: {
+      duration: 1,
+      repeat: Infinity,
+      ease: "linear"
+    }
+  }
+};
+
   useEffect(() => {
-    if (!isTimerActive || timeLeft <= 0) return;
+    if (!isTimerActive || timeLeft <= 0) {
+      setIsTimerActive(false);
+      return;
+    }
     const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
   }, [isTimerActive, timeLeft]);
@@ -45,6 +155,7 @@ const LandingOtp: React.FC = () => {
 
   const handleResendOtp = async () => {
     try {
+      setIsLoading(true);
       setTimeLeft(90);
       setIsTimerActive(true);
       setOtp(Array(6).fill(''));
@@ -55,14 +166,19 @@ const LandingOtp: React.FC = () => {
     } catch (error) {
       console.error(error);
       toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      setIsLoading(true);
       const data = await SignUpValidateOtp(email, otp.join(''));
       if (data.success) {
+        // Success animation before navigation
+        await new Promise(resolve => setTimeout(resolve, 500));
         navigate('/plans', { state: { email: data.email } });
         setErrorMessage('');
       } else {
@@ -73,60 +189,183 @@ const LandingOtp: React.FC = () => {
       console.error(error);
       setErrorMessage(error.message);
       toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const formatTimeLeft = () => `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`;
 
   return (
-    <div className={`w-full h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
-      <Suspense fallback={<LoadingSpinner />}>
-        <motion.div
-          className={`p-8 rounded-lg w-[90%] max-w-2xl transition-shadow duration-300 ${
-            theme === 'dark' ? 'bg-black-800 shadow-md shadow-blue-500' : 'bg-white shadow-lg shadow-blue-500'
-          }`}
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+    <motion.div 
+      className={`min-h-screen flex ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
+      {/* Left side - Image */}
+      <motion.div 
+        className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
+        variants={itemVariants}
+      >
+        <motion.img 
+          src="/api/placeholder/800/600"
+          alt="OTP Verification"
+          className="object-cover w-full h-full"
+          initial={{ scale: 1.2 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.5 }}
+        />
+        <motion.div 
+          className="absolute inset-0 bg-blue-500 bg-opacity-30 backdrop-blur-sm flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
         >
-          <h2 className={`text-3xl font-bold mb-6 text-center ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Enter OTP</h2>
+          <motion.div 
+            className="text-white text-center p-8"
+            variants={floatingVariants}
+            animate="animate"
+          >
+            <h1 className="text-4xl font-bold mb-4">Verify Your Account</h1>
+            <p className="text-xl">Please enter the OTP sent to your email</p>
+          </motion.div>
+        </motion.div>
+      </motion.div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col items-center">
-            <div className="flex justify-center mb-6">
-              {otp.map((digit, index) => (
-                <input
-                  key={index}
-                  id={`otp-${index}`}
-                  type="text"
-                  value={digit}
-                  onChange={(e) => handleChange(e, index)}
-                  onKeyDown={(e) => handleKeyDown(e, index)}
-                  className={`w-12 h-12 mx-1 text-center text-2xl border rounded ${
-                    theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-                  }`}
-                  maxLength={1}
-                  autoFocus={index === 0}
-                />
-              ))}
-            </div>
+      {/* Right side - OTP Form */}
+      <motion.div 
+        className={`w-full lg:w-1/2 flex items-center justify-center p-8 ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}
+        variants={itemVariants}
+      >
+        <motion.div
+          className="w-full max-w-md"
+          variants={pulseVariants}
+          animate="animate"
+        >
+          <motion.div 
+            className="mb-10 text-center"
+            variants={itemVariants}
+          >
+            <h2 className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+              Enter OTP
+            </h2>
+            <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+              We've sent a verification code to your email
+            </p>
+          </motion.div>
 
-            {errorMessage && <p className="text-red-500 text-center mb-4">{errorMessage}</p>}
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <motion.div 
+              className="space-y-4"
+              variants={itemVariants}
+            >
+              <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`}>
+                Verification Code
+              </label>
+              <div className="flex justify-between gap-2">
+                {otp.map((digit, index) => (
+                  <motion.input
+                    key={index}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileFocus={{ scale: 1.05 }}
+                    id={`otp-${index}`}
+                    type="text"
+                    value={digit}
+                    onChange={(e) => handleChange(e, index)}
+                    onKeyDown={(e) => handleKeyDown(e, index)}
+                    className={`w-12 h-12 text-center text-xl rounded-lg border transition duration-200 outline-none ${
+                      theme === 'dark'
+                        ? 'bg-gray-800 text-white border-gray-700 focus:border-blue-500'
+                        : 'bg-gray-50 text-gray-900 border-gray-300 focus:border-blue-500'
+                    } focus:ring-2 focus:ring-blue-500`}
+                    maxLength={1}
+                    autoFocus={index === 0}
+                  />
+                ))}
+              </div>
+            </motion.div>
 
-            <button type="submit" className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition-colors shadow-md hover:shadow-lg mb-4">
-              Verify OTP
-            </button>
+            <AnimatePresence>
+              {errorMessage && (
+                <motion.div 
+                  className="p-3 rounded-lg bg-red-100 text-red-700 text-sm"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                >
+                  {errorMessage}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {isTimerActive ? (
-              <p className="text-center text-sm">Resend OTP in {formatTimeLeft()} seconds</p>
-            ) : (
-              <button type="button" onClick={handleResendOtp} className="w-full text-blue-500 hover:underline text-center text-sm">
-                Resend OTP
-              </button>
-            )}
+            <motion.button
+              type="submit"
+              className={`w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition duration-200 ${
+                isLoading ? 'opacity-75 cursor-not-allowed' : ''
+              }`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <motion.span
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="inline-block"
+                >
+                  ⟳
+                </motion.span>
+              ) : (
+                'Verify OTP'
+              )}
+            </motion.button>
+
+            <motion.div 
+              className="text-center mt-6"
+              variants={itemVariants}
+            >
+              {isTimerActive ? (
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Resend code in {formatTimeLeft()}
+                </p>
+              ) : (
+                <motion.button
+                  type="button"
+                  onClick={handleResendOtp}
+                  className={`text-sm font-medium hover:underline ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  disabled={isLoading}
+                >
+                  Resend verification code
+                </motion.button>
+              )}
+            </motion.div>
+
+            <motion.div 
+              className="text-center space-y-4 mt-8"
+              variants={itemVariants}
+            >
+              <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                Didn't receive the email?{' '}
+                <motion.button
+                  type="button"
+                  onClick={() => navigate('/signup')}
+                  className={`font-medium hover:underline ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Try another email
+                </motion.button>
+              </div>
+            </motion.div>
           </form>
         </motion.div>
-      </Suspense>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
