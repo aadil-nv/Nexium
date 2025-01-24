@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Skeleton, Select, Input, Modal, Button, message, Empty } from 'antd';
+import { Skeleton, Select, Input, Modal, message, Empty } from 'antd';
 import { SearchOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import useTheme from '../../../hooks/useTheme';
 import { fetchLeaveEmployees, updateLeaveApproval } from '../../../api/managerApi';
-import { duration } from 'moment';
 
 const { Option } = Select;
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { List, Badge, Avatar, Button, Space, Typography, message, Modal, Input, Checkbox, Tabs } from 'antd';
 import { Employee, Group } from '../../interface/ChatInterface';
-import { UsergroupAddOutlined, ClockCircleOutlined, CheckOutlined, TeamOutlined, UserOutlined, MessageOutlined } from '@ant-design/icons';
+import { UsergroupAddOutlined, TeamOutlined, UserOutlined, MessageOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
 import { chatInstance } from '../../services/chatInstance';
 import { motion } from 'framer-motion';
@@ -35,7 +35,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
   groups,
   setSelectedTarget,
   isMobile,
-  formatLastSeen,
+  // formatLastSeen,
   setSiderVisible,
   refreshGroups
 }) => {
@@ -46,7 +46,6 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('1');
-  const [chatId, setChatId] = useState<string>('');
   const [availablePeople, setAvailablePeople] = useState<Employee[]>([]);
   const [existingChats, setExistingChats] = useState<Employee[]>(initialEmployees);
 
@@ -61,10 +60,6 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
   const fetchAvailablePeople = async () => {
     try {
       const response = await chatInstance.get('/chatService/api/chat/get-all-receiver');
-      // Filter out people who are already in existing chats
-      const newAvailablePeople = response.data.filter((person: Employee) => 
-        !existingChats.some(existingPerson => existingPerson.receiverId === person.receiverId)
-      );
       setAvailablePeople(response.data);
     } catch (error) {
       console.error('Error fetching available people:', error);
@@ -75,11 +70,9 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
   const handleUserSelect = async (emp: Employee) => {
     try {
       const response = await chatInstance.post(`/chatService/api/chat/create-chat/${emp.receiverId}`);
-      setChatId(response.data.chatId);
-      
-      // Add the selected person to existing chats
+
       setExistingChats(prevChats => {
-        // Check if the person is already in the list
+
         if (!prevChats.some(chat => chat.receiverId === emp.receiverId)) {
           return [...prevChats, emp];
         }
@@ -102,7 +95,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
         status: emp.status
       });
       
-      isMobile && setSiderVisible(false);
+      if (isMobile) setSiderVisible(false);
       setIsStartChatModalVisible(false);
     } catch (error) {
       console.error('Error creating chat:', error);
@@ -120,7 +113,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
       avatar: group.avatar,
       type: 'group'
     });
-    isMobile && setSiderVisible(false);
+    if (isMobile) setSiderVisible(false);
   };
 
   const createGroup = async () => {

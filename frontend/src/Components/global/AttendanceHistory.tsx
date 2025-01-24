@@ -32,7 +32,7 @@ const AttendanceHistory: React.FC<AttendanceHistoryProps> = ({ attendanceData, u
   const workShift = employee?.workTime;
 
   const handleProgressBarWidth = (minutes: number): string => {
-    const shiftMinutes = getShiftMinutes(workShift);
+    const shiftMinutes = getShiftMinutes(workShift || "");
     const progress = (minutes / shiftMinutes) * 100;
     return `${Math.min(progress, 100)}%`;
   };

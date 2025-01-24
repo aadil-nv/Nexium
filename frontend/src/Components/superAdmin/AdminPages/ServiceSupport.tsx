@@ -93,7 +93,7 @@ export default function CustomerCare() {
         total: filteredData.length,
       });
     } catch (error) {
-      message.error('Failed to fetch service requests');
+      message.error(error.response?.data?.message ||'Failed to fetch service requests');
     } finally {
       setLoading(false);
     }
@@ -117,7 +117,7 @@ export default function CustomerCare() {
       await superAdminInstance.patch(`/superAdmin/api/superadmin/update-status/${id}`, { status: newStatus });
       message.success('Service request status updated successfully!');
     } catch (error) {
-      message.error('Failed to update status');
+      message.error(error.response?.data?.message ||'Failed to update status');
       const rollbackRequests = serviceRequests.map((request) => {
         if (request._id === id) {
           return { ...request, status: 'Pending' };
@@ -236,7 +236,7 @@ export default function CustomerCare() {
     },
   ];
 
-  const handleTableChange = (pagination: any) => {
+  const handleTableChange = (pagination) => {
     fetchServiceRequests(pagination.current, pagination.pageSize);
   };
 
@@ -279,6 +279,7 @@ export default function CustomerCare() {
           onChange={handleTableChange}
           components={{
             body: {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               row: ({ children, ...restProps }: any) => (
                 <motion.tr
                   {...restProps}

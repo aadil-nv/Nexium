@@ -69,7 +69,7 @@ const SignUp: React.FC = () => {
       } else {
         setError({ form: data.message });
       }
-    } catch (error: any) {
+    } catch (error) {
       setError({ form: error.message });
     } finally {
       setLoading(false);

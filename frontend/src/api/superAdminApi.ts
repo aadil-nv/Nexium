@@ -40,8 +40,7 @@ export const updatePlanStatus = async (planId: string, newStatus: boolean) => {
 export const fetchBusinessOwners = async (): Promise<IBusinessOwner[]> => {
   try {
     const { data: responseData } = await superAdminInstance.get("/superAdmin/api/businessowner/find-all-companies");
-    console.log("responce data is =========>",responseData.businessOwners);
-    return responseData.businessOwners.map((owner: any) => ({
+    return responseData.businessOwners.map((owner) => ({
       id: owner._id,
       name: owner.companyDetails.companyName,
       email: owner.personalDetails.email,
@@ -50,8 +49,8 @@ export const fetchBusinessOwners = async (): Promise<IBusinessOwner[]> => {
       subscriptionStatus: owner.subscription?.status || "N/A",
       isBlocked: owner.isBlocked,
     }));
-  } catch (err) {
-    throw new Error("Error fetching business owners");
+  } catch (error) {
+    throw new Error(error.response?.data?.message||"Error fetching business owners");
   }
 };
 
@@ -59,8 +58,8 @@ export const fetchBusinessOwners = async (): Promise<IBusinessOwner[]> => {
 export const updateBlockStatus = async (id: string, isBlocked: boolean): Promise<void> => {
   try {
     await superAdminInstance.patch(`/superAdmin/api/businessowner/update-isblocked/${id}`, { isBlocked });
-  } catch (err) {
-    throw new Error("Failed to update block status.");
+  } catch (error) {
+    throw new Error(error.response?.data?.message||"Failed to update block status.");
   }
 };
 

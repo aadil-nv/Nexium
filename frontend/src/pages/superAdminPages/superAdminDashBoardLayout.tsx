@@ -7,7 +7,7 @@ import { FiSettings } from 'react-icons/fi';
 import { TooltipComponent } from '@syncfusion/ej2-react-popups';
 import ThemeSettings from '../../components/global/ThemeSettings'; // Assuming you have this component
 
-const superAdminDashBoardLayout = () => {
+const SuperAdminDashBoardLayout = () => {
   const activeMenu = useSelector((state: { menu: { activeMenu: boolean } }) => state.menu.activeMenu);
   const [showThemeSettings, setShowThemeSettings] = useState(false);
 
@@ -63,4 +63,4 @@ const superAdminDashBoardLayout = () => {
   );
 };
 
-export default superAdminDashBoardLayout; // Export the CompanyLayout
+export default SuperAdminDashBoardLayout; // Export the CompanyLayout

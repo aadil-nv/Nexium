@@ -9,7 +9,7 @@ interface StartChatModalProps {
   onClose: () => void;
   employees: Employee[];
   formatLastSeen: (date: Date) => string;
-  setSelectedTarget: (target: any) => void;
+  setSelectedTarget: (target) => void;
 }
 
 const StartChatModal: React.FC<StartChatModalProps> = ({

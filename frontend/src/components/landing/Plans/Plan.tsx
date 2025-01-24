@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { loadStripe } from '@stripe/stripe-js';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { login } from '../../../redux/slices/businessOwnerSlice';
+import { useLocation } from 'react-router-dom';
 import { fetchPlans, createCheckoutSession } from '../../../api/authApi';
 import { Check, Sparkles, ArrowRight, Shield } from 'lucide-react';
 
@@ -54,10 +52,10 @@ const PlanSelection: React.FC = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [scrolled, setScrolled] = useState(false);
   const email = (useLocation().state as { email: string })?.email;
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+ 
   const stripePromise = loadStripe('pk_test_51QA84MG0KgrlY5FBKX5uMqGIPF0QRwCB52FMUeaO4mMIqlaHjWaellTk26kdZYqYgM1USvDyz7jwfoAIL5Wovdpw00AYg8dWct');
 
   useEffect(() => {

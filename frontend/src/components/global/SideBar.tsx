@@ -14,11 +14,7 @@ const Sidebar = () => {
   const dispatch = useDispatch();
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
 
-  const isAuthenticated = (role: any) => role.isAuthenticated;
-  console.log("position is",employee.position);
-  console.log("isAuthenctaed ius ", isAuthenticated(employee));
-  
-  
+  const isAuthenticated = (role) => role.isAuthenticated;
   const links = isAuthenticated(superAdmin)
     ? superAdminLinks
     : isAuthenticated(businessOwner)

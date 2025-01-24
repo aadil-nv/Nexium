@@ -1,37 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, Plus } from 'lucide-react';
+import { ICardProps } from '../../interface/GlobalInterface';
 
 interface ModalProps {
   onClose: () => void;
   isVisible: boolean;
-  planData: {
-    planName: string;
-    description: string;
-    price: number;
-    planType: string;
-    durationInMonths: number;
-    featuresString: string;
-    planId: string;
-  };
+  planData: ICardProps;
   themeColor: string;
-  onPlanUpdate: (updatedPlan: any) => void;
+  onPlanUpdate: (updatedPlan: ICardProps) => void;
 }
 
 const Modal: React.FC<ModalProps> = ({ onClose, isVisible, planData, themeColor, onPlanUpdate }) => {
-  const [formData, setFormData] = useState(planData);
+  const [formData, setFormData] = useState<ICardProps>(planData);
   const [features, setFeatures] = useState<string[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     setFormData(planData);
-    // Split featuresString into array and filter out empty strings
-    const featuresArray = planData.featuresString
-      .split(',')
-      .map(feature => feature.trim())
-      .filter(feature => feature.length > 0);
-    setFeatures(featuresArray);
-  }, [planData]);
+    const featuresArray = planData.featuresString 
+    ? planData.featuresString.split(',').map(feature => feature.trim()).filter(feature => feature.length > 0)
+    : (planData.features ?? []).map(feature => feature.trim()).filter(feature => feature.length > 0);
+  setFeatures(featuresArray);
+}, [planData]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -95,16 +86,20 @@ const Modal: React.FC<ModalProps> = ({ onClose, isVisible, planData, themeColor,
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      const updatedFormData = {
+      const updatedFormData: ICardProps = {
         ...formData,
-        featuresString: features.join(','),
+        featuresString: features.join(','),  // Add featuresString back
+        features: features,
+        isActive: formData.isActive ?? true,
+        onStatusChange: formData.onStatusChange ?? (() => {}),
+        onPlanUpdate: formData.onPlanUpdate ?? (() => {})
       };
       onPlanUpdate(updatedFormData);
       onClose();
     }
   };
 
-  const renderInput = (label: string, type: string, name: string, value: any, options?: string[]) => (
+  const renderInput = (label: string, type: string, name: string, value : string | number, options?: string[]) => (
     <div>
       <label className="block text-sm font-medium text-black">{label}</label>
       {type === 'select' ? (

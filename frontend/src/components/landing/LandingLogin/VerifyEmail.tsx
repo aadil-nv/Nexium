@@ -1,21 +1,37 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FaArrowLeft } from 'react-icons/fa';
+import { useTheme } from '../landingPage/theme-provider';
 
-const OtpVerification = ({
-  theme,
-  otp,
-  handleOtpChange,
-  handleOtpKeyDown,
-  otpError,
-  handleOtpSubmit,
-  isTimerActive,
-  formatTimeLeft,
-  handleResendOtp,
-  setShowOtpVerification,
-  setShowForgotPassword,
-  forgotPasswordEmail
+interface VerifyEmailProps {
+  otp?: string[];
+  handleOtpChange?: (e: React.ChangeEvent<HTMLInputElement>, index: number) => void;
+  handleOtpKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>, index: number) => void;
+  otpError?: string | null;
+  handleOtpSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
+  isTimerActive?: boolean;
+  formatTimeLeft?: () => string;
+  handleResendOtp?: () => void;
+  setShowOtpVerification?: (show: boolean) => void;
+  setShowForgotPassword?: (show: boolean) => void;
+  forgotPasswordEmail?: string;
+}
+
+const VerifyEmail: React.FC<VerifyEmailProps> = ({
+  otp = ['', '', '', '', '', ''],
+  handleOtpChange = () => {},
+  handleOtpKeyDown = () => {},
+  otpError = null,
+  handleOtpSubmit = (e) => e.preventDefault(),
+  isTimerActive = false,
+  formatTimeLeft = () => '00:00',
+  handleResendOtp = () => {},
+  setShowOtpVerification = () => {},
+  setShowForgotPassword = () => {},
+  forgotPasswordEmail = ''
 }) => {
+  const { theme } = useTheme();
+  
   return (
     <motion.div
       className="w-full max-w-md"
@@ -100,4 +116,4 @@ const OtpVerification = ({
   );
 };
 
-export default OtpVerification;
+export default VerifyEmail;

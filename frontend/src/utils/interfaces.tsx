@@ -1,4 +1,8 @@
 import { ColumnDef } from "@tanstack/react-table";
+import {  AppDispatch } from '../redux/store/store'; // Import your app's dispatch type
+import { NavigateFunction } from 'react-router-dom'; // Import the correct type for navigate
+
+
 
 export interface IBusinessOwner {
   id: string;
@@ -35,7 +39,7 @@ export interface Employee {
 
 
 export interface UserStatus { //! Part of navbar Functions do not remove
-  isAuthenticated: any;
+  isAuthenticated: boolean;
 }
 
 export interface NavbarFunctionsProps {
@@ -43,6 +47,7 @@ export interface NavbarFunctionsProps {
   isSuperAdmin: UserStatus;
   isManager: UserStatus;
   isEmployee: UserStatus;
-  dispatch: any;
-  navigate: any;
+  dispatch: AppDispatch;
+  navigate: NavigateFunction;
+ 
 }

@@ -7,9 +7,9 @@ import employeeReducer from '../slices/employeeSlice';
 import otpReducer from '../slices/otpSlice';
 import leaveReducer from '../slices/leaveSlice';
 import taskReducer from '../slices/taskSlice';
-import myTaskReducer from '../slices/myTaskSlice';
 import taskListReducer from '../slices/taskList';
 import { RESET_STORE } from './resetAction';
+
 
 
 const appReducer = combineReducers({
@@ -25,6 +25,7 @@ const appReducer = combineReducers({
   taskList:taskListReducer
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rootReducer = (state: any, action: any) => {
   if (action.type === RESET_STORE) {
     state = undefined;

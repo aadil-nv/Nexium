@@ -3,20 +3,17 @@ import { MdAddBusiness } from 'react-icons/md';
 import DepartmentCard from '../../global/DepartmentCard';
 import useTheme from '../../../hooks/useTheme';
 import AddDepartmentModal from '../../ui/AddDepartment';
-import { fetchEmployeesWithOutDepAPI, fetchDepartmentsAPI, removeDepartmentAPI } from '../../../api/managerApi';
+import {  fetchDepartmentsAPI, removeDepartmentAPI } from '../../../api/managerApi';
 import { IDepartment } from '../../../interface/managerInterface';
-import { IEmployee } from '../../../interface/GlobalInterface';
 
 export default function Departments() {
   const { themeColor } = useTheme();
-  const [employees, setEmployees] = useState<IEmployee[]>([]);
   const [departments, setDepartments] = useState<IDepartment[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
-    fetchEmployeesWithOutDepAPI().then(setEmployees).catch(console.error);
     fetchDepartmentsAPI().then(setDepartments).catch(console.error);
-  }, []); // Fetch data on initial mount
+  }, []);
 
   const handleAddNewDepartment = (newDepartment: IDepartment) =>
     setDepartments((prev) => [newDepartment, ...prev]);
@@ -47,15 +44,15 @@ export default function Departments() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-        {departments.map(({ departmentId, departmentName, employees  }) => (
+        {departments.map(({ departmentId, departmentName, employees }) => (
           <DepartmentCard
             key={departmentId}
             departmentName={departmentName}
             employees={employees.map(({ employeeId, name, position, profilePicture, email, isActive }) => ({
-              employeeId: employeeId , 
+              employeeId: employeeId, 
               name: name || '', 
               position: position || '', 
-              profilePicture: profilePicture||"", 
+              profilePicture: profilePicture || "", 
               email: email || '', 
               isOnline: isActive ?? false, 
             }))}
@@ -80,7 +77,6 @@ export default function Departments() {
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
         onAddDepartment={handleAddNewDepartment}
-      
       />
     </div>
   );

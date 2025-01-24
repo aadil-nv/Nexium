@@ -8,20 +8,13 @@ import { logout as businessOwnerLogout } from "../redux/slices/businessOwnerSlic
 import { logout as managerLogout } from "../redux/slices/managerSlice";
 import { logout as employeeLogout } from "../redux/slices/employeeSlice";
 import { NavbarFunctionsProps} from "../utils/interfaces"
-import {persistor} from "../redux/store/store" 
 import { resetTasks } from "../redux/slices/taskSlice";
 
 
 
 
-export const handleLogout = ({
-  isBusinessOwner,
-  isSuperAdmin,
-  isManager,
-  isEmployee,
-  dispatch,
-  navigate,
-}: NavbarFunctionsProps) => {
+
+export const handleLogout = ({isBusinessOwner,isSuperAdmin,isManager,isEmployee,dispatch,navigate,}: NavbarFunctionsProps) => {
   if (isBusinessOwner.isAuthenticated) {
     dispatch(businessOwnerLogout());
     businessOwnerInstance.post("/businessOwner/api/business-owner/logout");
@@ -79,7 +72,7 @@ export const onSettingsClick = (
   }
 };
 
-export const NavButton = ({ title, customFunc, icon, themeColor }) => (
+export const NavButton = ({ customFunc, icon, themeColor }) => (
   <button
     type="button"
     onClick={customFunc}

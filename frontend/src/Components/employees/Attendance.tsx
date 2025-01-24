@@ -4,7 +4,7 @@ import { FaCheckCircle, FaSignInAlt, FaCalendarAlt } from "react-icons/fa";
 import { Empty } from "antd";
 import AttendanceHistory from "../global/AttendanceHistory";
 import Alert from "../global/Alert";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch} from "react-redux";
 import { updateWorkDetails } from "../../redux/slices/employeeSlice";
 import useAuth from "../../hooks/useAuth";
 import { fetchAttendanceData, markCheckIn, markCheckOut } from "../../api/employeeApi";
@@ -31,16 +31,13 @@ type ICurrentStatus = {
 export default function AttendanceCard() {
   const [attendanceData, setAttendanceData] = useState<IAttendance[]>([]);
   const [page, setPage] = useState(1);
-  const [isCheckedIn, setIsCheckedIn] = useState(false);
-  const [timer, setTimer] = useState(0);
-  const [progress, setProgress] = useState(0);
+  // const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [showCheckoutAlert, setShowCheckoutAlert] = useState(false);
-  const [reloadData, setReloadData] = useState(false); // Added state for refreshing data
-  const [isLoading, setIsLoading] = useState(true); // State to track loading
+  const [reloadData, setReloadData] = useState(false); 
+  const [isLoading, setIsLoading] = useState(true); 
   const { employee } = useAuth();
   const dispatch = useDispatch();
-  const workTimer = useSelector((state: any) => state.employee.workTimer);
   const [currentDayStatus, setCurrentDayStatus] = useState<ICurrentStatus>({
     attendance: [],
     currentStatus: "notMarked",
@@ -76,7 +73,7 @@ export default function AttendanceCard() {
   const handleCheckOut = () => setShowCheckoutAlert(true);
 
   const handleConfirmCheckIn = async () => {
-    setIsCheckedIn(true);
+    // setIsCheckedIn(true);
     setShowAlert(false);
     const checkInData = {
       date: new Date().toISOString().split("T")[0],
@@ -92,13 +89,12 @@ export default function AttendanceCard() {
 
 const handleConfirmCheckout = async () => {
     const checkOutData = {
-      workTime: timer,
       checkOutTime: new Date().toISOString(),
       date: new Date().toISOString().split("T")[0],
     };
     try {
       await markCheckOut(checkOutData);
-      setIsCheckedIn(false);
+      // setIsCheckedIn(false);
       setShowCheckoutAlert(false);
       dispatch(
         updateWorkDetails({

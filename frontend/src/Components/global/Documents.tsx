@@ -1,86 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Upload, Card, notification, Skeleton } from 'antd';
+import { Button, Upload, Card, Skeleton } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import { UploadChangeParam, UploadFile } from 'antd/es/upload/interface';
+import { motion } from 'framer-motion';
+
 import useAuth from '../../hooks/useAuth';
 import { fetchBusinessOwnerDocument, uploadBuisnessOwnerDocument } from "../../api/businessOwnerApi";
 import { fetchManagerDocument, updateManagerOwnerDocument } from "../../api/managerApi";
 import { fetchEmployeeDocument, updateEmployeeDocument } from "../../api/employeeApi";
-import { UploadChangeParam, UploadFile } from 'antd/es/upload/interface';
-import { motion } from 'framer-motion'; // Import motion for animations
-import { toast } from 'react-toastify';
-import { set } from 'zod';
 
-const Documents = () => {
-  const [document, setDocument] = useState<any | null>(null);
+interface Document {
+  documentName: string;
+  documentSize: string;
+  uploadedAt: string;
+  documentUrl?: string;
+}
+
+const Documents: React.FC = () => {
+  const [document, setDocument] = useState<Document | null>(null);
   const [loading, setLoading] = useState(false);
-  const { businessOwner ,manager ,employee } = useAuth();
+  const { businessOwner, manager, employee } = useAuth();
 
-  // Fetch the document when the component mounts or when authentication status changes
   useEffect(() => {
-    if (businessOwner.isAuthenticated) {
+    const fetchDocument = async () => {
       setLoading(true);
-      fetchBusinessOwnerDocument()
-        .then((data) => {
-          setDocument(data || null);
-        })
-        .catch((error) => {
-          console.error('Error fetching business owner document:', error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else if(manager.isAuthenticated){
-      setLoading(true);
-      fetchManagerDocument()
-        .then((data) => {
-          setDocument(data );
-        })
-        .catch((error) => {
-          console.error('Error fetching business owner document:', error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }else if(employee.isAuthenticated){
-      setLoading(true);
-      fetchEmployeeDocument()
-        .then((data) => {
-          setDocument(data );
-        })
-        .catch((error) => {
-          console.error('Error fetching business owner document:', error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      try {
+        let data: Document | null = null;
+        if (businessOwner.isAuthenticated) {
+          data = await fetchBusinessOwnerDocument();
+        } else if (manager.isAuthenticated) {
+          data = await fetchManagerDocument();
+        } else if (employee.isAuthenticated) {
+          data = await fetchEmployeeDocument();
+        }
+        setDocument(data);
+      } catch (error) {
+        console.error('Error fetching document:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchDocument();
+  }, [businessOwner.isAuthenticated, manager.isAuthenticated, employee.isAuthenticated]);
 
-    }
-  }, [businessOwner.isAuthenticated ,manager.isAuthenticated,employee.isAuthenticated]);
-
-  
-  const handleUpload = async (info: UploadChangeParam<UploadFile<any>>) => {
+  const handleUpload = async (info: UploadChangeParam<UploadFile>) => {
     const { file } = info;
     setLoading(true);
     const castedFile = file as unknown as File;
-  
-    // Only proceed if the user is authenticated
-    if (businessOwner.isAuthenticated) {
-          await uploadBuisnessOwnerDocument(castedFile);
-          const updatedDocument = await fetchBusinessOwnerDocument();
-          setDocument(updatedDocument || null);
-          setLoading(false);
-  }else if(manager.isAuthenticated){
-          await updateManagerOwnerDocument(castedFile);
-          const updatedDocument = await fetchManagerDocument();
-          setDocument(updatedDocument || null);
-          setLoading(false);
-  }else if(employee.isAuthenticated){
-          await updateEmployeeDocument(castedFile);
-          const updatedDocument = await fetchEmployeeDocument();
-          setDocument(updatedDocument || null);
-          setLoading(false);
-  }
+
+    try {
+      let updatedDocument: Document | null = null;
+      if (businessOwner.isAuthenticated) {
+        await uploadBuisnessOwnerDocument(castedFile);
+        updatedDocument = await fetchBusinessOwnerDocument();
+      } else if (manager.isAuthenticated) {
+        await updateManagerOwnerDocument(castedFile);
+        updatedDocument = await fetchManagerDocument();
+      } else if (employee.isAuthenticated) {
+        await updateEmployeeDocument(castedFile);
+        updatedDocument = await fetchEmployeeDocument();
+      }
+      setDocument(updatedDocument);
+    } catch (error) {
+      console.error('Error uploading document:', error);
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (
@@ -100,7 +86,6 @@ const Documents = () => {
           title={document ? document.documentName : 'Upload Document'}
           bordered={false}
         >
-          {/* Skeleton Placeholder when document is loading */}
           {loading ? (
             <Skeleton active />
           ) : document ? (
@@ -109,7 +94,6 @@ const Documents = () => {
                 <p>Size: {document.documentSize}</p>
                 <p>Uploaded on: {new Date(document.uploadedAt).toLocaleString()}</p>
               </div>
-              {/* Check if document URL exists before displaying the image */}
               {document.documentUrl ? (
                 <img 
                   src={document.documentUrl} 

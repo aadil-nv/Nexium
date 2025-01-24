@@ -7,6 +7,26 @@ import type { ColumnsType } from 'antd/es/table';
 import { motion, AnimatePresence } from 'framer-motion';
 import { managerInstance } from '../../../services/managerInstance';
 
+interface ProjectFile {
+  fileUrl: string;
+}
+
+interface AssignedEmployee {
+  employeeName: string;
+  employeeFiles?: ProjectFile[];
+}
+
+interface ProjectDataFromAPI {
+  projectId: string;
+  projectName: string;
+  assignedEmployee?: AssignedEmployee;
+  description: string;
+  status: 'pending' | 'inProgress' | 'completed' | 'notStarted';
+  endDate: string;
+  projectFiles: ProjectFile[];
+  managerStatus: 'assigned' | 'underEvaluation' | 'approved' | 'rejected' | 'onHold' | 'inProgress' | 'requiresClarification' | 'escalated';
+}
+
 interface ProjectData {
   id: string;
   projectName: string;
@@ -16,7 +36,7 @@ interface ProjectData {
   dueDate: string;
   file: string | null;
   employeeFiles: string;
-  managerStatus: 'assigned' | 'underEvaluation' | 'approved' | 'rejected' | 'onHold' | 'inProgress' | 'requiresClarification'| 'escalated';
+  managerStatus: 'assigned' | 'underEvaluation' | 'approved' | 'rejected' | 'onHold' | 'inProgress' | 'requiresClarification' | 'escalated';
 }
 
 const statusColors = {
@@ -120,7 +140,8 @@ const Projects = () => {
           setProjects(prev => prev.filter(p => p.id !== id));
           notification.success({ message: 'Project deleted successfully' });
         } catch (error) {
-          notification.error({ message: 'Failed to delete project' });
+          console.log("Error deleting project:", error);  
+          notification.error({message: 'Failed to delete project' });
         }
       },
     });
@@ -130,22 +151,21 @@ const Projects = () => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const { data } = await managerInstance.get('/manager/api/projects/get-all-projects');
-
-        console.log('data', data);
+        const { data } = await managerInstance.get<ProjectDataFromAPI[]>('/manager/api/projects/get-all-projects');
         
-        setProjects(data.map((p: any) => ({
+        setProjects(data.map((p): ProjectData => ({
           id: p.projectId,
           projectName: p.projectName || 'N/A',
           teamLead: p.assignedEmployee?.employeeName || 'N/A',
           description: p.description || 'No description provided',
-          status: p.status || 'Unknown',
+          status: p.status || 'notStarted',
           dueDate: p.endDate || 'No due date',
           file: p.projectFiles[0]?.fileUrl || null,
-          employeeFiles: p.assignedEmployee?.employeeFiles?.map((file: any) => file.fileUrl).join(', ') || 'No files',
-          managerStatus: p.managerStatus || 'Unknown'
+          employeeFiles: p.assignedEmployee?.employeeFiles?.map(file => file.fileUrl).join(', ') || 'No files',
+          managerStatus: p.managerStatus || 'assigned'
         })));
       } catch (error) {
+        console.log("Error fetching projects:", error);
         notification.error({ message: 'Failed to fetch projects' });
       }
       setLoading(false);

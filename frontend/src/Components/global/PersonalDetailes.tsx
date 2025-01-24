@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Upload, Skeleton, Empty, Spin, DatePicker, Select } from 'antd';
+import { Form, Input, Button, Upload, Skeleton, Empty, Spin, Select } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined, BankOutlined, IdcardOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
@@ -114,7 +114,7 @@ export default function PersonalDetails() {
     }
   };
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values) => {
     try {
       const updateFunctions = {
         manager: updateManagerPersonalInfo,

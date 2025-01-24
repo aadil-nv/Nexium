@@ -6,12 +6,22 @@ import dayjs from 'dayjs';
 
 const { Option } = Select;
 
+// Define an enum for leave types to provide type safety
+enum LeaveType {
+  AnnualLeave = 'Annual Leave',
+  SickLeave = 'Sick Leave',
+  MaternityLeave = 'Maternity Leave',
+  PaternityLeave = 'Paternity Leave',
+  CompassionateLeave = 'Compassionate Leave',
+  UnpaidLeave = 'Unpaid Leave'
+}
+
 interface PreAppliedLeave {
   _id: string;
   employeeId: string;
   employeeName?: string;    
   profilePicture?: string;
-  leaveType: string;
+  leaveType: LeaveType; // Updated to use the enum
   reason: string;
   startDate: string;
   endDate: string;
@@ -94,7 +104,7 @@ export default function PreAppliedLeaves() {
       dataIndex: 'leaveType',
       key: 'leaveTypes',
       width: 200,
-      render: (leaveType: any) => (
+      render: (leaveType: LeaveType) => (
         <div className="space-y-1">{leaveType}</div>
       ),
     },
@@ -150,7 +160,7 @@ export default function PreAppliedLeaves() {
           }}
           style={{ width: 150 }}
         >
-          <Option  disabled>{record.status}</Option>
+          <Option disabled>{record.status}</Option>
           <Option value="approved">Approve</Option>
           <Option value="rejected">Reject</Option>
         </Select>

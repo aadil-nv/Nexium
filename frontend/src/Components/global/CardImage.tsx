@@ -51,11 +51,11 @@ const CardImage: React.FC<ICardImageProps> = ({ title, imgSrc, onImageChange }) 
   };
 
   // Handle file change (triggered after selecting the file)
-  const handleFileChange = ({ file }: any) => {
-    if (file.status === 'done') {
-      handleImageUpload(file.originFileObj); // Upload the selected image
-    }
-  };
+  // const handleFileChange = ({ file }: any) => {
+  //   if (file.status === 'done') {
+  //     handleImageUpload(file.originFileObj); // Upload the selected image
+  //   }
+  // };
 
   return (
     <Card

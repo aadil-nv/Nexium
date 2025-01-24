@@ -3,17 +3,31 @@ import { Input, Select, Tag, Pagination, Button } from 'antd';
 import { motion } from 'framer-motion';
 import { CheckCircleOutlined, CloseCircleOutlined, CalendarOutlined, UserOutlined, SearchOutlined, FilterOutlined, EyeOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
-import { setTasks, setLoading, removeTask } from '../../redux/slices/taskList';
+import { setTasks, setLoading } from '../../redux/slices/taskList';
 import { employeeInstance } from '../../services/employeeInstance';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../redux/store/store';
 
 const { Option } = Select;
 
+interface SubTask {
+  isCompleted: boolean;
+}
+
+interface Task {
+  _id: string;
+  taskName: string;
+  dueDate: string;
+  assignedBy: string;
+  isApproved: boolean;
+  status?: string;
+  tasks: SubTask[];
+}
+
 const MyTaskList: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const tasks = useSelector((state: RootState) => state.taskList.tasks);
+  const tasks = useSelector((state: RootState) => state.taskList.tasks as Task[]);
   const loading = useSelector((state: RootState) => state.taskList.loading);
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,7 +53,7 @@ const MyTaskList: React.FC = () => {
     fetchTasks();
   }, [dispatch]);
 
-  const filteredTasks = tasks.filter((task) =>
+  const filteredTasks = tasks.filter((task: Task) =>
     task.taskName.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (!statusFilter || task.status === statusFilter)
   );
@@ -49,9 +63,9 @@ const MyTaskList: React.FC = () => {
     currentPage * tasksPerPage
   );
 
-  const TaskCard = ({ task }: { task: any }) => {
+  const TaskCard = ({ task }: { task: Task }) => {
     // Calculate completed tasks count
-    const completedCount = task.tasks.filter((subTask: any) => subTask.isCompleted).length;
+    const completedCount = task.tasks.filter((subTask: SubTask) => subTask.isCompleted).length;
     const totalCount = task.tasks.length;
   
     return (
@@ -139,7 +153,7 @@ const MyTaskList: React.FC = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedTasks.map((task) => (
+              {displayedTasks.map((task: Task) => (
                 <TaskCard key={task._id} task={task} />
               ))}
             </div>

@@ -4,32 +4,34 @@ import moment from 'moment';
 import { employeeInstance } from '../../services/employeeInstance';
 import { toast } from 'react-toastify';
 
-interface ITaskDTO {
-  _id: string;
-  employeeId: string;
-  employeeProfilePicture: string;
-  employeeName: string;
-  dueDate: string;
-  assignedBy: string;
-  assigenedDate: string;
-  taskName: string;
-  isApproved?: boolean;
-  tasks: { 
-    title: string; 
-    priority: "low" | "medium" | "high";
-    description: string;
-    isCompleted: boolean;
-    _id: string;
-    taskStatus?: "backlog" | "inProgress" | "codeReview" | "qaTesting" | "blocked" | "completed" | "deployed" | "approved";
-    response?: string;
-  }[];
+interface SubTask {   
+  title: string;   
+  priority: string;   
+  description: string;   
+  isCompleted: boolean;   
+  _id?: string;   
+  taskStatus?: string;   
+  response?: string; 
+}
+
+interface Task {   
+  _id?: string;   
+  employeeProfilePicture: string;   
+  employeeName: string;   
+  dueDate: string;   
+  assignedBy: string;   
+  assigenedDate: string;   
+  taskName: string;   
+  isApproved?: boolean;   
+  tasks: SubTask[];   
+  employeeId?: string; 
 }
 
 interface TaskModalProps {
   visible: boolean;
-  selectedTask: any | null;
+  selectedTask: Task | null;
   onCancel: () => void;
-  onSave: (task: any) => void;
+  onSave: (task: Task) => void;
 }
 
 const taskStatusColors = {
@@ -44,7 +46,7 @@ const taskStatusColors = {
 };
 
 const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCancel, onSave }) => {
-  const [taskData, setTaskData] = useState<any | null>(null);
+  const [taskData, setTaskData] = useState<Task | null>(null);
   const [availableEmployees, setAvailableEmployees] = useState<{ _id: string, name: string }[]>([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('');
   const [isReassigning, setIsReassigning] = useState(false);
@@ -52,7 +54,7 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
   useEffect(() => {
     if (selectedTask) {
       setTaskData(selectedTask);
-      setSelectedEmployeeId(selectedTask.employeeId);
+      setSelectedEmployeeId(selectedTask.employeeId || '');
     }
   }, [selectedTask]);
 
@@ -69,35 +71,34 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
         setAvailableEmployees(response.data);
       }
     } catch (error) {
-      toast.error('Failed to fetch available employees');
+      toast.error(error.message || 'Failed to fetch available employees');
     }
   };
 
-  const handleTaskUpdate = (index: number, field: string, value: any) => {
+  const handleTaskUpdate = (index: number, field: string, value) => {
     if (taskData) {
       const updatedTasks = [...taskData.tasks];
-      if (field === 'priority' && (value === 'low' || value === 'medium' || value === 'high')) {
-        updatedTasks[index] = { ...updatedTasks[index], [field]: value };
-      } else if (field !== 'priority') {
-        updatedTasks[index] = { ...updatedTasks[index], [field]: value };
-      }
+      updatedTasks[index] = { ...updatedTasks[index], [field]: value };
       setTaskData({ ...taskData, tasks: updatedTasks });
     }
   };
 
-  const handleAddTask = () => {
-    if (taskData) {
-      const newTask = {
-        title: '',
-        description: '',
-        priority: 'low',
-        taskStatus: 'backlog'
-      };
-      setTaskData({
-        ...taskData,
-        tasks: [...taskData.tasks, newTask],
-      });
-    }
+  const handleAddTask = () => { 
+    if (taskData) { 
+      const newTask: SubTask = { 
+        title: '', 
+        description: '', 
+        priority: 'low', 
+        taskStatus: 'backlog', 
+        isCompleted: false,
+        _id: undefined,
+        response: ''
+      }; 
+      setTaskData({ 
+        ...taskData, 
+        tasks: [...taskData.tasks, newTask], 
+      }); 
+    } 
   };
 
   const handleDeleteTask = (index: number) => {
@@ -108,35 +109,39 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
   };
 
   const handleReassign = async () => {
+    if (!taskData) {
+      toast.error('Task data is missing');
+      return;
+    }
+  
     if (selectedEmployeeId === taskData.employeeId) {
       toast.info('Please select a different employee to reassign');
       return;
     }
-
+  
     try {
       await employeeInstance.patch(`/employee/api/task/reassign-task/${taskData._id}`, {
         employeeId: selectedEmployeeId
       });
-      
+  
       toast.success('Task reassigned successfully!');
       setIsReassigning(false);
-      
-      // Update local state with new employee data
+  
       const newEmployee = availableEmployees.find(emp => emp._id === selectedEmployeeId);
       if (newEmployee) {
-        setTaskData({
+        const updatedTask = {
           ...taskData,
           employeeId: selectedEmployeeId,
-          employeeName: newEmployee.name
-        });
+          employeeName: newEmployee.name,
+        };
+        
+        setTaskData(updatedTask);
+        onSave(updatedTask);
+      } else {
+        toast.error('Selected employee not found');
       }
-      
-      onSave({
-        ...taskData,
-        employeeId: selectedEmployeeId,
-        employeeName: newEmployee?.name
-      });
-    } catch (error) {
+    } catch (err) {
+      console.error(err);
       toast.error('Failed to reassign task');
     }
   };
@@ -150,7 +155,7 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
           onSave(taskData);
         }
       } catch (error) {
-        toast.error('Failed to update task!');
+        toast.error(error.message || 'Failed to update task!');
       }
     }
   };
@@ -240,7 +245,7 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
                 <Input
                   value={task.response}
                   onChange={(e) => handleTaskUpdate(index, 'response', e.target.value)}
-                  placeholder={`Enter title for task ${index + 1}`}
+                  placeholder={`Enter response for task ${index + 1}`}
                   style={{ borderRadius: 4 }}
                   readOnly
                 />
@@ -321,7 +326,7 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
                       onChange={setSelectedEmployeeId}
                       placeholder="Select new employee"
                     >
-                      <Select.Option value={taskData.employeeId}>
+                      <Select.Option value={taskData.employeeId || ''}>
                         {taskData.employeeName} (Current)
                       </Select.Option>
                       {availableEmployees.map(emp => (
@@ -372,7 +377,7 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
                 <label style={{ display: 'block', marginBottom: 4, color: '#666' }}>Due Date</label>
                 <DatePicker
                   value={moment(taskData.dueDate)}
-                  onChange={(date) => setTaskData({ ...taskData, dueDate: date?.toDate() || new Date() })}
+                  onChange={(date) => setTaskData({ ...taskData, dueDate: date?.format('YYYY-MM-DD') || '' })}
                   style={{ width: '100%', borderRadius: 4 }}
                 />
               </div>

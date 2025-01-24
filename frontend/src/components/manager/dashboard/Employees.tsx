@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import Table from '../../global/Table';
 import { IEmployee } from '../../../interface/managerInterface';
-import { ColumnDef } from '@tanstack/react-table';
 import useTheme from '../../../hooks/useTheme';
 import useAuth from '../../../hooks/useAuth';
 import { motion } from 'framer-motion';
-import { FaEdit, FaUserLock, FaSignOutAlt } from 'react-icons/fa';
 import { fetchEmployees } from '../../../api/managerApi';
 import EmployeesList from './EmployeesTable';
 import { FaPlus } from 'react-icons/fa';
@@ -17,7 +14,6 @@ export default function Employees() {
   const [updateTrigger, setUpdateTrigger] = useState(0); // State to trigger re-fetching data
   const { themeColor } = useTheme();
   const { manager } = useAuth();
-  const isManager = manager?.isAuthenticated;
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   // Fetch employee data whenever updateTrigger changes
@@ -27,21 +23,21 @@ export default function Employees() {
       .catch((error) => console.error('Error fetching employee data:', error));
   }, [updateTrigger]); // Re-fetch when `updateTrigger` changes
 
-  const columns: ColumnDef<IEmployee>[] = [
-    { id: 'ID', accessorKey: '_id' },
-    { header: 'Name', accessorKey: 'employeeName' },
-    { header: 'Position', accessorKey: 'position' },
-    { header: 'Email', accessorKey: 'email' },
-    {
-      header: 'Status',
-      accessorKey: 'isActive',
-      cell: ({ row }) => (
-        <span className={row.getValue('isActive') ? 'text-green-500' : 'text-red-500'}>
-          {row.getValue('isActive') ? 'Active' : 'Inactive'}
-        </span>
-      ),
-    },
-  ];
+  // const columns: ColumnDef<IEmployee>[] = [
+  //   { id: 'ID', accessorKey: '_id' },
+  //   { header: 'Name', accessorKey: 'employeeName' },
+  //   { header: 'Position', accessorKey: 'position' },
+  //   { header: 'Email', accessorKey: 'email' },
+  //   {
+  //     header: 'Status',
+  //     accessorKey: 'isActive',
+  //     cell: ({ row }) => (
+  //       <span className={row.getValue('isActive') ? 'text-green-500' : 'text-red-500'}>
+  //         {row.getValue('isActive') ? 'Active' : 'Inactive'}
+  //       </span>
+  //     ),
+  //   },
+  // ];
 
   return (
     <div className="relative p-6 space-y-6">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Button, List, Avatar, Spin, message, Divider } from 'antd';
-import { DeleteOutlined, UserAddOutlined, EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined, UserAddOutlined} from '@ant-design/icons';
 import { chatInstance } from '../../services/chatInstance';
 
 
@@ -44,7 +44,6 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
   groupId,
   onGroupUpdate,
   setGroups,
-  currentGroup
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);

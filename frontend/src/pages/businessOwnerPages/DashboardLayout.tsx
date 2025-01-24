@@ -63,4 +63,4 @@ const DashBoardLayout = () => {
   );
 };
 
-export default DashBoardLayout; // Export the CompanyLayout
+export default DashBoardLayout;

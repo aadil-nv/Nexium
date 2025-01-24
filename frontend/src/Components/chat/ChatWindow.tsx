@@ -68,8 +68,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const { isActiveMenu, themeColor, themeMode } = useTheme();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [typingUser, setTypingUser] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedMessageId, setSelectedMessageId] = useState<string | undefined>(undefined);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -82,6 +80,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     if (isSender && messageId) {
       setMessageToDelete(messageId);
       setDeleteModalVisible(true);
+      setSelectedMessageId(messageId); // Set selected message ID here
+
     }
   };
 
@@ -127,21 +127,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const handleDeleteMessage = async () => {
     try {
       if (!messageToDelete) return;
-      console.log('messageToDelete======>', messageToDelete);
-      
-
       await chatInstance.delete(`/chatService/api/message/delete-message/${messageToDelete}`);
-      
-
-      socket.emit('messageDeleted', {
-        chatId,
-        messageId: messageToDelete,
-        senderId
-      });
-
-      // Update local state
+      socket.emit('messageDeleted', {chatId,messageId: messageToDelete, senderId});
       setChatMessages(prev => prev.filter(msg => msg.messageId !== messageToDelete));
-      
       handleDeleteModalClose();
     } catch (error) {
       console.error('Error deleting message:', error);
@@ -161,7 +149,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       status: 'sending',
       senderName: '',
       readBy: [senderId],
-      messageId: `temp-${Date.now()}` // Add temporary ID
+      messageId: `temp-${Date.now()}`
     };
 
     setChatMessages((prev) => [...prev, newMessage]);
@@ -179,12 +167,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       senderName: senderName
     };
 
-    socket.emit('sendMessage', apiMessage, (acknowledgement: MessageAcknowledgement) => {
-
-    });
+    socket.emit('sendMessage', apiMessage, () => {});
     socket.on('messageAcknowledgement', (acknowledgement: MessageAcknowledgement) => {
-      console.log("acknowledgement ------>", acknowledgement);
-      
       setChatMessages((prev) =>
         prev.map((msg) =>
           msg.messageId === newMessage.messageId
@@ -193,10 +177,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         )
       );
     })
-
-    console.log("chat messages ------>", chatMessages);
-    
-
     setMessageInput('');
     scrollToBottom();
   };
@@ -304,7 +284,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         ) : (
           chatMessages.map((msg) => {
             const isSender = msg.senderId === senderId;
-            const isSelected = msg.messageId === selectedMessageId;
+            // const isSelected = msg.messageId === selectedMessageId;
             
             return (
               <div
@@ -327,10 +307,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     {msg.senderName || 'User'}
                   </div>
                 )}
-                <div 
-                  onClick={() => handleMessageClick(msg.messageId, isSender)}
-                  style={getMessageStyle(isSender, isSelected)}
-                >
+               <div
+  key={msg.messageId}
+  onClick={() => handleMessageClick(msg.messageId, isSender)}
+  style={getMessageStyle(isSender, msg.messageId === selectedMessageId)}
+>
                   <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
                     {msg.text}
                   </div>
@@ -363,16 +344,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               </div>
             );
           })
-        )}
-        {isTyping && (
-          <div style={{ 
-            padding: '8px', 
-            color: themeMode === 'dark' ? '#aaa' : '#666', 
-            fontSize: '12px',
-            fontStyle: 'italic'
-          }}>
-            {typingUser} is typing...
-          </div>
         )}
         <div ref={messagesEndRef} />
       </div>

@@ -10,7 +10,7 @@ const DropdownMenu: React.FC<IDropdownMenuProps> = ({
   onSettingsClick,
   onOptionSelect, // Add new prop for handling menu closure
 }) => {
-  const { superAdmin, businessOwner, employee, manager } = useAuth();
+  const { superAdmin } = useAuth();
 
   // Wrapper functions to handle both the action and menu closure
   const handleProfileClick = () => {

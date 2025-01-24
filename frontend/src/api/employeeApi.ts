@@ -67,7 +67,7 @@ export const uploadEmployeeProfileImage = async (file: File) => {
 };
 
 
-export const updateEmployeePersonalInfo = async (details: any) => {
+export const updateEmployeePersonalInfo = async (details) => {
     console.log("detiles is s------>",details);
     
   try {
@@ -112,12 +112,12 @@ export const updateEmployeeAddress = async (address) => {
       console.log("responce is ==========&&&&========",response)
       return response.data;
     } catch (error) {
+      console.log("Error fetching document:", error);
       throw new Error('Failed to fetch document.');
     }
   };
   
   export const updateEmployeeDocument= async (file: File) => {
-  
     try {
       if (!file) {toast.error('No file selected.') ;return;}
       const formData = new FormData();
@@ -128,6 +128,7 @@ export const updateEmployeeAddress = async (address) => {
       toast.success('Document uploaded successfully!');
       return response.data.result;
     } catch (error) {
+      console.log("Error uploading document:", error);
       toast.error('Failed to upload document.');
     }
   };

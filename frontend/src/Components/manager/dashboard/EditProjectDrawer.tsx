@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Drawer, Form, Input, Select, DatePicker, notification, Alert, Space, Tag, Button, Upload, Image } from 'antd';
-import { UserOutlined, CalendarOutlined, WarningOutlined, ProjectOutlined, UploadOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
+import {CalendarOutlined, WarningOutlined, ProjectOutlined, UploadOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import moment from 'moment';
 import { managerInstance } from '../../../services/managerInstance';
@@ -78,11 +78,12 @@ const EditProjectDrawer: React.FC<EditProjectDrawerProps> = ({ visible, project,
     const fetchTeamLeads = async () => {
       try {
         const response = await managerInstance.get('/manager/api/projects/get-all-teamleads');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setTeamLeads(response.data.map((lead: any) => ({ id: lead.employeeId, name: lead.employeeName })));
       } catch (error) {
         notification.error({
           message: 'Error',
-          description: 'Failed to fetch team leads',
+          description: error.message || 'Failed to fetch team leads',
         });
       }
     };
@@ -106,7 +107,10 @@ const EditProjectDrawer: React.FC<EditProjectDrawerProps> = ({ visible, project,
     }
   }, [visible, project, form]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFileSelect = (info: any) => {
+    console.log("TYPE of info",typeof info);
+    
     const file = info.file.originFileObj;
     if (file) {
       setNewFile(file);
@@ -142,7 +146,7 @@ const EditProjectDrawer: React.FC<EditProjectDrawerProps> = ({ visible, project,
     } catch (error) {
       notification.error({
         message: 'Error',
-        description: 'Failed to update project file',
+        description: error instanceof Error ? error.message : 'Failed to update project file',
       });
     }
   };

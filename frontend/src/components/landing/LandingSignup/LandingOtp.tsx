@@ -67,66 +67,7 @@ const pulseVariants = {
   }
 };
 
-// New shimmer animation for inputs
-const shimmerVariants = {
-  initial: { opacity: 0.3 },
-  animate: {
-    opacity: [0.3, 1, 0.3],
-    transition: {
-      duration: 1.5,
-      repeat: Infinity,
-      repeatType: "mirror" as const,
-      ease: "easeInOut"
-    }
-  }
-};
 
-// New bounce animation for error messages
-const errorVariants = {
-  initial: { x: -10, opacity: 0 },
-  animate: { 
-    x: 0,
-    opacity: 1,
-    transition: {
-      type: "spring",
-      stiffness: 200,
-      damping: 10
-    }
-  },
-  exit: {
-    x: 10,
-    opacity: 0,
-    transition: {
-      duration: 0.2
-    }
-  }
-};
-
-// New success animation for the verify button
-const successVariants = {
-  initial: { scale: 1 },
-  success: {
-    scale: [1, 1.2, 1],
-    backgroundColor: ["#2563eb", "#22c55e", "#2563eb"],
-    transition: {
-      duration: 0.5,
-      ease: "easeInOut"
-    }
-  }
-};
-
-// Loading spinner animation
-const spinnerVariants = {
-  initial: { rotate: 0 },
-  animate: {
-    rotate: 360,
-    transition: {
-      duration: 1,
-      repeat: Infinity,
-      ease: "linear"
-    }
-  }
-};
 
   useEffect(() => {
     if (!isTimerActive || timeLeft <= 0) {
@@ -160,9 +101,13 @@ const spinnerVariants = {
       setIsTimerActive(true);
       setOtp(Array(6).fill(''));
       setErrorMessage('');
-
+  
       const data = await signUpResendOtp(email);
-      data.success ? toast.success('OTP has been resent successfully!') : toast.error(data.message || 'Failed to resend OTP.');
+      if (data.success) {
+        toast.success('OTP has been resent successfully!');
+      } else {
+        toast.error(data.message || 'Failed to resend OTP.');
+      }
     } catch (error) {
       console.error(error);
       toast.error(error.message);
@@ -170,6 +115,7 @@ const spinnerVariants = {
       setIsLoading(false);
     }
   };
+  
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

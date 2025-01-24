@@ -1,10 +1,24 @@
-import axios from "axios";
+import axios, { 
+  AxiosInstance, 
+  AxiosError, 
+  InternalAxiosRequestConfig, 
+  AxiosResponse 
+} from "axios";
 import { logout as managerLogout } from "../redux/slices/managerSlice";
 import { store } from "../redux/store/store";
 import toast from "react-hot-toast";
 
+// Extend the AxiosRequestConfig with our custom _retry property
+declare module 'axios' {
+  interface InternalAxiosRequestConfig {
+    _retry?: boolean;
+  }
+}
+
+type RefreshCallback = (token: string) => void;
+
 let isRefreshing = false;
-let refreshSubscribers: any[] = [];
+let refreshSubscribers: RefreshCallback[] = [];
 
 // Notify all subscribers of the new token
 const notifySubscribers = (newAccessToken: string) => {
@@ -13,11 +27,13 @@ const notifySubscribers = (newAccessToken: string) => {
 };
 
 // Handle token refresh
-const handleTokenRefresh = async (originalRequest: any) => {
+const handleTokenRefresh = async (originalRequest: InternalAxiosRequestConfig) => {
   if (isRefreshing) {
     return new Promise((resolve) => {
       refreshSubscribers.push((newAccessToken: string) => {
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        if (originalRequest.headers) {
+          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+        }
         resolve(chatInstance(originalRequest));
       });
     });
@@ -29,20 +45,17 @@ const handleTokenRefresh = async (originalRequest: any) => {
     console.log("Attempting token refresh...");
     const { data } = await chatInstance.post("/chatService/api/chat/refresh-token");
     console.log("Token refresh successful:", data);
-
-    // Notify subscribers of the new token
     notifySubscribers(data.accessToken);
-
-    // Update original request headers with the new token
-    originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-
-    // Refresh the page on successful token refresh
+    
+    if (originalRequest.headers) {
+      originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;
+    }
     window.location.reload();
 
     return chatInstance(originalRequest);
   } catch (error) {
     console.log("Token refresh failed.");
-    await handleTokenError(error);
+    await handleTokenError(error as AxiosError);
     throw error;
   } finally {
     isRefreshing = false;
@@ -50,8 +63,8 @@ const handleTokenRefresh = async (originalRequest: any) => {
 };
 
 // Handle token errors (logout)
-const handleTokenError = async (error: any) => {
-  console.log("Handling token error...");
+const handleTokenError = async (error: AxiosError) => {
+  console.log("Handling token error...", error);
   store.dispatch(managerLogout());
   try {
     const result = await axios.post("http://localhost:3000/chatService/api/chat/logout");
@@ -63,17 +76,17 @@ const handleTokenError = async (error: any) => {
 };
 
 // Axios instance for the manager
-export const chatInstance = axios.create({
+export const chatInstance: AxiosInstance = axios.create({
   baseURL: "http://localhost:3000",
   withCredentials: true,
 });
 
 // Intercept responses to handle token refresh and errors
 chatInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
+  (response: AxiosResponse) => response,
+  async (error: AxiosError) => {
     console.log("Error received:", error);
-    const originalRequest = error.config;
+    const originalRequest = error.config as InternalAxiosRequestConfig;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;

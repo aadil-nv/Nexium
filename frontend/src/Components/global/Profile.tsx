@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { Tabs } from 'antd';
-import useTheme from '../../hooks/useTheme';
-import { businessOwnerTabs, superAdminTabs, managerTabs, employeeTabs } from "../../utils/centralPaths";
+import { businessOwnerTabs, managerTabs, employeeTabs } from "../../utils/centralPaths";
 import useAuth from '../../hooks/useAuth';
 
 const { TabPane } = Tabs;
 
 export default function Profile() {
   const [activeKey, setActiveKey] = useState("1");
-  const { businessOwner, superAdmin, manager, employee } = useAuth();
+  const { businessOwner, manager, employee } = useAuth();
   
   const tabsToShow = businessOwner.isAuthenticated ? businessOwnerTabs :
                      manager.isAuthenticated ? managerTabs :

@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../landingPage/theme-provider';
-import { motion } from 'framer-motion';
-import { FaEye, FaEyeSlash, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate} from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login, setBusinessOwnerData } from '../../../redux/slices/businessOwnerSlice';
 import { loginBusinessOwnerAPI, forgotPassword, changePasswordAPI, validateOtp, resendOtp } from '../../../api/authApi';
 import { toast } from 'react-hot-toast';
-import { ClipLoader } from 'react-spinners';
 import ForgotPasswordForm from '../LandingLogin/ForgotOtp';
 import OtpVerification from '../LandingLogin/VerifyEmail';
 import NewPasswordForm from '../LandingLogin/NewPassword';
@@ -19,7 +16,6 @@ interface LoginFormErrors {
   password?: string;
   confirmPassword?: string;
 }
-
 interface LoginResponse {
   success: boolean;
   message?: string;
@@ -48,6 +44,7 @@ const newPasswordSchema = z.object({
 });
 
 const LandingLoginPage = () => {
+  
   const { theme } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -69,7 +66,6 @@ const LandingLoginPage = () => {
   const [otpError, setOtpError] = useState('');
   
   const navigate = useNavigate();
-  const location = useLocation();
   const dispatch = useDispatch();
 
 
@@ -114,6 +110,8 @@ const LandingLoginPage = () => {
         toast.error(data.message || 'Failed to resend OTP');
       }
     } catch (error) {
+      console.log("Error resending OTP:", error);
+      
       toast.error('Error resending OTP');
     }
   };
@@ -127,6 +125,7 @@ const LandingLoginPage = () => {
     }
 
     try {
+      
       const data = await validateOtp(forgotPasswordEmail, otpString);
       if (data.success) {
         setShowOtpVerification(false);
@@ -138,6 +137,7 @@ const LandingLoginPage = () => {
         toast.error(data.message || 'Invalid OTP');
       }
     } catch (error) {
+      console.log("Error verifying OTP:", error);
       setOtpError('Error verifying OTP');
       toast.error('Error verifying OTP');
     }
@@ -185,7 +185,7 @@ const LandingLoginPage = () => {
           setCredentialError(data.message || 'Invalid email or password');
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       const errorMessage = error.response?.data?.message || 'Something went wrong during login';
       
       if (error.response?.data?.email && error.response?.data?.isVerified === false) {
@@ -222,6 +222,7 @@ const LandingLoginPage = () => {
         toast.error(data.message || 'Failed to send OTP');
       }
     } catch (error) {
+      console.log("Error sending OTP:", error);
       setForgotPasswordError('An error occurred while sending OTP');
       toast.error('An error occurred while sending OTP');
     } finally {
@@ -243,7 +244,9 @@ const LandingLoginPage = () => {
     }
 
     try {
-      const response = await changePasswordAPI(password, email);
+      const response = await changePasswordAPI(password, forgotPasswordEmail);
+      console.log("Password change response:", response);
+      
       if (response.success) {
         setShowSuccessModal(true);
         setTimeout(() => {
@@ -294,7 +297,6 @@ const LandingLoginPage = () => {
       <div className={`w-full lg:w-1/2 flex items-center justify-center p-8 ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
         {showOtpVerification ? (
           <OtpVerification
-            theme={theme}
             otp={otp}
             handleOtpChange={handleOtpChange}
             handleOtpKeyDown={handleOtpKeyDown}

@@ -6,7 +6,7 @@ import useTheme from '../../hooks/useTheme';
 import ChatPeoples from './ChatPeople';
 import ChatWindow from './ChatWindow';
 import EditGroupModal from './EditGroup';
-import { Employee, Message, Group } from '../../interface/ChatInterface';
+import { Employee, Group } from '../../interface/ChatInterface';
 import { chatInstance } from '../../services/chatInstance';
 import GroupMembersModal from "../../components/chat/GroupMembersModal";
 import useAuth from '../../hooks/useAuth';
@@ -33,7 +33,7 @@ interface GroupMember {
 }
 
 const MainLayout: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  // const [messages, setMessages] = useState<Message[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedTarget, setSelectedTarget] = useState<ChatTarget | null>(null);
@@ -46,12 +46,12 @@ const MainLayout: React.FC = () => {
   const [isEditGroupModalOpen, setIsEditGroupModalOpen] = useState<boolean>(false);
   const [groupMembers, setGroupMembers] = useState<GroupMember[]>([]);
   const [loadingMembers, setLoadingMembers] = useState<boolean>(false);
-  const { isActiveMenu, themeColor } = useTheme();
-  const {employee ,businessOwner,manager,superAdmin} = useAuth();
+  const { themeColor } = useTheme();
+  const {employee ,businessOwner,manager} = useAuth();
   const isEmployee = employee?.isAuthenticated;
   const senderName = employee?.employeeName || businessOwner?.companyName || manager?.managerName
 
-  const formatLastSeen = useCallback((date: any) => {
+  const formatLastSeen = useCallback((date: Date) => {
     if (!date || !(date instanceof Date) || isNaN(date.getTime())) return 'Invalid date';
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 60000);
@@ -126,7 +126,7 @@ const MainLayout: React.FC = () => {
         setSelectedTarget(prev => prev ? {
           ...prev,
           name: updatedGroup.groupName,
-          receiverId: updatedGroup.participants.map((p: any) => p._id),
+          receiverId: updatedGroup.participants.map((p) => p._id),
           chatId: updatedGroup._id,
           id: updatedGroup._id
         } : null);

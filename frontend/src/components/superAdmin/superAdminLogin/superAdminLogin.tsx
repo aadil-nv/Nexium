@@ -22,11 +22,11 @@ const SuperAdminLogin: React.FC = () => {
     setLoading(true);
     setLoginError(null);
     try {
-      const { accessToken } = await loginSuperAdmin(data);
+       await loginSuperAdmin(data);
       dispatch(login({ role: "superAdmin", isAuthenticated: true }));
       navigate("/super-admin/dashboard");
-    } catch (err: any) {
-      setLoginError("Login failed. Please check your credentials.");
+    } catch (error) {
+      setLoginError(error.response?.data?.message ||"Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }

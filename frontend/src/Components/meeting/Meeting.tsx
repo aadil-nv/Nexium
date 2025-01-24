@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Drawer, Input, Typography, Pagination, message } from "antd";
+import { Button, Drawer, Input, Typography, Pagination, message, Spin } from "antd";
 import { VideoCameraOutlined, SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
@@ -26,7 +26,6 @@ export const MeetingScheduler: React.FC = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
   const [loading, setLoading] = useState(false);
   const [allParticipants, setAllParticipants] = useState<Participant[]>([]);
-  const [schedulerId, setSchedulerId] = useState<string>("");
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
 
   const navigate = useNavigate();
@@ -55,18 +54,18 @@ export const MeetingScheduler: React.FC = () => {
       const response = await chatInstance.get("/chatService/api/meeting/get-all-meetings");
       setMeetings(response.data);
     } catch (error) {
-      message.error("Failed to fetch meetings");
+      message.error(error.message || "Failed to fetch meetings");
     } finally {
       setLoading(false);
     }
   };
-5
+
   const fetchParticipants = async () => {
     try {
       const response = await chatInstance.get("/chatService/api/meeting/get-all-participants");
       setAllParticipants(response.data);
     } catch (error) {
-      message.error("Failed to fetch participants");
+      message.error(error.message || "Failed to fetch participants");
     }
   };
 
@@ -148,7 +147,7 @@ export const MeetingScheduler: React.FC = () => {
       message.success("Meeting deleted successfully");
       fetchMeetings();
     } catch (error) {
-      message.error("Failed to delete meeting");
+      message.error(error.message || "Failed to delete meeting");
     }
   };
 
@@ -215,78 +214,83 @@ export const MeetingScheduler: React.FC = () => {
 
   return (
     <div className="p-4 md:p-6 min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center gap-4 mb-6">
-          <Title level={isSmallScreen ? 3 : 2} className="text-indigo-600">
-            <AnimatedIcon icon={<VideoCameraOutlined />} /> Meeting Scheduler
-          </Title>
-          <div className="flex gap-4">
-            <Input
-              prefix={<SearchOutlined />}
-              placeholder="Search meetings..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              allowClear
-            />
-           {hasScheduluePermission && (
-  <Button
-    type="primary"
-    size={isSmallScreen ? "middle" : "large"}
-    icon={<PlusOutlined />}
-    onClick={() => setIsDrawerOpen(true)}
-    className="bg-indigo-600 hover:bg-indigo-500 shadow-md rounded-lg"
-  >
-    Schedule Meeting
-  </Button>
-)}
-          </div>
+      {loading ? (
+        <div className="flex justify-center items-center h-full">
+          <Spin size="large" />
         </div>
-
-        {/* Meeting Cards Grid */}
-        <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          <AnimatePresence>
-            {currentMeetings.map((meeting) => (
-              <MeetingCard
-                key={meeting._id}
-                meeting={meeting}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onCopyLink={handleCopyLink}
-                onJoinMeeting={handleJoinMeeting}
+      ) : (
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center gap-4 mb-6">
+            <Title level={isSmallScreen ? 3 : 2} className="text-indigo-600">
+              <AnimatedIcon icon={<VideoCameraOutlined />} /> Meeting Scheduler
+            </Title>
+            <div className="flex gap-4">
+              <Input
+                prefix={<SearchOutlined />}
+                placeholder="Search meetings..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                allowClear
               />
-            ))}
-          </AnimatePresence>
-        </div>
+             {hasScheduluePermission && (
+                <Button
+                  type="primary"
+                  size={isSmallScreen ? "middle" : "large"}
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsDrawerOpen(true)}
+                  className="bg-indigo-600 hover:bg-indigo-500 shadow-md rounded-lg"
+                >
+                  Schedule Meeting
+                </Button>
+              )}
+            </div>
+          </div>
 
-        {/* Pagination */}
-        <div className="mt-6 flex justify-center">
-          <Pagination
-            current={currentPage}
-            pageSize={meetingsPerPage}
-            total={filteredMeetings.length}
-            onChange={(page) => setCurrentPage(page)}
-          />
+          {/* Meeting Cards Grid */}
+          <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <AnimatePresence>
+              {currentMeetings.map((meeting) => (
+                <MeetingCard
+                  key={meeting._id}
+                  meeting={meeting}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onCopyLink={handleCopyLink}
+                  onJoinMeeting={handleJoinMeeting}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+
+          {/* Pagination */}
+          <div className="mt-6 flex justify-center">
+            <Pagination
+              current={currentPage}
+              pageSize={meetingsPerPage}
+              total={filteredMeetings.length}
+              onChange={(page) => setCurrentPage(page)}
+            />
+          </div>
+          <Drawer
+            title={editingMeeting ? "Edit Meeting" : "Schedule New Meeting"}
+            placement="right"
+            width={isSmallScreen ? "100%" : 520}
+            onClose={handleCloseDrawer}
+            open={isDrawerOpen}
+          >
+            <MeetingForm
+              form={form}
+              editingMeeting={editingMeeting}
+              selectedParticipants={selectedParticipants}
+              allParticipants={allParticipants}
+              onParticipantChange={handleParticipantChange}
+              onRemoveParticipant={handleRemoveParticipant}
+              onFinish={editingMeeting ? handleUpdateMeeting : handleCreateMeeting}
+            />
+          </Drawer>
         </div>
-        <Drawer
-  title={editingMeeting ? "Edit Meeting" : "Schedule New Meeting"}
-  placement="right"
-  width={isSmallScreen ? "100%" : 520}
-  onClose={handleCloseDrawer}
-  open={isDrawerOpen}
->
-  <MeetingForm
-    form={form}
-    editingMeeting={editingMeeting}
-    // scheduler={form.getFieldValue('scheduledBy')}
-    selectedParticipants={selectedParticipants}
-    allParticipants={allParticipants}
-    onParticipantChange={handleParticipantChange}
-    onRemoveParticipant={handleRemoveParticipant}
-    onFinish={editingMeeting ? handleUpdateMeeting : handleCreateMeeting}
-  />
-</Drawer>
-      </div>
+      )}
     </div>
   );
 };

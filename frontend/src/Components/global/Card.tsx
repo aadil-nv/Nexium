@@ -80,7 +80,17 @@ const Card: React.FC<ICardProps> = ({
                 onClose={() => setIsModalVisible(false)}
                 isVisible={isModalVisible}
                 planData={{
-                  planName, description, price, planType, durationInMonths, featuresString, planId
+                  planName, 
+                  description, 
+                  price, 
+                  planType, 
+                  durationInMonths, 
+                  featuresString, 
+                  planId,
+                  features, 
+                  isActive, 
+                  onStatusChange, 
+                  onPlanUpdate
                 }}
                 themeColor={themeColor}
                 onPlanUpdate={onPlanUpdate}

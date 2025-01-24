@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Select, DatePicker, Radio, Input, Button, Card, List, Tag, Drawer } from 'antd';
-import { CalendarOutlined, SearchOutlined, ClockCircleOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
+import { Form, Select, DatePicker, Radio, Input, Button, Card, List, Drawer } from 'antd';
+import { CalendarOutlined, ClockCircleOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import dayjs, { Dayjs } from 'dayjs';
 import { employeeInstance } from '../../services/employeeInstance';
 
 const { RangePicker } = DatePicker;
 const { Search } = Input;
+
+interface LeaveType {
+  type: string;
+  available: number;
+}
 
 interface AppliedLeave {
   leaveType: string;
@@ -21,11 +26,18 @@ interface AppliedLeave {
   employeeId: string;
 }
 
+interface LeaveFormValues {
+  leaveTypes: string;
+  dates: [Dayjs, Dayjs];
+  dayType: 'full' | 'half';
+  reason: string;
+}
+
 const EmployeeLeave: React.FC = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<LeaveFormValues>();
   const [leaves, setLeaves] = useState<AppliedLeave[]>([]);
   const [filteredLeaves, setFilteredLeaves] = useState<AppliedLeave[]>([]);
-  const [leaveTypes, setLeaveTypes] = useState<any[]>([]);
+  const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
@@ -45,16 +57,13 @@ const EmployeeLeave: React.FC = () => {
         employeeInstance.get("/employee/api/leave/get-applied-leaves")
       ]);
 
-      console.log("typesRes----",typesRes);
-
-
-      const types = Object.entries(typesRes.data).map(([type, available]) => ({ 
+      const types: LeaveType[] = Object.entries(typesRes.data).map(([type, available]) => ({ 
         type, 
         available: Number(available) 
       }));
       setLeaveTypes(types);
 
-      const formattedLeaves = leavesRes.data.map((leave: any) => ({
+      const formattedLeaves: AppliedLeave[] = leavesRes.data.map((leave) => ({
         leaveType: leave.leaveType,
         fromDate: dayjs(leave.startDate).format('YYYY-MM-DD'),
         toDate: dayjs(leave.endDate).format('YYYY-MM-DD'),
@@ -73,8 +82,6 @@ const EmployeeLeave: React.FC = () => {
       console.error("Error fetching data:", error);
     }
   };
-
-  
 
   const filterLeaves = () => {
     let filtered = [...leaves];
@@ -98,10 +105,13 @@ const EmployeeLeave: React.FC = () => {
     filterLeaves();
   }, [searchText, selectedType, leaves]);
 
-  const handleDateChange = (dates: any) => {
+  const handleDateChange = (
+    dates: [Dayjs | null, Dayjs | null] | null, 
+    // dateStrings: [string, string]
+  ) => {
     if (dates && dates[0] && dates[1]) {
       let duration = 0;
-      let currentDate = dayjs(dates[0]);
+      let currentDate = dates[0];
   
       while (currentDate.isBefore(dates[1], 'day') || currentDate.isSame(dates[1], 'day')) {
         if (currentDate.day() !== 0) { // Check if it's not Sunday (0 represents Sunday)
@@ -132,8 +142,7 @@ const EmployeeLeave: React.FC = () => {
     }
   };
   
-  
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: LeaveFormValues) => {
     try {
       // Check if 'Half Day' is selected and ensure duration is 1 day
       if (values.dayType === 'half' && selectedDays !== 1) {
@@ -148,7 +157,7 @@ const EmployeeLeave: React.FC = () => {
   
       // Check if the duration exceeds available leaves
       const selectedLeaveType = leaveTypes.find(type => type.type === values.leaveTypes);
-      if (selectedDays > selectedLeaveType?.available) {
+      if (selectedDays > (selectedLeaveType?.available || 0)) {
         form.setFields([
           {
             name: 'dates',
@@ -160,16 +169,15 @@ const EmployeeLeave: React.FC = () => {
   
       const newLeave = {
         leaveType: values.leaveTypes,
-        fromDate: dayjs(values.dates[0]).format('YYYY-MM-DD'),
-        toDate: dayjs(values.dates[1]).format('YYYY-MM-DD'),
+        fromDate: values.dates[0].format('YYYY-MM-DD'),
+        toDate: values.dates[1].format('YYYY-MM-DD'),
         duration: values.dayType === 'half' ? 0.5 : selectedDays,
         dayType: values.dayType,
         reason: values.reason,
       };
   
       if (currentLeave) {
-        delete newLeave.dayType;
-        await employeeInstance.post(`/employee/api/leave/upadate-applied-leave/${currentLeave.leaveId}`, newLeave);
+        await employeeInstance.post(`/employee/api/leave/update-applied-leave/${currentLeave.leaveId}`, newLeave);
       } else {
         // Apply new leave
         await employeeInstance.post("/employee/api/leave/pre-apply-leave", newLeave);
@@ -220,7 +228,7 @@ const EmployeeLeave: React.FC = () => {
     }
   };
 
-  const getLeaveTypeColor = (type: string) => {
+  const getLeaveTypeColor = () => {
     return 'bg-blue-100 text-blue-800 border-blue-300';
   };
 
@@ -273,7 +281,7 @@ const EmployeeLeave: React.FC = () => {
                 <div className="flex flex-col gap-3">
                   <div className="flex justify-between items-center">
                     <div className="flex gap-2 items-center">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getLeaveTypeColor(item.leaveType)}`}>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getLeaveTypeColor()}`}>
                         {item.leaveType}
                       </span>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(item.status)}`}>

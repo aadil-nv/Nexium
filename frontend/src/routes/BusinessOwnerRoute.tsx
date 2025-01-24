@@ -8,7 +8,7 @@ import Subscriptions from "../components/businessOwner/businessOwnerPages/Subscr
 import ServiceRequests from "../components/global/ServiceRequests";
 import EmployeeList from "../components/businessOwner/businessOwnerPages/EmployeeList";
 import Notifications from "../components/global/Notifications";
-import DemoTable from "../components/businessOwner/businessOwnerPages/DemoTable";
+import DemoTable from "../components/businessOwner/businessOwnerPages/InvoiseTable";
 import Profile from "../components/global/Profile";
 import PersonalDetailes from "../components/global/PersonalDetailes";
 import Address from "../components/global/Address";

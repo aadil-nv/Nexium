@@ -34,7 +34,7 @@ privateApi.interceptors.response.use(
           // Retry the original request with the new token
           return privateApi(originalRequest);
         }
-      } catch (refreshError: any) {
+      } catch (refreshError) {
         if (refreshError.response?.status === 403) {
           console.log("Refreshing token failed -------------------------------555");
 

@@ -7,11 +7,13 @@ export interface ICardProps {
     description: string;
     price: number;
     planType: string;
+    featuresString?: string;  // Optional, for backward compatibility
+
     durationInMonths: number;
     features: string[];
     isActive: boolean;
     onStatusChange: (newStatus: boolean) => void;
-    onPlanUpdate: (updatedPlan: any) => void;
+    onPlanUpdate: (updatedPlan: ICardProps) => void;
   }
 
   export interface ICardImageProps {
@@ -35,7 +37,7 @@ export  interface IDepartmentCardProps {
     departmentName: string;
     employees: IEmployee[];
     themeColor: string;
-    onEditEmployee: (id: string) => void;
+    onEditEmployee?: (id: string) => void;
     onRemoveEmployee: (id: string) => void;
     onRemoveDepartment: () => void;
     departmentId: string;

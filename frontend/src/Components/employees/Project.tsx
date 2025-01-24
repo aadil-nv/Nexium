@@ -2,13 +2,12 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input, Select, Button, Card, Badge, Pagination, Modal, Upload, message, Spin } from "antd";
 import { SearchOutlined, EyeOutlined, UploadOutlined } from "@ant-design/icons";
-import axios from "axios"
 import { employeeInstance } from "../../services/employeeInstance";
 
 const { Option } = Select;
 
 interface Project {
-  projectId: any;
+  projectId: string;
   projectName: string;
   description: string;
   startDate: string;
@@ -60,8 +59,8 @@ const ProjectDashboard: React.FC = () => {
       setError(null);
       const response = await employeeInstance.get('/employee/api/project/get-all-projects');
       setProjects(response.data);
-    } catch (err) {
-      setError('Failed to fetch projects. Please try again later.');
+    } catch (error) {
+      setError(error.message || 'Failed to fetch projects. Please try again later.');
       message.error('Error loading projects');
     } finally {
       setLoading(false);
@@ -75,7 +74,7 @@ const ProjectDashboard: React.FC = () => {
         `/employee/api/project/update-project-status/${projectId}`,
         { status: newStatus }
       );
-      
+
       if (response.data) {
         setProjects(projects.map(project =>
           project.projectId === projectId ? { ...project, status: newStatus } : project
@@ -93,12 +92,12 @@ const ProjectDashboard: React.FC = () => {
     }
   };
 
-  const handleFileUpload = async (projectId: string, file: any) => {
+  const handleFileUpload = async (projectId: string, file: File) => {
     try {
       setUploading(true);
       const formData = new FormData();
       formData.append('file', file);
-      
+
       const response = await employeeInstance.post(
         `/employee/api/project/update-employeefiles/${projectId}`,
         formData,
@@ -192,7 +191,7 @@ const ProjectDashboard: React.FC = () => {
             >
               <Card
                 className="hover:shadow-xl transition-shadow duration-300"
-                style={{ 
+                style={{
                   background: 'linear-gradient(to bottom right, #ffffff, #f0f2f5)',
                   borderRadius: '12px',
                   border: '1px solid #e8e8e8'
@@ -226,7 +225,7 @@ const ProjectDashboard: React.FC = () => {
                       <Option value="cancelled">Cancelled</Option>
                     </Select>
 
-                    <Button 
+                    <Button
                       type="primary"
                       icon={<EyeOutlined />}
                       onClick={() => setSelectedProject(project)}
@@ -260,7 +259,7 @@ const ProjectDashboard: React.FC = () => {
         width={700}
       >
         {selectedProject && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="space-y-6"
@@ -301,10 +300,16 @@ const ProjectDashboard: React.FC = () => {
                 </Button>
               ) : (
                 <Upload
-                  customRequest={({ file }) => handleFileUpload(selectedProject.projectId, file)}
+                  customRequest={({ file }) => {
+                    if (file instanceof File) {
+                      handleFileUpload(selectedProject.projectId, file);
+                    } else {
+                      console.error("Uploaded file is not a valid File type.");
+                    }
+                  }}
                   showUploadList={false}
                 >
-                  <Button 
+                  <Button
                     type="primary"
                     icon={<UploadOutlined />}
                     loading={uploading}

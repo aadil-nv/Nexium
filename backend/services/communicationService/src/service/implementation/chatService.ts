@@ -69,6 +69,8 @@ export default  class ChatService implements IChatService {
     
             return receiverDTO;
         } catch (error) {
+            console.log(error);
+            
             throw new Error("Error getting all receivers");
         }
     }
@@ -317,7 +319,7 @@ export default  class ChatService implements IChatService {
                         _id: member._id.toString(),
                         name: member.personalDetails.employeeName || member.personalDetails.managerName || member.personalDetails.businessOwnerName || 'Unknown',
                         profilePicture: member.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${member.personalDetails.profilePicture}` : member.personalDetails.profilePicture,
-                        position: member.professionalDetails.position || member.role || 'Unknown',
+                        position:  member.role || 'Business Owner',
                     });
                 }
             }

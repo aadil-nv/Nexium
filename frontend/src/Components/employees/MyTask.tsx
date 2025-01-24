@@ -8,7 +8,7 @@ import {
   CheckCircleOutlined,
   SaveOutlined,
 } from '@ant-design/icons';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { employeeInstance } from '../../services/employeeInstance';
 import { toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
@@ -16,30 +16,28 @@ import { useParams } from 'react-router-dom';
 const { Text } = Typography;
 const { Option } = Select;
 
-interface Task {
+interface SubTask {
+  title: string;
+  priority: string;
+  description: string;
+  isCompleted: boolean;
   _id: string;
-  employeeProfilePicture: string;
-  employeeName: string;
-  dueDate: string;
-  assignedBy: string;
-  assignedDate: string;
-  taskName: string;
-  isApproved?: boolean;
-  tasks: {
-    title: string;
-    priority: string;
-    description: string;
-    isCompleted: boolean;
-    _id: string;
-    taskStatus?: string;
-    response?: string;
-  }[];
+  taskStatus?: string;
+  response?: string;
+  assignedDate?: string;
+}
+
+interface TodoState {
+  tasks: SubTask[];
+  taskName?: string;
+  assignedDate?: string;
+  dueDate?: string;
+  assignedBy?: string;
 }
 
 const TodoList = () => {
-  const [todos, setTodos] = useState<any>({ tasks: [] });
-  const [newTodo, setNewTodo] = useState('');
-  const [isInputVisible, setIsInputVisible] = useState(false);
+  const [todos, setTodos] = useState<TodoState>({ tasks: [] });
+  const [isInputVisible, setIsInputVisible] = useState<boolean>(false);
   const [responses, setResponses] = useState<Record<string, string>>({});
   const { id } = useParams<{ id: string }>();
 
@@ -61,7 +59,7 @@ const TodoList = () => {
     );
     setTodos({ ...todos, tasks: updatedTasks });
 
-    const taskToUpdate = updatedTasks.find((task: any) => task._id === taskId);
+    const taskToUpdate = updatedTasks.find((task) => task._id === taskId);
     if (taskToUpdate) {
       try {
         await employeeInstance.post('/employee/api/task/update-task-completion', {
@@ -75,17 +73,12 @@ const TodoList = () => {
     }
   };
 
-  console.log('taskId is ===>', todos);
-
-
   const updateResponse = (taskId: string, response: string) => {
     setResponses((prev) => ({ ...prev, [taskId]: response }));
   };
 
-  const handleUpdateTask = async (taskId: string, updatedTask: any) => {
-    console.log('updatedTask is ===>', updatedTask);
-
-    const updatedTasks = todos.tasks.map((task: any) =>
+  const handleUpdateTask = async (taskId: string, updatedTask: Partial<SubTask>) => {
+    const updatedTasks = todos.tasks.map((task) =>
       task._id === taskId
         ? {
             ...task,
@@ -97,8 +90,6 @@ const TodoList = () => {
 
     setTodos({ ...todos, tasks: updatedTasks });
 
-    console.log('Updated tasks array:', updatedTasks);
-
     try {
       const payload = {
         taskId,
@@ -107,8 +98,6 @@ const TodoList = () => {
         response: updatedTask.response || '',
         _id: taskId,
       };
-
-      console.log('Payload sent to backend:', payload);
 
       await employeeInstance.post(`/employee/api/task/update-completed-task/${id}`, payload);
       toast.success('Task updated successfully!');
@@ -124,11 +113,6 @@ const TodoList = () => {
       medium: { color: 'orange', icon: <CheckCircleOutlined /> },
       high: { color: 'red', icon: <FireOutlined /> },
     }[priority] || { color: 'gray', icon: <CheckCircleOutlined /> });
-
-  const calculateDaysLeft = (dueDate: string) => {
-    const timeDiff = new Date(dueDate).getTime() - new Date().getTime();
-    return timeDiff > 0 ? Math.ceil(timeDiff / (1000 * 3600 * 24)) : 0;
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -154,7 +138,7 @@ const TodoList = () => {
             <List
               itemLayout="vertical"
               dataSource={todos.tasks}
-              renderItem={(task: any) => (
+              renderItem={(task: SubTask) => (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
                   <List.Item className="px-6 py-4 hover:bg-gray-50">
                     <div className="flex flex-col gap-4">
@@ -192,7 +176,7 @@ const TodoList = () => {
                             </div>
                             <div>
                               <strong className="font-medium">SubTask status:</strong>
-                              <Tag color={task.isApproved ? 'green' : 'orange'}>{task.taskStatus}</Tag>
+                              <Tag color={task.taskStatus === 'completed' ? 'green' : 'orange'}>{task.taskStatus}</Tag>
                             </div>
                           </div>
 
@@ -226,9 +210,9 @@ const TodoList = () => {
                               icon={<SaveOutlined />}
                               onClick={() =>
                                 handleUpdateTask(task._id, {
-                                  taskStatus: task.taskStatus, // Get taskStatus from the task itself
-                                  isCompleted: task.isCompleted, // Get isCompleted value
-                                  response: responses[task._id], // Send the updated response for that task
+                                  taskStatus: task.taskStatus,
+                                  isCompleted: task.isCompleted,
+                                  response: responses[task._id],
                                 })
                               }
                               className="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"

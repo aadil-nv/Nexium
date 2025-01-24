@@ -161,7 +161,6 @@ export default function Navbar(): JSX.Element {
       }`}
     >
       <NavButton
-        title="Menu"
         customFunc={() => toggleMenu(dispatch, isActiveMenu)}
         icon={<span>☰</span>}
         themeColor={themeColor}

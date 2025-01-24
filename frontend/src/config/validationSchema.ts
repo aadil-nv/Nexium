@@ -5,7 +5,6 @@ import { z } from 'zod';
 const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
 const companyNameRegex = /^[A-Za-z0-9 ]{3,}$/;
 const invalidPhoneNumbers = ['1234567890', '0987654321'];
-const noConsecutiveNumbersRegex = /^(?!.*(\d)\1{2}).{10}$/;
 
 export const loginSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }), // Validates proper email format

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { IMeeting } from "../entities/meetingEntities";
 // Define the interface for the Meeting document
 

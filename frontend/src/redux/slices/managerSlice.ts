@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IEmployeeData } from "../../interface/managerInterface";
 
 interface ManagerData {
   managerName: string;
@@ -12,6 +11,7 @@ interface ManagerData {
 interface ManagerState {
   role: string | null;
   isAuthenticated: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   employeeData: any; // Existing field
   managerData: ManagerData[]; // New field
   managerName: string; // Added new field
@@ -50,6 +50,7 @@ const managerSlice = createSlice({
       state.employeeData = null; // Clear employeeData on logout
       state.managerData = []; // Clear managerData on logout
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setEmployeeDatas: (state, action: PayloadAction<{ employeeData: any }>) => {
       state.employeeData = action.payload; // Save employee data
     },

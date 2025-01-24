@@ -2,31 +2,45 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button } from 'antd';
 import { businessOwnerInstance } from '../../../services/businessOwnerInstance';
 
-const DemoTable: React.FC = () => {
-  const [data, setData] = useState<any[]>([]);
+interface Invoice {
+  id: string;
+  created: number;
+  amount_paid: number;
+  amount_due: number;
+  invoice_pdf: string;
+}
 
-useEffect(() => {
-   
-    businessOwnerInstance
-      .get('/businessOwner/api/subscription/invoices')
-      .then((response) => setData(response.data))
-      .catch(console.error);
-  }, []);
+interface DemoTableProps {
+  invoiceData?: Invoice[];
+}
 
+const DemoTable: React.FC<DemoTableProps> = ({ invoiceData: propInvoiceData }) => {
+  const [data, setData] = useState<Invoice[]>([]);
 
+  useEffect(() => {
+
+    if (propInvoiceData) {
+      setData(propInvoiceData);
+    } else {
+      businessOwnerInstance
+        .get('/businessOwner/api/subscription/invoices')
+        .then((response) => setData(response.data))
+        .catch(console.error);
+    }
+  }, [propInvoiceData]);
 
   const columns = ['id', 'created', 'amount_paid', 'amount_due', 'Download'].map((title) => ({
     title,
     dataIndex: title.toLowerCase().replace(' ', ''), // Set data index
     key: title.toLowerCase().replace(' ', ''),      // Set key
     render: title === 'Download'
-      ? (text: any, record: any) => (
+      ? (text: string, record: Invoice) => (
           <Button type="primary" href={record.invoice_pdf} target="_blank" download>
             Download
           </Button>
         )
       : title === 'created'
-      ? (text: any) => {
+      ? (text: string) => {
           // Convert 'created' timestamp to human-readable date
           const timestamp = parseInt(text, 10); // Ensure the timestamp is a number
           const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
@@ -40,11 +54,9 @@ useEffect(() => {
           });
         }
       : ['amount_paid', 'amount_due'].includes(title.toLowerCase())
-      ? (text: any) => parseFloat(text).toFixed(2).replace(/\.00$/, '') // Format and remove trailing `.00`
+      ? (text: string) => parseFloat(text).toFixed(2).replace(/\.00$/, '') // Format and remove trailing `.00`
       : undefined, // Use default render otherwise
   }));
-  
-  
 
   return (
     <div>

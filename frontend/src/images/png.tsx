@@ -1,4 +1,3 @@
-import Dashboard from "../components/BusinessOwner/BusinessOwnerPages/Dashboard"
 
 const PNG = {
     Dashboard : new URL('../assets/landingPageAssets/dashboard-panel.svg', import.meta.url).href,

@@ -1,70 +1,96 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, List, Space, Switch, Form, Card } from 'antd';
-import { PercentageOutlined, MoneyCollectOutlined, SlidersOutlined } from '@ant-design/icons';
+import { Button, Input, List, Space, Switch } from 'antd';
+import { MoneyCollectOutlined, SlidersOutlined } from '@ant-design/icons';
 import useTheme from '../../../hooks/useTheme';
 import { managerInstance } from '../../../services/managerInstance';
+import { AxiosResponse } from 'axios';
+
+type SettingType = 'allowance' | 'deduction' | 'other' | 'incentive' | 'payDay';
 
 interface Setting {
   id: number;
   name: string;
-  type: 'allowance' | 'deduction' | 'other' | 'incentive' |'payDay';
+  type: SettingType;
   amount?: number;
   overtimeEnabled?: boolean;
 }
 
 interface IncentiveSlab {
   id: number;
-  _id: string; // Add _id field to IncentiveSlab
+  _id: string;
   name: string;
   minTaskCount: number;
   maxTaskCount: number;
   amount: number;
 }
 
+interface Allowances {
+  bonus: number;
+  gratuity: number;
+  medicalAllowance: number;
+  hra: number;
+  da: number;
+  overTime: {
+    type: number;
+    overtimeEnabled: boolean;
+  };
+}
+
+interface Deductions {
+  incomeTax: number;
+  providentFund: number;
+  professionalTax: number;
+  esiFund: number;
+}
+
+interface PayrollIncentive {
+  _id: string;
+  incentiveName: string;
+  minTaskCount: number;
+  maxTaskCount: number;
+  percentage: number;
+}
+
 interface PayrollData {
   _id: string;
+  allowances: Allowances;
+  deductions: Deductions;
+  incentives: PayrollIncentive[];
+  payDay: number;
+  createdAt: string;
+}
+
+interface UpdatePayload {
+  _id?: string;
   allowances: {
-    bonus: number;
-    gratuity: number;
-    medicalAllowance: number;
-    hra: number;
-    da: number;
+    bonus?: number;
+    gratuity?: number;
+    medicalAllowance?: number;
+    hra?: number;
+    da?: number;
     overTime: {
       type: number;
       overtimeEnabled: boolean;
     };
   };
-  deductions: {
-    incomeTax: number;
-    providentFund: number;
-    professionalTax: number;
-    esiFund: number;
-  };
-  incentives: {
-    _id: string;
-    incentiveName: string;
-    minTaskCount: number;
-    maxTaskCount: number;
-    percentage: number;
-  }[];
-  payDay:number
-  createdAt: string;
+  deductions: Partial<Deductions>;
+  incentives: Array<Omit<PayrollIncentive, '_id'>>;
+  payDay?: number;
 }
 
-const PayrollSettings = () => {
-  const { themeColor } = useTheme();
+
+const PayrollSettings: React.FC = () => {
+ const { themeColor } = useTheme();
   const [settings, setSettings] = useState<Setting[]>([]);
   const [data, setData] = useState<PayrollData[]>([]);
   const [incentiveSlabs, setIncentiveSlabs] = useState<IncentiveSlab[]>([]);
 
-  // Fetch data from API
   useEffect(() => {
-    managerInstance.get('/manager/api/payroll/get-all-payroll-crieteria')
-      .then(response => {
-        const payrollData = response.data[0]; // Assuming the data is an array, access the first object
+    managerInstance.get<PayrollData[]>('/manager/api/payroll/get-all-payroll-crieteria')
+      .then((response: AxiosResponse<PayrollData[]>) => {
+        const payrollData = response.data[0];
         setData(response.data);
 
-        // Map the fetched data into the settings and slabs
         if (payrollData) {
           const mappedSettings: Setting[] = [
             { id: 1, name: 'Pay Day', type: 'payDay', amount: payrollData.payDay },
@@ -77,13 +103,18 @@ const PayrollSettings = () => {
             { id: 8, name: 'Provident Fund', type: 'deduction', amount: payrollData.deductions?.providentFund },
             { id: 9, name: 'Professional Tax', type: 'deduction', amount: payrollData.deductions?.professionalTax },
             { id: 10, name: 'ESI Fund', type: 'deduction', amount: payrollData.deductions?.esiFund },
-            { id:  11, name: 'Overtime Incentive', type: 'other', amount: payrollData.allowances?.overTime.type, overtimeEnabled: payrollData.allowances?.overTime.overtimeEnabled },
-
+            { 
+              id: 11, 
+              name: 'Overtime Incentive', 
+              type: 'other', 
+              amount: payrollData.allowances?.overTime.type, 
+              overtimeEnabled: payrollData.allowances?.overTime.overtimeEnabled 
+            },
           ];
 
-          const mappedIncentiveSlabs: IncentiveSlab[] = payrollData.incentives?.map((incentive: any, index: number) => ({
+          const mappedIncentiveSlabs: IncentiveSlab[] = payrollData.incentives?.map((incentive, index) => ({
             id: index + 1,
-            _id: incentive._id,  // Add _id field here
+            _id: incentive._id,
             name: incentive.incentiveName,
             minTaskCount: incentive.minTaskCount,
             maxTaskCount: incentive.maxTaskCount,
@@ -94,37 +125,38 @@ const PayrollSettings = () => {
           setIncentiveSlabs(mappedIncentiveSlabs);
         }
       })
-      .catch(error => {
+      .catch((error: Error) => {
         console.error("Error fetching payroll criteria:", error);
       });
   }, []);
   
-  const updateSetting = (id: number, key: keyof Setting, value: any) => {
+  const updateSetting = (id: number, key: keyof Setting, value: Setting[keyof Setting]) => {
     setSettings((prev) =>
       prev.map((item) => (item.id === id ? { ...item, [key]: value } : item))
     );
   };
 
   const saveSettings = () => {
-    // Prepare the data for the API request
-    const payload = {
+    const overtimeIncentive = settings.find(item => item.name === 'Overtime Incentive');
+    
+    const payload: UpdatePayload = {
       _id: data[0]?._id,
       allowances: {
-        bonus: settings.find(item => item.name === 'Bonus')?.amount,
-        gratuity: settings.find(item => item.name === 'Gratuity')?.amount,
-        medicalAllowance: settings.find(item => item.name === 'Medical Allowance')?.amount,
-        hra: settings.find(item => item.name === 'HRA')?.amount,
-        da: settings.find(item => item.name === 'DA')?.amount,
+        bonus: settings.find(item => item.name === 'Bonus')?.amount || 0,
+        gratuity: settings.find(item => item.name === 'Gratuity')?.amount || 0,
+        medicalAllowance: settings.find(item => item.name === 'Medical Allowance')?.amount || 0,
+        hra: settings.find(item => item.name === 'HRA')?.amount || 0,
+        da: settings.find(item => item.name === 'DA')?.amount || 0,
         overTime: {
-          type: settings.find(item => item.name === 'Overtime Incentive')?.amount,
-          overtimeEnabled: settings.find(item => item.name === 'Overtime Incentive')?.overtimeEnabled,
+          type: overtimeIncentive?.amount || 0,
+          overtimeEnabled: overtimeIncentive?.overtimeEnabled || false,
         },
       },
       deductions: {
-        incomeTax: settings.find(item => item.name === 'Income Tax')?.amount,
-        providentFund: settings.find(item => item.name === 'Provident Fund')?.amount,
-        professionalTax: settings.find(item => item.name === 'Professional Tax')?.amount,
-        esiFund: settings.find(item => item.name === 'ESI Fund')?.amount,
+        incomeTax: settings.find(item => item.name === 'Income Tax')?.amount || 0,
+        providentFund: settings.find(item => item.name === 'Provident Fund')?.amount || 0,
+        professionalTax: settings.find(item => item.name === 'Professional Tax')?.amount || 0,
+        esiFund: settings.find(item => item.name === 'ESI Fund')?.amount || 0,
       },
       incentives: incentiveSlabs.map(slab => ({
         incentiveName: slab.name,
@@ -132,24 +164,23 @@ const PayrollSettings = () => {
         maxTaskCount: slab.maxTaskCount,
         percentage: slab.amount,
       })),
-      payDay: settings.find(item => item.name === 'Pay Day')?.amount
+      payDay: settings.find(item => item.name === 'Pay Day')?.amount || 0
     };
-
-    managerInstance.post(`/manager/api/payroll/update-payroll-crieteria/${data[0]?._id}`, payload)
-      .then(response => {
+    managerInstance.post<PayrollData>(`/manager/api/payroll/update-payroll-crieteria/${data[0]?._id}`, payload)
+      .then((response: AxiosResponse<PayrollData>) => {
         console.log('Payroll criteria updated:', response.data);
         alert('Settings have been saved successfully!');
       })
-      .catch(error => {
+      .catch((error: Error) => {
         console.error('Error updating payroll criteria:', error);
         alert('There was an error saving the settings.');
       });
   };
 
   const addIncentiveSlab = () => {
-    const newSlab = {
+    const newSlab: IncentiveSlab = {
       id: incentiveSlabs.length + 1,
-      _id: '',  // Add _id as an empty string or null initially
+      _id: '',
       name: '',
       minTaskCount: 0,
       maxTaskCount: 0,
@@ -157,7 +188,6 @@ const PayrollSettings = () => {
     };
     setIncentiveSlabs([...incentiveSlabs, newSlab]);
   };
-  
 
   const removeIncentiveSlab = (id: number, _id: string) => {
     const payrollCriteriaId = data[0]?._id;
@@ -167,30 +197,28 @@ const PayrollSettings = () => {
       return;
     }
   
-    // Prepare data to send to the API
     const requestData = {
-      payrollCriteriaId,  // Add payrollCriteriaId here
+      payrollCriteriaId,
     };
   
     managerInstance.patch(`/manager/api/payroll/delete-incentive/${_id}`, requestData)
-      .then(response => {
+      .then(() => {
         setIncentiveSlabs(incentiveSlabs.filter((slab) => slab.id !== id));
         alert('Incentive Slab removed successfully!');
       })
-      .catch(error => {
+      .catch((error: Error) => {
         console.error("Error removing incentive slab:", error);
         alert('There was an error removing the incentive slab.');
       });
   };
-  
 
-  const updateIncentiveSlab = (id: number, key: keyof IncentiveSlab, value: any) => {
+  const updateIncentiveSlab = (id: number, key: keyof IncentiveSlab, value: IncentiveSlab[keyof IncentiveSlab]) => {
     setIncentiveSlabs((prev) =>
       prev.map((slab) => (slab.id === id ? { ...slab, [key]: value } : slab))
     );
   };
 
-  const renderList = (type: Setting['type'], title: string) => (
+  const renderList = (type: SettingType, title: string) => (
     <>
       <h2 className="text-2xl font-semibold mb-4" style={{ color: themeColor }}>{title}</h2>
       <List
@@ -233,7 +261,6 @@ const PayrollSettings = () => {
       {renderList('deduction', 'Deductions')}
       {renderList('other', 'Other')}
       
-      {/* Incentive Slabs Section with different style */}
       <h2 className="text-2xl font-semibold mb-4" style={{ color: themeColor }}>Incentive Slabs</h2>
       <List
         bordered

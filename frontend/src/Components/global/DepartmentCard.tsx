@@ -1,27 +1,21 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaTrash, FaPlus } from 'react-icons/fa';
-import useTheme from '../../hooks/useTheme';
 import AddCandidateModal from './AddCandidateModal';
 import { removeEmployee } from '../../api/managerApi';
 import { IDepartmentCardProps } from '../../interface/GlobalInterface';
+import { IEmployee } from '../../interface/managerInterface';
 
 export default function DepartmentCard({
   departmentName,
   employees,
   themeColor,
-  onEditEmployee,
   onRemoveEmployee,
   onRemoveDepartment,
   departmentId,
 }: IDepartmentCardProps) {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const { themeMode } = useTheme();
-  const [departmentEmployees, setDepartmentEmployees] = useState(employees)
-  
-
-  console.log("employees from -------------------------",employees);
-  
+  const [departmentEmployees, setDepartmentEmployees] = useState<IEmployee[]>(employees)  
 
   const handleAddCandidate = () => {
     setIsModalVisible(true);
@@ -31,13 +25,7 @@ export default function DepartmentCard({
     setIsModalVisible(false);
   };
 
-  const handleRemoveEmployeeClick = async (employeeId: any) => {
-
-    console.log('employeeId:isssssssssssssssssssssssssssss', employeeId);
-    
-    console.log('departmentId:isssssssssssssssssssssssssssss', departmentId);
-    
- 
+  const handleRemoveEmployeeClick = async (employeeId: string) => {
     try {
       await removeEmployee(employeeId, departmentId);
       onRemoveEmployee(employeeId);
@@ -47,7 +35,7 @@ export default function DepartmentCard({
     }
   };
 
-  const handleEmployeesAdded = (newEmployees: any[]) => {
+  const handleEmployeesAdded = (newEmployees: IEmployee[]) => {
     setDepartmentEmployees((prev) => [...prev, ...newEmployees]);
   };
 
@@ -109,7 +97,7 @@ export default function DepartmentCard({
               </div>
               <button
                 className="p-1.5 text-red-500 hover:bg-red-100 rounded-full transition-colors"
-                onClick={() => handleRemoveEmployeeClick(employee.employeeId)}
+                onClick={() => handleRemoveEmployeeClick(employee.employeeId || '')}
                 aria-label="Remove Employee"
               >
                 <FaTrash size={14} />

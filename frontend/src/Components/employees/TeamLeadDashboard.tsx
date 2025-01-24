@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { 
   FaCalendar, 
   FaUserTimes, 
-  FaClock,
   FaProjectDiagram,
   FaHourglassHalf,
   FaCheckCircle,

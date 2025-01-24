@@ -1,20 +1,23 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaUsers, FaChartLine } from 'react-icons/fa';
-import {
-  AreaChart,
-  Area,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+import {AreaChart,Area,CartesianGrid,XAxis,YAxis,Tooltip,Legend, ResponsiveContainer,} from 'recharts';
 import { businessOwnerInstance } from '../../../services/businessOwnerInstance';
+interface BusinessOwner {
+  totalEmployees: number;
+  activeEmployees: number;
+  totalManagers: number;
+  activeManagers: number;
+  employeeMonthCounts: Record<string, number>;
+  managerMonthCounts: Record<string, number>;
+}
+interface DashboardData {
+  businessOwners: BusinessOwner;
+}
 
 export default function BusinessOwnerDashboard() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
 
   useEffect(() => {
     businessOwnerInstance

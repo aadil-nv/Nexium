@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   FaCalendar, 
-  FaUserTimes, 
-  FaClock, 
+  FaUserTimes,  
   FaCheckCircle,
   FaTasks,
   FaExclamationCircle,
@@ -60,7 +59,7 @@ interface DashboardData {
       total: number;
     }>;
     currentTaskStats: TaskStats;
-    taskPriorities: {
+    taskPriorities?: {
       high: number;
       medium: number;
       low: number;
@@ -161,10 +160,20 @@ export default function Dashboard() {
     low: '#10b981'
   };
 
+  // Safe access to task priorities with default values
   const priorityData = [
-    { name: 'High', value: dashboardData.dashboardData.taskPriorities.high },
-    { name: 'Medium', value: dashboardData.dashboardData.taskPriorities.medium },
-    { name: 'Low', value: dashboardData.dashboardData.taskPriorities.low }
+    { 
+      name: 'High', 
+      value: dashboardData.dashboardData.taskPriorities?.high ?? 0 
+    },
+    { 
+      name: 'Medium', 
+      value: dashboardData.dashboardData.taskPriorities?.medium ?? 0 
+    },
+    { 
+      name: 'Low', 
+      value: dashboardData.dashboardData.taskPriorities?.low ?? 0 
+    }
   ];
 
   const getCurrentMonth = () => {
@@ -257,7 +266,10 @@ export default function Dashboard() {
                   label
                 >
                   {priorityData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PRIORITY_COLORS[entry.name.toLowerCase() as keyof typeof PRIORITY_COLORS]} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={PRIORITY_COLORS[entry.name.toLowerCase() as keyof typeof PRIORITY_COLORS]} 
+                    />
                   ))}
                 </Pie>
                 <Tooltip />

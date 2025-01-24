@@ -54,7 +54,7 @@ export const MeetingForm: React.FC<MeetingFormProps> = ({
   };
 
   // Custom validation for the meeting time
-  const validateMeetingTime = (_: any, value: dayjs.Dayjs) => {
+  const validateMeetingTime = (_: unknown, value: dayjs.Dayjs) => {
     const selectedDate = form.getFieldValue('meetingDate');
     
     if (!selectedDate) {

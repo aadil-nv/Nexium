@@ -95,7 +95,7 @@ export default function OtpValidation() {
         setOtpError("Failed to resend OTP. Please try again.");
       }
     } catch (error) {
-      setOtpError("Error resending OTP. Please try again.");
+      setOtpError(error.message ||"Error resending OTP. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -39,7 +39,7 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onMan
     try {
       managerSchema.parse(formData);
       setErrors({});
-      setErrorMessage(''); // Clear any previous error message
+      setErrorMessage(''); 
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -59,7 +59,7 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onMan
     if (!validateForm()) return;
 
     setLoading(true); // Set loading state to true
-    setErrorMessage(''); // Clear any previous error messages
+    setErrorMessage(''); 
 
     try {
       const response = await businessOwnerInstance.post('/businessOwner/api/manager/add-managers', { ...formData });

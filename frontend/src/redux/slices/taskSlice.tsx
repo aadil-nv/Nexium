@@ -1,18 +1,26 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+interface SubTask {
+  title: string;
+  priority: string;
+  description: string;
+  isCompleted: boolean;
+  _id?: string;
+  taskStatus?: string;
+  response?: string;
+}
+
 interface Task {
-  _id: string;
-  employeeId: string;
-  dueDate: Date;
+  _id?: string;
+  employeeProfilePicture: string;
   employeeName: string;
-  employeeProfilePicture?: string;
+  dueDate: string;
+  assignedBy: string;
+  assigenedDate: string;
   taskName: string;
-  tasks: {
-    title: string;
-    description?: string;
-    isCompleted?: boolean;
-    priority?: 'low' | 'medium' | 'high';
-  }[];
+  isApproved?: boolean;
+  tasks: SubTask[];
+  employeeId?: string;
 }
 
 interface TaskState {

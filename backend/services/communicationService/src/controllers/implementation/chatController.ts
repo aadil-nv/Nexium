@@ -113,10 +113,12 @@ export default class ChatController implements IChatController {
             const myId = this.getMyId(req);
             const response = await this._chatService.getAllUnAddedUsers(groupId , myId);
             return res.status(HttpStatusCode.OK).json(response);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error:any) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error.message });
         }
     }
+
 
     async updateGroup(req: CustomRequest, res: Response): Promise<Response> {
         try {

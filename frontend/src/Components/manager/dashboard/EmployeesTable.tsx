@@ -23,7 +23,10 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
     XLSX.writeFile(workbook, "Data.xlsx");
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleClick = async (action: 'edit' | 'block'| 'remove' , employeeId: any, isBlocked?: boolean) => {
+    console.log("employeeId---------------->",employeeId);
+    
     try {
       let response;
       if (action === 'edit') {

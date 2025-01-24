@@ -3,56 +3,71 @@ import { Button, Modal, Form, Input, Select } from 'antd';
 import { toast } from 'react-toastify';
 import { managerInstance } from '../../services/managerInstance';
 import { fetchEmployeesWithOutDepAPI } from '../../api/managerApi';
+import { IDepartment } from '../../interface/managerInterface';
+
+type Employee = {
+  employeeId: string;
+  employeeName: string;
+  email: string;
+  position: string;
+  isOnline: boolean;
+  profilePicture: string;
+};
+
+type FormValues = {
+  departmentName: string;
+  employees: string[];
+};
 
 const AddDepartmentModal: React.FC<{
   isVisible: boolean;
   onClose: () => void;
-  onAddDepartment: (department: any) => void;
+  onAddDepartment: (department: IDepartment) => void;
 }> = ({ isVisible, onClose, onAddDepartment }) => {
   const [form] = Form.useForm();
-  const [employees, setEmployees] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
   useEffect(() => {
-    fetchEmployeesWithOutDepAPI().then(setEmployees).catch(console.error);
+    fetchEmployeesWithOutDepAPI()
+      .then(setEmployees)
+      .catch(console.error);
   }, []);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: FormValues) => {
     const employeesToAdd = values.employees
       .map((id: string) => employees.find((e) => e.employeeId === id))
       .filter(Boolean)
-      .map((emp: any) => ({
-        employeeId: emp.employeeId, 
-        email: emp.email,
-        name: emp.employeeName || 'No Name', 
-        position: emp.position || 'No Position', 
-        isActive: emp.isOnline, 
-        profilePicture: emp.profilePicture || '' 
+      .map((emp) => ({
+        employeeId: emp!.employeeId, // Non-null assertion because of filter(Boolean)
+        email: emp!.email,
+        name: emp!.employeeName ,
+        position: emp!.position ,
+        isActive: emp!.isOnline,
+        profilePicture: emp!.profilePicture || '',
       }));
 
     if (!employeesToAdd.length) {
       toast.error('No valid employees selected');
       return;
     }
-    
 
     try {
       const response = await managerInstance.post(
         '/manager/api/department/add-departments',
         { departmentName: values.departmentName, employees: employeesToAdd }
       );
-     
-        
+
       if (response.status === 200) {
         toast.success('Department added successfully!');
         onAddDepartment(response.data.department);
-        
+
         form.resetFields();
         onClose();
         fetchEmployeesWithOutDepAPI().then(setEmployees).catch(console.error);
       }
     } catch (error) {
       console.error('Error adding department:', error.response?.data?.message);
-      toast.error( error.response?.data?.message);
+      toast.error(error.response?.data?.message);
     }
   };
 
@@ -65,7 +80,7 @@ const AddDepartmentModal: React.FC<{
 
         <Form.Item label="Select Employees" name="employees" rules={[{ required: true, message: 'Please select employees!' }]}>
           <Select mode="multiple" allowClear placeholder="Search and select employees" options={employees.map((emp) => ({
-            value: emp.employeeId, label: `${emp.employeeName} (${emp.position})` 
+            value: emp.employeeId, label: `${emp.employeeName} (${emp.position})`,
           }))} />
         </Form.Item>
 

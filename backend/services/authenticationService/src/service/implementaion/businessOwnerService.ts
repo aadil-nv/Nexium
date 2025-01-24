@@ -245,6 +245,8 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
     
     async addNewPassword(email: string, password: string): Promise<{ success: boolean; message: string }> {
+      console.log("email", email, "password", password);
+      
         try {
             const existingBusinessOwner = await this.businessOwnerRepository.findByEmail(email);
             if (!existingBusinessOwner) {

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Empty, Modal, Tag, Skeleton, Spin } from 'antd';
+import { Card, Button, Empty, Modal, Tag, Skeleton } from 'antd';
 import { motion } from 'framer-motion';
 import { businessOwnerInstance } from '../../../services/businessOwnerInstance';
-import DemoTable from './DemoTable';
+import DemoTable from './InvoiseTable';
 import { loadStripe } from '@stripe/stripe-js';
 import { toast } from 'react-toastify';
 
@@ -17,6 +17,14 @@ interface SubscriptionPlan {
   isActive: boolean;
 }
 
+interface Invoice {
+  id: string;
+  created: number;
+  amount_paid: number;
+  amount_due: number;
+  invoice_pdf: string;
+}
+
 const SubscriptionPage: React.FC = () => {
   const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
   const [allSubscriptionPlans, setAllSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
@@ -24,8 +32,8 @@ const SubscriptionPage: React.FC = () => {
   const [visiblePlans, setVisiblePlans] = useState<SubscriptionPlan[]>([]);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const [stripeLoading, setStripeLoading] = useState<boolean>(false); // Loading state for stripe process
-  const [invoiseData, setInvoiseData] = useState<any[]>([]);
+  const [stripeLoading, setStripeLoading] = useState<boolean>(false); 
+  const [invoiceData, setInvoiceData] = useState<Invoice[]>([]);
   const stripePromise = loadStripe('pk_test_51QA84MG0KgrlY5FBKX5uMqGIPF0QRwCB52FMUeaO4mMIqlaHjWaellTk26kdZYqYgM1USvDyz7jwfoAIL5Wovdpw00AYg8dWct');
 
   useEffect(() => {
@@ -43,15 +51,13 @@ const SubscriptionPage: React.FC = () => {
       .get('/businessOwner/api/subscription/get-all-subscriptions')
       .then((response) => setAllSubscriptionPlans(response.data.subscriptions))
       .catch(console.error);
+
     businessOwnerInstance
       .get('/businessOwner/api/subscription/invoices')
-      .then((response) => setInvoiseData(response.data))
+      .then((response) => setInvoiceData(response.data))
       .catch(console.error);
   }, []);
 
-  console.log("invoiose data is ====>>>>>",invoiseData);
-  
-  
   const handleUpgrade = () => {
     if (currentPlan) {
       let upgradePlans: SubscriptionPlan[] = [];
@@ -68,11 +74,11 @@ const SubscriptionPage: React.FC = () => {
   };
 
   const handleChoosePlan = async (plan: SubscriptionPlan) => {
-    setStripeLoading(true); // Set loading state for Stripe
+    setStripeLoading(true);
     const stripe = await stripePromise;
     if (!stripe) {
       toast.error('Stripe initialization failed. Please try again.');
-      setStripeLoading(false); // Reset loading state
+      setStripeLoading(false);
       return;
     }
 
@@ -97,7 +103,7 @@ const SubscriptionPage: React.FC = () => {
       toast.error('Error upgrading plan. Please try again.');
       console.error('Error:', error);
     } finally {
-      setStripeLoading(false); // Reset loading state after completion
+      setStripeLoading(false);
     }
   };
 
@@ -150,22 +156,10 @@ const SubscriptionPage: React.FC = () => {
             <Empty className="my-12" image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Subscription Plans Available" />
           )}
         </div>
-
-        {/* <div className="w-full md:w-2/3">
-          <Card className="shadow-md rounded-lg p-6 h-full flex flex-col justify-between" title="Next Month's Bill">
-            <div>
-              <p className="text-gray-700 font-semibold">Due Date: January 1, 2025</p>
-              <p className="text-xl font-bold text-green-700">Amount: $99.99</p>
-            </div>
-            <Button type="primary" className="mt-4 w-full self-end">
-              Pay Now
-            </Button>
-          </Card>
-        </div> */}
       </div>
 
       <div>
-        <DemoTable />
+        <DemoTable invoiceData={invoiceData} />
       </div>
 
       <Modal title="Choose a Plan" visible={modalVisible} onCancel={() => setModalVisible(false)} footer={null}>
@@ -175,7 +169,7 @@ const SubscriptionPage: React.FC = () => {
               key={plan._id}
               className="mb-4"
               hoverable
-              actions={[<Button type="primary" onClick={() => handleChoosePlan(plan)}>Choose Plan</Button>]}
+              actions={[<Button type="primary" onClick={() => handleChoosePlan(plan)} loading={stripeLoading}>Choose Plan</Button>]}
             >
               <h3 className="text-lg font-semibold">{plan.planName}</h3>
               <p className="text-gray-700">{plan.description}</p>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Select, Input, message } from "antd";
+import { Modal, Select, Input } from "antd";
 import { employeeInstance } from "../../services/employeeInstance";
 
 type LeaveModalProps = {
@@ -18,7 +18,7 @@ const LeaveModal: React.FC<LeaveModalProps> = ({
   date,
 }) => {
   const [leaveType, setLeaveType] = useState<string | null>(null);
-  const [duration, setDuration] = useState<string | null>(null);  // To handle Half Day or Full Day selection
+  const [duration, setDuration] = useState<string | null>(null); // To handle Half Day or Full Day selection
   const [reason, setReason] = useState<string>("");
   const [leaveData, setLeaveData] = useState<Record<string, number>>({});
 
@@ -50,7 +50,7 @@ const LeaveModal: React.FC<LeaveModalProps> = ({
             leaveType,
             reason,
             date,
-            duration  // Sending the leave duration as part of the request
+            duration, // Sending the leave duration as part of the request
           }
         );
 
@@ -72,7 +72,7 @@ const LeaveModal: React.FC<LeaveModalProps> = ({
   };
 
   const availableLeaveTypes = Object.entries(leaveData).filter(
-    ([_, count]) => count > 0
+    ([, count]) => count > 0 // Only check if the count (days left) is greater than 0
   );
 
   return (

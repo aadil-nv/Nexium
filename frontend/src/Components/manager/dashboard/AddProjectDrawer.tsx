@@ -1,26 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import { Drawer, Form, Input, Select, DatePicker, Upload, Button, notification, Space, Divider } from 'antd';
+import { Drawer, Form, Input, Select, DatePicker, Upload, Button, notification, Space, Divider, UploadFile } from 'antd';
 import { ProjectOutlined, SaveOutlined, CloseOutlined, UploadOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import { employeeInstance } from '../../../services/employeeInstance';
 import { managerInstance } from '../../../services/managerInstance';
 
+interface TeamLead {
+  id: string;
+  name: string;
+}
+
+interface ProjectResponse {
+  projectId: string;
+  projectName: string;
+  description: string;
+  managerStatus: 'assigned' | 'underEvaluation' | 'approved' | 'rejected' | 'onHold' | 'inProgress' | 'requiresClarification' | 'escalated';
+  projectFiles?: { fileUrl: string }[];
+}
+
+// Define types for saved project
+interface Project {
+  id: string;
+  projectName: string;
+  teamLead: string;
+  description: string;
+  status: 'pending' | 'inProgress' | 'completed' | 'notStarted';
+  dueDate: string;
+  file: string | null;
+  employeeFiles: string;
+  managerStatus: 'assigned' | 'underEvaluation' | 'approved' | 'rejected' | 'onHold' | 'inProgress' | 'requiresClarification' | 'escalated';
+}
+
 interface AddProjectDrawerProps {
   visible: boolean;
   onCancel: () => void;
-  onSave: (project: any) => void;
+  onSave: (project: Project) => void;
 }
 
 const AddProjectDrawer: React.FC<AddProjectDrawerProps> = ({ visible, onCancel, onSave }) => {
   const [form] = Form.useForm();
-  const [teamLeads, setTeamLeads] = useState<any[]>([]);
+  const [teamLeads, setTeamLeads] = useState<TeamLead[]>([]);
   const [loading, setLoading] = useState(false);
-  const [fileList, setFileList] = useState<any[]>([]);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
 
   useEffect(() => {
     if (visible) {
       managerInstance.get('/manager/api/projects/get-all-teamleads')
-        .then(response => setTeamLeads(response.data.map((lead: any) => ({ id: lead.employeeId, name: lead.employeeName }))))
+        .then(response => setTeamLeads(response.data.map((lead: {employeeId: string, employeeName: string}) => ({ id: lead.employeeId, name: lead.employeeName }))))
         .catch(console.error);
     }
   }, [visible]);
@@ -39,10 +65,9 @@ const AddProjectDrawer: React.FC<AddProjectDrawerProps> = ({ visible, onCancel, 
         projectFiles: fileList.map(({ name, type, size }) => ({ name, type, size })),
       };
 
-      const response = await employeeInstance.post('/manager/api/projects/add-new-project', payload);
+      const response = await employeeInstance.post<ProjectResponse>('/manager/api/projects/add-new-project', payload);
       
-      
-      const newProject = {
+      const newProject: Project = {
         id: response.data.projectId,
         projectName: response.data.projectName,
         teamLead: teamLeads.find(lead => lead.id === values.teamLead)?.name || 'N/A',
@@ -51,13 +76,14 @@ const AddProjectDrawer: React.FC<AddProjectDrawerProps> = ({ visible, onCancel, 
         description: response.data.description,
         managerStatus: response.data.managerStatus,
         file: response.data.projectFiles?.[0]?.fileUrl || null,
+        employeeFiles: response.data.projectFiles?.map(file => file.fileUrl).join(', ') || 'No files',
       };
 
       notification.success({ message: 'Success', description: 'Project created successfully' });
       onSave(newProject);
       handleClose();
     } catch (error) {
-      notification.error({ message: 'Error', description: 'Failed to create project' });
+      notification.error({ message: 'Error', description: (error as Error).message || 'Failed to create project' });
     } finally {
       setLoading(false);
     }
@@ -112,8 +138,16 @@ const AddProjectDrawer: React.FC<AddProjectDrawerProps> = ({ visible, onCancel, 
         <Form.Item label="Project Files" name="projectFiles">
           <Upload 
             fileList={fileList} 
-            onRemove={file => setFileList(fileList.filter(item => item !== file))} 
-            beforeUpload={file => { setFileList([...fileList, file]); return false; }}
+            onRemove={(file) => setFileList(fileList.filter(item => item.uid !== file.uid))} 
+            beforeUpload={(file) => { 
+              const uploadFile: UploadFile = {
+                ...file,
+                uid: Date.now().toString(),
+                name: file.name,
+              };
+              setFileList([...fileList, uploadFile]); 
+              return false; 
+            }}
           >
             <Button icon={<UploadOutlined />} size="large" block>Select Files</Button>
           </Upload>

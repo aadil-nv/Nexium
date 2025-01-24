@@ -1,29 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, DatePicker, Button, Select, Row, Col, Divider, notification } from 'antd';
 import { PlusOutlined, DeleteOutlined, CalendarOutlined, UserOutlined, FileTextOutlined } from '@ant-design/icons';
-import { Moment } from 'moment';
 import moment from 'moment';
 import { employeeInstance } from '../../services/employeeInstance';
 import { useDispatch } from 'react-redux';
 import { addTask } from '../../redux/slices/taskSlice';
 
-interface ITaskDTO {
-  employeeId: string;
-  dueDate: Date;
+interface SubTask {
+  title: string;
+  priority: string;
+  description: string;
+  isCompleted: boolean;
+  _id?: string;
+  taskStatus?: string;
+  response?: string;
+}
+
+interface Task {
+  _id?: string;
+  employeeProfilePicture: string;
   employeeName: string;
-  employeeProfilePicture?: string;
+  dueDate: string;
+  assignedBy: string;
+  assigenedDate: string;
   taskName: string;
-  tasks: {
-    title: string;
-    description?: string;
-    priority?: 'low' | 'medium' | 'high';
-  }[];
+  isApproved?: boolean;
+  tasks: SubTask[];
+  employeeId?: string;
 }
 
 interface TaskModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSave: (taskData: ITaskDTO) => void;
+  onSave: (taskData: Task) => void;
 }
 
 const priorityColors = {
@@ -32,10 +41,10 @@ const priorityColors = {
   high: '#f5222d'
 };
 
-const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
+const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel ,onSave }) => {
   const dispatch = useDispatch();
   const [employeeId, setEmployeeId] = useState<string>('');
-  const [dueDate, setDueDate] = useState<Moment | null>(null);
+  const [dueDate, setDueDate] = useState<moment.Moment | null>(null);
   const [taskName, setTaskName] = useState<string>('');
   const [tasks, setTasks] = useState<{ title: string; description?: string; priority?: 'low' | 'medium' | 'high' }[]>([{ title: '', description: '', priority: 'low' }]);
   const [availableEmployees, setAvailableEmployees] = useState<{ _id: string, name: string, profilePicture?: string }[]>([]);
@@ -56,7 +65,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
     }
   }, [visible]);
 
-  const handleTaskChange = (index: number, field: string, value: any) => {
+  const handleTaskChange = (index: number, field: string, value) => {
     const updatedTasks = [...tasks];
     updatedTasks[index] = { ...updatedTasks[index], [field]: value };
     setTasks(updatedTasks);
@@ -71,6 +80,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
     setTasks(updatedTasks);
   };
 
+
   const handleSave = async () => {
     if (!employeeId || !dueDate || !taskName) {
       notification.error({
@@ -83,18 +93,26 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
     const employee = availableEmployees.find((emp) => emp._id === employeeId);
     if (!employee) return;
 
-    const taskData: ITaskDTO = {
-      employeeId,
-      employeeName: employee.name,
-      employeeProfilePicture: employee.profilePicture,
-      dueDate: dueDate.toDate(),
+    const taskData: Task = {
+      employeeId: employeeId.toString(),
+      employeeName: employee.name || '',
+      employeeProfilePicture: employee.profilePicture || '',
+      dueDate: dueDate.toISOString(), // Convert to ISO string
+      assignedBy: 'current_user', // You might want to replace this with actual current user
+      assigenedDate: new Date().toISOString(),
       taskName,
-      tasks,
+      tasks: tasks.map((task) => ({
+        title: task.title,
+        description: task.description || '',
+        priority: task.priority || 'low',
+        isCompleted: false,
+      })),
     };
 
     try {
       const response = await employeeInstance.post('/employee/api/task/assign-task-to-employee', taskData);
       dispatch(addTask(response.data));
+      onSave(response.data); // Call onSave with the response data
       notification.success({
         message: 'Success',
         description: 'Tasks assigned successfully.',
@@ -105,17 +123,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel, onSave }) => {
       setTasks([{ title: '', description: '', priority: 'low' }]);
       onCancel();
     } catch (error) {
-      notification.error({
-        message: 'Error',
-        description: 'Failed to assign tasks.',
-      });
-    }
-  };
-
-  const modalStyle = {
-    '.ant-modal-content': {
-      borderRadius: '12px',
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+      notification.error({message: 'Error', description: error.message || 'Failed to assign tasks.' });
     }
   };
 

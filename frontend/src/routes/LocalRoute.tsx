@@ -4,8 +4,6 @@ import LandingSignUpPage from "../pages/landingPages/LandingSignUpPage";
 import LandingOtp from "../pages/landingPages/LandingOtpPage";
 import PlansPage from "../pages/landingPages/PlansPage";
 import LandingForgottEmail from "../pages/landingPages/LandingForgottEmail";
-import LandingNewPasswordPage from "../pages/landingPages/LandingNewPasswordPage";
-import LandingForgottOtp from "../pages/landingPages/LandingForgottOtp";
 import LandingLoginPage from "../pages/landingPages/LandingLoginPage";
 import LandingPage from "../pages/landingPages/LandingPage";
 import SuperAdminLogin from "../components/superAdmin/superAdminLogin/superAdminLogin";
@@ -24,8 +22,6 @@ const LocalRoutes = () => {
     { path: "/otp", element: <LandingOtp /> },
     { path: "/plans", element: <PlansPage /> },
     { path: "/verify-email", element: <LandingForgottEmail /> },
-    { path: "/change-password", element: <LandingNewPasswordPage /> },
-    { path: "/forgot-otp", element: <LandingForgottOtp /> },
     { path: "/manager-login", element: <Login /> },
     { path: "/manager-otpvalidation", element: <OtpValidation /> },
     { path: "/employee-login", element: <EmployeeLogin /> },

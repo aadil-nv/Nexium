@@ -36,9 +36,6 @@ export default function ManagerLogin() {
         return
       }
    
-  
-     
-      
       if (responseData.success === false &&  responseData.isVerified === false) {
 
      

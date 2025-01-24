@@ -2,22 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Select, Spin } from 'antd';
 import { toast } from 'react-toastify';
 import { fetchEmployeesWithOutDepartment, addEmployeeToDepartment } from '../../api/managerApi';
-import { log } from 'node:console';
+import { IEmployee } from '../../interface/managerInterface'; // Import the original interface
 
-interface AddCandidateModalProps {
+const AddCandidateModal: React.FC<{
   isVisible: boolean;
   onClose: () => void;
   departmentId: string;
-  onEmployeesAdded: (newEmployees: any[]) => void;
-}
-
-const AddCandidateModal: React.FC<AddCandidateModalProps> = ({ 
+  onEmployeesAdded: (newEmployees: IEmployee[]) => void;
+}> = ({ 
   isVisible, 
   onClose, 
-  departmentId,
+  departmentId, 
   onEmployeesAdded 
 }) => {
-  const [employees, setEmployees] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<IEmployee[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]);
 
@@ -25,16 +23,15 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
     if (!isVisible) return;
     setLoading(true);
     fetchEmployeesWithOutDepartment()
-      .then(setEmployees)
+      .then((fetchedEmployees: IEmployee[]) => setEmployees(fetchedEmployees))
       .catch(() => toast.error('Failed to fetch employees!'))
       .finally(() => setLoading(false));
   }, [isVisible]);
 
-  console.log("employees--------------222222222222222222",employees);
-  
-
   const handleFinish = async () => {
-    const selectedEmployees = employees.filter((emp: any) => selectedEmployeeIds.includes(emp.employeeId,emp.profilePicture));
+    const selectedEmployees = employees.filter((emp) => 
+      selectedEmployeeIds.includes(emp.employeeId || '')
+    );
 
     if (selectedEmployees.length === 0) {
       toast.error('No employees selected!');
@@ -43,42 +40,47 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
 
     try {
       const success = await addEmployeeToDepartment(selectedEmployees, departmentId);
-      console.log("success=========================",success);
       
       if (success) {
         toast.success(`${selectedEmployees.length} employee(s) added to the department!`);
-
-        onEmployeesAdded(selectedEmployees); // Update parent component
+        onEmployeesAdded(selectedEmployees);
       } else {
         toast.error('Failed to add employees to the department!');
       }
     } catch (error) {
-      toast.error('An error occurred while adding employees!');
+      toast.error(error.response?.data?.message || 'An error occurred while adding employees!');
     }
 
     onClose();
   };
 
-  const handleSelectChange = (value: any) => {
+  const handleSelectChange = (value: string[]) => {
     setSelectedEmployeeIds(value);
   };
 
   return (
-    <Modal title="Search and Add Employees" open={isVisible} onCancel={onClose} footer={null}>
+    <Modal
+      title="Add Employees to Department"
+      visible={isVisible}
+      onCancel={onClose}
+      footer={[
+        <Button key="back" onClick={onClose}>
+          Cancel
+        </Button>,
+        <Button key="submit" type="primary" onClick={handleFinish}>
+          Add Selected
+        </Button>
+      ]}
+    >
       {loading ? (
-        <Spin tip="Loading employees..." />
+        <div className="text-center"><Spin /></div>
       ) : (
-        <Form layout="vertical" onFinish={handleFinish}>
-          <Form.Item 
-            label="Search and Select Employees" 
-            name="employees" 
-            rules={[{ required: true, message: 'Please select employees!' }]}
-          >
+        <Form>
+          <Form.Item label="Select Employees">
             <Select
               mode="multiple"
-              allowClear
-              placeholder="Search and select employees"
-              filterOption={(input, option) =>
+              placeholder="Select employees"
+              filterOption={(input, option) => 
                 (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
               }
               value={selectedEmployeeIds}
@@ -89,14 +91,6 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
               }))}
             />
           </Form.Item>
-          <div style={{ textAlign: 'right' }}>
-            <Button onClick={onClose} style={{ marginRight: '10px' }}>
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit">
-              Add Selected
-            </Button>
-          </div>
         </Form>
       )}
     </Modal>

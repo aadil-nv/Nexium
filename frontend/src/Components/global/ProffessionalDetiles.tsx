@@ -6,22 +6,54 @@ import { managerInstance } from '../../services/managerInstance';
 import { employeeInstance } from '../../services/employeeInstance';
 import { businessOwnerInstance } from '../../services/businessOwnerInstance';
 
+// Define interfaces for different types of professional details
+interface EmployeeProfessionalDetails {
+  position: string;
+  department: string;
+  workTime: string;
+  joiningDate: string;
+  currentStatus: string;
+  companyName: string;
+  salary: number;
+  uanNumber: string;
+  pfAccount: string;
+  esiAccount: string;
+}
+
+interface ManagerProfessionalDetails {
+  managerType: string;
+  workTime: string;
+  joiningDate: string;
+  salary: number;
+}
+
+// Define a union type for fields
+type ProfessionalField = {
+  name: string;
+  label: string;
+  type: 'text' | 'date' | 'number' | 'uanNumber' | 'pfAccount' | 'esiAccount';
+};
+
 export default function ProfessionalDetails() {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(true);
-  const [details, setDetails] = useState<any>({});
+  const [loading, setLoading] = useState<boolean>(true);
   const { employee, manager, businessOwner } = useAuth();
 
   useEffect(() => {
     const fetchDetails = async () => {
       try {
         const response = manager.isAuthenticated
-          ? await managerInstance.get('/manager/api/manager/get-managerprofessionalinfo'): employee.isAuthenticated
-          ? await employeeInstance.get('/employee/api/employee/get-employeeprofessionalinfo'): businessOwner.isAuthenticated
-          ? await businessOwnerInstance.get('/businessOwner/api/business-owner/get-businessownerprofessionalinfo'): null;
-
+          ? await managerInstance.get<ManagerProfessionalDetails>('/manager/api/manager/get-managerprofessionalinfo')
+          : employee.isAuthenticated
+          ? await employeeInstance.get<EmployeeProfessionalDetails>('/employee/api/employee/get-employeeprofessionalinfo')
+          : businessOwner.isAuthenticated
+          ? await businessOwnerInstance.get<EmployeeProfessionalDetails>('/businessOwner/api/business-owner/get-businessownerprofessionalinfo')
+          : null;
+  
         if (response?.data) {
-          setDetails(response.data);
+          // Optional: Add a console log or use the details if needed
+          console.log(response.data);
+          
           form.setFieldsValue({
             ...response.data,
             joiningDate: dayjs(response.data.joiningDate),
@@ -33,15 +65,12 @@ export default function ProfessionalDetails() {
         setLoading(false);
       }
     };
-    fetchDetails();
-  }, [manager.isAuthenticated, employee.isAuthenticated, businessOwner.isAuthenticated]);
-
-  console.log("details00000000000000000000",details);
   
+    fetchDetails();
+  }, [manager.isAuthenticated, employee.isAuthenticated, businessOwner.isAuthenticated, form]);
+  if (loading) return <div>Loading...</div>;
 
-  if (loading) return <p>Loading...</p>;
-
-  const employeeFields = [
+  const employeeFields: ProfessionalField[] = [
     { name: 'position', label: 'Position', type: 'text' },
     { name: 'department', label: 'Department', type: 'text' },
     { name: 'workTime', label: 'Work Time', type: 'text' },
@@ -50,53 +79,44 @@ export default function ProfessionalDetails() {
     { name: 'companyName', label: 'Company Name', type: 'text' },
     { name: 'salary', label: 'Salary', type: 'number' },
     { name: 'uanNumber', label: 'UAN NO', type: 'uanNumber' },
-    { name: "pfAccount", label: "PF a/c", type: "pfAccount" },
-    { name: "esiAccount", label: "ESI a/c", type: "esiAccount" },
-
+    { name: 'pfAccount', label: 'PF a/c', type: 'pfAccount' },
+    { name: 'esiAccount', label: 'ESI a/c', type: 'esiAccount' },
   ];
 
-  const managerFields = [
+  const managerFields: ProfessionalField[] = [
     { name: 'managerType', label: 'Manager Type', type: 'text' },
     { name: 'workTime', label: 'Work Time', type: 'text' },
     { name: 'joiningDate', label: 'Joining Date', type: 'date' },
     { name: 'salary', label: 'Salary', type: 'number' },
   ];
 
+  const fieldsToRender = employee.isAuthenticated
+    ? employeeFields
+    : manager.isAuthenticated
+    ? managerFields
+    : [];
 
-
-  const fieldsToRender = employee.isAuthenticated? employeeFields: manager.isAuthenticated ? managerFields: [];
-    
-  
-
-  return (
-    <div className="mt-6">
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={details}
-        className="mt-4"
-        style={{ maxWidth: '800px', margin: '0 auto' }}
-      >
+    return (
+      <Form form={form} layout="vertical">
         <Row gutter={16}>
           {fieldsToRender.map((field) => (
-            <Col key={field.name} xs={24} sm={12}>
-              <Form.Item
-                name={field.name}
-                label={field.label}
-                rules={[{ required: true, message: `Please enter ${field.label.toLowerCase()}` }]}
-              >
-                {field.type === 'date' ? (
+            <Col key={field.name} span={8}>
+              {field.type === 'date' ? (
+                <Form.Item name={field.name} label={field.label}>
                   <DatePicker style={{ width: '100%' }} disabled />
-                ) : field.type === 'number' ? (
-                  <Input type="number" placeholder={`Enter ${field.label}`} disabled />
-                ) : (
-                  <Input placeholder={`Enter ${field.label}`} disabled />
-                )}
-              </Form.Item>
+                </Form.Item>
+              ) : field.type === 'number' ? (
+                <Form.Item name={field.name} label={field.label}>
+                  <Input type="number" disabled />
+                </Form.Item>
+              ) : (
+                <Form.Item name={field.name} label={field.label}>
+                  <Input disabled />
+                </Form.Item>
+              )}
             </Col>
           ))}
         </Row>
       </Form>
-    </div>
-  );
+    );
 }

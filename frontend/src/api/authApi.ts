@@ -10,6 +10,7 @@ export const resendOtp = async (email: string) => {
     const response = await axios.post(`${apiUrl}/authentication/api/business-owner/resend-otp`, { email });
     return response.data;
   } catch (error) {
+    console.log("Error resending OTP:", error);
     throw new Error('Error resending OTP. Please try again.');
   }
 };
@@ -19,24 +20,25 @@ export const validateOtp = async (email: string, otp: string) => {
     const response = await axios.post(`${apiUrl}/authentication/api/business-owner/otp-validation`, { email, otp });
     return response.data;
   } catch (error) {
+    console.log("Error verifying OTP:", error);
+    
     throw new Error('Error verifying OTP. Please try again.');
   }
 };
 
 export const loginBusinessOwnerAPI = async (email:string, password:string) => {
-  try {
     const { data } = await axios.post(
       `${apiUrl}/authentication/api/business-owner/login`,
       { email, password },
       { withCredentials: true }
     );
     return data;
-  } catch (error) {
-    throw error;
-  }
+ 
 };
 
 export const changePasswordAPI = async (password: string, email: string) => {
+  console.log("email from change password", email);
+  
   try {
       const response = await axios.patch(`${apiUrl}/authentication/api/business-owner/add-newpassword`, {
           password,
@@ -45,6 +47,7 @@ export const changePasswordAPI = async (password: string, email: string) => {
 
       return response.data;
   } catch (error) {
+      console.log("Error changing password:", error);
       throw new Error('An error occurred while changing the password.');
   }
 };
@@ -65,6 +68,7 @@ export const signUpResendOtp = async (email: string) => {
     const response = await axios.post(`${apiUrl}/authentication/api/business-owner/resend-otp`, { email });
     return response.data;
   } catch (error) {
+    console.log("Error signup-resending OTP:", error);
     throw new Error('Error resending OTP.');
   }
 };
@@ -78,6 +82,7 @@ export const SignUpValidateOtp = async (email: string, otp: string) => {
     );
     return response.data;
   } catch (error) {
+    console.log("Error signup-verifying OTP:", error);
     throw new Error('Error verifying OTP.');
   }
 }
@@ -117,7 +122,7 @@ export const fetchPlans = async () => {
   }
 };
 
-export const createCheckoutSession = async (email: string, selectedPlan: any) => {
+export const createCheckoutSession = async (email: string, selectedPlan) => {
   try {
     const { data } = await axios.post(
       `${apiUrl}/payment/api/businessowner-payment/create-checkout-session`,

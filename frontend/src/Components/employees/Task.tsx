@@ -8,10 +8,21 @@ import { employeeInstance } from '../../services/employeeInstance';
 import { useDispatch, useSelector } from 'react-redux';
 import { setTasks, addTask, updateTask, removeTask } from '../../redux/slices/taskSlice';
 import { RootState } from '../../redux/store/store';
-import { Progress } from 'antd'; // Add this import
+import { Progress } from 'antd';
+import { ColumnsType } from 'antd/lib/table';
+
+interface SubTask {
+  title: string;
+  priority: string;
+  description: string;
+  isCompleted: boolean;
+  _id?: string;
+  taskStatus?: string;
+  response?: string;
+}
 
 interface Task {
-  _id: string;
+  _id?: string;
   employeeProfilePicture: string;
   employeeName: string;
   dueDate: string;
@@ -19,15 +30,8 @@ interface Task {
   assigenedDate: string;
   taskName: string;
   isApproved?: boolean;
-  tasks: { 
-    title: string; 
-    priority: string;
-    description: string;
-    isCompleted: boolean;
-    _id: string;
-    taskStatus?: string;
-    response?: string;
-  }[];
+  tasks: SubTask[];
+  employeeId?: string;
 }
 
 const Task: React.FC = () => {
@@ -56,11 +60,11 @@ const Task: React.FC = () => {
     fetchTasks();
   }, [dispatch]);
 
-  const handleAddTask = (task: any) => {
+  const handleAddTask = (task: Task) => {
     dispatch(addTask(task));
   };
 
-  const handleSaveTaskChanges = (updatedTask: any) => {
+  const handleSaveTaskChanges = (updatedTask: Task) => {
     dispatch(updateTask(updatedTask));
     setTaskModalVisible(false);
   };
@@ -78,24 +82,19 @@ const Task: React.FC = () => {
     }
   };
 
-  // Function to handle approval status change
-  const handleApproval = async (taskId: string, isApproved: boolean) => {
-    console.log('Handling approval for task ID:', taskId);
-    console.log('Current approval status:', isApproved);
-    
-    isApproved == true ? isApproved = false : isApproved = true
+  const handleApproval = async (taskId: string, currentApprovalStatus?: boolean) => {
+    const newApprovalStatus = currentApprovalStatus === true ? false : true;
     
     try {
       const response = await employeeInstance.patch(`/employee/api/task/update-taskapproval/${taskId}`, {
-        isApproved,
+        isApproved: newApprovalStatus,
       });
   
       if (response.status === 200) {
-        console.log('Approval status updated successfully:', response.data);
         dispatch(updateTask({
           ...response.data,
         }));
-        message.success(isApproved ? 'Task approved!' : 'Task approval pending!');
+        message.success(newApprovalStatus ? 'Task approved!' : 'Task approval pending!');
       } else {
         message.error('Failed to update approval status.');
       }
@@ -104,28 +103,25 @@ const Task: React.FC = () => {
       message.error('Failed to update approval status.');
     }
   };
-  
 
-  // Filter and search logic
-  const filteredTasks = tasks.filter((task: any) => {
+  const filteredTasks = tasks.filter((task: Task) => {
     const matchesSearch = 
       task.employeeName.toLowerCase().includes(searchText.toLowerCase()) ||
-      task.tasks.some((t: any) => t.title.toLowerCase().includes(searchText.toLowerCase()));
+      task.tasks.some((t: SubTask) => t.title.toLowerCase().includes(searchText.toLowerCase()));
     
     const matchesPriority = filterPriority ? 
-      task.tasks.some((t: any) => t.priority.toLowerCase() === filterPriority.toLowerCase()) : 
+      task.tasks.some((t: SubTask) => t.priority.toLowerCase() === filterPriority.toLowerCase()) : 
       true;
     
     return matchesSearch && matchesPriority;
   });
 
-  // Modify the "Tasks" column
-  const columns = [
+  const columns: ColumnsType<Task> = [
     {
       title: 'Employee',
       key: 'employee',
-      align: 'center' as const,
-      render: (record: any) => (
+      align: 'center',
+      render: (record: Task) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center' }}>
           <img
             src={record.employeeProfilePicture || 'https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png'}
@@ -139,8 +135,8 @@ const Task: React.FC = () => {
     {
       title: 'Task Name',
       key: 'taskName',
-      align: 'center' as const,
-      render: (record: any) => (
+      align: 'center',
+      render: (record: Task) => (
         <span>
           {record.taskName}
         </span>
@@ -150,7 +146,7 @@ const Task: React.FC = () => {
       title: 'Due Date',
       dataIndex: 'dueDate',
       key: 'dueDate',
-      align: 'center' as const,
+      align: 'center',
       render: (dueDate: string) => {
         const formattedDate = new Intl.DateTimeFormat('en-US', {
           day: 'numeric',
@@ -159,17 +155,15 @@ const Task: React.FC = () => {
         }).format(new Date(dueDate));
         return formattedDate;
       },
-    }
-    ,
+    },
     {
       title: 'Tasks',
       key: 'tasks',
-      align: 'center' as const,
-      render: (_: unknown, record: any) => {
+      align: 'center',
+      render: (_: unknown, record: Task) => {
         const totalTasks = record.tasks.length;
-        const completedTasks = record.tasks.filter((task: any) => task.isCompleted).length;
+        const completedTasks = record.tasks.filter((task: SubTask) => task.isCompleted).length;
         const completionPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-        const isOverdue = new Date(record.dueDate) < new Date();
         const isCompleted = totalTasks === completedTasks
     
         return (
@@ -182,14 +176,13 @@ const Task: React.FC = () => {
               <span style={{ marginTop: 4 }}>{`Completed ${completedTasks} of ${totalTasks} tasks`}</span>
             </div>
     
-            {/* Only show buttons if overdue */}
             {isCompleted && (
               <div style={{ marginTop: '10px' }}>
                 {record.isApproved ? (
                   <Button
                     type="primary"
                     icon={<CheckCircleOutlined />}
-                    onClick={() => handleApproval(record._id, record.isApproved)}
+                    onClick={() => handleApproval(record._id!, record.isApproved)}
                     style={{ width: 120, backgroundColor: 'red', borderColor: 'red' }}
                   >
                     Reject
@@ -198,7 +191,7 @@ const Task: React.FC = () => {
                   <Button
                     type="default"
                     icon={<ClockCircleOutlined />}
-                    onClick={() => handleApproval(record._id, record.isApproved)}
+                    onClick={() => handleApproval(record._id!, record.isApproved)}
                     style={{ width: 120, backgroundColor: 'orange', borderColor: 'orange' }}
                   >
                     Approve
@@ -213,15 +206,12 @@ const Task: React.FC = () => {
     {
       title: 'Status',
       key: 'status',
-      align: 'center' as const,
-      render: (_: unknown, record: any) => {
+      align: 'center',
+      render: (_: unknown, record: Task) => {
         const isOverdue = new Date(record.dueDate) < new Date();
         const isApproved = record.isApproved;
         const totalTasks = record.tasks.length;
-        const completedTasks = record.tasks.filter((task: any) => task.isCompleted).length;
-
-        console.log("-----------------------",isOverdue ,isApproved , totalTasks , completedTasks);
-        
+        const completedTasks = record.tasks.filter((task: SubTask) => task.isCompleted).length;
     
         const getStatus = () => {
           if (isOverdue && isApproved && completedTasks === totalTasks) {
@@ -241,9 +231,7 @@ const Task: React.FC = () => {
           }
           if(isApproved && completedTasks=== totalTasks){
             return { status: 'Task Completed', icon: '✅' };
-
           }
-          // Default case for unhandled scenarios
           return { status: 'Unknown Status', icon: '❓' };
         };
     
@@ -256,13 +244,12 @@ const Task: React.FC = () => {
           </div>
         );
       }
-    }
-    ,
+    },
     {
       title: 'Action',
       key: 'action',
-      align: 'center' as const,
-      render: (_: unknown, record: any) => (
+      align: 'center',
+      render: (_: unknown, record: Task) => (
         <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
           <Button
             type="primary"
@@ -283,7 +270,7 @@ const Task: React.FC = () => {
               backgroundColor: 'red',
               color: 'white',
             }}
-            onClick={() => handleRemoveTask(record._id)}
+            onClick={() => handleRemoveTask(record._id!)}
           >
             Remove
           </Button>
@@ -291,7 +278,6 @@ const Task: React.FC = () => {
       ),
     },
   ];
-  
 
   return (
     <div style={{ padding: 20, position: 'relative' }}>
@@ -313,7 +299,6 @@ const Task: React.FC = () => {
         Assign New Task
       </Button>
 
-      {/* Search and Filter Section */}
       <div style={{ marginTop: 50, marginBottom: 16, display: 'flex', gap: 16 }}>
         <Input
           placeholder="Search by employee name or task title"

@@ -1,4 +1,4 @@
-export const getShiftMinutes = (shift: any): number => {
+export const getShiftMinutes = (shift: string): number => {
     switch (shift) {
       case "Full-Time":
         return 480; // Full-time: 480 minutes
