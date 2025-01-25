@@ -47,11 +47,11 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose, onUpdat
     setLoading(true);
     try {
       const endpoints: Record<string, string> = {
-        "1": `/manager/api/employee/update-personalinformation/${employeeId}`,
-        "2": `/manager/api/employee/update-professionalinformation/${employeeId}`,
-        "3": `/manager/api/employee/update-address/${employeeId}`,
-        "4": `/manager/api/employee/update-documents/${employeeId}`,
-        "5": `/manager/api/employee/update-credentials/${employeeId}`,
+        "1": `/manager-service/api/employee/update-personalinformation/${employeeId}`,
+        "2": `/manager-service/api/employee/update-professionalinformation/${employeeId}`,
+        "3": `/manager-service/api/employee/update-address/${employeeId}`,
+        "4": `/manager-service/api/employee/update-documents/${employeeId}`,
+        "5": `/manager-service/api/employee/update-credentials/${employeeId}`,
       };
 
       await managerInstance.post(endpoints[tabKey], values);
@@ -72,7 +72,7 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose, onUpdat
     setLoading(true);
 
     try {
-      const response = await managerInstance.post(`/manager/api/employee/update-${tabKey}/${employeeId}`, formData);
+      const response = await managerInstance.post(`/manager-service/api/employee/update-${tabKey}/${employeeId}`, formData);
       if (tabKey === "profile-picture") {
         setProfilePicture(response.data.data.imageUrl);
       } else if (tabKey === "resume") {

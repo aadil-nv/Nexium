@@ -8,14 +8,19 @@ import { ThemeProvider } from "./components/landing/landingPage/theme-provider.t
 import { Provider } from "react-redux";
 import { PersistGate } from 'redux-persist/integration/react'; // Import PersistGate
 import  {store ,persistor} from "./redux/store/store.ts"; // Update import
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
+const GOOGLE_CLIENT_ID ="574657526359-ighhsjkhuu5vhl09mkfbvqtdnsfm76bt.apps.googleusercontent.com" 
 
 createRoot(document.getElementById("root")!).render(
+
   <Provider store={store}>
     <PersistGate loading={null} persistor={persistor}> {/* Add PersistGate */}
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <StrictMode>
-          <App />
+          <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+            <App />
+          </GoogleOAuthProvider>
         </StrictMode>
       </ThemeProvider>
     </PersistGate>

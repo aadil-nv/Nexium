@@ -1,45 +1,58 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaUsers, FaChartLine } from 'react-icons/fa';
-import {
-  AreaChart,
-  Area,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+import { Skeleton } from 'antd';
+import {AreaChart,Area,CartesianGrid,XAxis,YAxis,Tooltip,Legend,ResponsiveContainer,} from 'recharts';
 import { managerInstance } from '../../../services/managerInstance';
 
+// Detailed type definitions
+interface TaskData {
+  month?: string;
+  department?: string;
+  completedTasks: number;
+}
+
+interface ManagerData {
+  employeeCount: number;
+  departmentCount: number;
+  taskCount: number;
+  completedTaskCount: number;
+  areaChartData: {
+    departmentTaskData: TaskData[];
+    tasksOverTimeData: TaskData[];
+  };
+}
+
+interface ApiResponse {
+  manager: ManagerData;
+}
+
+interface StatCardProps {
+  icon: React.ReactNode;
+  title: string;
+  value: number;
+  bgColor: string;
+}
+
 export default function ManagerDashboard() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<ManagerData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Fetch the dashboard data from the API
     managerInstance
-      .get('/manager/api/dashboard/dashboard-data')
+      .get<ApiResponse>('/manager-service/api/dashboard/dashboard-data')
       .then((response) => {
-        setData(response.data);
-        console.log('Response from API:', response.data);
+        setData(response.data.manager);
+        setLoading(false);
       })
       .catch((error) => {
         console.error('Error fetching dashboard data:', error);
+        setLoading(false);
       });
   }, []);
 
-  // Ensure data is available before rendering
-  if (!data) {
-    return <div>Loading...</div>;
-  }
-
-  const { manager } = data;
-  const { employeeCount, departmentCount, taskCount, completedTaskCount, areaChartData } = manager;
-  const { departmentTaskData, tasksOverTimeData } = areaChartData;
-
   // Stat card component
-  const StatCard = ({ icon, title, value, textColor, bgColor }) => (
+  const StatCard: React.FC<StatCardProps> = ({ icon, title, value, bgColor }) => (
     <motion.div
       className={`p-6 rounded-lg shadow hover:shadow-lg transition-shadow ${bgColor}`}
       whileHover={{ scale: 1.05 }}
@@ -58,7 +71,7 @@ export default function ManagerDashboard() {
   );
 
   // Chart container component
-  const ChartContainer = ({ children }) => (
+  const ChartContainer: React.FC<{children: React.ReactNode}> = ({ children }) => (
     <motion.div
       className="bg-white p-4 rounded-lg shadow"
       whileHover={{ scale: 1.02 }}
@@ -69,6 +82,41 @@ export default function ManagerDashboard() {
       {children}
     </motion.div>
   );
+
+  // Loading state with Ant Design Skeleton
+  if (loading) {
+    return (
+      <div className="p-6">
+        <Skeleton active paragraph={{ rows: 4 }} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+          {[1, 2, 3, 4].map((item) => (
+            <Skeleton.Node key={item} active>
+              <div className="w-full h-full" />
+            </Skeleton.Node>
+          ))}
+        </div>
+        <div className="mt-6">
+          <Skeleton.Node active style={{ width: '100%', height: '300px' }}>
+            <div className="w-full h-full" />
+          </Skeleton.Node>
+        </div>
+      </div>
+    );
+  }
+
+  // Ensure data is available before rendering
+  if (!data) {
+    return null;
+  }
+
+  const { 
+    employeeCount, 
+    departmentCount, 
+    taskCount, 
+    completedTaskCount, 
+    areaChartData 
+  } = data;
+  const { departmentTaskData, tasksOverTimeData } = areaChartData;
 
   return (
     <motion.div
@@ -92,28 +140,24 @@ export default function ManagerDashboard() {
           icon={<FaUsers />}
           title="Total Employees"
           value={employeeCount}
-          textColor="text-green-200"
           bgColor="bg-gradient-to-r from-blue-400 to-blue-600"
         />
         <StatCard
           icon={<FaUsers />}
           title="Total Departments"
           value={departmentCount}
-          textColor="text-green-200"
           bgColor="bg-gradient-to-r from-green-400 to-green-600"
         />
         <StatCard
           icon={<FaUsers />}
           title="Total Tasks"
           value={taskCount}
-          textColor="text-green-200"
           bgColor="bg-gradient-to-r from-yellow-400 to-yellow-600"
         />
         <StatCard
           icon={<FaUsers />}
           title="Completed Tasks"
           value={completedTaskCount}
-          textColor="text-green-200"
           bgColor="bg-gradient-to-r from-red-400 to-red-600"
         />
       </div>

@@ -69,8 +69,6 @@ export default class DepartmentService implements IDepartmentService {
     }
   }
   
-  
-
   async getDepartments(): Promise<DepartmentWithEmployeesDTO[]> {
     try {
         const departments = await this._departmentRepository.getDepartments();
@@ -189,15 +187,7 @@ async addEmployeesToDepartment(employeeData: any[], departmentId: string): Promi
       throw error;
   }
 }
-
-
-
- 
-
-
   
-  
-      
       
 
 }

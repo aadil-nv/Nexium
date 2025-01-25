@@ -1,4 +1,5 @@
 
+import { IGoogleResponseDTO } from "dto/managerDTO";
 import { Document, Types } from "mongoose";
 
 
@@ -78,4 +79,5 @@ export default interface IBusinessOwnerService {
   forgotPassword(email: string): Promise<{ success: boolean; message: string; email?: string }>;
   addNewPassword(email: string, password: string): Promise<{ success: boolean; message: string }>;
   updateBusinessOwner( businessOwnerData: any): Promise<any>
+  googleLogin(email: string, password: string,phone: string,companyName: string): Promise<IGoogleResponseDTO>
 }

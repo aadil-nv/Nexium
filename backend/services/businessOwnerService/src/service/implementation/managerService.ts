@@ -198,13 +198,10 @@ export default class ManagerService implements IManagerService {
         businessOwnerId: manager.businessOwnerId,
         createdAt: manager.createdAt,
         updatedAt: manager.updatedAt,
-        documents: manager.documents, // Add documents if required
+        documents: manager.documents,
       }));
 
-      console.log("mappedManagers:2222222222222222222222222", mappedManagers);
-      
-  
-      return mappedManagers; // Return the array of ManagerDTO
+      return mappedManagers; 
     } catch (error) {
       console.error("Error fetching managers:", error);
       throw error;
@@ -232,7 +229,7 @@ export default class ManagerService implements IManagerService {
       console.log("1111111111111111111111111111111111");
       
       
-      await rabbitMQMessager.sendToMultipleQueues({ isBlocked:managerData });
+      // await rabbitMQMessager.sendToMultipleQueues({ isBlocked:managerData });
       console.log("222222222222222222222222222222222222");
   
       return {
@@ -263,7 +260,6 @@ export default class ManagerService implements IManagerService {
         throw new Error("Manager not found");
       }
   
-      // Dynamically build the DTO, excluding undefined fields
       const managerDTO: ManagerDTO = {
         personalDetails: {
           managerName: result.personalDetails.managerName,
@@ -316,13 +312,8 @@ export default class ManagerService implements IManagerService {
         ...(result.subscriptionId && { subscriptionId: result.subscriptionId.toString() }),
         ...(result.createdAt && { createdAt: result.createdAt }),
         ...(result.updatedAt && { updatedAt: result.updatedAt }),
-      };
-
-
-      console.log("managerDTO", managerDTO);
+      }
       
-      
-  
       return managerDTO;
     } catch (error) {
       console.error("Error fetching manager:", error);

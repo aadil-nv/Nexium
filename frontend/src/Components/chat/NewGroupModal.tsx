@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Space, Input, List, Checkbox, Avatar, message } from 'antd';
 import { Employee } from '../../interface/ChatInterface';
-import { chatInstance } from '../../services/chatInstance';
+import { communicationInstance } from '../../services/communicationInstance';
 
 interface CreateGroupModalProps {
   isVisible: boolean;
@@ -48,7 +48,7 @@ const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
 
     setLoading(true);
     try {
-      await chatInstance.post('/chatService/api/chat/create-group', {
+      await communicationInstance.post('/communication-service/api/chat/create-group', {
         groupName: groupName,
         members: selectedMembers
       });

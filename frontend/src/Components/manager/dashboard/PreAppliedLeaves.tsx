@@ -42,7 +42,7 @@ export default function PreAppliedLeaves() {
 
   const fetchLeaves = async () => {
     try {
-      const { data } = await managerInstance.get('/manager/api/leave/pre-applied-leaves');
+      const { data } = await managerInstance.get('/manager-service/api/leave/pre-applied-leaves');
       setLeaves(data);
     } catch {
       message.error('Failed to fetch leaves');
@@ -57,7 +57,7 @@ export default function PreAppliedLeaves() {
 
   const handleAction = async (action: string, leave: PreAppliedLeave, reason?: string) => {
     try {
-      await managerInstance.post(`/manager/api/leave/update-pre-applied-leave/${leave.employeeId}`, {
+      await managerInstance.post(`/manager-service/api/leave/update-pre-applied-leave/${leave.employeeId}`, {
         action,
         rejectionReason: action === 'rejected' ? reason : undefined,
         leaveId: leave._id

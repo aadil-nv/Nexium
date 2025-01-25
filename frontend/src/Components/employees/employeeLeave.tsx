@@ -53,8 +53,8 @@ const EmployeeLeave: React.FC = () => {
   const fetchData = async () => {
     try {
       const [typesRes, leavesRes] = await Promise.all([
-        employeeInstance.get("/employee/api/attendance/get-approved-leaves"),
-        employeeInstance.get("/employee/api/leave/get-applied-leaves")
+        employeeInstance.get("/employee-service/api/attendance/get-approved-leaves"),
+        employeeInstance.get("/employee-service/api/leave/get-applied-leaves")
       ]);
 
       const types: LeaveType[] = Object.entries(typesRes.data).map(([type, available]) => ({ 
@@ -177,10 +177,10 @@ const EmployeeLeave: React.FC = () => {
       };
   
       if (currentLeave) {
-        await employeeInstance.post(`/employee/api/leave/update-applied-leave/${currentLeave.leaveId}`, newLeave);
+        await employeeInstance.post(`/employee-service/api/leave/update-applied-leave/${currentLeave.leaveId}`, newLeave);
       } else {
         // Apply new leave
-        await employeeInstance.post("/employee/api/leave/pre-apply-leave", newLeave);
+        await employeeInstance.post("/employee-service/api/leave/pre-apply-leave", newLeave);
       }
   
       setDrawerVisible(false);
@@ -195,7 +195,7 @@ const EmployeeLeave: React.FC = () => {
 
   const cancelLeave = async (leaveId: string) => {
     try {
-      await employeeInstance.delete(`/employee/api/leave/delete-applied-leave/${leaveId}`);
+      await employeeInstance.delete(`/employee-service/api/leave/delete-applied-leave/${leaveId}`);
       fetchData();
     } catch (error) {
       console.error("Error cancelling leave:", error);

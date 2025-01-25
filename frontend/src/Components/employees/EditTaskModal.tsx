@@ -66,7 +66,7 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
 
   const fetchAvailableEmployees = async () => {
     try {
-      const response = await employeeInstance.get('/employee/api/task/get-employee-without-task');
+      const response = await employeeInstance.get('/employee-service/api/task/get-employee-without-task');
       if (Array.isArray(response.data)) {
         setAvailableEmployees(response.data);
       }
@@ -120,7 +120,7 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
     }
   
     try {
-      await employeeInstance.patch(`/employee/api/task/reassign-task/${taskData._id}`, {
+      await employeeInstance.patch(`/employee-service/api/task/reassign-task/${taskData._id}`, {
         employeeId: selectedEmployeeId
       });
   
@@ -149,7 +149,7 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
   const handleSave = async () => {
     if (taskData) {
       try {
-        const response = await employeeInstance.post(`/employee/api/task/update-task/${taskData._id}`, taskData);
+        const response = await employeeInstance.post(`/employee-service/api/task/update-task/${taskData._id}`, taskData);
         if (response.status === 200) {
           toast.success('Task updated successfully!');
           onSave(taskData);

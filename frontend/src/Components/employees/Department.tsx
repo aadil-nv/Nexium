@@ -29,7 +29,7 @@ const Team: React.FC = () => {
       try {
         setLoading(true);
         const response = await employeeInstance.get(
-          "/employee/api/department/get-mydepartment"
+          "/employee-service/api/department/get-mydepartment"
         );
         setDepartment(response.data);
         setLoading(false);

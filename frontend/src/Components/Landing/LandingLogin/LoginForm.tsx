@@ -1,6 +1,12 @@
 import React from 'react';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { useGoogleLogin, TokenResponse } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { login, setBusinessOwnerData } from '../../../redux/slices/businessOwnerSlice';
+// import {jwtDecode} from 'jwt-decode';
 
 const LoginForm = ({
   theme,
@@ -16,6 +22,59 @@ const LoginForm = ({
   setShowForgotPassword,
   getInputStyle
 }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse: TokenResponse) => {
+      try {
+        // Fetch user info from Google
+        const userInfo = await axios.get(
+          `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`
+        );
+
+        const googleUserData = {
+          id: userInfo.data.sub,
+          email: userInfo.data.email,
+          name: userInfo.data.name,
+          givenName: userInfo.data.given_name,
+          familyName: userInfo.data.family_name,
+          picture: userInfo.data.picture
+        };
+        
+        const response = await axios.post(
+          "http://localhost:3000/authentication-service/api/business-owner/google-login", 
+          { 
+            userData: googleUserData 
+          },{ withCredentials: true }
+        );
+        if(response.data.success==true && response.data.isVerified==true){
+          dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
+                  dispatch(setBusinessOwnerData({
+                    companyName: response.data.companyName || '',
+                    businessOwnerProfilePicture: response.data.profilePicture || '',
+                    companyLogo: response.data.companyLogo || '',
+                  }));
+                  navigate('/business-owner/dashboard');
+          
+        }
+        if (response.data.success && response.data.email) {
+          navigate('/plans', { state: { email: response.data.email } });
+        }
+        
+
+
+        
+      } catch (error) {
+        console.error('Google Login Error:', error);
+        credentialError('Google login failed');
+      }
+    },
+    onError: () => {
+      console.log('Login Failed');
+      credentialError('Google login failed');
+    }
+  });
+
   return (
     <motion.div
       className="w-full max-w-md"
@@ -97,6 +156,7 @@ const LoginForm = ({
         <div className="space-y-3">
           <button
             type="button"
+            onClick={() => googleLogin()}
             className={`w-full flex items-center justify-center px-4 py-3 rounded-lg border transition duration-200 ${
               theme === 'dark' 
                 ? 'border-gray-700 hover:bg-gray-800' 

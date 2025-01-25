@@ -137,19 +137,13 @@ export default class ManagerController implements IManagerController {
   }
 
   async uploadProfilePic(req: CustomRequest, res: Response): Promise<Response> {
-    console.log(`"Controller: uploadProfilePic ========================="`.bgRed);
     try {
       const businessOwnerId = req.user?.businessOwnerData?._id;
       const managerId = req.params.id;
 
-      console.log("businessOwnerId==========================", businessOwnerId);
-      console.log("managerId==========================", managerId);
-      console.log("req.file==========================", req.file);
-
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
-      
 
       const response = await this._managerService.uploadProfilePic(businessOwnerId as string, managerId as string, req.file);
       if(!response){
@@ -166,12 +160,7 @@ export default class ManagerController implements IManagerController {
     try {
       const businessOwnerId = req.user?.businessOwnerData?._id;
       const managerId = req.params.id;
-  
-      console.log("Business Owner ID:", businessOwnerId);
-      console.log("Manager ID:", managerId);
-      console.log("File Data:", req.file);
-  
-      // Ensure the service method is awaited and returns a promise
+
       const response = await this._managerService.updateResume(
         businessOwnerId as string,
         managerId as string,
@@ -182,8 +171,6 @@ export default class ManagerController implements IManagerController {
         console.log("Manager not found");
         return res.status(404).json({ error: "Manager not found" });
       }
-  
-      console.log("Update Response:", response);
       return res.status(200).json(response);
   
     } catch (error) {

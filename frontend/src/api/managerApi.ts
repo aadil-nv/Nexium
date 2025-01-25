@@ -12,7 +12,7 @@ import { Dispatch } from 'redux';
 
 
 export const managerLogin = async (formData: LoginFormData) => {
-        const response = await axios.post('http://localhost:3000/authentication/api/manager/manager-login', formData, {
+        const response = await axios.post('http://localhost:3000/authentication-service/api/manager/manager-login', formData, {
             withCredentials: true, 
         });
         return response.data;
@@ -33,39 +33,39 @@ export const resendOtp = async (email: string, url: string): Promise<{ success: 
 
 
 export const getAllManagers = async () => {
-        const response = await managerInstance.get('/manager/api/manager/get-managers', {withCredentials: true, });
+        const response = await managerInstance.get('/manager-service/api/manager/get-managers', {withCredentials: true, });
         return response.data;
 };
 
 export const validateOtp = async (otp: string ,email: string) => {
    
-    const response = await axios.post('http://localhost:3000/authentication/api/manager/validate-otp', { otp, email }, {withCredentials: true,});
+    const response = await axios.post('http://localhost:3000/authentication-service/api/manager/validate-otp', { otp, email }, {withCredentials: true,});
     return response.data;
 };
 
 export const fetchEmployeesAPI = async () => {
-    const response = await managerInstance.get('/manager/api/employee/get-employees');
+    const response = await managerInstance.get('/manager-service/api/employee/get-employees');
     return response.data;
 };
 
 export const fetchEmployeesWithOutDepAPI = async () => {
-    const response = await managerInstance.get('/manager/api/employee/get-employee-without-department');
+    const response = await managerInstance.get('/manager-service/api/employee/get-employee-without-department');
     return response.data;
 };
   
 export const fetchDepartmentsAPI = async () => {
-    const response = await managerInstance.get('/manager/api/department/get-departments');
+    const response = await managerInstance.get('/manager-service/api/department/get-departments');
     return response.data;
 };
   
 export const removeDepartmentAPI = async (departmentId: string) => {
-   const response = await managerInstance.delete('/manager/api/department/delete-department', {data: { departmentId },});
+   const response = await managerInstance.delete('/manager-service/api/department/delete-department', {data: { departmentId },});
     return response.data;
 };
 
 export const fetchEmployees = async (): Promise<IEmployee[]> => {
   try {
-      const response = await managerInstance.get('/manager/api/employee/get-employees');
+      const response = await managerInstance.get('/manager-service/api/employee/get-employees');
       return response.data.map((employee) => ({
           employeeId: employee._id,
           name: employee.employeeName || '', 
@@ -83,7 +83,7 @@ export const fetchEmployees = async (): Promise<IEmployee[]> => {
 
 export const fetchEmployeesWithOutDepartment = async (): Promise<IEmployee[]> => {
   try {
-      const response = await managerInstance.get('/manager/api/employee/get-employee-without-department');
+      const response = await managerInstance.get('/manager-service/api/employee/get-employee-without-department');
 
       return response.data.map((employee) => ({
           employeeId: employee.employeeId, 
@@ -102,7 +102,7 @@ export const fetchEmployeesWithOutDepartment = async (): Promise<IEmployee[]> =>
 
 export const fetchDepartments = async () => {
     try {
-      const response = await managerInstance.get('/manager/api/department/get-departments');
+      const response = await managerInstance.get('/manager-service/api/department/get-departments');
       if (response.status === 200) {
         return response.data.map((department: { departmentName: string }) => department.departmentName);
       }
@@ -116,7 +116,7 @@ export const fetchDepartments = async () => {
   
 export const addEmployee = async (employeeData) => {
     try {
-      const response = await managerInstance.post('/manager/api/employee/add-employees', { employeedata: employeeData }, {
+      const response = await managerInstance.post('/manager-service/api/employee/add-employees', { employeedata: employeeData }, {
         withCredentials: true,
       });
 
@@ -136,7 +136,7 @@ export const addEmployee = async (employeeData) => {
 
 export const addEmployeeToDepartment = async (employeeData ,departmentId) => {
       try {
-        const response = await managerInstance.post('/manager/api/department/add-employee', { employeeData , departmentId }, {
+        const response = await managerInstance.post('/manager-service/api/department/add-employee', { employeeData , departmentId }, {
           withCredentials: true,
         });
         console.log("Added employeed to department",response.data);
@@ -159,7 +159,7 @@ export const addEmployeeToDepartment = async (employeeData ,departmentId) => {
 export const removeEmployee = async (employeeId: string, departmentId: string) => {
     try {
       const response = await managerInstance.post(
-        '/manager/api/department/remove-employee',
+        '/manager-service/api/department/remove-employee',
         {
           employeeId, // employee ID to be removed
           departmentId, // department ID
@@ -175,7 +175,7 @@ export const removeEmployee = async (employeeId: string, departmentId: string) =
 
 export async function fetchManagerPersonalInfo() {
       try {
-          const response = await managerInstance.get(`/manager/api/manager/get-managerpersonalinfo`, {
+          const response = await managerInstance.get(`/manager-service/api/manager/get-managerpersonalinfo`, {
               headers: {
                   "Content-Type": "application/json",
               },
@@ -194,7 +194,7 @@ export async function updateManagerProfilePicture (file: File) {
     formData.append('file', file);
     try {
       const response = await managerInstance.patch(
-        '/manager/api/manager/update-profile-picture',
+        '/manager-service/api/manager/update-profile-picture',
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -211,7 +211,7 @@ export async function updateManagerProfilePicture (file: File) {
 
 export const fetchManagerAddress = async () => {
     try {
-      const response = await managerInstance.get('/manager/api/manager/get-manageraddress');
+      const response = await managerInstance.get('/manager-service/api/manager/get-manageraddress');
       return response.data;
     } catch (error) {
       console.error('Error fetching business owner address:', error);
@@ -223,7 +223,7 @@ export const fetchManagerAddress = async () => {
 export const updateManagerPersonalInfo = async (details): Promise<void> => {
     try {
       await managerInstance.patch(
-        '/manager/api/manager/update-personalinfo',
+        '/manager-service/api/manager/update-personalinfo',
         details
       );
       message.success('Details updated successfully!');
@@ -236,7 +236,7 @@ export const updateManagerPersonalInfo = async (details): Promise<void> => {
 export const updateManagerAddress = async (address) => {
     try {
       const response = await managerInstance.patch(
-        "/manager/api/manager/update-address",
+        "/manager-service/api/manager/update-address",
         address
       );
       console.log("Manager address updated successfully:", response.data);
@@ -249,7 +249,7 @@ export const updateManagerAddress = async (address) => {
 
   export const fetchLeaveEmployees = async () => {
     try {
-      const { data } = await managerInstance.get('/manager/api/leave/get-all-leave-employees');
+      const { data } = await managerInstance.get('/manager-service/api/leave/get-all-leave-employees');
 
       return data.map((item) => ({
         employeeId: item.employeeId, 
@@ -273,7 +273,7 @@ export const updateManagerAddress = async (address) => {
     try {
       dispatch(fetchLeaveEmployeesRequest()); // Set loading state before fetching
   
-      const { data } = await managerInstance.get('/manager/api/manager/get-leave-employees');
+      const { data } = await managerInstance.get('/manager-service/api/manager/get-leave-employees');
       const leaveData = data.map((item) => ({
         employeeName: item._id,
         leaveType: item.attendance[0]?.leaveType || 'N/A',
@@ -293,7 +293,7 @@ export const updateManagerAddress = async (address) => {
 
   export const updateLeaveApproval = async (employeeId, data) => {
     try {
-      const response = await managerInstance.patch(`/manager/api/leave/update-leave-approval/${employeeId}`, data);
+      const response = await managerInstance.patch(`/manager-service/api/leave/update-leave-approval/${employeeId}`, data);
       return response.data; 
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to update leave approval');
@@ -304,7 +304,7 @@ export const updateManagerAddress = async (address) => {
 
   export const fetchManagerDocument = async () => {
     try {
-      const response = await managerInstance.get('/manager/api/manager/get-managerdocuments');
+      const response = await managerInstance.get('/manager-service/api/manager/get-managerdocuments');
       console.log("responce is ==========&&&&========",response.data.resume)
       return response.data.resume;
     } catch (error) {
@@ -317,7 +317,7 @@ export const updateManagerAddress = async (address) => {
       if (!file) {toast.error('No file selected.') ;return;}
       const formData = new FormData();
       formData.append('file', file);
-      const response = await managerInstance.post('/manager/api/manager/update-documents', formData, {
+      const response = await managerInstance.post('/manager-service/api/manager/update-documents', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       toast.success('Document uploaded successfully!');
@@ -330,7 +330,7 @@ export const updateManagerAddress = async (address) => {
 
   export const fetchManagerCredential = async () => {
     try {
-      const response = await managerInstance.get('/manager/api/manager/get-managercredentials');
+      const response = await managerInstance.get('/manager-service/api/manager/get-managercredentials');
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message ||'Failed to fetch business owner credentials');

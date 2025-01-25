@@ -53,7 +53,7 @@ const AddDepartmentModal: React.FC<{
 
     try {
       const response = await managerInstance.post(
-        '/manager/api/department/add-departments',
+        '/manager-service/api/department/add-departments',
         { departmentName: values.departmentName, employees: employeesToAdd }
       );
 

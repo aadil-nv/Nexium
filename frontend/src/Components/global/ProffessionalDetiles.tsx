@@ -43,11 +43,11 @@ export default function ProfessionalDetails() {
     const fetchDetails = async () => {
       try {
         const response = manager.isAuthenticated
-          ? await managerInstance.get<ManagerProfessionalDetails>('/manager/api/manager/get-managerprofessionalinfo')
+          ? await managerInstance.get<ManagerProfessionalDetails>('/manager-service/api/manager/get-managerprofessionalinfo')
           : employee.isAuthenticated
-          ? await employeeInstance.get<EmployeeProfessionalDetails>('/employee/api/employee/get-employeeprofessionalinfo')
+          ? await employeeInstance.get<EmployeeProfessionalDetails>('/employee-service/api/employee/get-employeeprofessionalinfo')
           : businessOwner.isAuthenticated
-          ? await businessOwnerInstance.get<EmployeeProfessionalDetails>('/businessOwner/api/business-owner/get-businessownerprofessionalinfo')
+          ? await businessOwnerInstance.get<EmployeeProfessionalDetails>('/businessOwner-service/api/business-owner/get-businessownerprofessionalinfo')
           : null;
   
         if (response?.data) {

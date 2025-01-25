@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, message, List } from 'antd';
+import { Form, Input, Button, message } from 'antd';
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
-import axios from 'axios';
 import { managerInstance } from '../../services/managerInstance';
 import { employeeInstance } from '../../services/employeeInstance';
 
-const Securitie = () => {
-  const [credentials, setCredentials] = useState<any>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+// Define interface for Credentials
+interface Credentials {
+  companyEmail: string;
+  companyPassword: string;
+}
+
+const Securities: React.FC = () => {
+  const [credentials, setCredentials] = useState<Credentials | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const { themeColor } = useTheme();
   const { employee, manager } = useAuth();
   const isManager = manager?.isAuthenticated;
@@ -20,9 +24,9 @@ const Securitie = () => {
     const fetchCredentials = async () => {
       try {
         const url = isManager
-          ? '/manager/api/manager/get-managercredentials'
+          ? '/manager-service/api/manager/get-managercredentials'
           : isEmployee
-          ? '/employee/api/employee/get-employeecredentials'
+          ? '/employee-service/api/employee/get-employeecredentials'
           : null;
 
         if (!url) {
@@ -30,9 +34,8 @@ const Securitie = () => {
           return;
         }
 
-        const response = await instance.get(url);
-        console.log('Fetched Credentials:', response.data);
-        isManager ? setCredentials(response.data) : setCredentials(response.data);
+        const response = await instance.get<Credentials>(url);
+        setCredentials(response.data);
       } catch (error) {
         console.error('Error fetching credentials:', error);
         message.error('Failed to fetch credentials');
@@ -40,38 +43,55 @@ const Securitie = () => {
     };
 
     fetchCredentials();
-  }, [isManager, isEmployee]);
+  }, [isManager, isEmployee, instance]);
 
-  const handleSubmit = (values: any) => {
-    console.log('Submitted values:', values);
-    message.success('Security settings updated successfully!');
+  const handleSubmit = async (values: Credentials) => {
+    try {
+      const url = isManager
+        ? '/manager-service/api/manager/update-managercredentials'
+        : '/employee-service/api/employee/update-employeecredentials';
+
+      await instance.post(url, values);
+      message.success('Security settings updated successfully!');
+      setIsEditing(false);
+      setCredentials(values);
+    } catch (error) {
+      console.error('Error updating credentials:', error);
+      message.error('Failed to update credentials');
+    }
   };
-
-  const handleForgotPassword = () => message.info('Password reset instructions sent to your email.');
 
   return (
     <div className="mt-6">
-      <h2>Your Credentials</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold">Your Credentials</h2>
+        <Button 
+          onClick={() => setIsEditing(!isEditing)} 
+          style={{ backgroundColor: themeColor, color: 'white' }}
+        >
+          {isEditing ? 'Cancel' : 'Edit'}
+        </Button>
+      </div>
       
       <Form
         layout="vertical"
         onFinish={handleSubmit}
         initialValues={{
-          email: credentials?.companyEmail || '',
-          password: credentials?.companyPassword || '',
+          companyEmail: credentials?.companyEmail || '',
+          companyPassword: credentials?.companyPassword || '',
         }}
         className="mt-4"
       >
         <Form.Item
           label="Company Email"
-          name="email"
+          name="companyEmail"
           rules={[
             { required: true, message: 'Please enter your email!' },
             { type: 'email', message: 'Please enter a valid email!' },
           ]}
         >
           <Input
-            placeholder={credentials?.companyEmail || 'Enter company email'}
+            placeholder="Enter company email"
             disabled={!isEditing}
             style={{ borderColor: themeColor }}
           />
@@ -79,28 +99,33 @@ const Securitie = () => {
 
         <Form.Item
           label="Password"
-          name="password"
+          name="companyPassword"
           rules={[
             { required: true, message: 'Please enter your password!' },
             { min: 6, message: 'Password must be at least 6 characters long' },
           ]}
         >
           <Input.Password
-            placeholder={credentials?.companyPassword || 'Enter your password'}
+            placeholder="Enter your password"
             disabled={!isEditing}
             style={{ borderColor: themeColor }}
           />
         </Form.Item>
 
-       
+        {isEditing && (
+          <Form.Item>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              style={{ backgroundColor: themeColor }}
+            >
+              Save Changes
+            </Button>
+          </Form.Item>
+        )}
       </Form>
-
-      
-      <div className="mt-6">
-       
-      </div>
     </div>
   );
 };
 
-export default Securitie;
+export default Securities;

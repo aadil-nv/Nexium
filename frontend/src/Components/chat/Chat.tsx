@@ -7,7 +7,7 @@ import ChatPeoples from './ChatPeople';
 import ChatWindow from './ChatWindow';
 import EditGroupModal from './EditGroup';
 import { Employee, Group } from '../../interface/ChatInterface';
-import { chatInstance } from '../../services/chatInstance';
+import { communicationInstance } from '../../services/communicationInstance';
 import GroupMembersModal from "../../components/chat/GroupMembersModal";
 import useAuth from '../../hooks/useAuth';
 
@@ -33,7 +33,6 @@ interface GroupMember {
 }
 
 const MainLayout: React.FC = () => {
-  // const [messages, setMessages] = useState<Message[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedTarget, setSelectedTarget] = useState<ChatTarget | null>(null);
@@ -69,14 +68,11 @@ const MainLayout: React.FC = () => {
       cancelText: 'No, cancel',
       onOk: async () => {
         try {
-          await chatInstance.delete(`/chatService/api/chat/delete-group/${groupId}`);
-          // Remove the deleted group from the groups list
+          await communicationInstance.delete(`/communication-service/api/chat/delete-group/${groupId}`);
           setGroups(prevGroups => prevGroups.filter(group => group.groupId !== groupId));
-          // Clear the selected target if it was the deleted group
           if (selectedTarget?.id === groupId) {
             setSelectedTarget(null);
           }
-          // Refresh the groups list
           await fetchGroups();
         } catch (error) {
           console.error('Error deleting group:', error);
@@ -94,7 +90,7 @@ const MainLayout: React.FC = () => {
     
     setLoadingMembers(true);
     try {
-      const response = await chatInstance.get(`/chatService/api/chat/get-all-groupmembers/${groupId}`);
+      const response = await communicationInstance.get(`/communication-service/api/chat/get-all-groupmembers/${groupId}`);
       setGroupMembers(response.data);
     } catch (error) {
       console.error('Error fetching group members:', error);
@@ -113,14 +109,14 @@ const MainLayout: React.FC = () => {
   const handleGroupUpdate = async () => {
     try {
       // Fetch updated groups
-      const groupsResponse = await chatInstance.get('/chatService/api/chat/get-all-groups');
+      const groupsResponse = await communicationInstance.get('/communication-service/api/chat/get-all-groups');
       if (groupsResponse.data) {
         setGroups(groupsResponse.data);
       }
 
       // Update selected target if it's the modified group
       if (selectedTarget?.type === 'group' && selectedTarget?.id) {
-        const updatedGroupResponse = await chatInstance.get(`/chatService/api/chat/get-group-detailes/${selectedTarget.id}`);
+        const updatedGroupResponse = await communicationInstance.get(`/communication-service/api/chat/get-group-detailes/${selectedTarget.id}`);
         const updatedGroup = updatedGroupResponse.data;
         
         setSelectedTarget(prev => prev ? {
@@ -138,7 +134,7 @@ const MainLayout: React.FC = () => {
 
   const fetchGroups = async () => {
     try {
-      const groupsResponse = await chatInstance.get('/chatService/api/chat/get-all-groups');
+      const groupsResponse = await communicationInstance.get('/communication-service/api/chat/get-all-groups');
       if (groupsResponse.data) {
         setGroups(groupsResponse.data);
       }
@@ -155,7 +151,7 @@ const MainLayout: React.FC = () => {
       try {
         setLoading(true);
   
-        const employeesResponse = await chatInstance.get('/chatService/api/chat/get-all-chats', {
+        const employeesResponse = await communicationInstance.get('/communication-service/api/chat/get-all-chats', {
           signal: controller.signal
         });
         

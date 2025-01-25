@@ -45,7 +45,7 @@ const AddProjectDrawer: React.FC<AddProjectDrawerProps> = ({ visible, onCancel, 
 
   useEffect(() => {
     if (visible) {
-      managerInstance.get('/manager/api/projects/get-all-teamleads')
+      managerInstance.get('/manager-service/api/projects/get-all-teamleads')
         .then(response => setTeamLeads(response.data.map((lead: {employeeId: string, employeeName: string}) => ({ id: lead.employeeId, name: lead.employeeName }))))
         .catch(console.error);
     }
@@ -65,7 +65,7 @@ const AddProjectDrawer: React.FC<AddProjectDrawerProps> = ({ visible, onCancel, 
         projectFiles: fileList.map(({ name, type, size }) => ({ name, type, size })),
       };
 
-      const response = await employeeInstance.post<ProjectResponse>('/manager/api/projects/add-new-project', payload);
+      const response = await employeeInstance.post<ProjectResponse>('/manager-service/api/projects/add-new-project', payload);
       
       const newProject: Project = {
         id: response.data.projectId,

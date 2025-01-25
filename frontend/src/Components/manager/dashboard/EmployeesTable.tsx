@@ -30,16 +30,16 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
     try {
       let response;
       if (action === 'edit') {
-        response = await managerInstance.get(`/manager/api/employee/get-employee/${employeeId}`);
+        response = await managerInstance.get(`/manager-service/api/employee/get-employee/${employeeId}`);
         setSelectedEmployeeId(employeeId);
         dispatch(clearEmployeeData());
         dispatch(setEmployeeDatas({ employeeData: response.data }));
         setIsModalVisible(true);
       } else if (action === 'block') {
-        response = await managerInstance.post(`/manager/api/employee/update-blocking/${employeeId}`, { isBlocked: !isBlocked });
+        response = await managerInstance.post(`/manager-service/api/employee/update-blocking/${employeeId}`, { isBlocked: !isBlocked });
         dispatch(setEmployeeDatas({ employeeData: data.map((e) => e.employeeId === employeeId ? { ...e, isBlocked: !isBlocked } : e) }));
       } else if (action === "remove") {
-        await managerInstance.delete(`/manager/api/employee/remove-employee/${employeeId}`);
+        await managerInstance.delete(`/manager-service/api/employee/remove-employee/${employeeId}`);
       }
       onUpdate(); // Notify parent to trigger data re-fetch
     } catch (error) {

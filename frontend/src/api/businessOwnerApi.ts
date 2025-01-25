@@ -4,9 +4,7 @@ import toast from "react-hot-toast";
 
 export const fetchManagers = async () => {
   try {
-    const response = await businessOwnerInstance.get(
-      "/businessOwner/api/manager/get-managers"
-    );
+    const response = await businessOwnerInstance.get("/businessOwner-service/api/manager/get-managers");
     return response.data;
   } catch (error) {
     console.error("Error fetching managers:", error);
@@ -16,14 +14,8 @@ export const fetchManagers = async () => {
 
 export const fetchBusinessOwnerPersonalInfo = async () => {
   try {
-    const response = await businessOwnerInstance.get(
-      "/businessOwner/api/business-owner/get-personaldetailes",
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await businessOwnerInstance.get("/businessOwner-service/api/business-owner/get-personaldetailes",
+      {headers: { "Content-Type": "application/json",},});
 
     return response.data.data;
   } catch (error) {
@@ -35,7 +27,7 @@ export const fetchCompanyDetails = async (isBusinessOwner) => {
   if (isBusinessOwner) {
     try {
       const response = await businessOwnerInstance.get(
-        "/businessOwner/api/business-owner/get-companydetailes"
+        "/businessOwner-service/api/business-owner/get-companydetailes"
       );
       const data = response.data.data;
       return {
@@ -57,7 +49,7 @@ export const fetchCompanyDetails = async (isBusinessOwner) => {
 export const fetchBusinessOwnerAddress = async () => {
   try {
     const response = await businessOwnerInstance.get(
-      "/businessOwner/api/business-owner/get-address"
+      "/businessOwner-service/api/business-owner/get-address"
     );
     console.log("address is from API ==", response);
     return response.data.data;
@@ -70,7 +62,7 @@ export const fetchBusinessOwnerAddress = async () => {
 export const updateBusinessOwnerAddress = async (values) => {
   try {
     const response = await businessOwnerInstance.post(
-      "/businessOwner/api/business-owner/update-address",
+      "/businessOwner-service/api/business-owner/update-address",
       values
     );
     console.log("Manager address updated successfully:", response.data);
@@ -84,15 +76,12 @@ export const updateBusinessOwnerAddress = async (values) => {
   }
 };
 
-export const uploadBusinessOwnerProfileImage = async (
-  file: File
-): Promise<string> => {
+export const uploadBusinessOwnerProfileImage = async (file: File): Promise<string> => {
   const formData = new FormData();
   formData.append("file", file);
-
   try {
     const { data } = await businessOwnerInstance.post(
-      "/businessOwner/api/business-owner/upload-images",
+      "/businessOwner-service/api/business-owner/upload-images",
       formData,
       { headers: { "Content-Type": "multipart/form-data" } }
     );
@@ -104,12 +93,10 @@ export const uploadBusinessOwnerProfileImage = async (
   }
 };
 
-export const updateBusinessOwnerPersonalInfo = async (
-  details
-): Promise<void> => {
+export const updateBusinessOwnerPersonalInfo = async (details): Promise<void> => {
   try {
     await businessOwnerInstance.patch(
-      "/businessOwner/api/business-owner/update-personaldetailes",
+      "/businessOwner-service/api/business-owner/update-personaldetailes",
       details
     );
     message.success("Details updated successfully!");
@@ -122,7 +109,7 @@ export const updateBusinessOwnerPersonalInfo = async (
 export const fetchBusinessOwnerDocument = async () => {
   try {
     const response = await businessOwnerInstance.get(
-      "/businessOwner/api/business-owner/get-documents"
+      "/businessOwner-service/api/business-owner/get-documents"
     );
     return response.data.result;
   } catch (error) {
@@ -131,7 +118,6 @@ export const fetchBusinessOwnerDocument = async () => {
   }
 };
 
-// Upload document function
 export const uploadBuisnessOwnerDocument = async (file: File) => {
   try {
     if (!file) {
@@ -141,7 +127,7 @@ export const uploadBuisnessOwnerDocument = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
     const response = await businessOwnerInstance.post(
-      "/businessOwner/api/business-owner/upload-documents",
+      "/businessOwner-service/api/business-owner/upload-documents",
       formData,
       {
         headers: { "Content-Type": "multipart/form-data" },
@@ -154,3 +140,24 @@ export const uploadBuisnessOwnerDocument = async (file: File) => {
     toast.error("Failed to upload document.");
   }
 };
+
+export const fetchDashboardData = async () => {
+  try {
+    const response = await businessOwnerInstance.get('/businessOwner-service/api/dashboard/dashboard-data');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    throw error;
+  }
+};
+
+export const fetchInvoices = async () => {
+  try {
+    const response = await businessOwnerInstance.get('/businessOwner-service/api/subscription/invoices');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching invoices:', error);
+    throw error;
+  }
+}
+

@@ -27,7 +27,7 @@ const LeaveModal: React.FC<LeaveModalProps> = ({
       const fetchLeaveData = async () => {
         try {
           const response = await employeeInstance.get(
-            "/employee/api/attendance/get-approved-leaves"
+            "/employee-service/api/attendance/get-approved-leaves"
           );
           setLeaveData(response.data);
         } catch (error) {
@@ -44,7 +44,7 @@ const LeaveModal: React.FC<LeaveModalProps> = ({
       try {
         // Call the API to apply leave
         const response = await employeeInstance.post(
-          "/employee/api/attendance/apply-leave",
+          "/employee-service/api/attendance/apply-leave",
           {
             attendanceId,
             leaveType,

@@ -80,7 +80,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ visible, onClose, managerId, mana
         formData.append("resume", values.profilePicture[0]);
 
         response = await businessOwnerInstance.post(
-          `/businessOwner/api/manager/update-resume/${managerId}`,
+          `/businessOwner-service/api/manager/update-resume/${managerId}`,
           formData
         );
 
@@ -94,19 +94,19 @@ const InfoModal: React.FC<InfoModalProps> = ({ visible, onClose, managerId, mana
       // Update other details if resume isn't updated
       else if (values.street || values.city || values.postalCode || values.country || values.state) {
         response = await businessOwnerInstance.put(
-          `/businessOwner/api/manager/update-address-info/${managerId}`,
+          `/businessOwner-service/api/manager/update-address-info/${managerId}`,
           values
         );
         message.success("Address details updated successfully!");
       } else {
         if (values.jobTitle || values.workTime || values.salary || values.dateOfJoin) {
           response = await businessOwnerInstance.put(
-            `/businessOwner/api/manager/update-professional-info/${managerId}`,
+            `/businessOwner-service/api/manager/update-professional-info/${managerId}`,
             values
           );
         } else {
           response = await businessOwnerInstance.put(
-            `/businessOwner/api/manager/update-personal-info/${managerId}`,
+            `/businessOwner-service/api/manager/update-personal-info/${managerId}`,
             values
           );
         }

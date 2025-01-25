@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Switch, Select, Input, Button } from 'antd';
+import { Switch, Button } from 'antd';
 import { ChromePicker } from 'react-color';
 
-const { Option } = Select;
 
 export default function Settings() {
   const [theme, setTheme] = useState('light');
@@ -10,9 +9,7 @@ export default function Settings() {
   const [smsNotifications, setSmsNotifications] = useState(true);
   const [color, setColor] = useState('#1890ff'); // default color for the theme
 
-  const handleThemeChange = (value) => {
-    setTheme(value);
-  };
+
 
   const handleColorChange = (color) => {
     setColor(color.hex);

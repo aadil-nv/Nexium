@@ -262,7 +262,6 @@ const LandingLoginPage = () => {
     }
   };
 
-
   const getInputStyle = (fieldError?: string): string => {
     const baseStyle = `w-full px-4 py-3 rounded-lg transition duration-200 outline-none ${
       theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'

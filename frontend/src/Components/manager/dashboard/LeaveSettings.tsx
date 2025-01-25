@@ -42,7 +42,7 @@ const LeaveSettings: React.FC = () => {
 
   const fetchLeaveTypes = async () => {
     try {
-      const response = await managerInstance.get('/manager/api/leave/get-all-leavetypes');
+      const response = await managerInstance.get('/manager-service/api/leave/get-all-leavetypes');
       const leaveData = response.data[0];
       
       if (leaveData) {
@@ -80,7 +80,7 @@ const LeaveSettings: React.FC = () => {
 
     setSaving(true);
     try {
-      await managerInstance.post(`/manager/api/leave/update-leavetypes/${leaveId}`, formData);
+      await managerInstance.post(`/manager-service/api/leave/update-leavetypes/${leaveId}`, formData);
       setInitialFormData(formData);
       message.success('Leave settings updated successfully!');
     } catch (error) {

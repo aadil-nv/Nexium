@@ -4,7 +4,7 @@ import { employeeInstance } from "../services/employeeInstance";
 
 export const fetchAttendanceData = async () => {
   try {
-    const response = await employeeInstance.get("/employee/api/attendance/get-attendances");
+    const response = await employeeInstance.get("/employee-service/api/attendance/get-attendances");
     return response.data;
   } catch (error) {
     console.error("Error fetching attendance data:", error);
@@ -14,7 +14,7 @@ export const fetchAttendanceData = async () => {
 
 export const markCheckIn = async (checkInData) => {
   try {
-    const response = await employeeInstance.post("/employee/api/attendance/mark-checkin/", checkInData);
+    const response = await employeeInstance.post("/employee-service/api/attendance/mark-checkin/", checkInData);
     return response.data;
   } catch (error) {
     console.error("Error marking check-in:", error);
@@ -24,7 +24,7 @@ export const markCheckIn = async (checkInData) => {
 
 export const markCheckOut = async (checkOutData) => {
   try {
-    const response = await employeeInstance.post("/employee/api/attendance/mark-checkout", checkOutData);
+    const response = await employeeInstance.post("/employee-service/api/attendance/mark-checkout", checkOutData);
     console.log("response==>=>=>",response.data);
     return response.data;
   } catch (error) {
@@ -36,7 +36,7 @@ export const markCheckOut = async (checkOutData) => {
 
 export const fetchEmployeePersonalInfo = async () => {
   try {
-    const response = await employeeInstance.get('/employee/api/employee/get-personalinfo', {
+    const response = await employeeInstance.get('/employee-service/api/employee/get-personalinfo', {
       withCredentials: true, 
     });
 
@@ -52,7 +52,7 @@ export const uploadEmployeeProfileImage = async (file: File) => {
   const formData = new FormData();
   formData.append('file', file);
   try {
-    const response = await employeeInstance.patch('/employee/api/employee/update-profilepicture', formData, {
+    const response = await employeeInstance.patch('/employee-service/api/employee/update-profilepicture', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -71,7 +71,7 @@ export const updateEmployeePersonalInfo = async (details) => {
     console.log("detiles is s------>",details);
     
   try {
-    const response = await employeeInstance.patch('/employee/api/employee/update-personalinfo', details);
+    const response = await employeeInstance.patch('/employee-service/api/employee/update-personalinfo', details);
     toast.success('Details updated successfully!');
     return response.data;
   } catch (error) {
@@ -83,7 +83,7 @@ export const updateEmployeePersonalInfo = async (details) => {
 
 export const fetchEmployeeAddress = async () => {
   try {
-    const response = await employeeInstance.get('/employee/api/employee/get-address');
+    const response = await employeeInstance.get('/employee-service/api/employee/get-address');
     return response.data;
   } catch (error) {
     console.error('Error fetching business owner address:', error);
@@ -95,7 +95,7 @@ export const fetchEmployeeAddress = async () => {
 export const updateEmployeeAddress = async (address) => {
   try {
     const response = await employeeInstance.patch(
-      "/employee/api/employee/update-address",
+      "/employee-service/api/employee/update-address",
       address
     );
     console.log("Manager address updated successfully:", response.data);
@@ -108,7 +108,7 @@ export const updateEmployeeAddress = async (address) => {
 
   export const fetchEmployeeDocument = async () => {
     try {
-      const response = await employeeInstance.get('/employee/api/employee/get-documents');
+      const response = await employeeInstance.get('/employee-service/api/employee/get-documents');
       console.log("responce is ==========&&&&========",response)
       return response.data;
     } catch (error) {
@@ -122,7 +122,7 @@ export const updateEmployeeAddress = async (address) => {
       if (!file) {toast.error('No file selected.') ;return;}
       const formData = new FormData();
       formData.append('file', file);
-      const response = await employeeInstance.patch('/employee/api/employee/update-documents', formData, {
+      const response = await employeeInstance.patch('/employee-service/api/employee/update-documents', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       toast.success('Document uploaded successfully!');
@@ -137,7 +137,7 @@ export const updateEmployeeAddress = async (address) => {
 export const fetchEmployeeCredential = async () => {
   try {
     const response = await employeeInstance.get(
-      '/employee/api/employee/get-credentials'
+      '/employee-service/api/employee/get-credentials'
     );
     return response.data;
   } catch (error) {

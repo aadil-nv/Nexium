@@ -62,7 +62,7 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onMan
     setErrorMessage(''); 
 
     try {
-      const response = await businessOwnerInstance.post('/businessOwner/api/manager/add-managers', { ...formData });
+      const response = await businessOwnerInstance.post('/businessOwner-service/api/manager/add-managers', { ...formData });
       setLoading(false); // Set loading state to false after request
       if (response.status === 200) {
         toast.success(response.data.message);

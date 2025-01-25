@@ -63,7 +63,7 @@ export default function CustomerCare() {
   const fetchServiceRequests = async (page = 1, pageSize = 10) => {
     setLoading(true);
     try {
-      const response = await superAdminInstance.get('/superAdmin/api/superadmin/all-serevice-request');
+      const response = await superAdminInstance.get('/superAdmin-service/api/superadmin/all-serevice-request');
       const requests = response.data.serviceRequests.serviceRequests;
       
       let filteredData = [...requests];
@@ -114,7 +114,7 @@ export default function CustomerCare() {
       });
       setServiceRequests(updatedRequests);
 
-      await superAdminInstance.patch(`/superAdmin/api/superadmin/update-status/${id}`, { status: newStatus });
+      await superAdminInstance.patch(`/superAdmin-service/api/superadmin/update-status/${id}`, { status: newStatus });
       message.success('Service request status updated successfully!');
     } catch (error) {
       message.error(error.response?.data?.message ||'Failed to update status');

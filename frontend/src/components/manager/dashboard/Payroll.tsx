@@ -86,7 +86,7 @@ const PayrollSettings: React.FC = () => {
   const [incentiveSlabs, setIncentiveSlabs] = useState<IncentiveSlab[]>([]);
 
   useEffect(() => {
-    managerInstance.get<PayrollData[]>('/manager/api/payroll/get-all-payroll-crieteria')
+    managerInstance.get<PayrollData[]>('/manager-service/api/payroll/get-all-payroll-crieteria')
       .then((response: AxiosResponse<PayrollData[]>) => {
         const payrollData = response.data[0];
         setData(response.data);
@@ -166,7 +166,7 @@ const PayrollSettings: React.FC = () => {
       })),
       payDay: settings.find(item => item.name === 'Pay Day')?.amount || 0
     };
-    managerInstance.post<PayrollData>(`/manager/api/payroll/update-payroll-crieteria/${data[0]?._id}`, payload)
+    managerInstance.post<PayrollData>(`/manager-service/api/payroll/update-payroll-crieteria/${data[0]?._id}`, payload)
       .then((response: AxiosResponse<PayrollData>) => {
         console.log('Payroll criteria updated:', response.data);
         alert('Settings have been saved successfully!');
@@ -201,7 +201,7 @@ const PayrollSettings: React.FC = () => {
       payrollCriteriaId,
     };
   
-    managerInstance.patch(`/manager/api/payroll/delete-incentive/${_id}`, requestData)
+    managerInstance.patch(`/manager-service/api/payroll/delete-incentive/${_id}`, requestData)
       .then(() => {
         setIncentiveSlabs(incentiveSlabs.filter((slab) => slab.id !== id));
         alert('Incentive Slab removed successfully!');

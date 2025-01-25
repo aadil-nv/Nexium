@@ -3,7 +3,7 @@ import { Input, Button, Space, Modal, Typography } from 'antd';
 import { SendOutlined, SmileOutlined, CheckOutlined, DeleteOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
 import socket from '../../config/socket';
-import { chatInstance } from '../../services/chatInstance';
+import { communicationInstance } from '../../services/communicationInstance';
 
 const { Text } = Typography;
 
@@ -127,7 +127,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const handleDeleteMessage = async () => {
     try {
       if (!messageToDelete) return;
-      await chatInstance.delete(`/chatService/api/message/delete-message/${messageToDelete}`);
+      await communicationInstance.delete(`/communication-service/api/message/delete-message/${messageToDelete}`);
       socket.emit('messageDeleted', {chatId,messageId: messageToDelete, senderId});
       setChatMessages(prev => prev.filter(msg => msg.messageId !== messageToDelete));
       handleDeleteModalClose();
@@ -203,7 +203,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     const fetchAllMessages = async () => {
       try {
         setLoading(true);
-        const response = await chatInstance.get<ApiMessage[]>(`/chatService/api/message/get-all-messages/${chatId}`);
+        const response = await communicationInstance.get<ApiMessage[]>(`/communication-service/api/message/get-all-messages/${chatId}`);
           
         const convertedMessages = response.data.map(convertApiMessageToMessage);
         const sortedMessages = convertedMessages.sort((a, b) =>

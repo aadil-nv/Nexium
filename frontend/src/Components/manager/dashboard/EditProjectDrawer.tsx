@@ -77,7 +77,7 @@ const EditProjectDrawer: React.FC<EditProjectDrawerProps> = ({ visible, project,
   useEffect(() => {
     const fetchTeamLeads = async () => {
       try {
-        const response = await managerInstance.get('/manager/api/projects/get-all-teamleads');
+        const response = await managerInstance.get('/manager-service/api/projects/get-all-teamleads');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setTeamLeads(response.data.map((lead: any) => ({ id: lead.employeeId, name: lead.employeeName })));
       } catch (error) {
@@ -135,7 +135,7 @@ const EditProjectDrawer: React.FC<EditProjectDrawerProps> = ({ visible, project,
     formData.append('file', newFile);
 
     try {
-      const response = await managerInstance.post(`/manager/api/projects/update-project-file/${project.id}`, formData);
+      const response = await managerInstance.post(`/manager-service/api/projects/update-project-file/${project.id}`, formData);
       setFile(response.data.fileUrl);
       setNewFile(null);
       setFilePreview(null);
@@ -164,7 +164,7 @@ const EditProjectDrawer: React.FC<EditProjectDrawerProps> = ({ visible, project,
         employeeFiles: employeeFiles
       };
 
-      await managerInstance.put(`/manager/api/projects/update-project/${project?.id}`, updatedProject);
+      await managerInstance.put(`/manager-service/api/projects/update-project/${project?.id}`, updatedProject);
       notification.success({
         message: 'Success',
         description: 'Project updated successfully',

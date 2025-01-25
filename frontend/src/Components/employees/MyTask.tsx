@@ -44,7 +44,7 @@ const TodoList = () => {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const { data } = await employeeInstance.get(`/employee/api/task/get-tasks-by-employee/${id}`);
+        const { data } = await employeeInstance.get(`/employee-service/api/task/get-tasks-by-employee/${id}`);
         setTodos(data);
       } catch {
         toast.error('Failed to fetch tasks!');
@@ -62,7 +62,7 @@ const TodoList = () => {
     const taskToUpdate = updatedTasks.find((task) => task._id === taskId);
     if (taskToUpdate) {
       try {
-        await employeeInstance.post('/employee/api/task/update-task-completion', {
+        await employeeInstance.post('/employee-service/api/task/update-task-completion', {
           ...taskToUpdate,
           taskId,
         });
@@ -99,7 +99,7 @@ const TodoList = () => {
         _id: taskId,
       };
 
-      await employeeInstance.post(`/employee/api/task/update-completed-task/${id}`, payload);
+      await employeeInstance.post(`/employee-service/api/task/update-completed-task/${id}`, payload);
       toast.success('Task updated successfully!');
     } catch (error) {
       console.error('Error updating task:', error);

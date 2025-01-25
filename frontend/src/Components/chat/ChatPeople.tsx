@@ -3,7 +3,7 @@ import { List, Badge, Avatar, Button, Space, Typography, message, Modal, Input, 
 import { Employee, Group } from '../../interface/ChatInterface';
 import { UsergroupAddOutlined, TeamOutlined, UserOutlined, MessageOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
-import { chatInstance } from '../../services/chatInstance';
+import { communicationInstance } from '../../services/communicationInstance';
 import { motion } from 'framer-motion';
 
 const { Title } = Typography;
@@ -59,7 +59,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
 
   const fetchAvailablePeople = async () => {
     try {
-      const response = await chatInstance.get('/chatService/api/chat/get-all-receiver');
+      const response = await communicationInstance.get('/communication-service/api/chat/get-all-receiver');
       setAvailablePeople(response.data);
     } catch (error) {
       console.error('Error fetching available people:', error);
@@ -69,7 +69,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
 
   const handleUserSelect = async (emp: Employee) => {
     try {
-      const response = await chatInstance.post(`/chatService/api/chat/create-chat/${emp.receiverId}`);
+      const response = await communicationInstance.post(`/communication-service/api/chat/create-chat/${emp.receiverId}`);
 
       setExistingChats(prevChats => {
 
@@ -126,7 +126,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
 
     setLoading(true);
     try {
-      await chatInstance.post('/chatService/api/chat/create-group', {
+      await communicationInstance.post('/communication-service/api/chat/create-group', {
         groupName: groupName,
         members: selectedMembers
       });

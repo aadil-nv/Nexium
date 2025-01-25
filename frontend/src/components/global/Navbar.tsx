@@ -12,7 +12,7 @@ import DropdownMenu from "./DropDown";
 import { handleLogout, handleProfileClick, onSettingsClick, NavButton, toggleMenu } from "../../utils/navbarFunctions";
 import images from "../../images/images";
 import socket from '../../config/socket';
-import { chatInstance } from '../../services/chatInstance';
+import { communicationInstance } from '../../services/communicationInstance';
 
 interface INotification {
   _id: string;
@@ -52,7 +52,7 @@ export default function Navbar(): JSX.Element {
 
   const fetchNotifications = async (): Promise<void> => {
     try {
-      const response = await chatInstance.get<INotification[]>("/chatService/api/notification/get-all-notifications");
+      const response = await communicationInstance.get<INotification[]>("/communication-service/api/notification/get-all-notifications");
       setNotifications(response.data);
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -77,7 +77,7 @@ export default function Navbar(): JSX.Element {
 
   const clearNotification = async (notificationId: string): Promise<void> => {
     try {
-      await chatInstance.delete(`/chatService/api/notification/delete-notification/${notificationId}`);
+      await communicationInstance.delete(`/communication-service/api/notification/delete-notification/${notificationId}`);
       setNotifications(prev =>
         prev.filter(notification => notification._id !== notificationId)
       );
@@ -90,7 +90,7 @@ export default function Navbar(): JSX.Element {
 
   const clearAllNotifications = async (): Promise<void> => {
     try {
-      await chatInstance.delete("/chatService/api/notification/clear-all-notifications");
+      await communicationInstance.delete("/communication-service/api/notification/clear-all-notifications");
       setNotifications([]);
       toast.success("All notifications cleared");
     } catch (error) {

@@ -1,7 +1,7 @@
 // ManagerRepository.ts
 import IManagerRepository from "../interface/IManagerReopsitory";
 import managerModel from "../../models/managerModel";
-import mongoose from "mongoose";
+import mongoose, { set } from "mongoose";
 import { inject, injectable } from "inversify";
 import BaseRepository from "./baseRepository";
 import {IManager} from "../../entities/managerEntity";
@@ -105,6 +105,7 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         { email: managerData.email },
         { $set: { isBlocked: newIsBlocked } }
       );
+      const updatedManager = await managerModel.updateOne({ email: managerData.email },{$set:{ isBlocked: newIsBlocked }});
   
       // Log update result
       console.log("Update result:", updateResult);
@@ -164,14 +165,11 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
   
 
   async updateProfessionalInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager | null> {
-    console.log("Updating manager's professional details with data:", data);
   
     try {
-      // Switch to the appropriate business owner's database
       const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
       const manager = _switchDb.model<IManager>('Managers', managerModel.schema);
   
-      // Ensure that only professional details are updated
       const updateData = {
         professionalDetails: {
           joiningDate: data.dateOfJoin,
@@ -181,19 +179,18 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         }
       };
   
-      // Update the professional details
       const updatedManager = await manager.findByIdAndUpdate(managerId, updateData, { new: true });
       
       if (!updatedManager) {
         console.error("Manager not found");
-        return null; // Return null if no manager is found with the provided managerId
+        return null; 
       }
   
-      return updatedManager; // Return the updated manager document
+      return updatedManager; 
   
     } catch (error) {
       console.error("Error updating manager:", error);
-      throw error; // Throw the error to be handled by the controller or service layer
+      throw error;
     }
   }
 
@@ -249,7 +246,6 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
   }
 
   async uploadProfilePic(businessOwnerId: string, filePath: string): Promise<IManager> {
-    console.log("Data received:-->>>>>>", filePath);
     
     try {
       const result = await this._managerModel.findByIdAndUpdate(
@@ -269,8 +265,6 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
     }
   }
 
-
-    
  
     async getDashboardData(companyId: string): Promise<any> {
       try {
@@ -333,10 +327,6 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
     }
     
     async updateResume(businessOwnerId: string, managerId: string, documentData: any): Promise<IManager> {
-
-      console.log("Data received:--66666666666666666666666666666666>>>>>>", documentData);
-
-
       
       try {
         const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });

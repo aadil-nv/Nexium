@@ -7,7 +7,7 @@ const apiUrl = import.meta.env.VITE_API_KEY
 
 export const resendOtp = async (email: string) => {
   try {
-    const response = await axios.post(`${apiUrl}/authentication/api/business-owner/resend-otp`, { email });
+    const response = await axios.post(`${apiUrl}/authentication-service/api/business-owner/resend-otp`, { email });
     return response.data;
   } catch (error) {
     console.log("Error resending OTP:", error);
@@ -17,7 +17,7 @@ export const resendOtp = async (email: string) => {
 
 export const validateOtp = async (email: string, otp: string) => {
   try {
-    const response = await axios.post(`${apiUrl}/authentication/api/business-owner/otp-validation`, { email, otp });
+    const response = await axios.post(`${apiUrl}/authentication-service/api/business-owner/otp-validation`, { email, otp });
     return response.data;
   } catch (error) {
     console.log("Error verifying OTP:", error);
@@ -28,7 +28,7 @@ export const validateOtp = async (email: string, otp: string) => {
 
 export const loginBusinessOwnerAPI = async (email:string, password:string) => {
     const { data } = await axios.post(
-      `${apiUrl}/authentication/api/business-owner/login`,
+      `${apiUrl}/authentication-service/api/business-owner/login`,
       { email, password },
       { withCredentials: true }
     );
@@ -40,7 +40,7 @@ export const changePasswordAPI = async (password: string, email: string) => {
   console.log("email from change password", email);
   
   try {
-      const response = await axios.patch(`${apiUrl}/authentication/api/business-owner/add-newpassword`, {
+      const response = await axios.patch(`${apiUrl}/authentication-service/api/business-owner/add-newpassword`, {
           password,
           email,
       });
@@ -54,7 +54,7 @@ export const changePasswordAPI = async (password: string, email: string) => {
 
 export const forgotPassword = async (email: string) => {
   try {
-    const response = await axios.post(`${apiUrl}/authentication/api/business-owner/forgot-password`, { email });
+    const response = await axios.post(`${apiUrl}/authentication-service/api/business-owner/forgot-password`, { email });
     return response.data; // Return the data
   } catch (error) {
     console.error('Error during forgot password request:', error);
@@ -65,7 +65,7 @@ export const forgotPassword = async (email: string) => {
 
 export const signUpResendOtp = async (email: string) => {
   try {
-    const response = await axios.post(`${apiUrl}/authentication/api/business-owner/resend-otp`, { email });
+    const response = await axios.post(`${apiUrl}/authentication-service/api/business-owner/resend-otp`, { email });
     return response.data;
   } catch (error) {
     console.log("Error signup-resending OTP:", error);
@@ -76,7 +76,7 @@ export const signUpResendOtp = async (email: string) => {
 export const SignUpValidateOtp = async (email: string, otp: string) => {
   try {
     const response = await axios.post(
-      `${apiUrl}/authentication/api/business-owner/otp-validation`,
+      `${apiUrl}/authentication-service/api/business-owner/otp-validation`,
       { email, otp },
       { withCredentials: true }
     );
@@ -90,7 +90,7 @@ export const SignUpValidateOtp = async (email: string, otp: string) => {
 
 export const signUpBusinessOwner = async (companyName: string, registrationNumber: string, email: string, password: string, phone: string) => {
   try {
-    const response = await axios.post(`${apiUrl}/authentication/api/business-owner/register`, {
+    const response = await axios.post(`${apiUrl}/authentication-service/api/business-owner/register`, {
       companyName,
       registrationNumber,
       email,
@@ -111,7 +111,7 @@ export const signUpBusinessOwner = async (companyName: string, registrationNumbe
 
 export const fetchPlans = async () => {
   try {
-    const response = await axios.get(`${apiUrl}/superAdmin/api/subscription/get-subscription`);
+    const response = await axios.get(`${apiUrl}/superAdmin-service/api/subscription/get-subscription`);
     if (response.data.success) {
       return response.data.subscriptions;
     }
@@ -125,7 +125,7 @@ export const fetchPlans = async () => {
 export const createCheckoutSession = async (email: string, selectedPlan) => {
   try {
     const { data } = await axios.post(
-      `${apiUrl}/payment/api/businessowner-payment/create-checkout-session`,
+      `${apiUrl}/payment-service/api/businessowner-payment/create-checkout-session`,
       { email, plan: selectedPlan, amount: selectedPlan.price * 100, currency: 'usd' },
       { withCredentials: true }
     );

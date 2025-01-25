@@ -9,6 +9,7 @@ import { logout as managerLogout } from "../redux/slices/managerSlice";
 import { logout as employeeLogout } from "../redux/slices/employeeSlice";
 import { NavbarFunctionsProps} from "../utils/interfaces"
 import { resetTasks } from "../redux/slices/taskSlice";
+import { employeeInstance } from "../services/employeeInstance";
 
 
 
@@ -17,35 +18,29 @@ import { resetTasks } from "../redux/slices/taskSlice";
 export const handleLogout = ({isBusinessOwner,isSuperAdmin,isManager,isEmployee,dispatch,navigate,}: NavbarFunctionsProps) => {
   if (isBusinessOwner.isAuthenticated) {
     dispatch(businessOwnerLogout());
-    businessOwnerInstance.post("/businessOwner/api/business-owner/logout");
+    businessOwnerInstance.post("/businessOwner-service/api/business-owner/logout");
     navigate("/login");
   } else if (isSuperAdmin.isAuthenticated) {
     dispatch(superAdminLogout());
-    superAdminInstance.post("/superAdmin/api/superadmin/logout");
+    superAdminInstance.post("/superAdmin-service/api/superadmin/logout");
     navigate("/superadmin-login");
   } else if (isManager.isAuthenticated) {
     dispatch(managerLogout());
-    managerInstance.post("/manager/api/manager/logout");
+    managerInstance.post("/manager-service/api/manager/logout");
     navigate("/manager-login");
   } else if (isEmployee.isAuthenticated) {
     // persistor.purge()
     dispatch(resetTasks());
     dispatch(employeeLogout());
-    managerInstance.post("/manager/api/manager/logout");
+    employeeInstance.post("/manager-service/api/manager/logout");
     navigate("/employee-login");
 
   }
 };
 
 
-export const handleProfileClick = (
-  { isBusinessOwner, isSuperAdmin, isManager, isEmployee, navigate }: NavbarFunctionsProps
-) => {
-  console.log("isBusinessOwner.isAuthenticated:", isBusinessOwner.isAuthenticated);
-  console.log("isSuperAdmin.isAuthenticated:", isSuperAdmin.isAuthenticated);
-  console.log("isManager.isAuthenticated:", isManager.isAuthenticated);
-  console.log("isEmployee.isAuthenticated:", isEmployee.isAuthenticated);
-  
+export const handleProfileClick = ({ isBusinessOwner, isSuperAdmin, isManager, isEmployee, navigate }: NavbarFunctionsProps) => {
+
   if (isBusinessOwner.isAuthenticated) {
     navigate("/business-owner/profile");
   } else if (isSuperAdmin.isAuthenticated) {

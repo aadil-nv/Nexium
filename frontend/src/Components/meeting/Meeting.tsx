@@ -6,7 +6,7 @@ import { AnimatePresence } from "framer-motion";
 import dayjs from "dayjs";
 import { Form } from "antd";
 import useAuth from "../../hooks/useAuth";
-import { chatInstance } from "../../services/chatInstance";
+import { communicationInstance } from "../../services/communicationInstance";
 import { AnimatedIcon } from "./AnimatedIcon";
 import { MeetingCard } from "./MeetingCard";
 import { MeetingForm } from "./MeetingForm";
@@ -51,7 +51,7 @@ export const MeetingScheduler: React.FC = () => {
   const fetchMeetings = async () => {
     try {
       setLoading(true);
-      const response = await chatInstance.get("/chatService/api/meeting/get-all-meetings");
+      const response = await communicationInstance.get("/communication-service/api/meeting/get-all-meetings");
       setMeetings(response.data);
     } catch (error) {
       message.error(error.message || "Failed to fetch meetings");
@@ -62,7 +62,7 @@ export const MeetingScheduler: React.FC = () => {
 
   const fetchParticipants = async () => {
     try {
-      const response = await chatInstance.get("/chatService/api/meeting/get-all-participants");
+      const response = await communicationInstance.get("/communication-service/api/meeting/get-all-participants");
       setAllParticipants(response.data);
     } catch (error) {
       message.error(error.message || "Failed to fetch participants");
@@ -92,7 +92,7 @@ export const MeetingScheduler: React.FC = () => {
         meetingLink: `hgsjdfa7453`,
       };
 
-      await chatInstance.post("/chatService/api/meeting/create-meeting", formattedMeeting);
+      await communicationInstance.post("/communication-service/api/meeting/create-meeting", formattedMeeting);
       message.success("Meeting scheduled successfully");
       fetchMeetings();
       handleCloseDrawer();
@@ -128,8 +128,8 @@ export const MeetingScheduler: React.FC = () => {
         scheduledBy: values.scheduledBy
       };
 
-      await chatInstance.patch(
-        `/chatService/api/meeting/update-meeting/${editingMeeting}`,
+      await communicationInstance.patch(
+        `/communication-service/api/meeting/update-meeting/${editingMeeting}`,
         formattedMeeting
       );
       message.success("Meeting updated successfully");
@@ -143,7 +143,7 @@ export const MeetingScheduler: React.FC = () => {
 
   const handleDelete = async (meetingId: string) => {
     try {
-      await chatInstance.delete(`/chatService/api/meeting/delete-meeting/${meetingId}`);
+      await communicationInstance.delete(`/communication-service/api/meeting/delete-meeting/${meetingId}`);
       message.success("Meeting deleted successfully");
       fetchMeetings();
     } catch (error) {

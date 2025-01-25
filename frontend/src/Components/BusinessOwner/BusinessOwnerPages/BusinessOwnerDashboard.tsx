@@ -1,78 +1,98 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaUsers, FaChartLine } from 'react-icons/fa';
+import { Skeleton } from 'antd';
 import {AreaChart,Area,CartesianGrid,XAxis,YAxis,Tooltip,Legend, ResponsiveContainer,} from 'recharts';
-import { businessOwnerInstance } from '../../../services/businessOwnerInstance';
-interface BusinessOwner {
-  totalEmployees: number;
-  activeEmployees: number;
-  totalManagers: number;
-  activeManagers: number;
-  employeeMonthCounts: Record<string, number>;
-  managerMonthCounts: Record<string, number>;
-}
-interface DashboardData {
-  businessOwners: BusinessOwner;
-}
+import { fetchDashboardData } from '../../../api/businessOwnerApi';
+import {DashboardData ,StatCardProps ,ChartContainerProps} from "../../../interface/BusinessOwnerInterface"
+
+
+
+const StatCard: React.FC<StatCardProps> = ({ icon, title, value, bgColor }) => (
+  <motion.div
+    className={`p-6 rounded-lg shadow hover:shadow-lg transition-shadow ${bgColor}`}
+    whileHover={{ scale: 1.05 }}
+    initial={{ opacity: 0, y: 50 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+  >
+    <div className="space-y-2 text-white flex items-center">
+      <div className="mr-4 text-3xl">{icon}</div>
+      <div>
+        <p className="text-sm">{title}</p>
+        <h3 className="text-2xl font-bold">{value}</h3>
+      </div>
+    </div>
+  </motion.div>
+);
+
+const ChartContainer: React.FC<ChartContainerProps> = ({ children }) => (
+  <motion.div
+    className="bg-white p-4 rounded-lg shadow"
+    whileHover={{ scale: 1.02 }}
+    initial={{ opacity: 0, y: 30 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+  >
+    {children}
+  </motion.div>
+);
 
 export default function BusinessOwnerDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    businessOwnerInstance
-      .get('/businessOwner/api/dashboard/dashboard-data')
-      .then((response) => {
-        setData(response.data);
-        console.log('Response from API:', response.data.businessOwners);
-      })
-      .catch((error) => {
-        console.error('Error fetching dashboard data:', error);
-      });
+    const getData = async () => {
+      try {
+        const dashboardData = await fetchDashboardData();
+        setData(dashboardData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+        setLoading(false);
+      }
+    };
+    getData();
   }, []);
 
-  if (!data) {
-    return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="p-6">
+        <Skeleton active paragraph={{ rows: 4 }} title={{ width: 300 }} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+          {[1, 2, 3, 4].map((item) => (
+            <Skeleton.Avatar 
+              key={item} 
+              shape="square" 
+              size={200} 
+              active 
+              style={{ width: '100%', height: '150px' }} 
+            />
+          ))}
+        </div>
+        <Skeleton 
+          active 
+          title={false} 
+          paragraph={{ rows: 10, width: '100%' }} 
+          className="mt-6"
+        />
+      </div>
+    );
+  }
+
+  // Ensure data exists before destructuring
+  if (!data || !data.businessOwners) {
+    return <div>No data available</div>;
   }
 
   const { businessOwners } = data;
 
-  // Prepare the area chart data
   const chartData = Object.keys(businessOwners.employeeMonthCounts).map((month) => ({
     month,
     employees: businessOwners.employeeMonthCounts[month],
     managers: businessOwners.managerMonthCounts[month],
   }));
-
-  const StatCard = ({ icon, title, value, textColor, bgColor }) => (
-    <motion.div
-      className={`p-6 rounded-lg shadow hover:shadow-lg transition-shadow ${bgColor}`}
-      whileHover={{ scale: 1.05 }}
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="space-y-2 text-white flex items-center">
-        <div className="mr-4 text-3xl">{icon}</div>
-        <div>
-          <p className="text-sm">{title}</p>
-          <h3 className="text-2xl font-bold">{value}</h3>
-        </div>
-      </div>
-    </motion.div>
-  );
-
-  const ChartContainer = ({ children }) => (
-    <motion.div
-      className="bg-white p-4 rounded-lg shadow"
-      whileHover={{ scale: 1.02 }}
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      {children}
-    </motion.div>
-  );
 
   return (
     <motion.div
@@ -96,28 +116,24 @@ export default function BusinessOwnerDashboard() {
           icon={<FaUsers />}
           title="Total Employees"
           value={businessOwners.totalEmployees}
-          textColor="text-green-200"
           bgColor="bg-gradient-to-r from-blue-400 to-blue-600"
         />
         <StatCard
           icon={<FaUsers />}
           title="Active Employees"
           value={businessOwners.activeEmployees}
-          textColor="text-green-200"
           bgColor="bg-gradient-to-r from-green-400 to-green-600"
         />
         <StatCard
           icon={<FaUsers />}
           title="Total Managers"
           value={businessOwners.totalManagers}
-          textColor="text-green-200"
           bgColor="bg-gradient-to-r from-yellow-400 to-yellow-600"
         />
         <StatCard
           icon={<FaUsers />}
           title="Active Managers"
           value={businessOwners.activeManagers}
-          textColor="text-green-200"
           bgColor="bg-gradient-to-r from-red-400 to-red-600"
         />
       </div>

@@ -39,7 +39,7 @@ const MyTaskList: React.FC = () => {
     const fetchTasks = async () => {
       dispatch(setLoading(true));
       try {
-        const response = await employeeInstance.get('/employee/api/task/employee-tasklist');
+        const response = await employeeInstance.get('/employee-service/api/task/employee-tasklist');
         console.log('response.data', response.data);
         
         dispatch(setTasks(response.data)); // Populate Redux state with fetched tasks

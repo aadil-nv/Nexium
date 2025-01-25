@@ -53,7 +53,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel ,onSave }) => {
     if (visible) {
       const fetchEmployeesWithoutTask = async () => {
         try {
-          const response = await employeeInstance.get('/employee/api/task/get-employee-without-task');
+          const response = await employeeInstance.get('/employee-service/api/task/get-employee-without-task');
           if (Array.isArray(response.data)) {
             setAvailableEmployees(response.data);
           }
@@ -110,7 +110,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel ,onSave }) => {
     };
 
     try {
-      const response = await employeeInstance.post('/employee/api/task/assign-task-to-employee', taskData);
+      const response = await employeeInstance.post('/employee-service/api/task/assign-task-to-employee', taskData);
       dispatch(addTask(response.data));
       onSave(response.data); // Call onSave with the response data
       notification.success({

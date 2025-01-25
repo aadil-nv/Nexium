@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, List, Space, Badge, Avatar } from 'antd';
 import { CheckOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { Employee } from '../../interface/ChatInterface';
-import { chatInstance } from '../../services/chatInstance';
+import { communicationInstance } from '../../services/communicationInstance';
 
 interface StartChatModalProps {
   isVisible: boolean;
@@ -21,7 +21,7 @@ const StartChatModal: React.FC<StartChatModalProps> = ({
 }) => {
   const handleUserSelect = async (emp: Employee) => {
     try {
-      const response = await chatInstance.post(`/chatService/api/chat/create-chat/${emp.receiverId}`);
+      const response = await communicationInstance.post(`/communication-service/api/chat/create-chat/${emp.receiverId}`);
       const chatId = response.data.chatId;
 
       setSelectedTarget({

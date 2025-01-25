@@ -25,13 +25,7 @@ export default function ManagerLogin() {
 
     try {
       const responseData = await managerLogin(data);
-      console.log("responseData from manager LOgin", responseData);
-
-
-
       if(responseData.success === false && responseData.message == "Account is blocked. Please contact admin") {
-
-
         setLoginError(responseData.message);
         return
       }

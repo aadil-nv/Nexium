@@ -40,7 +40,7 @@ const handleTokenRefresh = async (originalRequest: InternalAxiosRequestConfig) =
   isRefreshing = true;
 
   try {
-    const { data } = await businessOwnerInstance.post("/businessOwner/api/business-owner/refresh-token");
+    const { data } = await businessOwnerInstance.post("/businessOwner-service/api/business-owner/refresh-token");
     notifySubscribers(data.accessToken);
     
     if (originalRequest.headers) {
@@ -59,7 +59,7 @@ const handleTokenError = async (error: AxiosError) => {
   console.log("Handling token error...",error);
   store.dispatch(businessOwnerLogout());
   try {
-    const result = await axios.post("http://localhost:3000/businessOwner/api/business-owner/logout");
+    const result = await axios.post("http://localhost:3000/businessOwner-service/api/business-owner/logout");
     toast.success(result.data.message);
   } catch (logoutError) {
     console.error("Logout failed:", logoutError);

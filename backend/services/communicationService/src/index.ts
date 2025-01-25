@@ -21,7 +21,7 @@ const PORT = process.env.PORT
 
 // Set up HTTP server and Socket.IO
 const server = app.listen(PORT, () => {
-  console.log(`ChatService is running on http://localhost:${PORT}`.bgBlue.bold);
+  console.log(`communication-service is running on http://localhost:${PORT}`.bgBlue.bold);
 });
 
 const io = new Server(server, {

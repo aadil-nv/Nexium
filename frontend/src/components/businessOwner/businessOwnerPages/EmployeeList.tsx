@@ -6,9 +6,11 @@ import { Skeleton, Empty } from 'antd';
 import AddManagerModal from '../../ui/AddManagerModal';
 import { FaPlus } from 'react-icons/fa';
 import { fetchManagers } from '../../../api/businessOwnerApi';
+import { Manager } from '../../../interface/BusinessOwnerInterface';
+
 
 export default function EmployeeList() {
-  const [managers, setManagers] = useState<any[]>([]);
+  const [managers, setManagers] = useState<Manager[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
   const [loading, setLoading] = useState(true);
@@ -20,8 +22,6 @@ export default function EmployeeList() {
       setLoading(true);
       try {
         const managersData = await fetchManagers();
-        console.log("managersData",managersData);
-        
         setManagers(managersData);
       } catch (error) {
         console.error('Error fetching managers:', error);
@@ -29,7 +29,6 @@ export default function EmployeeList() {
         setLoading(false);
       }
     };
-
     loadManagers();
   }, []);
 
@@ -38,21 +37,16 @@ export default function EmployeeList() {
     (roleFilter === 'All' || manager.role === roleFilter)
   );
 
-  const handleManagerAdded = () => {
-    // Re-fetch the managers list after adding a new manager
-    const loadManagers = async () => {
-      setLoading(true);
-      try {
-        const managersData = await fetchManagers();
-        setManagers(managersData);
-      } catch (error) {
-        console.error('Error fetching managers:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadManagers();
+  const handleManagerAdded = async () => {
+    setLoading(true);
+    try {
+      const managersData = await fetchManagers();
+      setManagers(managersData);
+    } catch (error) {
+      console.error('Error fetching managers:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,13 +95,19 @@ export default function EmployeeList() {
           <div className="flex justify-center items-center"><Empty description="No employees found" /></div>
         ) : (
           filteredManagers.map((manager, index) => (
-            <motion.div key={index} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.1, duration: 0.5 }} className="flex justify-center">
+            <motion.div 
+              key={manager._id} 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              transition={{ delay: index * 0.1, duration: 0.5 }} 
+              className="flex justify-center"
+            >
               <ManagerCard
                 image={manager.personalDetails.profilePicture || "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"}
                 name={manager.personalDetails.managerName}
                 email={manager.personalDetails.email}
-                onViewDetails={() => alert(`Viewing details for ${manager.personalDetails.name}`)}
-                onToggleStatus={() => alert(`Blocking/Unblocking ${manager.personalDetails.name}`)}
+                onViewDetails={() => alert(`Viewing details for ${manager.personalDetails.managerName}`)}
+                onToggleStatus={() => alert(`Blocking/Unblocking ${manager.personalDetails.managerName}`)}
                 isActive={manager.isActive}
                 isBlocked={manager.isBlocked}
                 isVerified={manager.isVerified}
@@ -121,7 +121,7 @@ export default function EmployeeList() {
       <AddManagerModal
         isVisible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
-        onManagerAdded={handleManagerAdded} // Pass the handler to AddManagerModal
+        onManagerAdded={handleManagerAdded}
       />
     </div>
   );

@@ -116,5 +116,44 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     return res.status(200).json(result);
   }
 
+  async googleLogin(req: Request, res: Response): Promise<Response> {
+    console.log("hitting google login===========================");
+    console.log("req.body",req.body);
+    
+    
+    try {
+      const { userData } = req.body;
+  
+      const result = await this._businessOwnerService.googleLogin(userData.email, userData.id, userData.phone, userData.name);
+      console.log("result is ==>",result);
+      
+      if (result.success ==true && result.refreshToken && result.accessToken) {
+        res.cookie('refreshToken', result.refreshToken, { 
+          httpOnly: true, 
+          secure: process.env.NODE_ENV === 'production', 
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000 
+        });
+    
+        res.cookie('accessToken', result.accessToken, { 
+          httpOnly: true, 
+          secure: process.env.NODE_ENV === 'production', 
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000 
+        });
+        console.log(`Google login successful for email: ${result.email}`);
+        return res.status(200).json( result);
+        
+      } else {
+
+        return res.status(200).json(result);
+      }
+    } catch (error) {
+      console.error("Error during Google login:", error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  }
+  
+
   
 }

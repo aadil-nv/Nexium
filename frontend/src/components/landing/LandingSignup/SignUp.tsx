@@ -5,6 +5,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { signUpSchema } from '../../../config/validationSchema';
 import { signUpBusinessOwner } from '../../../api/authApi';
+import images from "../../../images/images"
 
 interface FormErrors {
   [key: string]: string;
@@ -93,7 +94,7 @@ const SignUp: React.FC = () => {
       {/* Left side - Image */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <img 
-          src="/api/placeholder/800/600"
+          src={images.homePicture}
           alt="Signup"
           className="object-cover w-full h-full"
         />

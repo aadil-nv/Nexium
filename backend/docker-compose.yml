@@ -1,0 +1,156 @@
+
+networks:
+  nexium-network:
+    driver: bridge
+
+services:
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./gateway
+    ports:
+      - "3000:3000" 
+    depends_on:
+      - rabbitmq
+      - authentication-service
+      - business-owner-service
+      - manager-service
+      - employee-service
+      - super-admin-service
+      - communication-service
+      - payment-service
+
+    networks:
+      - nexium-network
+
+  # Authentication Service
+  authentication-service:
+    image: aadilnv/nexium-authenticationservice
+    build:
+      context: ./services/authenticationService/src
+    container_name: authentication-service
+    ports:
+      - "7000:7000"
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    networks:
+      - nexium-network
+
+
+
+  # BusinessOwner Service
+  business-owner-service:
+    image: aadilnv/nexium-businessownerservice
+    build:
+      context: ./services/businessOwnerService/src
+    container_name: business-owner-service
+    ports:
+      - "7001:7001"
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    networks:
+      - nexium-network      
+
+  # SuperAdmin Service
+  super-admin-service:
+    image: aadilnv/nexium-superadminservice
+    build:
+      context: ./services/superAdminService/src
+    container_name: super-admin-service
+    ports:
+      - "7002:7002"
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    networks:
+      - nexium-network
+
+
+  # Manager Service
+  manager-service:
+    image: aadilnv/nexium-managerservice
+    build:
+      context: ./services/managerService/src
+    container_name: manager-service
+    ports:
+      - "7003:7003"
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    networks:
+      - nexium-network
+     
+
+
+
+  # Employee Service
+  employee-service:
+    image: aadilnv/nexium-employeeservice
+    build:
+      context: ./services/employeeService/src
+    container_name: employee-service
+    ports:
+      - "7004:7004"
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    networks:
+      - nexium-network
+
+
+   # Payment Service
+  payment-service:
+    image: aadilnv/nexium-paymentservice
+    build:
+      context: ./services/paymentService/src
+    container_name: payment-service
+    ports:
+      - "7005:7005"
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    networks:
+      - nexium-network    
+
+ 
+  # Communication Service
+  communication-service:
+    image: aadilnv/nexium-communicationservice
+    build:
+      context: ./services/communicationService/src
+    container_name: communication-service
+    ports:
+      - "7006:7006"
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+    networks:
+      - nexium-network
+
+ 
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - nexium-network

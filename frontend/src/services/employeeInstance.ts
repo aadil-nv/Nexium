@@ -36,7 +36,7 @@ const handleTokenRefresh = async (originalRequest: InternalAxiosRequestConfig) =
 
   try {
     console.log("Attempting token refresh...");
-    const {data}=await employeeInstance.post("/employee/api/employee/refresh-token");
+    const {data}=await employeeInstance.post("/employee-service/api/employee/refresh-token");
     notifySubscribers(data.accessToken);
 
   } catch (error) {
@@ -52,7 +52,7 @@ const handleTokenError = async (error: AxiosError) => {
   console.log("Handling token error...", error);
   store.dispatch(employeeLogout());
   try {
-    const result = await axios.post("http://localhost:3000/employee/api/employee/logout");
+    const result = await axios.post("http://localhost:3000/employee-service/api/employee/logout");
     toast.success(result.data.message);
     console.log("Logged out successfully.");
   } catch (logoutError) {

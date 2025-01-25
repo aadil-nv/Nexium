@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Button, List, Avatar, Spin, message, Divider } from 'antd';
 import { DeleteOutlined, UserAddOutlined} from '@ant-design/icons';
-import { chatInstance } from '../../services/chatInstance';
+import { communicationInstance } from '../../services/communicationInstance';
 
 
 export interface Group {
@@ -58,7 +58,7 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
     
     setLoading(true);
     try {
-      const response = await chatInstance.get(`/chatService/api/chat/get-group-detailes/${groupId}`);
+      const response = await communicationInstance.get(`/communication-service/api/chat/get-group-detailes/${groupId}`);
       setGroupDetails(response.data);
       setNewGroupDetails(response.data); // Initialize newGroupDetails with current details
       form.setFieldsValue({ name: response.data.groupName });
@@ -74,7 +74,7 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
     if (!groupId) return;
 
     try {
-      const response = await chatInstance.get(`/chatService/api/chat/unadded-users/${groupId}`);
+      const response = await communicationInstance.get(`/communication-service/api/chat/unadded-users/${groupId}`);
       setAvailableMembers(response.data);
     } catch (error) {
       console.error('Error fetching available members:', error);
@@ -163,7 +163,7 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
         removedMembers: removedMembers
       };
 
-      const response = await chatInstance.patch(`/chatService/api/chat/update-group/${groupId}`, updatedGroupData);
+      const response = await communicationInstance.patch(`/communication-service/api/chat/update-group/${groupId}`, updatedGroupData);
       
       // Update the newGroupDetails with the response data
       setNewGroupDetails({

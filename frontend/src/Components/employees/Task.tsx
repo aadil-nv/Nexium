@@ -50,7 +50,7 @@ const Task: React.FC = () => {
     const fetchTasks = async () => {
       try {
         dispatch(setTasks([]));
-        const response = await employeeInstance.get('/employee/api/task/get-all-tasks');
+        const response = await employeeInstance.get('/employee-service/api/task/get-all-tasks');
         dispatch(setTasks(response.data));
       } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -71,7 +71,7 @@ const Task: React.FC = () => {
 
   const handleRemoveTask = async (taskId: string) => {
     try {
-      const response = await employeeInstance.delete(`/employee/api/task/delete-task/${taskId}`);
+      const response = await employeeInstance.delete(`/employee-service/api/task/delete-task/${taskId}`);
       if (response.status === 200) {
         dispatch(removeTask(taskId));
         message.success('Task removed successfully!');
@@ -86,7 +86,7 @@ const Task: React.FC = () => {
     const newApprovalStatus = currentApprovalStatus === true ? false : true;
     
     try {
-      const response = await employeeInstance.patch(`/employee/api/task/update-taskapproval/${taskId}`, {
+      const response = await employeeInstance.patch(`/employee-service/api/task/update-taskapproval/${taskId}`, {
         isApproved: newApprovalStatus,
       });
   

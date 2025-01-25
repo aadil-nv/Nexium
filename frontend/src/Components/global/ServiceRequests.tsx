@@ -2,11 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, message, Table, Modal, Spin } from 'antd';
 import { businessOwnerInstance } from '../../services/businessOwnerInstance';
 
+// Define interfaces for the data structures
+interface ServiceRequest {
+  _id: string;
+  serviceName: string;
+  requestReason: string;
+  status: string;
+  createdAt: string;
+}
+
+interface ServiceRequestFormValues {
+  serviceName: string;
+  description: string;
+}
+
 export default function ServiceRequests() {
-  const [serviceRequests, setServiceRequests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentRequest, setCurrentRequest] = useState<any>(null);
+  const [serviceRequests, setServiceRequests] = useState<ServiceRequest[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [currentRequest, setCurrentRequest] = useState<ServiceRequest | null>(null);
 
   useEffect(() => {
     fetchServiceRequests();
@@ -15,51 +29,51 @@ export default function ServiceRequests() {
   const fetchServiceRequests = async () => {
     setLoading(true);
     try {
-      const response = await businessOwnerInstance.get('/businessOwner/api/business-owner/service-requests');
-      setServiceRequests(response.data.data); // Assuming the response contains the data field
+      const response = await businessOwnerInstance.get<{ data: ServiceRequest[] }>('/businessOwner-service/api/business-owner/service-requests');
+      setServiceRequests(response.data.data);
     } catch (error) {
-      message.error('Failed to fetch service requests.');
+      message.error(error.message || 'Failed to fetch service requests.');
     } finally {
       setLoading(false);
     }
   };
 
   // Handling the service request submission
-  const handleRequestService = async (values: any) => {
+  const handleRequestService = async (values: ServiceRequestFormValues) => {
     setLoading(true);
     try {
       const { serviceName, description } = values;
-      await businessOwnerInstance.post('/businessOwner/api/business-owner/add-service-request', {
+      await businessOwnerInstance.post('/businessOwner-service/api/business-owner/add-service-request', {
         serviceName,
-        requestReason: description, // Mapping 'description' as 'requestReason'
+        requestReason: description,
       });
       message.success('Service request submitted successfully!');
       fetchServiceRequests(); // Refresh the service requests list
     } catch (error) {
-      message.error('Failed to request service.');
+      message.error(error.message || 'Failed to request service.');
     } finally {
       setLoading(false);
     }
   };
 
   // Handling the update of a service request
-  const handleUpdateRequest = async (values: any) => {
+  const handleUpdateRequest = async (values: ServiceRequestFormValues) => {
     if (!currentRequest) return;
     setLoading(true);
     try {
       const { serviceName, description } = values;
       await businessOwnerInstance.post(
-        `/businessOwner/api/business-owner/updated-service-request/${currentRequest._id}`,
+        `/businessOwner-service/api/business-owner/updated-service-request/${currentRequest._id}`,
         {
           serviceName,
-          requestReason: description, // Mapping 'description' as 'requestReason'
+          requestReason: description,
         }
       );
       message.success('Service request updated successfully!');
       fetchServiceRequests(); // Refresh the service requests list
       setIsModalVisible(false); // Close modal
     } catch (error) {
-      message.error('Failed to update service request.');
+      message.error(error.message || 'Failed to update service request.');
     } finally {
       setLoading(false);
     }
@@ -68,7 +82,7 @@ export default function ServiceRequests() {
   const columns = [
     {
       title: 'Request ID',
-      dataIndex: '_id', // Corrected the ID field from 'id' to '_id'
+      dataIndex: '_id',
       key: '_id',
     },
     {
@@ -78,7 +92,7 @@ export default function ServiceRequests() {
     },
     {
       title: 'Request Reason',
-      dataIndex: 'requestReason', // Corrected from 'description' to 'requestReason'
+      dataIndex: 'requestReason',
       key: 'requestReason',
     },
     {
@@ -90,13 +104,17 @@ export default function ServiceRequests() {
       title: 'Created At',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (text: string) => new Date(text).toLocaleString(), // Format created date
+      render: (text: string) => new Date(text).toLocaleString(),
     },
     {
       title: 'Actions',
       key: 'actions',
-      render: (text: any, record: any) => (
-        <Button type="primary" onClick={() => handleEditRequest(record)} icon={<i className="fas fa-edit"></i>}>
+      render: (_: string, record: ServiceRequest) => (
+        <Button 
+          type="primary" 
+          onClick={() => handleEditRequest(record)} 
+          icon={<i className="fas fa-edit"></i>}
+        >
           Edit
         </Button>
       ),
@@ -104,7 +122,7 @@ export default function ServiceRequests() {
   ];
 
   // Set current request and show the modal
-  const handleEditRequest = (record: any) => {
+  const handleEditRequest = (record: ServiceRequest) => {
     setCurrentRequest(record);
     setIsModalVisible(true);
   };
@@ -124,7 +142,8 @@ export default function ServiceRequests() {
             rules={[
               { required: true, message: 'Please enter service name' },
               { max: 100, message: 'Service name cannot exceed 100 characters' }
-            ]} >
+            ]}
+          >
             <Input placeholder="Enter service name" />
           </Form.Item>
 
@@ -135,7 +154,8 @@ export default function ServiceRequests() {
               { required: true, message: 'Please enter description' },
               { min: 10, message: 'Description should be at least 10 characters' },
               { max: 500, message: 'Description cannot exceed 500 characters' }
-            ]} >
+            ]}
+          >
             <Input.TextArea placeholder="Enter service description" />
           </Form.Item>
 
@@ -147,9 +167,9 @@ export default function ServiceRequests() {
         <Table
           columns={columns}
           dataSource={serviceRequests}
-          rowKey="_id" // Corrected rowKey to '_id' field
+          rowKey="_id"
           pagination={{
-            pageSize: 5, // Set the number of items per page
+            pageSize: 5,
           }}
         />
 
@@ -173,7 +193,8 @@ export default function ServiceRequests() {
               rules={[
                 { required: true, message: 'Please enter service name' },
                 { max: 100, message: 'Service name cannot exceed 100 characters' }
-              ]} >
+              ]}
+            >
               <Input placeholder="Enter service name" />
             </Form.Item>
 
@@ -184,7 +205,8 @@ export default function ServiceRequests() {
                 { required: true, message: 'Please enter description' },
                 { min: 10, message: 'Description should be at least 10 characters' },
                 { max: 500, message: 'Description cannot exceed 500 characters' }
-              ]} >
+              ]}
+            >
               <Input.TextArea placeholder="Enter service description" />
             </Form.Item>
 

@@ -38,7 +38,7 @@ const SubscriptionPage: React.FC = () => {
 
   useEffect(() => {
     businessOwnerInstance
-      .get('/businessOwner/api/subscription/get-subscription')
+      .get('/businessOwner-service/api/subscription/get-subscription')
       .then((response) => {
         const data: SubscriptionPlan[] = Array.isArray(response.data) ? response.data : [response.data];
         setSubscriptionPlans(data);
@@ -48,12 +48,12 @@ const SubscriptionPage: React.FC = () => {
       .catch(console.error);
 
     businessOwnerInstance
-      .get('/businessOwner/api/subscription/get-all-subscriptions')
+      .get('/businessOwner-service/api/subscription/get-all-subscriptions')
       .then((response) => setAllSubscriptionPlans(response.data.subscriptions))
       .catch(console.error);
 
     businessOwnerInstance
-      .get('/businessOwner/api/subscription/invoices')
+      .get('/businessOwner-service/api/subscription/invoices')
       .then((response) => setInvoiceData(response.data))
       .catch(console.error);
   }, []);
@@ -84,7 +84,7 @@ const SubscriptionPage: React.FC = () => {
 
     try {
       const response = await businessOwnerInstance.post(
-        '/payment/api/businessowner-payment/upgrade-plan',
+        '/payment-service/api/businessowner-payment/upgrade-plan',
         { plan }
       );
 

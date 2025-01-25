@@ -51,7 +51,7 @@ const handleTokenRefresh = async (originalRequest: any) => {
 
 // Handle token errors (logout)
 const handleTokenError = async (error: any) => {
-  console.log("Handling token error...");
+  console.log("Handling token error...", error);
   store.dispatch(superAdminLogout());
   try {
     const result = await axios.post("http://localhost:3000/superAdmin/api/superadmin/logout");
@@ -62,7 +62,6 @@ const handleTokenError = async (error: any) => {
   }
 };
 
-// Axios instance for the manager
 export const superAdminInstance = axios.create({
   baseURL: "http://localhost:3000",
   withCredentials: true,

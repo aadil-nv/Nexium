@@ -27,7 +27,7 @@ const handleTokenRefresh = async (originalRequest: any) => {
 
   try {
     console.log("Attempting token refresh...");
-    const { data } = await managerInstance.post("/manager/api/manager/refresh-token");
+    const { data } = await managerInstance.post("/manager-service/api/manager/refresh-token");
     console.log("Token refresh successful:", data);
 
     // Notify subscribers of the new token
@@ -54,7 +54,7 @@ const handleTokenError = async (error: any) => {
   console.log("Handling token error...");
   store.dispatch(managerLogout());
   try {
-    const result = await axios.post("http://localhost:3000/manager/api/manager/logout");
+    const result = await axios.post("http://localhost:3000/manager-service/api/manager/logout");
     toast.success(result.data.message);
     console.log("Logged out successfully.");
   } catch (logoutError) {

@@ -40,14 +40,14 @@ const Address = () => {
     fetchAddress();
   }, [businessOwner.isAuthenticated, manager.isAuthenticated,employee.isAuthenticated, form]);
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values) => {
     try {
       if (businessOwner.isAuthenticated) {
-        const response = await updateBusinessOwnerAddress(values);
+         await updateBusinessOwnerAddress(values);
       } else if (manager.isAuthenticated) {
-        const response = await updateManagerAddress(values);
+         await updateManagerAddress(values);
       } else if(employee.isAuthenticated){
-        const response = await updateEmployeeAddress(values);
+         await updateEmployeeAddress(values);
       }
       setIsEditing(false); // Exit edit mode
       setAddress(values); // Update state with new values

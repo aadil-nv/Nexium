@@ -7,6 +7,7 @@ const IMAGES = {
     logoSecond : new URL('../assets/landingPageAssets/nnn logooo 700[1].png', import.meta.url).href,
     logoThird : new URL('../assets/landingPageAssets/nexium-icon.ico', import.meta.url).href,
     superadmin : new URL('../assets/landingPageAssets/superadmin.jpg', import.meta.url).href,
+    image1 : new URL('../assets/landingPageAssets/image1.png', import.meta.url).href,
     
     
 }

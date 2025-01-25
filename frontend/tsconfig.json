@@ -2,18 +2,20 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "outDir": "./dist",
+    "rootDir": "./src",
     "paths": {
       "@/*": ["./src/*"]
     },
-    "module": "commonjs",            // Use the module system Node.js uses
-    "target": "es6",                 // Compile for a compatible ECMAScript version
-    "strict": true,                  // Enable strict type checking
-    "esModuleInterop": true,         // Allows default imports from commonjs modules
-    "skipLibCheck": true,            // Skip type checking of declaration files
+    "module": "commonjs",           
+    "target": "es6",                
+    "strict": true,                
+    "esModuleInterop": true,       
+    "skipLibCheck": true,            
     "forceConsistentCasingInFileNames": true,
-    "jsx": "preserve",               // For React or leave out if not using JSX at all
-    "allowSyntheticDefaultImports": true, // Enable default imports
-    "resolveJsonModule": true        // Allows importing of .json files
+    "jsx": "preserve",               
+    "allowSyntheticDefaultImports": true, 
+    "resolveJsonModule": true        
   },
   "files": [],
   "references": [

@@ -27,7 +27,7 @@ const CardImage: React.FC<ICardImageProps> = ({ title, imgSrc, onImageChange }) 
       message.loading('Uploading image...', 0); // Show loading message
 
       const response = await businessOwnerInstance.post(
-        '/businessOwner/api/business-owner/upload-images',
+        '/businessOwner-service/api/business-owner/upload-images',
         formData,
         {
           headers: {

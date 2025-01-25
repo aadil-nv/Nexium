@@ -57,7 +57,7 @@ const ProjectDashboard: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await employeeInstance.get('/employee/api/project/get-all-projects');
+      const response = await employeeInstance.get('/employee-service/api/project/get-all-projects');
       setProjects(response.data);
     } catch (error) {
       setError(error.message || 'Failed to fetch projects. Please try again later.');
@@ -71,7 +71,7 @@ const ProjectDashboard: React.FC = () => {
     try {
       setLoading(true);
       const response = await employeeInstance.patch(
-        `/employee/api/project/update-project-status/${projectId}`,
+        `/employee-service/api/project/update-project-status/${projectId}`,
         { status: newStatus }
       );
 
@@ -99,7 +99,7 @@ const ProjectDashboard: React.FC = () => {
       formData.append('file', file);
 
       const response = await employeeInstance.post(
-        `/employee/api/project/update-employeefiles/${projectId}`,
+        `/employee-service/api/project/update-employeefiles/${projectId}`,
         formData,
         {
           headers: {

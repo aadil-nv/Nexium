@@ -1,30 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button } from 'antd';
-import { businessOwnerInstance } from '../../../services/businessOwnerInstance';
+import { fetchInvoices } from '../../../api/businessOwnerApi';
+import {Invoice, DemoTableProps} from "../../../interface/BusinessOwnerInterface";
 
-interface Invoice {
-  id: string;
-  created: number;
-  amount_paid: number;
-  amount_due: number;
-  invoice_pdf: string;
-}
 
-interface DemoTableProps {
-  invoiceData?: Invoice[];
-}
 
 const DemoTable: React.FC<DemoTableProps> = ({ invoiceData: propInvoiceData }) => {
   const [data, setData] = useState<Invoice[]>([]);
 
   useEffect(() => {
-
     if (propInvoiceData) {
       setData(propInvoiceData);
     } else {
-      businessOwnerInstance
-        .get('/businessOwner/api/subscription/invoices')
-        .then((response) => setData(response.data))
+      fetchInvoices()
+        .then((data) => setData(data))
         .catch(console.error);
     }
   }, [propInvoiceData]);
@@ -41,7 +30,6 @@ const DemoTable: React.FC<DemoTableProps> = ({ invoiceData: propInvoiceData }) =
         )
       : title === 'created'
       ? (text: string) => {
-          // Convert 'created' timestamp to human-readable date
           const timestamp = parseInt(text, 10); // Ensure the timestamp is a number
           const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
           return date.toLocaleString('en-US', {
@@ -54,8 +42,8 @@ const DemoTable: React.FC<DemoTableProps> = ({ invoiceData: propInvoiceData }) =
           });
         }
       : ['amount_paid', 'amount_due'].includes(title.toLowerCase())
-      ? (text: string) => parseFloat(text).toFixed(2).replace(/\.00$/, '') // Format and remove trailing `.00`
-      : undefined, // Use default render otherwise
+      ? (text: string) => parseFloat(text).toFixed(2).replace(/\.00$/, '') 
+      : undefined, 
   }));
 
   return (

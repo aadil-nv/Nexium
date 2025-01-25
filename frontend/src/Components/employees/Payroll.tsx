@@ -56,7 +56,7 @@ const Payroll = () => {
   useEffect(() => {
     setLoading(true);
     employeeInstance
-      .get<PayrollResponse>('/employee/api/payroll/get-payroll')
+      .get<PayrollResponse>('/employee-service/api/payroll/get-payroll')
       .then((response) => {
         setPayrollData(response.data.payroll);
         setFilteredData(response.data.payroll); // Initialize filtered data
@@ -100,10 +100,9 @@ const Payroll = () => {
   };
 
   const downloadPayslip = (payrollId: string) => {
-    console.log("payrollId !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", payrollId);
     
     employeeInstance
-      .get(`/employee/api/payroll/download-parollMonthly/${payrollId}`)
+      .get(`/employee-service/api/payroll/download-parollMonthly/${payrollId}`)
       .then((response) => {
         if (response.data) {
           generatePayslip(response.data); // Generate and download payslip as PDF

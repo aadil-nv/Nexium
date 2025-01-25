@@ -136,7 +136,7 @@ const Projects = () => {
       okType: 'danger',
       onOk: async () => {
         try {
-          await managerInstance.delete(`/manager/api/projects/delete-project/${id}`);
+          await managerInstance.delete(`/manager-service/api/projects/delete-project/${id}`);
           setProjects(prev => prev.filter(p => p.id !== id));
           notification.success({ message: 'Project deleted successfully' });
         } catch (error) {
@@ -151,7 +151,7 @@ const Projects = () => {
     const fetchProjects = async () => {
       setLoading(true);
       try {
-        const { data } = await managerInstance.get<ProjectDataFromAPI[]>('/manager/api/projects/get-all-projects');
+        const { data } = await managerInstance.get<ProjectDataFromAPI[]>('/manager-service/api/projects/get-all-projects');
         
         setProjects(data.map((p): ProjectData => ({
           id: p.projectId,

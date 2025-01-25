@@ -66,7 +66,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const response = await employeeInstance.get('/employee/api/dashboard/get-all-dashboard-data');
+        const response = await employeeInstance.get('/employee-service/api/dashboard/get-all-dashboard-data');
         setDashboardData(response.data);
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);

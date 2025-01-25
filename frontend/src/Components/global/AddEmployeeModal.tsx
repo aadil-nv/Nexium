@@ -1,19 +1,13 @@
 import React, { useState } from 'react';
 import { Button, Modal, Form, Input, Select, DatePicker } from 'antd';
-import { useSelector } from 'react-redux';
 import { useForm } from 'antd/lib/form/Form';
-import { RootState } from '../../redux/store/store';
 import { addEmployee } from '../../api/managerApi';
 import { addEmployeeSchema } from '../../config/validationSchema';
 
+
 const { Option } = Select;
 
-const AddEmployeeModal: React.FC<{
-  isVisible: boolean;
-  onClose: () => void;
-  onManagerAdded: (newManager: any) => void;
-}> = ({ isVisible, onClose, onManagerAdded }) => {
-  const themeColor = useSelector((state: RootState) => state.menu.themeColor);
+const AddEmployeeModal: React.FC<{isVisible: boolean;onClose: () => void;onManagerAdded: (newManager) => void}> = ({ isVisible, onClose, onManagerAdded }) => {
   const [formData, setFormData] = useState({
     name: '', position: '', email: '', phoneNumber: '',
     joiningDate: '', salary: 0, workTime: '',

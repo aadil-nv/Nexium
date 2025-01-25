@@ -5,7 +5,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "module": "commonjs",
-    "typeRoots": ["./node_modules/@types", "../src/@types"],
+    "typeRoots": ["./node_modules/@types", "./src/@types"],
     "resolveJsonModule": true,
     "allowJs": true,
     "removeComments": true,
@@ -13,15 +13,15 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "outDir": "dist",
-    "rootDirs": ["../src"],
-    "baseUrl": ".",
+    "outDir": "../dist",  // Output should be outside of src directory
+    "rootDir": "./",  // Ensure this is set to the current folder
+    "baseUrl": ".",  // Relative paths to root folder
     "paths": {
-      "@entities": ["/src/domain/entities/*"]
+      "@entities": ["src/domain/entities/*"]
     },
     "noImplicitAny": true,
     "sourceMap": true
   },
-  "include": ["../src/**/*.ts"],
+  "include": ["./**/*.ts"],  // Include all ts files under src and subfolders
   "exclude": ["node_modules"]
 }

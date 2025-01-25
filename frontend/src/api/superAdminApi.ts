@@ -21,7 +21,7 @@ export const loginSuperAdmin = async (data) => {
   
 export const fetchAllPlans = async () => {
   try {
-    const response = await superAdminInstance.get(`/superAdmin/api/subscription/fetch-all-subscriptions`);
+    const response = await superAdminInstance.get(`/superAdmin-service/api/subscription/fetch-all-subscriptions`);
     return response.data.success ? response.data.subscriptions : [];
   } catch (error) {
     console.error('Error fetching plans data:', error);
@@ -31,7 +31,7 @@ export const fetchAllPlans = async () => {
 
 export const updatePlanStatus = async (planId: string, newStatus: boolean) => {
   try {
-    await superAdminInstance.patch(`/superAdmin/api/subscription/update-status/${planId}`, { isActive: newStatus });
+    await superAdminInstance.patch(`/superAdmin-service/api/subscription/update-status/${planId}`, { isActive: newStatus });
   } catch (error) {
     console.error('Error updating plan status:', error);
   }
@@ -39,7 +39,7 @@ export const updatePlanStatus = async (planId: string, newStatus: boolean) => {
 
 export const fetchBusinessOwners = async (): Promise<IBusinessOwner[]> => {
   try {
-    const { data: responseData } = await superAdminInstance.get("/superAdmin/api/businessowner/find-all-companies");
+    const { data: responseData } = await superAdminInstance.get("/superAdmin-service/api/businessowner/find-all-companies");
     return responseData.businessOwners.map((owner) => ({
       id: owner._id,
       name: owner.companyDetails.companyName,
@@ -57,7 +57,7 @@ export const fetchBusinessOwners = async (): Promise<IBusinessOwner[]> => {
 
 export const updateBlockStatus = async (id: string, isBlocked: boolean): Promise<void> => {
   try {
-    await superAdminInstance.patch(`/superAdmin/api/businessowner/update-isblocked/${id}`, { isBlocked });
+    await superAdminInstance.patch(`/superAdmin-service/api/businessowner/update-isblocked/${id}`, { isBlocked });
   } catch (error) {
     throw new Error(error.response?.data?.message||"Failed to update block status.");
   }

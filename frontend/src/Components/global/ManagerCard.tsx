@@ -4,14 +4,12 @@ import { FaInfoCircle, FaUserLock, FaUnlock, FaCheckCircle, FaTimesCircle } from
 import useTheme from "../../hooks/useTheme";
 import { IManagerCardProps } from "../../interface/managerInterface";
 import { businessOwnerInstance } from "../../services/businessOwnerInstance";
-import Alert from "./Alert";
 import InfoModal from "../ui/InfoModal"; // Ensure this path is correct
 
 const ManagerCard: React.FC<IManagerCardProps> = ({
   image,
   name,
   email,
-  onViewDetails,
   isActive,
   isVerified,
   isBlocked: initialIsBlocked,
@@ -27,7 +25,7 @@ const ManagerCard: React.FC<IManagerCardProps> = ({
   // Fetch manager details when "Info" button is clicked
   const handleViewDetails = async () => {
     try {
-      const response = await businessOwnerInstance.get(`/businessOwner/api/manager/get-manager/${managerId}`);
+      const response = await businessOwnerInstance.get(`/businessOwner-service/api/manager/get-manager/${managerId}`);
       if (response.data) {
         setManagerDetails(response.data);
         setIsInfoModalVisible(true);
@@ -42,7 +40,7 @@ const ManagerCard: React.FC<IManagerCardProps> = ({
   const handleToggleStatus = async () => {
     try {
       const response = await businessOwnerInstance.patch(
-        "/businessOwner/api/manager/block-manager",
+        "/businessOwner-service/api/manager/block-manager",
         {
           managerId,
           isBlocked: !isBlocked,

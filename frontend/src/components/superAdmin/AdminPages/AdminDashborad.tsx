@@ -44,7 +44,7 @@ export default function RechartsDemo() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
 
   useEffect(() => {
-    superAdminInstance.get('/superAdmin/api/dashboard/dashboard-data')
+    superAdminInstance.get('/superAdmin-service/api/dashboard/dashboard-data')
       .then(response => setDashboardData(response.data))
       .catch(error => console.error('Error fetching dashboard data:', error));
   }, []);
