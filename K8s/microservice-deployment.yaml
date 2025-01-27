@@ -1,0 +1,292 @@
+# Authentication Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authentication-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authentication-service
+  template:
+    metadata:
+      labels:
+        app: authentication-service
+    spec:
+      containers:
+      - name: authentication-service
+        image: aadilnv/nexium-authenticationservice:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7000
+---
+# Authentication Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: authentication-service
+spec:
+  selector:
+    app: authentication-service
+  ports:
+    - protocol: TCP
+      port: 7000
+      targetPort: 7000
+  type: ClusterIP
+---
+# Business Owner Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: business-owner-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: business-owner-service
+  template:
+    metadata:
+      labels:
+        app: business-owner-service
+    spec:
+      containers:
+      - name: business-owner-service
+        image: aadilnv/nexium-businessownerservice:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7001
+---
+# Business Owner Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: business-owner-service
+spec:
+  selector:
+    app: business-owner-service
+  ports:
+    - protocol: TCP
+      port: 7001
+      targetPort: 7001
+  type: ClusterIP
+---
+# RabbitMQ Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:management
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672
+---
+# RabbitMQ Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+    - name: amqp
+      protocol: TCP
+      port: 5672
+      targetPort: 5672
+    - name: management
+      protocol: TCP
+      port: 15672
+      targetPort: 15672
+  type: ClusterIP
+---
+# Super Admin Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: super-admin-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: super-admin-service
+  template:
+    metadata:
+      labels:
+        app: super-admin-service
+    spec:
+      containers:
+      - name: super-admin-service
+        image: aadilnv/nexium-superadminservice:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7002
+---
+# Super Admin Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: super-admin-service
+spec:
+  selector:
+    app: super-admin-service
+  ports:
+    - protocol: TCP
+      port: 7002
+      targetPort: 7002
+  type: ClusterIP
+---
+# Manager Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manager-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: manager-service
+  template:
+    metadata:
+      labels:
+        app: manager-service
+    spec:
+      containers:
+      - name: manager-service
+        image: aadilnv/nexium-managerservice:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7003
+---
+# Manager Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: manager-service
+spec:
+  selector:
+    app: manager-service
+  ports:
+    - protocol: TCP
+      port: 7003
+      targetPort: 7003
+  type: ClusterIP
+---
+# Employee Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: employee-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: employee-service
+  template:
+    metadata:
+      labels:
+        app: employee-service
+    spec:
+      containers:
+      - name: employee-service
+        image: aadilnv/nexium-employeeservice:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7004
+---
+# Employee Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: employee-service
+spec:
+  selector:
+    app: employee-service
+  ports:
+    - protocol: TCP
+      port: 7004
+      targetPort: 7004
+  type: ClusterIP
+---
+# Payment Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+      - name: payment-service
+        image: aadilnv/nexium-paymentservice:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7005
+---
+# Payment Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+spec:
+  selector:
+    app: payment-service
+  ports:
+    - protocol: TCP
+      port: 7005
+      targetPort: 7005
+  type: ClusterIP
+---
+# Communication Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: communication-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: communication-service
+  template:
+    metadata:
+      labels:
+        app: communication-service
+    spec:
+      containers:
+      - name: communication-service
+        image: aadilnv/nexium-communicationservice:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 7006
+---
+# Communication Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: communication-service
+spec:
+  selector:
+    app: communication-service
+  ports:
+    - protocol: TCP
+      port: 7006
+      targetPort: 7006
+  type: ClusterIP
