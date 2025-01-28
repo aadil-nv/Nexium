@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { FaSearch, FaFileCsv, FaFileExcel, FaEdit, FaLock, FaUnlock, FaSignOutAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { CSVLink } from "react-csv";
@@ -25,7 +25,6 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleClick = async (action: 'edit' | 'block'| 'remove' , employeeId: any, isBlocked?: boolean) => {
-    console.log("employeeId---------------->",employeeId);
     
     try {
       let response;

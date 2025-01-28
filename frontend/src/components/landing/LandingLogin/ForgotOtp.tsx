@@ -3,7 +3,18 @@ import { motion } from 'framer-motion';
 import { FaArrowLeft } from 'react-icons/fa';
 import { ClipLoader } from 'react-spinners';
 
-const ForgotPasswordForm = ({ 
+interface ForgotPasswordFormProps {
+  theme: 'dark' | 'light';
+  forgotPasswordEmail: string;
+  setForgotPasswordEmail: (email: string) => void;
+  forgotPasswordError: string | null;
+  loading: boolean;
+  handleForgotPassword: (e: React.FormEvent<HTMLFormElement>) => void;
+  setShowForgotPassword: (show: boolean) => void;
+  getInputStyle: (error?: string | null) => string;
+}
+
+const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
   theme,
   forgotPasswordEmail,
   setForgotPasswordEmail,
@@ -11,7 +22,7 @@ const ForgotPasswordForm = ({
   loading,
   handleForgotPassword,
   setShowForgotPassword,
-  getInputStyle 
+  getInputStyle
 }) => {
   return (
     <motion.div

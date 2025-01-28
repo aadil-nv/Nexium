@@ -7,7 +7,7 @@ import { addEmployeeSchema } from '../../config/validationSchema';
 
 const { Option } = Select;
 
-const AddEmployeeModal: React.FC<{isVisible: boolean;onClose: () => void;onManagerAdded: (newManager) => void}> = ({ isVisible, onClose, onManagerAdded }) => {
+const AddEmployeeModal: React.FC<{isVisible: boolean;onClose: () => void;onManagerAdded: (newManager ) => void}> = ({ isVisible, onClose, onManagerAdded }) => {
   const [formData, setFormData] = useState({
     name: '', position: '', email: '', phoneNumber: '',
     joiningDate: '', salary: 0, workTime: '',

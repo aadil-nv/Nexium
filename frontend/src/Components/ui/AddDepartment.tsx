@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { managerInstance } from '../../services/managerInstance';
 import { fetchEmployeesWithOutDepAPI } from '../../api/managerApi';
 import { IDepartment } from '../../interface/managerInterface';
+import { AxiosError } from 'axios';
 
 type Employee = {
   employeeId: string;
@@ -33,43 +34,51 @@ const AddDepartmentModal: React.FC<{
       .catch(console.error);
   }, []);
 
-  const handleSubmit = async (values: FormValues) => {
-    const employeesToAdd = values.employees
-      .map((id: string) => employees.find((e) => e.employeeId === id))
-      .filter(Boolean)
-      .map((emp) => ({
-        employeeId: emp!.employeeId, // Non-null assertion because of filter(Boolean)
-        email: emp!.email,
-        name: emp!.employeeName ,
-        position: emp!.position ,
-        isActive: emp!.isOnline,
-        profilePicture: emp!.profilePicture || '',
-      }));
 
-    if (!employeesToAdd.length) {
-      toast.error('No valid employees selected');
-      return;
+const handleSubmit = async (values: FormValues) => {
+  const employeesToAdd = values.employees
+    .map((id: string) => employees.find((e) => e.employeeId === id))
+    .filter(Boolean)
+    .map((emp) => ({
+      employeeId: emp!.employeeId, // Non-null assertion because of filter(Boolean)
+      email: emp!.email,
+      name: emp!.employeeName,
+      position: emp!.position,
+      isActive: emp!.isOnline,
+      profilePicture: emp!.profilePicture || '',
+    }));
+
+  if (!employeesToAdd.length) {
+    toast.error('No valid employees selected');
+    return;
+  }
+
+  try {
+    const response = await managerInstance.post(
+      '/manager-service/api/department/add-departments',
+      { departmentName: values.departmentName, employees: employeesToAdd }
+    );
+
+    if (response.status === 200) {
+      toast.success('Department added successfully!');
+      onAddDepartment(response.data.department);
+
+      form.resetFields();
+      onClose();
+      fetchEmployeesWithOutDepAPI().then(setEmployees).catch(console.error);
     }
-
-    try {
-      const response = await managerInstance.post(
-        '/manager-service/api/department/add-departments',
-        { departmentName: values.departmentName, employees: employeesToAdd }
-      );
-
-      if (response.status === 200) {
-        toast.success('Department added successfully!');
-        onAddDepartment(response.data.department);
-
-        form.resetFields();
-        onClose();
-        fetchEmployeesWithOutDepAPI().then(setEmployees).catch(console.error);
-      }
-    } catch (error) {
+  } catch (error) {
+    if (error instanceof AxiosError) {
       console.error('Error adding department:', error.response?.data?.message);
       toast.error(error.response?.data?.message);
+    } else {
+      // Handle unexpected errors
+      console.error('An unexpected error occurred:', error);
+      toast.error('An unexpected error occurred.');
     }
-  };
+  }
+};
+
 
   return (
     <Modal title="Add Department" open={isVisible} onCancel={onClose} footer={null}>

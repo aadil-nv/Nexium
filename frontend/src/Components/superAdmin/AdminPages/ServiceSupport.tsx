@@ -236,7 +236,7 @@ export default function CustomerCare() {
     },
   ];
 
-  const handleTableChange = (pagination) => {
+  const handleTableChange = (pagination: { current: number | undefined; pageSize: number | undefined; }) => {
     fetchServiceRequests(pagination.current, pagination.pageSize);
   };
 

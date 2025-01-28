@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Table, Input, Space, Tag, Tooltip, Modal, notification } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import AddProjectDrawer from './AddProjectDrawer';
@@ -16,15 +16,18 @@ interface AssignedEmployee {
   employeeFiles?: ProjectFile[];
 }
 
+type ProjectStatus = 'pending' | 'inProgress' | 'completed' | 'notStarted';
+type ManagerStatus = 'assigned' | 'underEvaluation' | 'approved' | 'rejected' | 'onHold' | 'inProgress' | 'requiresClarification' | 'escalated';
+
 interface ProjectDataFromAPI {
   projectId: string;
   projectName: string;
   assignedEmployee?: AssignedEmployee;
   description: string;
-  status: 'pending' | 'inProgress' | 'completed' | 'notStarted';
+  status: ProjectStatus;
   endDate: string;
   projectFiles: ProjectFile[];
-  managerStatus: 'assigned' | 'underEvaluation' | 'approved' | 'rejected' | 'onHold' | 'inProgress' | 'requiresClarification' | 'escalated';
+  managerStatus: ManagerStatus;
 }
 
 interface ProjectData {
@@ -32,21 +35,21 @@ interface ProjectData {
   projectName: string;
   teamLead: string;
   description: string;
-  status: 'pending' | 'inProgress' | 'completed' | 'notStarted';
+  status: ProjectStatus;
   dueDate: string;
   file: string | null;
   employeeFiles: string;
-  managerStatus: 'assigned' | 'underEvaluation' | 'approved' | 'rejected' | 'onHold' | 'inProgress' | 'requiresClarification' | 'escalated';
+  managerStatus: ManagerStatus;
 }
 
-const statusColors = {
+const statusColors: Record<ProjectStatus, string> = {
   notStarted: 'orange',
   pending: 'orange',
   inProgress: 'blue',
   completed: 'green',
 };
 
-const managerStatusColors = {
+const managerStatusColors: Record<ManagerStatus, string> = {
   assigned: 'blue',
   underEvaluation: 'gold',
   approved: 'green',
@@ -80,7 +83,7 @@ const Projects = () => {
     {
       title: 'Status',
       dataIndex: 'status',
-      render: status => (
+      render: (status: ProjectStatus) => (
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
           <Tag color={statusColors[status]}>{status.charAt(0).toUpperCase() + status.slice(1)}</Tag>
         </motion.div>
@@ -89,7 +92,7 @@ const Projects = () => {
     {
       title: 'Manager Status',
       dataIndex: 'managerStatus',
-      render: status => (
+      render: (status: ManagerStatus) => (
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
           <Tag color={managerStatusColors[status]}>
             {status.split(/(?=[A-Z])/).join(' ').replace(/^./, str => str.toUpperCase())}

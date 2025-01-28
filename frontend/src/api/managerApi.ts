@@ -8,7 +8,40 @@ import { fetchLeaveEmployeesRequest ,fetchLeaveEmployeesFailure,fetchLeaveEmploy
 import { Dispatch } from 'redux';
 
 
+interface Attendance {
+  leaveType: string;
+  date: string;
+  leaveStatus: string;
+  reason: string;
+}
 
+interface LeaveEmployee {
+  _id: string;
+  attendance: Attendance[];
+}
+
+interface LeaveData {
+  employeeName: string;
+  leaveType: string;
+  leaveDate: string;
+  status: string;
+  reason: string;
+}
+
+interface AddressData {
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+}
+
+interface CommonInfo {
+  email: string;
+  phone: string;
+  profilePicture?: string;
+  personalWebsite?: string;
+}
 
 
 export const managerLogin = async (formData: LoginFormData) => {
@@ -66,7 +99,8 @@ export const removeDepartmentAPI = async (departmentId: string) => {
 export const fetchEmployees = async (): Promise<IEmployee[]> => {
   try {
       const response = await managerInstance.get('/manager-service/api/employee/get-employees');
-      return response.data.map((employee) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return response.data.map((employee :any) => ({
           employeeId: employee._id,
           name: employee.employeeName || '', 
           position: employee.position || '', 
@@ -81,22 +115,30 @@ export const fetchEmployees = async (): Promise<IEmployee[]> => {
   }
 };
 
-export const fetchEmployeesWithOutDepartment = async (): Promise<IEmployee[]> => {
+export const fetchEmployeesWithOutDepartment = async (): Promise<IEmployee[]> => { 
   try {
-      const response = await managerInstance.get('/manager-service/api/employee/get-employee-without-department');
+    const response = await managerInstance.get('/manager-service/api/employee/get-employee-without-department');
 
-      return response.data.map((employee) => ({
-          employeeId: employee.employeeId, 
-          name: employee.employeeName || '', 
-          position: employee.position || '', 
-          profilePicture: employee.profilePicture || '', 
-          isOnline: employee.isActive || false, 
-          email:employee.email,
-          isBlocked: employee.isBlocked || false
-      }));
+    return response.data.map((employee: { 
+      employeeId: string; 
+      employeeName: string; 
+      position: string; 
+      profilePicture: string; 
+      isActive: boolean; 
+      email: string; 
+      isBlocked: boolean; 
+    }): IEmployee => ({
+      employeeId: employee.employeeId, 
+      name: employee.employeeName || '', 
+      position: employee.position || '', 
+      profilePicture: employee.profilePicture || '', 
+      isOnline: employee.isActive || false, 
+      email: employee.email,
+      isBlocked: employee.isBlocked || false
+    }));
   } catch (error) {
-      console.error('Error fetching employee data:', error);
-      throw error;
+    console.error('Error fetching employee data:', error);
+    throw error;
   }
 };
 
@@ -114,7 +156,7 @@ export const fetchDepartments = async () => {
     }
 };
   
-export const addEmployee = async (employeeData) => {
+export const addEmployee = async (employeeData :IEmployee) => {
     try {
       const response = await managerInstance.post('/manager-service/api/employee/add-employees', { employeedata: employeeData }, {
         withCredentials: true,
@@ -128,13 +170,12 @@ export const addEmployee = async (employeeData) => {
         return false;
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'An error occurred!');
-      console.error('Error:', error);
-      throw error;
+      toast.error(error instanceof Error ? error.message : 'An error occurred!');
+    return false;
     }
 };
 
-export const addEmployeeToDepartment = async (employeeData ,departmentId) => {
+export const addEmployeeToDepartment = async (employeeData:IEmployee  ,departmentId : string) => {
       try {
         const response = await managerInstance.post('/manager-service/api/department/add-employee', { employeeData , departmentId }, {
           withCredentials: true,
@@ -150,9 +191,8 @@ export const addEmployeeToDepartment = async (employeeData ,departmentId) => {
           return false;
         }
       } catch (error) {
-        toast.error(error.response?.data?.message || 'An error occurred!');
-        console.error('Error:', error);
-        throw error;
+        toast.error(error instanceof Error ? error.message : 'An error occurred!');
+        return false;
       }
 };
 
@@ -179,9 +219,7 @@ export async function fetchManagerPersonalInfo() {
               headers: {
                   "Content-Type": "application/json",
               },
-          });
-          console.log("Manager personal info:", response);
-          
+          });          
           return response.data;
       } catch (error) {
           console.error("Error fetching manager personal info:", error);
@@ -220,7 +258,7 @@ export const fetchManagerAddress = async () => {
 };
 
 
-export const updateManagerPersonalInfo = async (details): Promise<void> => {
+export const updateManagerPersonalInfo = async (details : CommonInfo): Promise<void> => {
     try {
       await managerInstance.patch(
         '/manager-service/api/manager/update-personalinfo',
@@ -233,16 +271,12 @@ export const updateManagerPersonalInfo = async (details): Promise<void> => {
     }
 };
 
-export const updateManagerAddress = async (address) => {
+export const updateManagerAddress = async (address:AddressData ) => {
     try {
-      const response = await managerInstance.patch(
-        "/manager-service/api/manager/update-address",
-        address
-      );
-      console.log("Manager address updated successfully:", response.data);
+      const response = await managerInstance.patch( "/manager-service/api/manager/update-address",address);
       return response.data;
     } catch (error) {
-      console.error('Error updating manager address:', error.response?.data || error.message);
+      console.error('Error updating manager address:', error);
       throw error;
     }
   };
@@ -251,16 +285,7 @@ export const updateManagerAddress = async (address) => {
     try {
       const { data } = await managerInstance.get('/manager-service/api/leave/get-all-leave-employees');
 
-      return data.map((item) => ({
-        employeeId: item.employeeId, 
-        leaveType: item.leaveType,
-        leaveDate: item.date ? new Date(item.date) : null, 
-        leaveStatus: item.leaveStatus, 
-        reason: item.reason ,
-        minutes: item.minutes || 0,
-        status: item.status ,
-        duration: item.duration
-      }));
+      return data
     } catch (error) {
       console.error('Error fetching leave employees:', error);
       throw new Error('Failed to fetch leave employees');
@@ -273,8 +298,9 @@ export const updateManagerAddress = async (address) => {
     try {
       dispatch(fetchLeaveEmployeesRequest()); // Set loading state before fetching
   
-      const { data } = await managerInstance.get('/manager-service/api/manager/get-leave-employees');
-      const leaveData = data.map((item) => ({
+      const { data } = await managerInstance.get<LeaveEmployee[]>('/manager-service/api/manager/get-leave-employees');
+  
+      const leaveData: LeaveData[] = data.map((item) => ({
         employeeName: item._id,
         leaveType: item.attendance[0]?.leaveType || 'N/A',
         leaveDate: item.attendance[0]?.date || 'N/A',
@@ -287,16 +313,20 @@ export const updateManagerAddress = async (address) => {
       console.error('Error fetching leave employees:', error);
       dispatch(fetchLeaveEmployeesFailure('Failed to fetch leave data')); // Dispatch failure action on error
     }
-  }; 
+  };
 
 
-
-  export const updateLeaveApproval = async (employeeId, data) => {
+  export const updateLeaveApproval = async (employeeId: string, data: { action: string; date: string | undefined; leaveType: string; duration: string; reason?: string; }) => {
     try {
       const response = await managerInstance.patch(`/manager-service/api/leave/update-leave-approval/${employeeId}`, data);
       return response.data; 
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to update leave approval');
+      if (error instanceof Error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        throw new Error(axiosError.response?.data?.message || 'Failed to update leave approval');
+      } else {
+        throw new Error('An unexpected error occurred while updating leave approval.');
+      }
     }
   };
 
@@ -305,10 +335,13 @@ export const updateManagerAddress = async (address) => {
   export const fetchManagerDocument = async () => {
     try {
       const response = await managerInstance.get('/manager-service/api/manager/get-managerdocuments');
-      console.log("responce is ==========&&&&========",response.data.resume)
       return response.data.resume;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch manager documents');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'Failed to fetch manager documents');
+      } else {
+        throw new Error('An unexpected error occurred while fetching manager documents');
+      }
     }
   };
   
@@ -322,8 +355,12 @@ export const updateManagerAddress = async (address) => {
       });
       toast.success('Document uploaded successfully!');
       return response.data.result;
-    } catch (error) {
-      toast.error(error.response?.data?.message ||'Failed to upload document.');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to upload document.');
+      } else {
+        toast.error('An unexpected error occurred while uploading the document.');
+      }
     }
   };
   
@@ -332,7 +369,11 @@ export const updateManagerAddress = async (address) => {
     try {
       const response = await managerInstance.get('/manager-service/api/manager/get-managercredentials');
       return response.data;
-    } catch (error) {
-      throw new Error(error.response?.data?.message ||'Failed to fetch business owner credentials');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || 'Failed to fetch manager credentials.');
+      } else {
+        toast.error('An unexpected error occurred while fetching manager credentials.');
+      }
     }
   };

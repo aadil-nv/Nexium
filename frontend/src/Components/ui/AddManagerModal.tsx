@@ -5,11 +5,37 @@ import { managerSchema } from '../../config/validationSchema';
 import { businessOwnerInstance } from '../../services/businessOwnerInstance';
 import { z } from 'zod';
 import moment from 'moment';
+import { AxiosError } from 'axios';
 
 const { Option } = Select;
 
-const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onManagerAdded: () => void }> = ({ isVisible, onClose, onManagerAdded }) => {
-  const [formData, setFormData] = useState({
+interface FormDataType {
+  name: string;
+  managerType: string;
+  email: string;
+  phoneNumber: string;
+  joiningDate: string;
+  salary: number;
+  workTime: string;
+  companyLogo: string;
+  profileImage: string;
+}
+
+interface FieldType {
+  id: keyof FormDataType;
+  label: string;
+  type: 'text' | 'email' | 'select' | 'date' | 'number';
+  options?: string[];
+}
+
+interface AddManagerModalProps {
+  isVisible: boolean;
+  onClose: () => void;
+  onManagerAdded: () => void;
+}
+
+const AddManagerModal: React.FC<AddManagerModalProps> = ({ isVisible, onClose, onManagerAdded }) => {
+  const [formData, setFormData] = useState<FormDataType>({
     name: '',
     managerType: 'GeneralManager',
     email: '',
@@ -21,11 +47,11 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onMan
     profileImage: '',
   });
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [loading, setLoading] = useState(false); // Add loading state
-  const [errorMessage, setErrorMessage] = useState(''); // Error message for top display
+  const [errors, setErrors] = useState<{ [K in keyof FormDataType]?: string }>({});
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const fields = [
+  const fields: FieldType[] = [
     { id: 'name', label: 'Manager Name', type: 'text' },
     { id: 'managerType', label: 'Manager Type', type: 'select', options: ['HumanResourceManager', 'GeneralManager', 'ProjectManager', 'SalesManager'] },
     { id: 'email', label: 'Email', type: 'email' },
@@ -39,14 +65,14 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onMan
     try {
       managerSchema.parse(formData);
       setErrors({});
-      setErrorMessage(''); 
+      setErrorMessage('');
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const fieldErrors: { [key: string]: string } = {};
+        const fieldErrors: { [K in keyof FormDataType]?: string } = {};
         error.errors.forEach((err) => {
           if (err.path[0]) {
-            fieldErrors[err.path[0] as string] = err.message;
+            fieldErrors[err.path[0] as keyof FormDataType] = err.message;
           }
         });
         setErrors(fieldErrors);
@@ -58,12 +84,16 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onMan
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
-    setLoading(true); // Set loading state to true
-    setErrorMessage(''); 
+    setLoading(true);
+    setErrorMessage('');
 
     try {
-      const response = await businessOwnerInstance.post('/businessOwner-service/api/manager/add-managers', { ...formData });
-      setLoading(false); // Set loading state to false after request
+      const response = await businessOwnerInstance.post(
+        '/businessOwner-service/api/manager/add-managers',
+        { ...formData }
+      );
+      setLoading(false);
+
       if (response.status === 200) {
         toast.success(response.data.message);
         setFormData({
@@ -78,15 +108,26 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onMan
           profileImage: '',
         });
         setErrors({});
-        onManagerAdded(); // Notify parent component that manager has been added
-        onClose(); // Close modal after successful submission
+        onManagerAdded();
+        onClose();
       }
     } catch (error) {
-      setLoading(false); // Set loading state to false in case of error
-      setErrorMessage(error.response.data.error);
-      toast.error('An error occurred while submitting the form!');
-      console.error('Error:', error);
+      setLoading(false);
+
+      if (error instanceof AxiosError) {
+        setErrorMessage(error.response?.data?.error || 'An error occurred.');
+        toast.error('An error occurred while submitting the form!');
+        console.error('Axios Error:', error.response?.data?.error);
+      } else {
+        setErrorMessage('An unexpected error occurred.');
+        toast.error('An unexpected error occurred!');
+        console.error('Unexpected Error:', error);
+      }
     }
+  };
+
+  const handleInputChange = (id: keyof FormDataType, value: string | number) => {
+    setFormData(prev => ({ ...prev, [id]: value }));
   };
 
   return (
@@ -95,9 +136,9 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onMan
       open={isVisible}
       onCancel={onClose}
       footer={null}
-      width={600} // Ensures modal width remains unchanged
+      width={600}
     >
-      <Spin spinning={loading}> {/* Show spinner while loading */}
+      <Spin spinning={loading}>
         <Form layout="horizontal">
           <Row gutter={16}>
             {fields.map((field) => (
@@ -106,7 +147,7 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onMan
                   {field.type === 'select' ? (
                     <Select
                       value={formData[field.id]}
-                      onChange={(value) => setFormData({ ...formData, [field.id]: value })}
+                      onChange={(value) => handleInputChange(field.id, value)}
                     >
                       {field.options?.map((option) => (
                         <Option key={option} value={option}>{option}</Option>
@@ -114,15 +155,15 @@ const AddManagerModal: React.FC<{ isVisible: boolean; onClose: () => void, onMan
                     </Select>
                   ) : field.type === 'date' ? (
                     <DatePicker
-  value={formData[field.id] ? moment(formData[field.id]) : null}
-  onChange={(date) => setFormData({ ...formData, [field.id]: date?.toISOString().split('T')[0] })}
-  format="YYYY-MM-DD"
-/>
+                      value={formData[field.id] ? moment(formData[field.id]) : null}
+                      onChange={(date) => handleInputChange(field.id, date?.toISOString().split('T')[0] || '')}
+                      format="YYYY-MM-DD"
+                    />
                   ) : (
                     <Input
                       type={field.type}
                       value={formData[field.id]}
-                      onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                      onChange={(e) => handleInputChange(field.id, field.type === 'number' ? Number(e.target.value) : e.target.value)}
                     />
                   )}
                 </Form.Item>

@@ -2,22 +2,41 @@ import { superAdminInstance } from '../services/superAdminInstance';
 import { IBusinessOwner } from "../interface/superAdminInterface";
 import axios from "axios";
 
-
-export const loginSuperAdmin = async (data) => {
-    try {
-      const response = await axios.post(
-        "http://localhost:7000/api/super-admin/superadmin-login",
-        data,
-        {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        }
-      );
-      return response.data;
-    } catch (err) {
-      throw err.response?.data?.message || "Login failed";
-    }
+interface IBusinessOwnerResponse {
+  _id: string;
+  companyDetails: {
+    companyName: string;
   };
+  personalDetails: {
+    email: string;
+    phone: string;
+  };
+  subscription?: {
+    status?: string;
+  };
+  isBlocked: boolean;
+}
+
+export const loginSuperAdmin = async (data: { email: string; password: string }) => {
+  try {
+    const response = await axios.post(
+      "http://localhost:7000/api/super-admin/superadmin-login",
+      data,
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(error.response?.data?.message || "Login failed");
+    } else {
+      throw new Error("An unexpected error occurred during login");
+    }
+  }
+};
+
   
 export const fetchAllPlans = async () => {
   try {
@@ -37,20 +56,27 @@ export const updatePlanStatus = async (planId: string, newStatus: boolean) => {
   }
 };
 
+
+
 export const fetchBusinessOwners = async (): Promise<IBusinessOwner[]> => {
   try {
     const { data: responseData } = await superAdminInstance.get("/superAdmin-service/api/businessowner/find-all-companies");
-    return responseData.businessOwners.map((owner) => ({
+
+    return responseData.businessOwners.map((owner: IBusinessOwnerResponse) => ({
       id: owner._id,
       name: owner.companyDetails.companyName,
       email: owner.personalDetails.email,
       phone: owner.personalDetails.phone,
-   
       subscriptionStatus: owner.subscription?.status || "N/A",
       isBlocked: owner.isBlocked,
     }));
   } catch (error) {
-    throw new Error(error.response?.data?.message||"Error fetching business owners");
+    if (error instanceof Error) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      throw new Error(axiosError.response?.data?.message || "Error fetching business owners");
+    } else {
+      throw new Error("An unexpected error occurred while fetching business owners.");
+    }
   }
 };
 
@@ -58,8 +84,13 @@ export const fetchBusinessOwners = async (): Promise<IBusinessOwner[]> => {
 export const updateBlockStatus = async (id: string, isBlocked: boolean): Promise<void> => {
   try {
     await superAdminInstance.patch(`/superAdmin-service/api/businessowner/update-isblocked/${id}`, { isBlocked });
-  } catch (error) {
-    throw new Error(error.response?.data?.message||"Failed to update block status.");
+  } catch (error:unknown) {
+    if (error instanceof Error) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      throw new Error(axiosError.response?.data?.message || "Failed to update block status.");
+    } else {
+      throw new Error("An unexpected error occurred.");
+    }
   }
 };
 

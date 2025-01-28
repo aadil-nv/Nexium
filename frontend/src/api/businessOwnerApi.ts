@@ -23,7 +23,7 @@ export const fetchBusinessOwnerPersonalInfo = async () => {
   }
 };
 
-export const fetchCompanyDetails = async (isBusinessOwner) => {
+export const fetchCompanyDetails = async (isBusinessOwner: boolean) => {
   if (isBusinessOwner) {
     try {
       const response = await businessOwnerInstance.get(
@@ -59,22 +59,26 @@ export const fetchBusinessOwnerAddress = async () => {
   }
 };
 
-export const updateBusinessOwnerAddress = async (values) => {
+import axios from "axios";
+
+export const updateBusinessOwnerAddress = async (values: any) => {
   try {
     const response = await businessOwnerInstance.post(
       "/businessOwner-service/api/business-owner/update-address",
       values
     );
-    console.log("Manager address updated successfully:", response.data);
+    console.log("Address updated successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      "Error updating manager address:",
-      error.response?.data || error.message
-    );
-    throw error;
+    const message =
+      axios.isAxiosError(error) && error.response?.data?.message
+        ? error.response.data.message
+        : "Failed to update address";
+    console.error("Error:", message);
+    throw new Error(message);
   }
 };
+
 
 export const uploadBusinessOwnerProfileImage = async (file: File): Promise<string> => {
   const formData = new FormData();
@@ -93,7 +97,7 @@ export const uploadBusinessOwnerProfileImage = async (file: File): Promise<strin
   }
 };
 
-export const updateBusinessOwnerPersonalInfo = async (details): Promise<void> => {
+export const updateBusinessOwnerPersonalInfo = async (details : any): Promise<void> => {
   try {
     await businessOwnerInstance.patch(
       "/businessOwner-service/api/business-owner/update-personaldetailes",

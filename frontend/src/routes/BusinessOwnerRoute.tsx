@@ -1,4 +1,3 @@
-import React from "react";
 import { Route, Routes } from "react-router-dom";
 import BusinessOwnerPrivateRoute from "./BusinessOwnerPrivateRoute"; // Adjust the import path based on your project structure
 import BusinessOwnerDashboard from "../components/businessOwner/businessOwnerPages/BusinessOwnerDashboard";

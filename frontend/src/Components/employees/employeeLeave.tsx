@@ -63,7 +63,7 @@ const EmployeeLeave: React.FC = () => {
       }));
       setLeaveTypes(types);
 
-      const formattedLeaves: AppliedLeave[] = leavesRes.data.map((leave) => ({
+      const formattedLeaves: AppliedLeave[] = leavesRes.data.map((leave: { leaveType: any; startDate: string | number | Date | dayjs.Dayjs | null | undefined; endDate: string | number | Date | dayjs.Dayjs | null | undefined; duration: any; reason: any; dayType: any; status: any; createdAt: string | number | Date | dayjs.Dayjs | null | undefined; rejectionReason: any; leaveId: any; employeeId: any; }) => ({
         leaveType: leave.leaveType,
         fromDate: dayjs(leave.startDate).format('YYYY-MM-DD'),
         toDate: dayjs(leave.endDate).format('YYYY-MM-DD'),

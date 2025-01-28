@@ -187,8 +187,8 @@ const EditGroupModal: React.FC<EditGroupModalProps> = ({
       message.success('Group updated successfully');
       onGroupUpdate(); // This will trigger the parent's handleGroupUpdate
       onClose();
-    } catch (error) {
-      if (error.name === 'ValidationError') {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'ValidationError') {
         message.error('Please check all required fields');
       } else {
         console.error('Error updating group:', error);

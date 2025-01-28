@@ -115,6 +115,7 @@ const InfoModal: React.FC<InfoModalProps> = ({ visible, onClose, managerId, mana
 
       onClose();
     } catch (error) {
+      console.log("Error updating manager details:", error);      
       message.error("Failed to update manager details.");
     } finally {
       setLoading(false);

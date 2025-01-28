@@ -1,5 +1,4 @@
 
-import React from "react";
 import { Route, Routes } from "react-router-dom";
 import AdminDashBoard from "../components/superAdmin/AdminPages/AdminDashborad";
 import BusinessOwnersList from "../components/superAdmin/AdminPages/BusinessOwnersList";

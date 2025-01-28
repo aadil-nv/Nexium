@@ -3,32 +3,14 @@ import { motion } from 'framer-motion';
 import { message } from 'antd';
 import { managerInstance } from '../../../services/managerInstance';
 
-// Theme color and derived colors
 const themeColor = '#4f46e5';
-
-// interface LeaveType {
-//   id: number;
-//   name: string;
-//   default: number;
-// }
 
 interface FormData {
   [key: string]: number;
 }
 
 const LeaveSettings: React.FC = () => {
-  // const defaultLeaveTypes: LeaveType[] = [
-  //   { id: 1, name: 'Sick Leave', default: 0 },
-  //   { id: 2, name: 'Casual Leave', default: 0 },
-  //   { id: 3, name: 'Maternity Leave', default: 0 },
-  //   { id: 4, name: 'Paternity Leave', default: 0 },
-  //   { id: 5, name: 'Paid Leave', default: 0 },
-  //   { id: 6, name: 'Unpaid Leave', default: 0 },
-  //   { id: 7, name: 'Compensatory Leave', default: 0 },
-  //   { id: 8, name: 'Bereavement Leave', default: 0 },
-  //   { id: 9, name: 'Marriage Leave', default: 0 },
-  //   { id: 10, name: 'Study Leave', default: 0 },
-  // ];
+
 
   const [formData, setFormData] = useState<FormData>({});
   const [initialFormData, setInitialFormData] = useState<FormData>({});
@@ -52,8 +34,8 @@ const LeaveSettings: React.FC = () => {
         setFormData(cleanData);
         setInitialFormData(cleanData);
       }
-    } catch (error ) {
-      message.error(error.message || 'Failed to fetch leave types');
+    } catch (error) {
+      message.error((error as Error).message || 'Failed to fetch leave types');
     } finally {
       setLoading(false);
     }
@@ -84,7 +66,7 @@ const LeaveSettings: React.FC = () => {
       setInitialFormData(formData);
       message.success('Leave settings updated successfully!');
     } catch (error) {
-      message.error(error.message || 'Failed to update leave settings');
+      message.error((error as Error).message || 'Failed to update leave settings');
     } finally {
       setSaving(false);
     }

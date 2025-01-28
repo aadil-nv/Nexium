@@ -122,15 +122,13 @@ export const fetchPlans = async () => {
   }
 };
 
-export const createCheckoutSession = async (email: string, selectedPlan) => {
+export const createCheckoutSession = async (email: string, selectedPlan : any) => {
   try {
     const { data } = await axios.post(
       `${apiUrl}/payment-service/api/businessowner-payment/create-checkout-session`,
       { email, plan: selectedPlan, amount: selectedPlan.price * 100, currency: 'usd' },
       { withCredentials: true }
     );
-
-    console.log('Checkout session created:9999999999999999999999999', data);
     return data;
   } catch (error) {
     console.error('Error creating checkout session:', error);

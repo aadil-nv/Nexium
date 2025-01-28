@@ -1,4 +1,3 @@
-import React from "react";
 import { Route, Routes } from "react-router-dom";
 import LandingSignUpPage from "../pages/landingPages/LandingSignUpPage";
 import LandingOtp from "../pages/landingPages/LandingOtpPage";

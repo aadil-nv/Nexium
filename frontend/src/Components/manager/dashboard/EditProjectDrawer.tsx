@@ -4,6 +4,8 @@ import {CalendarOutlined, WarningOutlined, ProjectOutlined, UploadOutlined, Dele
 import { motion, AnimatePresence } from 'framer-motion';
 import moment from 'moment';
 import { managerInstance } from '../../../services/managerInstance';
+import { AxiosError } from 'axios';
+
 
 interface ProjectData {
   id: string;
@@ -81,10 +83,11 @@ const EditProjectDrawer: React.FC<EditProjectDrawerProps> = ({ visible, project,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setTeamLeads(response.data.map((lead: any) => ({ id: lead.employeeId, name: lead.employeeName })));
       } catch (error) {
-        notification.error({
-          message: 'Error',
-          description: error.message || 'Failed to fetch team leads',
-        });
+        const message = error instanceof AxiosError ? error.response?.data?.message : 'An unexpected error occurred';
+       notification.error({
+        message: 'Error',
+        description: message,
+      });
       }
     };
 

@@ -2,8 +2,27 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaEye, FaEyeSlash, FaCheckCircle } from 'react-icons/fa';
 
+interface NewPasswordFormProps {
+  theme: 'dark' | 'light';
+  showPassword: boolean;
+  setShowPassword: React.Dispatch<React.SetStateAction<boolean>>;
+  showConfirmPassword: boolean;
+  setShowConfirmPassword: React.Dispatch<React.SetStateAction<boolean>>;
+  password: string;
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
+  confirmPassword: string;
+  setConfirmPassword: React.Dispatch<React.SetStateAction<string>>;
+  errors: {
+    password?: string;
+    confirmPassword?: string;
+  };
+  handleNewPassword: (e: React.FormEvent<HTMLFormElement>) => void;
+  setShowNewPassword: React.Dispatch<React.SetStateAction<boolean>>;
+  showSuccessModal: boolean;
+  getInputStyle: (error?: string) => string;
+}
 
-const NewPasswordForm = ({
+const NewPasswordForm: React.FC<NewPasswordFormProps> = ({
   theme,
   showPassword,
   setShowPassword,
@@ -63,12 +82,12 @@ const NewPasswordForm = ({
               className={getInputStyle(errors.password)}
               placeholder="Enter new password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             />
             <button
               type="button"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowPassword(prev => !prev)}
+              onClick={() => setShowPassword((prev: boolean) => !prev)}
             >
               {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
             </button>
@@ -86,12 +105,12 @@ const NewPasswordForm = ({
               className={getInputStyle(errors.confirmPassword)}
               placeholder="Confirm new password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
             />
             <button
               type="button"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowConfirmPassword(prev => !prev)}
+              onClick={() => setShowConfirmPassword((prev: boolean) => !prev)}
             >
               {showConfirmPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
             </button>

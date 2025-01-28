@@ -59,8 +59,14 @@ const ProjectDashboard: React.FC = () => {
       setError(null);
       const response = await employeeInstance.get('/employee-service/api/project/get-all-projects');
       setProjects(response.data);
-    } catch (error) {
-      setError(error.message || 'Failed to fetch projects. Please try again later.');
+    } catch (error: unknown) {
+      // Ensure error is an instance of Error before accessing the 'message' property
+      if (error instanceof Error) {
+        setError(error.message || 'Failed to fetch projects. Please try again later.');
+      } else {
+        setError('Failed to fetch projects. Please try again later.');
+      }
+      
       message.error('Error loading projects');
     } finally {
       setLoading(false);

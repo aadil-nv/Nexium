@@ -1,4 +1,3 @@
-import React from "react";
 import { businessOwnerInstance } from "../services/businessOwnerInstance";
 import { superAdminInstance } from "../services/superAdminInstance";
 import { managerInstance } from "../services/managerInstance";

@@ -1,35 +1,70 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Form, Input, Button } from 'antd';
 import { EditOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
-import { fetchBusinessOwnerAddress,updateBusinessOwnerAddress } from '../../api/businessOwnerApi';
+import { fetchBusinessOwnerAddress, updateBusinessOwnerAddress } from '../../api/businessOwnerApi';
 import { fetchManagerAddress, updateManagerAddress } from '../../api/managerApi';
-import { fetchEmployeeAddress,updateEmployeeAddress } from '../../api/employeeApi';
+import { fetchEmployeeAddress, updateEmployeeAddress } from '../../api/employeeApi';
+
+interface AddressData {
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+}
+
+
 
 const Address = () => {
-  const [form] = Form.useForm();
-  const [isEditing, setIsEditing] = useState(false);
-  const [address, setAddress] = useState({ street: '', city: '', state: '', country: '', postalCode: '' });
+  const [form] = Form.useForm<AddressData>();
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [address, setAddress] = useState<AddressData>({
+    street: '',
+    city: '',
+    state: '',
+    country: '',
+    postalCode: ''
+  });
+  
   const { themeColor } = useTheme();
-  const { businessOwner, manager, employee} = useAuth();
+  const { businessOwner, manager, employee } = useAuth();
 
   useEffect(() => {
     const fetchAddress = async () => {
       try {
         if (businessOwner.isAuthenticated) {
-          const { street, city, state, country, postalCode } = await fetchBusinessOwnerAddress();
-          const mappedData = { street, city, state, country, postalCode };
+          const data = await fetchBusinessOwnerAddress();
+          const mappedData: AddressData = {
+            street: data.street,
+            city: data.city,
+            state: data.state,
+            country: data.country,
+            postalCode: data.postalCode
+          };
           setAddress(mappedData);
           form.setFieldsValue(mappedData);
         } else if (manager.isAuthenticated) {
-          const { street, city, state, country, postalCode } = await fetchManagerAddress();
-          const mappedData = { street, city, state, country, postalCode };
+          const data = await fetchManagerAddress();
+          const mappedData: AddressData = {
+            street: data.street,
+            city: data.city,
+            state: data.state,
+            country: data.country,
+            postalCode: data.postalCode
+          };
           setAddress(mappedData);
           form.setFieldsValue(mappedData);
-        } else if(employee.isAuthenticated){
-          const { street, city, state, country, postalCode } = await fetchEmployeeAddress();
-          const mappedData = { street, city, state, country, postalCode };
+        } else if (employee.isAuthenticated) {
+          const data = await fetchEmployeeAddress();
+          const mappedData: AddressData = {
+            street: data.street,
+            city: data.city,
+            state: data.state,
+            country: data.country,
+            postalCode: data.postalCode
+          };
           setAddress(mappedData);
           form.setFieldsValue(mappedData);
         }
@@ -38,28 +73,33 @@ const Address = () => {
       }
     };
     fetchAddress();
-  }, [businessOwner.isAuthenticated, manager.isAuthenticated,employee.isAuthenticated, form]);
+  }, [businessOwner.isAuthenticated, manager.isAuthenticated, employee.isAuthenticated, form]);
 
-  const onFinish = async (values) => {
+  const onFinish = async (values: AddressData) => {
     try {
       if (businessOwner.isAuthenticated) {
-         await updateBusinessOwnerAddress(values);
+        await updateBusinessOwnerAddress(values);
       } else if (manager.isAuthenticated) {
-         await updateManagerAddress(values);
-      } else if(employee.isAuthenticated){
-         await updateEmployeeAddress(values);
+        await updateManagerAddress(values );
+      } else if (employee.isAuthenticated) {
+        await updateEmployeeAddress(values);
       }
-      setIsEditing(false); // Exit edit mode
-      setAddress(values); // Update state with new values
+      setIsEditing(false);
+      setAddress(values);
     } catch (error) {
-      console.error('Error updating address:', error.response?.data || error.message);
+      console.error('Error updating address:', error);
     }
   };
 
   return (
     <div className="mt-6">
-      <Form form={form} onFinish={onFinish} layout="vertical" className="mt-4">
-        {['street', 'city', 'state', 'country', 'postalCode'].map(field => (
+      <Form<AddressData> 
+        form={form} 
+        onFinish={onFinish} 
+        layout="vertical" 
+        className="mt-4"
+      >
+        {(['street', 'city', 'state', 'country', 'postalCode'] as const).map(field => (
           <Form.Item
             key={field}
             name={field}

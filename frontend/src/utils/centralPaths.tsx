@@ -1,4 +1,3 @@
-import React from 'react';
 import PersonalDetailes from '../components/global/PersonalDetailes';
 import ProffessionalDetiles from '../components/global/ProffessionalDetiles';
 import Address from '../components/global/Address';

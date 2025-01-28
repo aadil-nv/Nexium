@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Tabs } from 'antd';
 import { businessOwnerTabs, managerTabs, employeeTabs } from "../../utils/centralPaths";
 import useAuth from '../../hooks/useAuth';

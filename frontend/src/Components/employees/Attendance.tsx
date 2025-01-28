@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaSignInAlt, FaCalendarAlt } from "react-icons/fa";
 import { Empty } from "antd";
@@ -31,7 +31,6 @@ type ICurrentStatus = {
 export default function AttendanceCard() {
   const [attendanceData, setAttendanceData] = useState<IAttendance[]>([]);
   const [page, setPage] = useState(1);
-  // const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [showCheckoutAlert, setShowCheckoutAlert] = useState(false);
   const [reloadData, setReloadData] = useState(false); 

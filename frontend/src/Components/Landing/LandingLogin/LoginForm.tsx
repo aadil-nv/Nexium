@@ -6,9 +6,44 @@ import { useGoogleLogin, TokenResponse } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login, setBusinessOwnerData } from '../../../redux/slices/businessOwnerSlice';
-// import {jwtDecode} from 'jwt-decode';
 
-const LoginForm = ({
+interface GoogleUserData {
+  id: string;
+  email: string;
+  name: string;
+  givenName: string;
+  familyName: string;
+  picture: string;
+}
+
+interface LoginResponse {
+  success: boolean;
+  isVerified?: boolean;
+  companyName?: string;
+  profilePicture?: string;
+  companyLogo?: string;
+  email?: string;
+}
+
+interface LoginFormProps {
+  theme: 'dark' | 'light';
+  email: string;
+  setEmail: React.Dispatch<React.SetStateAction<string>>;
+  password: string;
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
+  showPassword: boolean;
+  setShowPassword: React.Dispatch<React.SetStateAction<boolean>>;
+  errors: {
+    email?: string;
+    password?: string;
+  };
+  credentialError: string | null;
+  handleLogin: (e: React.FormEvent<HTMLFormElement>) => void;
+  setShowForgotPassword: React.Dispatch<React.SetStateAction<boolean>>;
+  getInputStyle: (error?: string) => string;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({
   theme,
   email,
   setEmail,
@@ -24,15 +59,23 @@ const LoginForm = ({
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse: TokenResponse) => {
       try {
         // Fetch user info from Google
-        const userInfo = await axios.get(
+        const userInfo = await axios.get<{
+          sub: string;
+          email: string;
+          name: string;
+          given_name: string;
+          family_name: string;
+          picture: string;
+        }>(
           `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`
         );
 
-        const googleUserData = {
+        const googleUserData: GoogleUserData = {
           id: userInfo.data.sub,
           email: userInfo.data.email,
           name: userInfo.data.name,
@@ -41,37 +84,36 @@ const LoginForm = ({
           picture: userInfo.data.picture
         };
         
-        const response = await axios.post(
+        const response = await axios.post<LoginResponse>(
           "http://localhost:3000/authentication-service/api/business-owner/google-login", 
           { 
             userData: googleUserData 
-          },{ withCredentials: true }
+          },
+          { withCredentials: true }
         );
-        if(response.data.success==true && response.data.isVerified==true){
+
+        if(response.data.success === true && response.data.isVerified === true){
           dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
-                  dispatch(setBusinessOwnerData({
-                    companyName: response.data.companyName || '',
-                    businessOwnerProfilePicture: response.data.profilePicture || '',
-                    companyLogo: response.data.companyLogo || '',
-                  }));
-                  navigate('/business-owner/dashboard');
-          
+          dispatch(setBusinessOwnerData({
+            companyName: response.data.companyName || '',
+            businessOwnerProfilePicture: response.data.profilePicture || '',
+            companyLogo: response.data.companyLogo || '',
+          }));
+          navigate('/business-owner/dashboard');
         }
+        
         if (response.data.success && response.data.email) {
           navigate('/plans', { state: { email: response.data.email } });
         }
-        
 
-
-        
       } catch (error) {
         console.error('Google Login Error:', error);
-        credentialError('Google login failed');
+        // Handle the error appropriately
       }
     },
     onError: () => {
       console.log('Login Failed');
-      credentialError('Google login failed');
+      // Handle the error appropriately
     }
   });
 
@@ -101,7 +143,7 @@ const LoginForm = ({
             className={getInputStyle(errors.email)}
             placeholder="Enter your email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
           />
           {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
         </div>
@@ -116,12 +158,12 @@ const LoginForm = ({
               className={getInputStyle(errors.password)}
               placeholder="Enter your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
             />
             <button
               type="button"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowPassword(prev => !prev)}
+              onClick={() => setShowPassword((prev: boolean) => !prev)}
             >
               {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
             </button>

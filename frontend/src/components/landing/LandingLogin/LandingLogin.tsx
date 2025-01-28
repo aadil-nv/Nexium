@@ -77,7 +77,8 @@ const LandingLoginPage = () => {
     setIsTimerActive(false);
   }, [isTimerActive, timeLeft]);
 
-  const handleOtpChange = (e, index) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleOtpChange = (e: { target: { value: any }; }, index: number) => {
     const value = e.target.value;
     if (/^[0-9]$/.test(value) || value === '') {
       const newOtp = [...otp];
@@ -90,7 +91,7 @@ const LandingLoginPage = () => {
     }
   };
 
-  const handleOtpKeyDown = (e, index) => {
+  const handleOtpKeyDown = (e: { key: string; }, index: number) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       document.getElementById(`otp-${index - 1}`)?.focus();
     }
@@ -115,7 +116,7 @@ const LandingLoginPage = () => {
       toast.error('Error resending OTP');
     }
   };
-  const handleOtpSubmit = async (e) => {
+  const handleOtpSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     const otpString = otp.join('');
     
@@ -161,10 +162,10 @@ const LandingLoginPage = () => {
       });
       return;
     }
-
+  
     setErrors({});
     setCredentialError('');
-
+  
     try {
       const data: LoginResponse = await loginBusinessOwnerAPI(email, password);
       
@@ -186,17 +187,30 @@ const LandingLoginPage = () => {
         }
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Something went wrong during login';
-      
-      if (error.response?.data?.email && error.response?.data?.isVerified === false) {
-        navigate('/otp', { state: { email: error.response.data.email } });
-      } else {
+      // Assert the error type to handle response properties
+      if (error instanceof Error) {
+        // This handles errors that are instances of Error
+        const errorMessage = error.message || 'Something went wrong during login';
         setCredentialError(errorMessage);
+      } else if (error && (error as { response?: { data?: { message: string, email: string, isVerified: boolean } } }).response) {
+        // This handles errors that contain response data
+        const errorMessage = (error as { response: { data: { message: string } } }).response.data.message || 'Something went wrong during login';
+        
+        if ((error as { response: { data: { email: string, isVerified: boolean } } }).response.data.email &&
+            (error as { response: { data: { isVerified: boolean } } }).response.data.isVerified === false) {
+          navigate('/otp', { state: { email: (error as { response: { data: { email: string } } }).response.data.email } });
+        } else {
+          setCredentialError(errorMessage);
+        }
+      } else {
+        // Fallback for any other unknown error
+        setCredentialError('Something went wrong during login');
       }
     }
   };
+  
 
-  const handleForgotPassword = async (e) => {
+  const handleForgotPassword = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     
     const result = forgotPasswordSchema.safeParse({ email: forgotPasswordEmail });
@@ -262,7 +276,7 @@ const LandingLoginPage = () => {
     }
   };
 
-  const getInputStyle = (fieldError?: string): string => {
+  const getInputStyle = (fieldError?: string | null): string => {
     const baseStyle = `w-full px-4 py-3 rounded-lg transition duration-200 outline-none ${
       theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'
     }`;
@@ -310,7 +324,7 @@ const LandingLoginPage = () => {
           />
         ) : showNewPassword ? (
           <NewPasswordForm
-            theme={theme}
+             theme={theme === 'system' ? 'light' : theme}
             showPassword={showPassword}
             setShowPassword={setShowPassword}
             showConfirmPassword={showConfirmPassword}
@@ -327,7 +341,7 @@ const LandingLoginPage = () => {
           />
         ) : showForgotPassword ? (
           <ForgotPasswordForm
-            theme={theme}
+            theme={theme === 'system' ? 'light' : theme}
             forgotPasswordEmail={forgotPasswordEmail}
             setForgotPasswordEmail={setForgotPasswordEmail}
             forgotPasswordError={forgotPasswordError}
@@ -338,7 +352,7 @@ const LandingLoginPage = () => {
           />
         ) : (
           <LoginForm
-            theme={theme}
+            theme={theme === 'system' ? 'light' : theme}
             email={email}
             setEmail={setEmail}
             password={password}

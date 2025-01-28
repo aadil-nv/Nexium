@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { Form, Input, Button, message, Table, Modal, Spin } from 'antd';
 import { businessOwnerInstance } from '../../services/businessOwnerInstance';
 
@@ -31,8 +31,12 @@ export default function ServiceRequests() {
     try {
       const response = await businessOwnerInstance.get<{ data: ServiceRequest[] }>('/businessOwner-service/api/business-owner/service-requests');
       setServiceRequests(response.data.data);
-    } catch (error) {
-      message.error(error.message || 'Failed to fetch service requests.');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        message.error(error.message || 'Failed to fetch service requests.');
+      } else {
+        message.error('Failed to fetch service requests.');
+      }
     } finally {
       setLoading(false);
     }
@@ -49,8 +53,12 @@ export default function ServiceRequests() {
       });
       message.success('Service request submitted successfully!');
       fetchServiceRequests(); // Refresh the service requests list
-    } catch (error) {
-      message.error(error.message || 'Failed to request service.');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        message.error(error.message || 'Failed to request service.');
+      } else {
+        message.error('Failed to request service.');
+      }
     } finally {
       setLoading(false);
     }
@@ -72,8 +80,12 @@ export default function ServiceRequests() {
       message.success('Service request updated successfully!');
       fetchServiceRequests(); // Refresh the service requests list
       setIsModalVisible(false); // Close modal
-    } catch (error) {
-      message.error(error.message || 'Failed to update service request.');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        message.error(error.message || 'Failed to update service request.');
+      } else {
+        message.error('Failed to update service request.');
+      }
     } finally {
       setLoading(false);
     }

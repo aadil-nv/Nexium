@@ -2,14 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Select, Spin } from 'antd';
 import { toast } from 'react-toastify';
 import { fetchEmployeesWithOutDepartment, addEmployeeToDepartment } from '../../api/managerApi';
-import { IEmployee } from '../../interface/managerInterface'; // Import the original interface
+import { IEmployee } from '../../interface/managerInterface';
 
-const AddCandidateModal: React.FC<{
+interface AddCandidateModalProps {
   isVisible: boolean;
   onClose: () => void;
   departmentId: string;
   onEmployeesAdded: (newEmployees: IEmployee[]) => void;
-}> = ({ 
+}
+
+type AddEmployeeToDepartmentFunction = (
+  employees: IEmployee[],
+  departmentId: string
+) => Promise<boolean>;
+
+const AddCandidateModal: React.FC<AddCandidateModalProps> = ({ 
   isVisible, 
   onClose, 
   departmentId, 
@@ -39,7 +46,9 @@ const AddCandidateModal: React.FC<{
     }
 
     try {
-      const success = await addEmployeeToDepartment(selectedEmployees, departmentId);
+      // Cast the function to the correct type
+      const addToDepartment = addEmployeeToDepartment as AddEmployeeToDepartmentFunction;
+      const success = await addToDepartment(selectedEmployees, departmentId);
       
       if (success) {
         toast.success(`${selectedEmployees.length} employee(s) added to the department!`);
@@ -48,7 +57,13 @@ const AddCandidateModal: React.FC<{
         toast.error('Failed to add employees to the department!');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'An error occurred while adding employees!');
+      if (error instanceof Error) {
+        const axiosError = error as { response?: { data?: { message?: string } } };
+        const errorMessage = axiosError.response?.data?.message || error.message;
+        toast.error(errorMessage || 'An error occurred while adding employees!');
+      } else {
+        toast.error('An unexpected error occurred while adding employees!');
+      }
     }
 
     onClose();

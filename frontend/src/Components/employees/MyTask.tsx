@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { Input, Button, List, Checkbox, Tag, Typography, Select } from 'antd';
 import {
   PlusCircleOutlined,

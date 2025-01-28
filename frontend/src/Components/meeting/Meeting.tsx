@@ -54,7 +54,7 @@ export const MeetingScheduler: React.FC = () => {
       const response = await communicationInstance.get("/communication-service/api/meeting/get-all-meetings");
       setMeetings(response.data);
     } catch (error) {
-      message.error(error.message || "Failed to fetch meetings");
+      message.error((error as Error).message || "Failed to fetch meetings");
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export const MeetingScheduler: React.FC = () => {
       const response = await communicationInstance.get("/communication-service/api/meeting/get-all-participants");
       setAllParticipants(response.data);
     } catch (error) {
-      message.error(error.message || "Failed to fetch participants");
+      message.error((error as Error).message || "Failed to fetch participants");
     }
   };
 
@@ -147,7 +147,7 @@ export const MeetingScheduler: React.FC = () => {
       message.success("Meeting deleted successfully");
       fetchMeetings();
     } catch (error) {
-      message.error(error.message || "Failed to delete meeting");
+      message.error((error as Error).message || "Failed to delete meeting");
     }
   };
 

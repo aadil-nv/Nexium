@@ -9,7 +9,6 @@ import { z } from "zod";
 import { Spin } from "antd";
 import { employeeInstance } from "../../services/employeeInstance";
 
-// Zod schema for validation
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
@@ -25,7 +24,7 @@ const EmployeeLogin: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Handle form submission
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 

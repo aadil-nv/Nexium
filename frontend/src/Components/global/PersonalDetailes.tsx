@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { Form, Input, Button, Upload, Skeleton, Empty, Spin, Select } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, EditOutlined, BankOutlined, IdcardOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
@@ -74,6 +74,7 @@ export default function PersonalDetails() {
 
   useEffect(() => {
     fetchUserInfo();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [businessOwner, manager, employee]);
 
   const handleProfilePictureChange = async (file: File) => {
@@ -114,7 +115,7 @@ export default function PersonalDetails() {
     }
   };
 
-  const onFinish = async (values) => {
+  const onFinish = async (values : ManagerInfo | BusinessOwnerInfo | EmployeeInfo) => {
     try {
       const updateFunctions = {
         manager: updateManagerPersonalInfo,

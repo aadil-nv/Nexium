@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { IEmployee } from '../../../interface/managerInterface';
 import useTheme from '../../../hooks/useTheme';
 import useAuth from '../../../hooks/useAuth';
@@ -23,21 +23,7 @@ export default function Employees() {
       .catch((error) => console.error('Error fetching employee data:', error));
   }, [updateTrigger]); // Re-fetch when `updateTrigger` changes
 
-  // const columns: ColumnDef<IEmployee>[] = [
-  //   { id: 'ID', accessorKey: '_id' },
-  //   { header: 'Name', accessorKey: 'employeeName' },
-  //   { header: 'Position', accessorKey: 'position' },
-  //   { header: 'Email', accessorKey: 'email' },
-  //   {
-  //     header: 'Status',
-  //     accessorKey: 'isActive',
-  //     cell: ({ row }) => (
-  //       <span className={row.getValue('isActive') ? 'text-green-500' : 'text-red-500'}>
-  //         {row.getValue('isActive') ? 'Active' : 'Inactive'}
-  //       </span>
-  //     ),
-  //   },
-  // ];
+
 
   return (
     <div className="relative p-6 space-y-6">

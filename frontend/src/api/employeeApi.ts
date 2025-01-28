@@ -1,6 +1,22 @@
 import { toast } from "react-toastify";
 import { employeeInstance } from "../services/employeeInstance";
 
+interface AddressData {
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+}
+
+interface CommonInfo {
+  email: string;
+  phone: string;
+  profilePicture?: string;
+  personalWebsite?: string;
+}
+
+
 
 export const fetchAttendanceData = async () => {
   try {
@@ -12,7 +28,7 @@ export const fetchAttendanceData = async () => {
   }
 };
 
-export const markCheckIn = async (checkInData) => {
+export const markCheckIn = async (checkInData: { date: string; checkInTime: string; } ) => {
   try {
     const response = await employeeInstance.post("/employee-service/api/attendance/mark-checkin/", checkInData);
     return response.data;
@@ -22,7 +38,7 @@ export const markCheckIn = async (checkInData) => {
   }
 };
 
-export const markCheckOut = async (checkOutData) => {
+export const markCheckOut = async (checkOutData: { checkOutTime: string; date: string; }) => {
   try {
     const response = await employeeInstance.post("/employee-service/api/attendance/mark-checkout", checkOutData);
     console.log("response==>=>=>",response.data);
@@ -67,8 +83,7 @@ export const uploadEmployeeProfileImage = async (file: File) => {
 };
 
 
-export const updateEmployeePersonalInfo = async (details) => {
-    console.log("detiles is s------>",details);
+export const updateEmployeePersonalInfo = async (details : CommonInfo ) => {
     
   try {
     const response = await employeeInstance.patch('/employee-service/api/employee/update-personalinfo', details);
@@ -92,7 +107,7 @@ export const fetchEmployeeAddress = async () => {
 };
 
 
-export const updateEmployeeAddress = async (address) => {
+export const updateEmployeeAddress = async (address: AddressData) => {
   try {
     const response = await employeeInstance.patch(
       "/employee-service/api/employee/update-address",
@@ -101,15 +116,19 @@ export const updateEmployeeAddress = async (address) => {
     console.log("Manager address updated successfully:", response.data);
     return response.data;
   } catch (error) {
-    console.error('Error updating manager address:', error.response?.data || error.message);
-    throw error;
+    if (error instanceof Error) {
+      console.error('Error updating manager address:', error.message);
+      throw new Error(error.message);
+    } else {
+      console.error('Error updating manager address:', error);
+      throw new Error('An unknown error occurred');
+    }
   }
 };
 
   export const fetchEmployeeDocument = async () => {
     try {
       const response = await employeeInstance.get('/employee-service/api/employee/get-documents');
-      console.log("responce is ==========&&&&========",response)
       return response.data;
     } catch (error) {
       console.log("Error fetching document:", error);

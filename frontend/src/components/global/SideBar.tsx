@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { FiMenu, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { useDispatch } from 'react-redux';
@@ -7,14 +7,16 @@ import { businessOwnerLinks, superAdminLinks, managerLinks, employeeLinks, teamL
 import useAuth from '../../hooks/useAuth';
 import useTheme from '../../hooks/useTheme';
 import imgae from "../../images/images"
-
+interface Role {
+  isAuthenticated: boolean;
+}
 const Sidebar = () => {
   const { businessOwner, superAdmin, manager, employee } = useAuth();
   const { isActiveMenu, themeColor } = useTheme();
   const dispatch = useDispatch();
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
 
-  const isAuthenticated = (role) => role.isAuthenticated;
+  const isAuthenticated = (role : Role) => role.isAuthenticated;
   const links = isAuthenticated(superAdmin)
     ? superAdminLinks
     : isAuthenticated(businessOwner)

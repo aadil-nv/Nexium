@@ -1,7 +1,6 @@
-import React from 'react'
 import Navbar from '../../components/landing/landingPage/Navbar'
 import Footer from "../../components/landing/landingPage/Footer"
-import LandingOtps from '../../Components/Landing/LandingSignup/LandingOtp'
+import LandingOtps from '../../Components/landing/LandingSignup/LandingOtp'
 
 export default function LandingOtp() {
   return (

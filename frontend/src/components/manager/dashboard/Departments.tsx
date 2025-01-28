@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { MdAddBusiness } from 'react-icons/md';
 import DepartmentCard from '../../global/DepartmentCard';
 import useTheme from '../../../hooks/useTheme';

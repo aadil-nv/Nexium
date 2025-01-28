@@ -4,12 +4,21 @@ import { CheckOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { Employee } from '../../interface/ChatInterface';
 import { communicationInstance } from '../../services/communicationInstance';
 
+interface TargetUser {
+  chatId: string;
+  senderId: string;
+  id: string;
+  name: string;
+  avatar: string | undefined;
+  type: 'private';
+  status: boolean;
+}
 interface StartChatModalProps {
   isVisible: boolean;
   onClose: () => void;
   employees: Employee[];
   formatLastSeen: (date: Date) => string;
-  setSelectedTarget: (target) => void;
+  setSelectedTarget: (target : TargetUser) => void;
 }
 
 const StartChatModal: React.FC<StartChatModalProps> = ({

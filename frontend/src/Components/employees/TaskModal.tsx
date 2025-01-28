@@ -65,7 +65,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel ,onSave }) => {
     }
   }, [visible]);
 
-  const handleTaskChange = (index: number, field: string, value) => {
+  const handleTaskChange = (index: number, field: string, value: string) => {
     const updatedTasks = [...tasks];
     updatedTasks[index] = { ...updatedTasks[index], [field]: value };
     setTasks(updatedTasks);
@@ -123,7 +123,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ visible, onCancel ,onSave }) => {
       setTasks([{ title: '', description: '', priority: 'low' }]);
       onCancel();
     } catch (error) {
-      notification.error({message: 'Error', description: error.message || 'Failed to assign tasks.' });
+      notification.error({message: 'Error', description: (error as Error).message || 'Failed to assign tasks.' });
     }
   };
 

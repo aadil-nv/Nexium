@@ -122,7 +122,7 @@ const MainLayout: React.FC = () => {
         setSelectedTarget(prev => prev ? {
           ...prev,
           name: updatedGroup.groupName,
-          receiverId: updatedGroup.participants.map((p) => p._id),
+          receiverId: updatedGroup.participants.map((p: GroupMember) => p.id),
           chatId: updatedGroup._id,
           id: updatedGroup._id
         } : null);
@@ -172,8 +172,8 @@ const MainLayout: React.FC = () => {
   
         await fetchGroups();
         
-      } catch (error) {
-        if (error.name !== 'AbortError') {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.name !== 'AbortError') {
           console.error('Error fetching data:', error);
         }
       } finally {

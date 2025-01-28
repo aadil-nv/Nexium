@@ -71,7 +71,7 @@ function Leaves() {
         message.success('Leave approved');
       }
     } catch (error) {
-      message.error(error.message);
+      message.error(error instanceof Error ? error.message : 'Failed to approve leave');
     }
   };
 
@@ -96,7 +96,7 @@ function Leaves() {
         message.success('Leave rejected');
       }
     } catch (error) {
-      message.error(error.message);
+      message.error(error instanceof Error ? error.message : 'Failed to reject leave');
     } finally {
       setModalVisible(false);
       setRejectionReason('');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { Table, Tag, Select, Modal, Input, message } from 'antd';
 import { managerInstance } from '../../../services/managerInstance';
 import type { ColumnsType } from 'antd/es/table';

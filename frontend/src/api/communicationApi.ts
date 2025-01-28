@@ -1,2 +1,2 @@
-import {communicationInstance} from "../services/communicationInstance" 
+// import {communicationInstance} from "../services/communicationInstance" 
 
