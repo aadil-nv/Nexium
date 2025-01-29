@@ -1,0 +1,42 @@
+{
+  "name": "src",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "nodemon --watch . --ext ts --exec ts-node index.ts",
+    "dev": "ts-node index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.13",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.7.5",
+    "amqplib": "^0.10.4",
+    "bcryptjs": "^2.4.3",
+    "colors": "^1.4.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "inversify": "^6.0.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.9.0",
+    "mongoose": "^8.7.1",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.7",
+    "reflect-metadata": "^0.2.2",
+    "rotating-file-stream": "^3.2.5",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.5",
+    "@types/cookie-parser": "^1.4.7",
+    "typescript": "^5.7.3"
+  }
+}

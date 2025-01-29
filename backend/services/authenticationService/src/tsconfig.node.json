@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "target": "ESNext", // or another version like "ES6"
+      "module": "CommonJS", // common module system for Node.js
+      "strict": true, // enables strict type-checking options
+      "esModuleInterop": true, // enables emit interoperability between CommonJS and ES Modules
+      "skipLibCheck": true, // skips type checking of declaration files
+      "forceConsistentCasingInFileNames": true, // disallows inconsistently-cased references to the same file
+      "baseUrl": "./", // base URL for module resolution
+      "paths": {
+        "@/*": ["./src/*"] // path mapping
+      }
+    },
+    "include": ["src/**/*"], // include all .ts files in src
+    "exclude": ["node_modules", "dist"] // exclude node_modules and dist folder
+  }
+  
