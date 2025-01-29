@@ -6,11 +6,13 @@ import ModalForm from './Modal';
 import {ICardProps}  from "../../interface/GlobalInterface"
 
 
-const planColors = {
+type PlanType = 'Trial' | 'Premium' | 'Basic';
+
+const planColors: Record<PlanType, string> = {
   Trial: 'bg-yellow-100 text-yellow-800',
   Premium: 'bg-blue-100 text-blue-800',
   Basic: 'bg-green-100 text-green-800',
-};
+};;
 
 const Card: React.FC<ICardProps> = ({
   planId, planName, description, price, planType, durationInMonths, features, isActive, onStatusChange, onPlanUpdate
@@ -18,7 +20,7 @@ const Card: React.FC<ICardProps> = ({
   const { themeColor } = useTheme();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const planColor = planColors[planType] || 'bg-gray-100 text-gray-800';
+  const planColor = planColors[planType as PlanType] || 'bg-gray-100 text-gray-800';
   const featuresString = features.join(', ');
 
   const toggleStatus = () => onStatusChange(!isActive);

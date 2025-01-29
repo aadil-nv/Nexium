@@ -2,6 +2,22 @@ import { businessOwnerInstance } from "../services/businessOwnerInstance";
 import { message } from "antd";
 import toast from "react-hot-toast";
 
+
+interface CommonInfo {
+  email: string;
+  phone: string;
+  profilePicture?: string;
+  personalWebsite?: string;
+}
+
+interface AddressData {
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+}
+
 export const fetchManagers = async () => {
   try {
     const response = await businessOwnerInstance.get("/businessOwner-service/api/manager/get-managers");
@@ -61,7 +77,7 @@ export const fetchBusinessOwnerAddress = async () => {
 
 import axios from "axios";
 
-export const updateBusinessOwnerAddress = async (values: any) => {
+export const updateBusinessOwnerAddress = async (values: AddressData) => {
   try {
     const response = await businessOwnerInstance.post(
       "/businessOwner-service/api/business-owner/update-address",
@@ -97,7 +113,7 @@ export const uploadBusinessOwnerProfileImage = async (file: File): Promise<strin
   }
 };
 
-export const updateBusinessOwnerPersonalInfo = async (details : any): Promise<void> => {
+export const updateBusinessOwnerPersonalInfo = async (details : CommonInfo): Promise<void> => {
   try {
     await businessOwnerInstance.patch(
       "/businessOwner-service/api/business-owner/update-personaldetailes",

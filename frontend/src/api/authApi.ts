@@ -5,6 +5,13 @@ import axios from 'axios';
 const apiUrl = import.meta.env.VITE_API_KEY
 
 
+type Plan = {
+  _id: string;
+  planName: string;
+  price: number;
+  features: string[];
+  isActive: boolean;
+};
 export const resendOtp = async (email: string) => {
   try {
     const response = await axios.post(`${apiUrl}/authentication-service/api/business-owner/resend-otp`, { email });
@@ -122,7 +129,7 @@ export const fetchPlans = async () => {
   }
 };
 
-export const createCheckoutSession = async (email: string, selectedPlan : any) => {
+export const createCheckoutSession = async (email: string, selectedPlan : Plan) => {
   try {
     const { data } = await axios.post(
       `${apiUrl}/payment-service/api/businessowner-payment/create-checkout-session`,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Form, Input, Button, Upload, Row, Col, message, Spin } from 'antd';
 import { FiSave, FiEdit } from "react-icons/fi";
 import { UploadOutlined } from '@ant-design/icons';
@@ -62,9 +62,9 @@ const CompanyDetails = () => {
     }
   };
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: CompanyDetailsType) => {
     try {
-      const response = await businessOwnerInstance.patch('/businessOwner/api/business-owner/update-companydetailes', values);
+       await businessOwnerInstance.patch('/businessOwner/api/business-owner/update-companydetailes', values);
       // Re-fetch the company details after updating
       const updatedData = await fetchCompanyDetails(businessOwner.isAuthenticated);
       setCompanyDetails(updatedData); // Update state with the new details

@@ -1,15 +1,21 @@
-// components/ScheduleMeeting.tsx
 import React from 'react';
-import { Modal, Form, Input, DatePicker, Select, Button } from 'antd';
+import { Modal, Form, Input, DatePicker, Select} from 'antd';
+import type { Moment } from 'moment';
+
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 interface ScheduleMeetingProps {
   visible: boolean;
-  onOk: (values: any) => void;
+  onOk: (values: MeetingFormValues) => void;
   onCancel: () => void;
   participants: { id: number; name: string }[];
+}
+interface MeetingFormValues {
+  title: string;
+  time: [Moment, Moment];
+  participants: number[];
 }
 
 const ScheduleMeeting: React.FC<ScheduleMeetingProps> = ({ visible, onOk, onCancel, participants }) => {

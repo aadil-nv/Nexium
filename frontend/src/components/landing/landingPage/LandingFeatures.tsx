@@ -1,4 +1,3 @@
-import React from "react";
 import  FeaturesLeave from '../../../assets/landingPageAssets/leavemgmt.png';
 import FeaturesDatabase from '../../../assets/landingPageAssets/Human-Resources-square-ezgif.com-webp-to-png-converter.png'; 
 import FeaturesOnboarding from '../../../assets/landingPageAssets/Onboarding-ezgif.com-webp-to-png-converter.png'; 

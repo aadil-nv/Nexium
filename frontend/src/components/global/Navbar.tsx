@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { MdNotificationsNone } from "react-icons/md";
@@ -56,7 +56,6 @@ export default function Navbar(): JSX.Element {
       setNotifications(response.data);
     } catch (error) {
       console.error("Error fetching notifications:", error);
-      // toast.error("Failed to fetch notifications");
     }
   };
 
@@ -71,7 +70,6 @@ export default function Navbar(): JSX.Element {
       );
     } catch (error) {
       console.error("Error marking notification as read:", error);
-      // toast.error("Failed to mark notification as read");
     }
   };
 
@@ -95,7 +93,6 @@ export default function Navbar(): JSX.Element {
       toast.success("All notifications cleared");
     } catch (error) {
       console.error("Error clearing notifications:", error);
-      // toast.error("Failed to clear notifications");
     }
   };
 

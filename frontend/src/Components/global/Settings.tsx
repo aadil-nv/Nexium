@@ -1,21 +1,28 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Switch, Button } from 'antd';
-import { ChromePicker } from 'react-color';
+import { ChromePicker, ColorResult } from 'react-color';
 
+type ThemeType = 'light' | 'dark';
+type NotificationType = 'email' | 'sms';
 
-export default function Settings() {
-  const [theme, setTheme] = useState('light');
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [smsNotifications, setSmsNotifications] = useState(true);
-  const [color, setColor] = useState('#1890ff'); // default color for the theme
+interface SettingsState {
+  theme: ThemeType;
+  emailNotifications: boolean;
+  smsNotifications: boolean;
+  color: string;
+}
 
+export default function Settings(): JSX.Element {
+  const [theme, setTheme] = useState<ThemeType>('light');
+  const [emailNotifications, setEmailNotifications] = useState<boolean>(true);
+  const [smsNotifications, setSmsNotifications] = useState<boolean>(true);
+  const [color, setColor] = useState<string>('#1890ff'); // default color for the theme
 
-
-  const handleColorChange = (color) => {
-    setColor(color.hex);
+  const handleColorChange = (colorResult: ColorResult): void => {
+    setColor(colorResult.hex);
   };
 
-  const handleNotificationChange = (type, checked) => {
+  const handleNotificationChange = (type: NotificationType, checked: boolean): void => {
     if (type === 'email') {
       setEmailNotifications(checked);
     } else if (type === 'sms') {
@@ -23,10 +30,21 @@ export default function Settings() {
     }
   };
 
-  const toggleTheme = (selectedTheme) => {
+  const toggleTheme = (selectedTheme: ThemeType): void => {
     setTheme(selectedTheme);
     // You can apply the theme to the whole app here if needed
     document.body.className = selectedTheme === 'dark' ? 'dark' : 'light';
+  };
+
+  const handleSaveSettings = (): void => {
+    const settings: SettingsState = {
+      theme,
+      emailNotifications,
+      smsNotifications,
+      color,
+    };
+    // Handle saving settings here
+    console.log('Saving settings:', settings);
   };
 
   return (
@@ -40,14 +58,14 @@ export default function Settings() {
           <label className="block text-sm font-medium text-gray-700">Email Notifications</label>
           <Switch
             checked={emailNotifications}
-            onChange={(checked) => handleNotificationChange('email', checked)}
+            onChange={(checked: boolean) => handleNotificationChange('email', checked)}
           />
         </div>
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">SMS Notifications</label>
           <Switch
             checked={smsNotifications}
-            onChange={(checked) => handleNotificationChange('sms', checked)}
+            onChange={(checked: boolean) => handleNotificationChange('sms', checked)}
           />
         </div>
       </div>
@@ -81,10 +99,9 @@ export default function Settings() {
           <ChromePicker color={color} onChange={handleColorChange} />
         </div>
 
-
         {/* Save Settings Button */}
         <div className="mt-6">
-          <Button type="primary" className="w-full">
+          <Button type="primary" className="w-full" onClick={handleSaveSettings}>
             Save Settings
           </Button>
         </div>

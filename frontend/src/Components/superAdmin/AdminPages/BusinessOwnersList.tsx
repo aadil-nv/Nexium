@@ -11,11 +11,31 @@ const BusinessOwnersList: React.FC = () => {
   const [error, setError] = useState("");
 
   const columns: ColumnDef<IBusinessOwner>[] = [
-    { accessorKey: "id", header: "ID" },
-    { accessorKey: "name", header: "Name" },
-    { accessorKey: "email", header: "Email" },
-    { accessorKey: "phone", header: "Phone" },
-    { accessorKey: "subscriptionStatus", header: "Subscription Status" },
+    { 
+      id: 'id',
+      accessorFn: (row) => row.id,
+      header: "ID" 
+    },
+    { 
+      id: 'name',
+      accessorFn: (row) => row.name,
+      header: "Name" 
+    },
+    { 
+      id: 'email',
+      accessorFn: (row) => row.email,
+      header: "Email" 
+    },
+    { 
+      id: 'phone',
+      accessorFn: (row) => row.phone,
+      header: "Phone" 
+    },
+    { 
+      id: 'subscriptionStatus',
+      accessorFn: (row) => row.subscriptionStatus,
+      header: "Subscription Status" 
+    },
     {
       id: "action",
       header: "Action",
@@ -60,7 +80,12 @@ const BusinessOwnersList: React.FC = () => {
       ) : error ? (
         <div className="text-red-500">{error}</div>
       ) : (
-        <Table data={data} columns={columns} loading={loading} error={error} />
+        <Table<IBusinessOwner> 
+          data={data} 
+          columns={columns} 
+          loading={loading} 
+          error={error} 
+        />
       )}
     </div>
   );

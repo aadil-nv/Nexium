@@ -71,7 +71,8 @@ const SignUp: React.FC = () => {
         setError({ form: data.message });
       }
     } catch (error) {
-      setError({ form: error.message });
+      const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
+      setError({ form: errorMessage });
     } finally {
       setLoading(false);
     }

@@ -9,6 +9,7 @@ import { logout as employeeLogout } from "../redux/slices/employeeSlice";
 import { NavbarFunctionsProps} from "../utils/interfaces"
 import { resetTasks } from "../redux/slices/taskSlice";
 import { employeeInstance } from "../services/employeeInstance";
+import { Dispatch, UnknownAction } from "redux";
 
 
 
@@ -52,9 +53,7 @@ export const handleProfileClick = ({ isBusinessOwner, isSuperAdmin, isManager, i
 };
 
 // Updated onSettingsClick function with typed parameters
-export const onSettingsClick = (
-  { isBusinessOwner, isSuperAdmin, isManager, isEmployee, navigate }: NavbarFunctionsProps
-) => {
+export const onSettingsClick = ({ isBusinessOwner, isSuperAdmin, isManager, isEmployee, navigate }: NavbarFunctionsProps) => {
   if (isBusinessOwner.isAuthenticated) {
     navigate("/business-owner/settings");
   } else if (isSuperAdmin.isAuthenticated) {
@@ -66,7 +65,13 @@ export const onSettingsClick = (
   }
 };
 
-export const NavButton = ({ customFunc, icon, themeColor }) => (
+interface NavButtonProps {
+  customFunc: () => void;    // Function that does not take arguments and returns void
+  icon: React.ReactNode;     // For the icon, we can accept any valid React node
+  themeColor: string;        // For the color, it would be a string (like a hex code or color name)
+}
+
+export const NavButton: React.FC<NavButtonProps> = ({ customFunc, icon, themeColor }) => (
   <button
     type="button"
     onClick={customFunc}
@@ -77,7 +82,6 @@ export const NavButton = ({ customFunc, icon, themeColor }) => (
   </button>
 );
 
-
-export const toggleMenu = (dispatch, isActiveMenu) => {
+export const toggleMenu = (dispatch: Dispatch<UnknownAction>, isActiveMenu: boolean) => {
   dispatch(setActiveMenu(!isActiveMenu));
 };

@@ -9,6 +9,7 @@ import { login } from "../../../redux/slices/superAdminSlice";
 import { loginSuperAdmin } from "../../../api/superAdminApi";
 import { IFormInputs } from "../../../interface/superAdminInterface";
 import IMAGES from "../../../images/images";
+import { AxiosError } from "axios";
 
 const SuperAdminLogin: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +27,13 @@ const SuperAdminLogin: React.FC = () => {
       dispatch(login({ role: "superAdmin", isAuthenticated: true }));
       navigate("/super-admin/dashboard");
     } catch (error) {
-      setLoginError(error.response?.data?.message ||"Login failed. Please check your credentials.");
+      if (error instanceof AxiosError) {
+        setLoginError(error.response?.data?.message || "Login failed. Please check your credentials.");
+      } else if (error instanceof Error) {
+        setLoginError(error.message);
+      } else {
+        setLoginError("Login failed. Please check your credentials.");
+      }
     } finally {
       setLoading(false);
     }

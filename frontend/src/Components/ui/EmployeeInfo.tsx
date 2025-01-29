@@ -41,7 +41,7 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose, onUpdat
     setResumeData(employeeData?.documents?.resume || "");
   }, [employeeData, form]);
 
-  const handleSubmit = async (tabKey: string, values:any) => {
+  const handleSubmit = async (tabKey: string, values:unknown) => {
     if (!employeeId) return;
     
     setLoading(true);
@@ -57,8 +57,8 @@ const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose, onUpdat
       await managerInstance.post(endpoints[tabKey], values);
       message.success("Details updated successfully!");
       onUpdate(); // Call the onUpdate prop to refresh the table
-    } catch (error: any) {
-      message.error(error.message ||"Failed to update details.");
+    } catch (error) {
+      message.error((error as Error).message ||"Failed to update details.");
     } finally {
       setLoading(false);
     }

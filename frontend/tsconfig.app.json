@@ -22,6 +22,6 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.tsx"  // Include TypeScript and TypeScript JSX files
+    "src/**/*.tsx" 
   ]
 }

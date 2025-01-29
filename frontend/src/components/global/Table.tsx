@@ -1,5 +1,11 @@
-import  { useState } from "react";
-import {flexRender,useReactTable,getCoreRowModel,getFilteredRowModel,getPaginationRowModel,} from "@tanstack/react-table";
+import { useState } from "react";
+import {
+  flexRender,
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+} from "@tanstack/react-table";
 import { CSVLink } from "react-csv";
 import * as XLSX from "xlsx";
 import { FaSearch, FaFileCsv, FaFileExcel, FaPlus } from "react-icons/fa";
@@ -9,13 +15,22 @@ import AddManagerModal from "../ui/AddManagerModal";
 import useTheme from "../../hooks/useTheme";
 import { Skeleton } from "antd";
 import useAuth from "../../hooks/useAuth";
-import {TableProps} from '../../utils/interfaces'
+import { TableProps } from '../../utils/interfaces';
 import AddEmployeeModal from "./AddEmployeeModal";
 
+// Type for CSV data
+type CsvDataType<T extends object> = {
+  [K in keyof T]: string;
+};
 
-function Table<T>({ data, columns, loading, error }: TableProps<T>) {
+function Table<T extends object>({ 
+  data, 
+  columns, 
+  loading, 
+  error 
+}: TableProps<T>) {
   const { themeColor } = useTheme();
-  const { superAdmin, businessOwner ,manager } = useAuth();
+  const { superAdmin, businessOwner, manager } = useAuth();
   const [globalFilter, setGlobalFilter] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -28,12 +43,20 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const exportToExcel = () => {
+  const exportToExcel = (): void => {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
     XLSX.writeFile(workbook, "Data.xlsx");
   };
+
+  // Convert data to CSV format with proper typing
+  const csvData: CsvDataType<T>[] = data.map(item => {
+    return Object.entries(item).reduce((acc, [key, value]) => ({
+      ...acc,
+      [key]: String(value ?? '')
+    }), {} as CsvDataType<T>);
+  });
 
   return (
     <div className="p-5 max-w-6xl mx-auto bg-white text-gray-800 rounded-lg shadow-lg">
@@ -48,7 +71,7 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
           />
         </div>
 
-        {businessOwner.isAuthenticated || manager.isAuthenticated && !superAdmin.isAuthenticated && (
+        {(businessOwner.isAuthenticated || manager.isAuthenticated) && !superAdmin.isAuthenticated && (
           <motion.button
             onClick={() => setIsModalVisible(true)}
             style={{ backgroundColor: themeColor }}
@@ -61,20 +84,18 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
         )}
 
         <div className="flex space-x-3">
-          <CSVLink data={data} filename={"Data.csv"}>
-            <motion.button
-              className="flex items-center bg-green-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-green-700"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <FaFileCsv className="mr-2" /> CSV
-            </motion.button>
+          <CSVLink
+            data={csvData}
+            filename={"Data.csv"}
+            className="flex items-center bg-green-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-green-700"
+          >
+            <FaFileCsv className="mr-2" /> CSV
           </CSVLink>
           <motion.button
             onClick={exportToExcel}
             className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md transition duration-300 hover:bg-blue-700"
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}  
+            whileTap={{ scale: 0.95 }}
           >
             <FaFileExcel className="mr-2" /> Excel
           </motion.button>
@@ -152,11 +173,20 @@ function Table<T>({ data, columns, loading, error }: TableProps<T>) {
           Next
         </button>
       </div>
-      {businessOwner.isAuthenticated ? <AddManagerModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)}  onManagerAdded={() => {}}  /> :
-       manager.isAuthenticated ? <AddEmployeeModal isVisible={isModalVisible} onClose={() => setIsModalVisible(false)} onManagerAdded={() => {}}  /> : null}
 
-      
-      
+      {businessOwner.isAuthenticated ? (
+        <AddManagerModal 
+          isVisible={isModalVisible} 
+          onClose={() => setIsModalVisible(false)} 
+          onManagerAdded={() => {}} 
+        />
+      ) : manager.isAuthenticated ? (
+        <AddEmployeeModal 
+          isVisible={isModalVisible} 
+          onClose={() => setIsModalVisible(false)} 
+          onManagerAdded={() => {}} 
+        />
+      ) : null}
     </div>
   );
 }

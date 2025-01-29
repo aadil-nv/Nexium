@@ -1,7 +1,5 @@
-// components/TeamCard.tsx
 import React from 'react';
 import { Card, Avatar, Tag, Checkbox } from 'antd';
-// import { VideoCameraOutlined, MailOutlined, MessageOutlined, CalendarOutlined } from '@ant-design/icons';
 
 interface TeamCardProps {
   member: { id: number; name: string; position: string; online: boolean; active: boolean };

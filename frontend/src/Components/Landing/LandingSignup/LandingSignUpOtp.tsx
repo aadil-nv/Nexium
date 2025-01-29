@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '../../../components/landing/landingPage/theme-provider';
+import { useTheme } from '../landingPage/theme-provider';
 import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { signUpResendOtp, SignUpValidateOtp } from '../../../api/authApi';
@@ -109,8 +109,11 @@ const pulseVariants = {
         toast.error(data.message || 'Failed to resend OTP.');
       }
     } catch (error) {
-      console.error(error);
-      toast.error(error.message);
+      if (error instanceof Error) {
+        toast.error(error.message || 'Error resending OTP.');
+      } else {
+        toast.error('Error resending OTP.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -132,9 +135,9 @@ const pulseVariants = {
         toast.error(data.message || 'Invalid OTP');
       }
     } catch (error) {
-      console.error(error);
-      setErrorMessage(error.message);
-      toast.error(error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
+      setErrorMessage(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

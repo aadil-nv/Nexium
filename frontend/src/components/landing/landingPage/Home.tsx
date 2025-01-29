@@ -1,4 +1,3 @@
-import React from 'react';
 import images from '../../../images/images';
 import { useTheme } from './theme-provider'; // Ensure this is the correct path to your theme provider
 

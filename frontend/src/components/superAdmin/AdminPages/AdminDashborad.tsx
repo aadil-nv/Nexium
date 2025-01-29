@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { FaDollarSign, FaShoppingCart, FaUsers, FaChartLine } from 'react-icons/fa';
 import {
@@ -21,7 +21,20 @@ interface DashboardData {
   planCountsAndRevenue: { planName: string; count: number; totalRevenue: number }[];
 }
 
-const StatCard = ({ icon, title, value, change, textColor, bgColor }) => (
+interface StatCardProps {
+  icon: ReactNode;
+  title: string;
+  value: string | number;
+  change: number;
+  textColor: string;
+  bgColor: string;
+}
+
+interface ChartContainerProps {
+  children: ReactNode;
+}
+
+const StatCard = ({ icon, title, value, change, textColor, bgColor }: StatCardProps) => (
   <motion.div className={`p-6 rounded-lg shadow hover:shadow-lg transition-shadow ${bgColor}`} whileHover={{ scale: 1.05 }}>
     <div className="space-y-2 text-white flex items-center">
       <div className="mr-4 text-3xl">{icon}</div>
@@ -34,7 +47,7 @@ const StatCard = ({ icon, title, value, change, textColor, bgColor }) => (
   </motion.div>
 );
 
-const ChartContainer = ({ children }) => (
+const ChartContainer = ({ children }: ChartContainerProps) => (
   <motion.div className="bg-white p-4 rounded-lg shadow" whileHover={{ scale: 1.02 }}>
     {children}
   </motion.div>

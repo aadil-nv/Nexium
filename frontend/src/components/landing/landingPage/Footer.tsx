@@ -1,4 +1,3 @@
-import React from 'react'
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import images from "../../../images/images"
 import { useTheme } from './theme-provider';

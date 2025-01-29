@@ -3,6 +3,7 @@ import { Modal, Input, DatePicker, Button, Select, Row, Col } from 'antd';
 import moment from 'moment';
 import { employeeInstance } from '../../services/employeeInstance';
 import { toast } from 'react-toastify';
+import { AxiosError } from 'axios';
 
 interface SubTask {   
   title: string;   
@@ -70,12 +71,18 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
       if (Array.isArray(response.data)) {
         setAvailableEmployees(response.data);
       }
-    } catch (error) {
-      toast.error(error.message || 'Failed to fetch available employees');
+    }  catch (error) {
+      if (error instanceof AxiosError) {
+        toast.error(error.response?.data?.message || 'Failed to fetch available employees');
+      } else if (error instanceof Error) {
+        toast.error(error.message || 'Failed to fetch available employees');
+      } else {
+        toast.error('Failed to fetch available employees');
+      }
     }
   };
 
-  const handleTaskUpdate = (index: number, field: string, value) => {
+  const handleTaskUpdate = (index: number, field: string, value : string) => {
     if (taskData) {
       const updatedTasks = [...taskData.tasks];
       updatedTasks[index] = { ...updatedTasks[index], [field]: value };
@@ -155,7 +162,13 @@ const EditTaskModal: React.FC<TaskModalProps> = ({ visible, selectedTask, onCanc
           onSave(taskData);
         }
       } catch (error) {
-        toast.error(error.message || 'Failed to update task!');
+        if (error instanceof AxiosError) {
+          toast.error(error.response?.data?.message || 'Failed to update task!');
+        } else if (error instanceof Error) {
+          toast.error(error.message || 'Failed to update task!');
+        } else {
+          toast.error('Failed to update task!');
+        }
       }
     }
   };

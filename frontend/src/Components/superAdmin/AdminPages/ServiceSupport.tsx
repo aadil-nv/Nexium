@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Select, Spin, message, Input, Space, Modal, Button } from 'antd';
 import { CheckCircleOutlined, SyncOutlined, CloseCircleOutlined, SearchOutlined, EyeOutlined } from '@ant-design/icons';
 import { superAdminInstance } from '../../../services/superAdminInstance';
+import type { TablePaginationConfig } from 'antd/es/table';
 
 interface ServiceRequest {
   _id: string;
@@ -21,6 +22,12 @@ interface ViewDetailsModalProps {
   onClose: () => void;
   serviceName: string;
   requestReason: string;
+}
+
+interface TableRowProps {
+  children: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any;
 }
 
 const ViewDetailsModal: React.FC<ViewDetailsModalProps> = ({ visible, onClose, serviceName, requestReason }) => (
@@ -93,7 +100,11 @@ export default function CustomerCare() {
         total: filteredData.length,
       });
     } catch (error) {
-      message.error(error.response?.data?.message ||'Failed to fetch service requests');
+      if (error instanceof Error) {
+        message.error(error.message || 'Failed to fetch service requests');
+      } else {
+        message.error('Failed to fetch service requests');
+      }
     } finally {
       setLoading(false);
     }
@@ -117,13 +128,15 @@ export default function CustomerCare() {
       await superAdminInstance.patch(`/superAdmin-service/api/superadmin/update-status/${id}`, { status: newStatus });
       message.success('Service request status updated successfully!');
     } catch (error) {
-      message.error(error.response?.data?.message ||'Failed to update status');
-      const rollbackRequests = serviceRequests.map((request) => {
-        if (request._id === id) {
-          return { ...request, status: 'Pending' };
-        }
-        return request;
-      });
+      if (error instanceof Error) {
+        message.error(error.message || 'Failed to update status');
+      } else {
+        message.error('Failed to update status');
+      }
+  
+      const rollbackRequests = serviceRequests.map((request) =>
+        request._id === id ? { ...request, status: 'Pending' } : request
+      );
       setServiceRequests(rollbackRequests);
     } finally {
       setLoading(false);
@@ -166,7 +179,7 @@ export default function CustomerCare() {
       title: 'Company Logo',
       dataIndex: 'companyLogo',
       key: 'companyLogo',
-      render: (logo: string) => <img src={logo} alt="Company Logo" width={30} height={30} />
+      render: (logo: string) => <img src={logo || "https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png"} alt="Company Logo" width={30} height={30} />
     },
     {
       title: 'Company Name',
@@ -188,7 +201,7 @@ export default function CustomerCare() {
       title: 'Request Reason',
       dataIndex: 'requestReason',
       key: 'requestReason',
-      width: 300, // Add fixed width to the column
+      width: 300,
       render: (text: string, record: ServiceRequest) => (
         <div className="flex items-center justify-between">
           <div className="truncate max-w-[180px]">
@@ -219,6 +232,7 @@ export default function CustomerCare() {
       render: (text: string, record: ServiceRequest) => (
         <>
           {getStatusIcon(record.status)}
+           <span style={{display: 'none' }}>{text}</span>
           <span style={{ marginLeft: 8, color: getStatusColor(record.status) }}>
             {record.status}
           </span>
@@ -236,9 +250,25 @@ export default function CustomerCare() {
     },
   ];
 
-  const handleTableChange = (pagination: { current: number | undefined; pageSize: number | undefined; }) => {
-    fetchServiceRequests(pagination.current, pagination.pageSize);
+  // Removed unused parameters to fix ESLint warnings
+  const handleTableChange = (newPagination: TablePaginationConfig) => {
+    fetchServiceRequests(
+      newPagination.current || 1,
+      newPagination.pageSize || 10
+    );
   };
+
+  const CustomTableRow: React.FC<TableRowProps> = ({ children, ...restProps }) => (
+    <motion.tr
+      {...restProps}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {children}
+    </motion.tr>
+  );
 
   return (
     <div className="p-4">
@@ -279,18 +309,7 @@ export default function CustomerCare() {
           onChange={handleTableChange}
           components={{
             body: {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              row: ({ children, ...restProps }: any) => (
-                <motion.tr
-                  {...restProps}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  {children}
-                </motion.tr>
-              ),
+              row: CustomTableRow
             },
           }}
         />

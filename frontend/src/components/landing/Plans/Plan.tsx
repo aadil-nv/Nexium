@@ -52,21 +52,11 @@ const PlanSelection: React.FC = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [scrolled, setScrolled] = useState(false);
   const email = (useLocation().state as { email: string })?.email;
  
   const stripePromise = loadStripe('pk_test_51QA84MG0KgrlY5FBKX5uMqGIPF0QRwCB52FMUeaO4mMIqlaHjWaellTk26kdZYqYgM1USvDyz7jwfoAIL5Wovdpw00AYg8dWct');
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
+ 
   useEffect(() => {
     const fetchData = async () => {
       try {

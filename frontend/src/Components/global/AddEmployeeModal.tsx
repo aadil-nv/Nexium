@@ -7,7 +7,7 @@ import { addEmployeeSchema } from '../../config/validationSchema';
 
 const { Option } = Select;
 
-const AddEmployeeModal: React.FC<{isVisible: boolean;onClose: () => void;onManagerAdded: (newManager ) => void}> = ({ isVisible, onClose, onManagerAdded }) => {
+const AddEmployeeModal: React.FC<{isVisible: boolean;onClose: () => void;onManagerAdded: (newManager: { name: string; position: string; email: string; phoneNumber: string; joiningDate: string; salary: number; workTime: string; } ) => void}> = ({ isVisible, onClose, onManagerAdded }) => {
   const [formData, setFormData] = useState({
     name: '', position: '', email: '', phoneNumber: '',
     joiningDate: '', salary: 0, workTime: '',
@@ -27,14 +27,26 @@ const AddEmployeeModal: React.FC<{isVisible: boolean;onClose: () => void;onManag
   const handleSubmit = async () => {
     const formValues = form.getFieldsValue();
     const validation = addEmployeeSchema.safeParse(formValues);
-
+  
     if (validation.success) {
-      const employeeData = { ...formValues, salary: Number(formValues.salary) };
+      const employeeData = { 
+        ...formValues, 
+        salary: Number(formValues.salary) 
+      };
+      
       try {
-        const success = await addEmployee(employeeData);
-        if (success) {
-          setFormData({ name: '', position: '', email: '', phoneNumber: '', joiningDate: '', salary: 0, workTime: '' });
-          onManagerAdded(success);
+        const response = await addEmployee(employeeData);
+        if (response) { // Assuming addEmployee returns the created employee data
+          setFormData({ 
+            name: '', 
+            position: '', 
+            email: '', 
+            phoneNumber: '', 
+            joiningDate: '', 
+            salary: 0, 
+            workTime: '' 
+          });
+          onManagerAdded(employeeData); // Pass the employee data instead of the boolean
           onClose();
         }
       } catch (error) {
@@ -42,7 +54,10 @@ const AddEmployeeModal: React.FC<{isVisible: boolean;onClose: () => void;onManag
       }
     } else {
       form.setFields(
-        validation.error.errors.map(err => ({ name: err.path[0], errors: [err.message] }))
+        validation.error.errors.map(err => ({ 
+          name: err.path[0], 
+          errors: [err.message] 
+        }))
       );
     }
   };

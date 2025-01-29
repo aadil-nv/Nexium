@@ -1,4 +1,3 @@
-import React from "react";
 
 import Navbar from "../../components/landing/landingPage/Navbar";
 import Home from "../../components/landing/landingPage/Home";

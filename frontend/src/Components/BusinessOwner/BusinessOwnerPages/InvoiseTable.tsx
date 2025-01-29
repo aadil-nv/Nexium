@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button } from 'antd';
 import { fetchInvoices } from '../../../api/businessOwnerApi';
-import {Invoice, DemoTableProps} from "../../../interface/BusinessOwnerInterface";
-
-
+import { Invoice, DemoTableProps } from "../../../interface/BusinessOwnerInterface";
 
 const DemoTable: React.FC<DemoTableProps> = ({ invoiceData: propInvoiceData }) => {
   const [data, setData] = useState<Invoice[]>([]);
@@ -18,33 +16,50 @@ const DemoTable: React.FC<DemoTableProps> = ({ invoiceData: propInvoiceData }) =
     }
   }, [propInvoiceData]);
 
-  const columns = ['id', 'created', 'amount_paid', 'amount_due', 'Download'].map((title) => ({
-    title,
-    dataIndex: title.toLowerCase().replace(' ', ''), // Set data index
-    key: title.toLowerCase().replace(' ', ''),      // Set key
-    render: title === 'Download'
-      ? (text: string, record: Invoice) => (
-          <Button type="primary" href={record.invoice_pdf} target="_blank" download>
-            Download
-          </Button>
-        )
-      : title === 'created'
-      ? (text: string) => {
-          const timestamp = parseInt(text, 10); // Ensure the timestamp is a number
-          const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
-          return date.toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-          });
-        }
-      : ['amount_paid', 'amount_due'].includes(title.toLowerCase())
-      ? (text: string) => parseFloat(text).toFixed(2).replace(/\.00$/, '') 
-      : undefined, 
-  }));
+  const columns = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Created',
+      dataIndex: 'created',
+      key: 'created',
+      render: (text: number) => {
+        const date = new Date(text * 1000);
+        return date.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        });
+      }
+    },
+    {
+      title: 'Amount Paid',
+      dataIndex: 'amount_paid',
+      key: 'amount_paid',
+      render: (text: number) => text.toFixed(2).replace(/\.00$/, '')
+    },
+    {
+      title: 'Amount Due',
+      dataIndex: 'amount_due',
+      key: 'amount_due',
+      render: (text: number) => text.toFixed(2).replace(/\.00$/, '')
+    },
+    {
+      title: 'Download',
+      key: 'download',
+      render: (_text: string, record: Invoice) => (
+        <Button type="primary" href={record.invoice_pdf} target="_blank" download>
+          Download
+        </Button>
+      )
+    }
+  ];
 
   return (
     <div>

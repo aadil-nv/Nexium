@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FaTrash, FaPlus } from 'react-icons/fa';
 import AddCandidateModal from './AddCandidateModal';
