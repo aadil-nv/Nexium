@@ -14,7 +14,7 @@ type Plan = {
 };
 export const resendOtp = async (email: string) => {
   try {
-    const response = await axios.post(`${apiUrl}/authentication-service/api/business-owner/resend-otp`, { email });
+    const response = await axios.post(`https://backend.aadil.online/authentication-service/api/business-owner/resend-otp`, { email });
     return response.data;
   } catch (error) {
     console.log("Error resending OTP:", error);

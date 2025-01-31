@@ -40,7 +40,7 @@ const EmployeeLogin: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/authentication-service/api/employee/employee-login",
+        "http://backend.aadil.online/authentication-service/api/employee/employee-login",
         { email, password },
         { withCredentials: true }
       );
