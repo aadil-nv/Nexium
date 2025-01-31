@@ -28,7 +28,7 @@ export interface IBusinessOwnerDocument extends Document {
   }[];
   subscription: ISubscription;
   companyLogo: string;
-  profileI: string; 
+  profileImage: string; 
 }
 
 export interface IBusinessOwner extends Omit<IBusinessOwnerDocument, "_id"> {}
@@ -49,9 +49,9 @@ export interface IPaymentIntentResponse {
     login(req: Request, res: Response ): Promise<Response>;
     validateOtp(req: Request, res: Response,next: NextFunction): Promise<void>;
     resendOtp(req: Request, res: Response): Promise<Response>;
+    // createCheckoutSession(req: Request, res: Response): Promise<Response>;
     forgotPassword(req: Request, res: Response): Promise<Response>;
     addNewPassword(req: Request, res: Response): Promise<Response>;
-    googleLogin(req: Request, res: Response): Promise<Response>;
   }
 
 

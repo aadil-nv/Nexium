@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import AdminDashBoard from "../components/superAdmin/AdminPages/AdminDashborad";
 import BusinessOwnersList from "../components/superAdmin/AdminPages/BusinessOwnersList";
 import AllPlans from "../components/superAdmin/AdminPages/AllPlans";
-import DashBoardLayout from "../pages/superAdminPages/SuperAdminDashBoardLayout";
+import DashBoardLayout from "../pages/superAdminPages/superAdminDashBoardLayout";
 import ServiceSupport from "../components/superAdmin/AdminPages/ServiceSupport";
 import Notifications from "../components/global/Notifications";
 import SuperAdminPrivateRoute from "../routes/SuperAdminPrivateRoute"; // Import the private route

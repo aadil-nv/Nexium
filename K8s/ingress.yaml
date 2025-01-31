@@ -6,8 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/use-regex: 'true'
 spec:
   rules:
-    - host: localhost
-      http:
+    - http:
         paths:
           - path: /authentication/(.*)
             pathType: ImplementationSpecific
@@ -62,6 +61,6 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: manager-service
+                name: frontend-srv
                 port:
                   number: 7003

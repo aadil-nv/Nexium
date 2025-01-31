@@ -1,12 +1,12 @@
 import Navbar from '../../components/landing/landingPage/Navbar'
 import Footer from "../../components/landing/landingPage/Footer"
-import LandingOtpPage from '../../components/landing/LandingSignup/LandingSignUpOtp'
+import LandingOtps from '../../components/landing/LandingSignup/LandingSignUpOtp'
 
-export default function LandingSOtp() {
+export default function LandingOtp() {
   return (
     <div>
       <Navbar />
-      <LandingOtpPage />
+      <LandingOtps />
       <Footer/>
     </div>
   )

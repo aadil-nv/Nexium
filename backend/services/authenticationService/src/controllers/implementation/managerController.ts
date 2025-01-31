@@ -6,24 +6,16 @@ import { HttpStatusCode } from "../../utils/statusCodes";
 
 @injectable()
 export default class ManagerController implements IManagerController {
-    constructor(@inject("IManagerService") private _managerService: IManagerService) {}
+    private _managerService: IManagerService;
 
-    private setCookies(res: Response, accessToken: string, refreshToken: string): void {
-        const cookieOptions = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 7 * 24 * 3600 * 1000, // 7 days
-            sameSite: "strict" as const, // Explicitly specify "strict"
-        };
-        res.cookie('accessToken', accessToken, cookieOptions);
-        res.cookie('refreshToken', refreshToken, cookieOptions);
+    constructor(@inject("IManagerService") managerService: IManagerService) {
+        this._managerService = managerService;
     }
-    
+
     async managerLogin(req: Request, res: Response): Promise<Response> {
         try {
-            const { email, password } = req.body;
-            const result = await this._managerService.managerLogin(email, password);
-
+            const result = await this._managerService.managerLogin(req.body.email, req.body.password);
+            
             if (!result.success && !result.isVerified) {
                 return res.status(HttpStatusCode.OK).json({
                     success: false,
@@ -34,33 +26,55 @@ export default class ManagerController implements IManagerController {
             }
 
             if (result.accessToken && result.refreshToken) {
-                this.setCookies(res, result.accessToken, result.refreshToken);
+                res.cookie('accessToken', result.accessToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                    sameSite: 'strict',
+                });
+
+                res.cookie('refreshToken', result.refreshToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                    sameSite: 'strict',
+                });
             }
 
-            return res.status(HttpStatusCode.ACCEPTED).json({
+            return res.status(HttpStatusCode.ACCEPTED ).json({
                 message: "Login successful",
                 data: result,
                 success: true,
-                managerName: result.managerName,
-                managerProfilePicture: result.managerProfilePicture  ,
-                companyLogo : result.companyLogo,
-                managerType: result.managerType,
-                companyName : result.companyName
             });
-        } catch (error) {
-            console.error("Login error:", error);
+        } catch (error: unknown) {
+            console.error('Login error:', error);
             const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
             return res.status(HttpStatusCode.BAD_REQUEST).json({ message: errorMessage, error: true });
         }
     }
 
     async validateOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+        console.log("Validating OTP...");
+
         try {
             const { email, otp } = req.body;
+            console.log("Email:", email, "OTP:", otp);
+
             const response = await this._managerService.validateOtp(email, otp);
+            console.log("OTP validation response:", response);
 
             if (response.success) {
-                this.setCookies(res, response.accessToken, response.refreshToken);
+                res.cookie('accessToken', response.accessToken, { 
+                    httpOnly: true, 
+                    secure: process.env.NODE_ENV === 'production', 
+                    maxAge: 7 * 24 * 3600 * 1000 
+                });
+                res.cookie('refreshToken', response.refreshToken, { 
+                    httpOnly: true, 
+                    secure: process.env.NODE_ENV === 'production', 
+                    maxAge: 7 * 24 * 3600 * 1000 
+                }); // 7 days
+
                 res.status(HttpStatusCode.OK).json({
                     success: true,
                     message: response.message,
@@ -77,17 +91,6 @@ export default class ManagerController implements IManagerController {
         } catch (error) {
             console.error("Error validating OTP:", error);
             next(error);
-        }
-    }
-
-    async resendOtp(req: Request, res: Response): Promise<Response> {
-        try {
-            const { email } = req.body;
-            const result = await this._managerService.resendOtp(email);
-            return res.status(HttpStatusCode.OK).json(result);
-        } catch (error) {
-            console.error("Error resending OTP:", error);
-            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Internal Server Error" });
         }
     }
 }

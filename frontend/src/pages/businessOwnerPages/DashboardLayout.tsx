@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import  { useState } from 'react';
 import { Outlet } from 'react-router-dom'; // This will render the child routes
 import Sidebar from '../../components/global/SideBar';
 import Navbar from '../../components/global/Navbar';
@@ -63,4 +63,4 @@ const DashBoardLayout = () => {
   );
 };
 
-export default DashBoardLayout;
+export default DashBoardLayout; // Export the CompanyLayout

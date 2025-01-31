@@ -6,7 +6,7 @@ export default function LandingForgottEmail() {
   return (
     <>
     <Navbar />
-    <VerifyEmail  />
+    <VerifyEmail />
     <Footer />
     </>
   )

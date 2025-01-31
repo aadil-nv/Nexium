@@ -13,57 +13,38 @@ export default class BusinessOwnerController implements IBusinessOwnerController
 
   constructor(
     @inject("IBusinessOwnerService") businessOwnerService: IBusinessOwnerService
-  ) {this._businessOwnerService = businessOwnerService}
+  ) {
+    this._businessOwnerService = businessOwnerService;
+  }
 
   async login(req: Request, res: Response): Promise<Response> {
-    console.log("hitting businesss owner login");
     
     try {
       const { email, password } = req.body;
-      
-      // Validate input
       if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
-  
-      const { success, message, accessToken, refreshToken, isVerified, email: companyEmail ,companyLogo,companyName,profilePicture ,businessOwnerData } =
+
+      const { success, message, accessToken, refreshToken, isVerified, email: companyEmail } =
         await this._businessOwnerService.login(email, password);
-  
+
       if (!success) {
-        if (message === "Account is blocked. Please contact admin") {
-          return res.status(403).json({ message });  // Blocked account error
-        } 
         if (!isVerified) {
-          return res.status(400).json({ 
-            message: message, 
-            email: companyEmail, 
-            isVerified: false, 
-            success: false 
-          });
+          return res.status(400).json({ message: "Account not verified. OTP sent to email.", email: companyEmail, isVerified: false, success: false });
         }
-        return res.status(400).json({ message }); // Other error messages (invalid email/password)
       }
-  
-      res.cookie('refreshToken', refreshToken, { 
-        httpOnly: true, 
-        secure: process.env.NODE_ENV === 'production', 
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000 
-      });
-  
-      res.cookie('accessToken', accessToken, { 
-        httpOnly: true, 
-        secure: process.env.NODE_ENV === 'production', 
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000 
-      });
-  
-      return res.status(200).json({ success, message ,companyLogo,companyName,profilePicture,businessOwnerData });
-  
+    
+
+      res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
+         maxAge:7 * 24 * 60 * 60 * 1000 });
+      res.cookie('accessToken', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
+         maxAge:7 * 24 * 60 * 60 * 1000 });
+
+      return res.status(200).json({ accessToken, success, message });
     } catch (error) {
       console.error("Error during login", error);
       return res.status(500).json({ message: "An error occurred during login" });
     }
   }
-  
+
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const { companyName, email, password, phone } = req.body;
@@ -98,6 +79,28 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
   }
 
+  // async createCheckoutSession(req: Request, res: Response): Promise<Response> {
+  //   const { plan, amount, currency, email } = req.body;
+
+  //   try {
+  //     const result = await this._businessOwnerService.createCheckoutSession(plan, amount, currency, email);
+  //       console.log("result----------------------......-.....>",result);
+        
+  //     res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
+  //        maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+  //     res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
+  //        maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
+
+  //     const response = result.planName === 'Trial' 
+  //       ? { message: result.message, success: result.success, role: result.role, planName: result.planName }
+  //       : { sessionId: result.session.id, success: result.success, planName: result.planName };
+
+  //     return res.status(200).json(response);
+  //   } catch (error) {
+  //     console.error('Error creating checkout session:', error);
+  //     return res.status(500).json({ message: 'Failed to create checkout session', error });
+  //   }
+  // }
 
   async forgotPassword(req: Request, res: Response): Promise<Response> {
     try {
@@ -115,45 +118,4 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     const result = await this._businessOwnerService.addNewPassword(email, password);
     return res.status(200).json(result);
   }
-
-  async googleLogin(req: Request, res: Response): Promise<Response> {
-    console.log("hitting google login===========================");
-    console.log("req.body",req.body);
-    
-    
-    try {
-      const { userData } = req.body;
-  
-      const result = await this._businessOwnerService.googleLogin(userData.email, userData.id, userData.phone, userData.name);
-      console.log("result is ==>",result);
-      
-      if (result.success ==true && result.refreshToken && result.accessToken) {
-        res.cookie('refreshToken', result.refreshToken, { 
-          httpOnly: true, 
-          secure: process.env.NODE_ENV === 'production', 
-          sameSite: 'strict',
-          maxAge: 7 * 24 * 60 * 60 * 1000 
-        });
-    
-        res.cookie('accessToken', result.accessToken, { 
-          httpOnly: true, 
-          secure: process.env.NODE_ENV === 'production', 
-          sameSite: 'strict',
-          maxAge: 7 * 24 * 60 * 60 * 1000 
-        });
-        console.log(`Google login successful for email: ${result.email}`);
-        return res.status(200).json( result);
-        
-      } else {
-
-        return res.status(200).json(result);
-      }
-    } catch (error) {
-      console.error("Error during Google login:", error);
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-  }
-  
-
-  
 }
