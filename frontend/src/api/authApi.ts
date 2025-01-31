@@ -35,7 +35,7 @@ export const validateOtp = async (email: string, otp: string) => {
 
 export const loginBusinessOwnerAPI = async (email:string, password:string) => {
     const { data } = await axios.post(
-      `https://backend.aadil.online/authentication-service/api/business-owner/login`,
+      `https://aadil.online/authentication-service/api/business-owner/login`,
       { email, password },
       { withCredentials: true }
     );

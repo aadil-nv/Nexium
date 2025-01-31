@@ -6,7 +6,7 @@ import { setTimer, decrementTimer } from "../../redux/slices/otpSlice";
 import image from "../../images/images";
 import { login } from "../../redux/slices/employeeSlice";
 import axios from "axios";
-
+//fskaduhiusdagfjgsdjkayfgj sdajhfg ds
 const EmployeeOtp: React.FC = () => {
   const [otp, setOtp] = React.useState<string>("");
   const [errorMessage, setErrorMessage] = React.useState<string>("");
