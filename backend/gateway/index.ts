@@ -29,7 +29,7 @@ app.use(morgan('dev'));
 
 
 app.use(cookieParser());
-app.use(cors({ origin: process.env.CLIENT_ORIGIN, credentials: true , methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] }));
+app.use(cors({ origin: "https://www.aadil.online", credentials: true , methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] }));
 
 
 const targets = {
