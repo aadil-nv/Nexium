@@ -1,5 +1,5 @@
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:7006/socket");
+const socket = io("http://www.aadil.online/socket");
 
 export default socket;
