@@ -187,7 +187,8 @@ const LandingLoginPage = () => {
         }
       }
     } catch (error) {
-      // Assert the error type to handle response properties
+     console.log("Error logging in:", error);
+     
       if (error instanceof Error) {
         // This handles errors that are instances of Error
         const errorMessage = error.message || 'Something went wrong during login';
