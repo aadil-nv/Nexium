@@ -3,6 +3,9 @@ import axios from 'axios';
 
 
 const apiUrl = import.meta.env.VITE_API_KEY
+console.log("apiUrl=============>",apiUrl);
+console.log("apiUrl=============>", typeof apiUrl);
+
 
 
 type Plan = {
