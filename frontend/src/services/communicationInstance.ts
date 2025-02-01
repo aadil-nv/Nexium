@@ -67,7 +67,7 @@ const handleTokenError = async (error: AxiosError) => {
   console.log("Handling token error...", error);
   store.dispatch(managerLogout());
   try {
-    const result = await axios.post("http://localhost:3000/communication-service/api/chat/logout");
+    const result = await axios.post("http://backend.aadil.online/communication-service/api/chat/logout");
     toast.success(result.data.message);
     console.log("Logged out successfully.");
   } catch (logoutError) {
@@ -76,7 +76,7 @@ const handleTokenError = async (error: AxiosError) => {
 };
 
 export const communicationInstance: AxiosInstance = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "http://backend.aadil.online",
   withCredentials: true,
 });
 

@@ -18,7 +18,8 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async login(req: Request, res: Response): Promise<Response> {
-    
+      console.log("hitting login=======>");
+      
     try {
       const { email, password } = req.body;
       if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
@@ -31,12 +32,16 @@ export default class BusinessOwnerController implements IBusinessOwnerController
           return res.status(400).json({ message: "Account not verified. OTP sent to email.", email: companyEmail, isVerified: false, success: false });
         }
       }
+
     
 
       res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
          maxAge:7 * 24 * 60 * 60 * 1000 });
       res.cookie('accessToken', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
          maxAge:7 * 24 * 60 * 60 * 1000 });
+
+         console.log("response", { accessToken, success, message });
+         
 
       return res.status(200).json({ accessToken, success, message });
     } catch (error) {

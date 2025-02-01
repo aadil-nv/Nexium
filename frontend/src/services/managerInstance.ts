@@ -63,7 +63,7 @@ const handleTokenError = async (error: unknown): Promise<void> => {
   
   try {
     const result = await axios.post<LogoutResponse>(
-      "http://localhost:3000/manager-service/api/manager/logout"
+      "http://backend.aadil.online/manager-service/api/manager/logout"
     );
     toast.success(result.data.message);
     console.log("Logged out successfully.");
@@ -73,7 +73,7 @@ const handleTokenError = async (error: unknown): Promise<void> => {
 };
 
 export const managerInstance: AxiosInstance = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "http://backend.aadil.online",
   withCredentials: true,
 });
 

@@ -1,0 +1,56 @@
+# apigateway Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apigateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apigateway
+  template:
+    metadata:
+      labels:
+        app: apigateway
+    spec:
+      containers:
+        - name: apigateway
+          image: aadilnv/nexium-apigateway:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: AUTHENTICATION_API_BASE_URL
+              value: "http://authentication-service:7000"
+            - name: BUSINESS_OWNER_API_BASE_URL
+              value: "http://business-owner-service:7001"
+            - name: SUPER_ADMIN_API_BASE_URL
+              value: "http://super-admin-service:7002"
+            - name: MANAGER_API_BASE_URL
+              value: "http://manager-service:7003"
+            - name: EMPLOYEE_API_BASE_URL
+              value: "http://employee-service:7004"
+            - name: PAYMENT_API_BASE_URL
+              value: "http://payment-service:7005"
+            - name: COMMUNICATION_API_BASE_URL
+              value: "http://communication-service:7006"
+            - name: GATEWAY_PORT
+              value: "3000"
+            - name: CLIENT_ORIGIN
+              value: "https://www.aadil.online"
+            - name: LOG_INTERVAL
+              value: "7d"
+---
+# apigateway Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: apigateway
+spec:
+  selector:
+    app: apigateway
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: LoadBalancer

@@ -2,66 +2,43 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-service
+  namespace: default
   annotations:
-    nginx.ingress.kubernetes.io/use-regex: 'true'
+    cert-manager.io/cluster-issuer: "letsencrypt-production"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://www.aadil.online"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
 spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - backend.aadil.online
+      secretName: backend-aadil-tls  # Cert Manager will create this
+    - hosts:
+        - aadil.online
+      secretName: aadil-online-tls  # New TLS entry for aadil.online
   rules:
-    - host: localhost
+    - host: backend.aadil.online
       http:
         paths:
-          - path: /authentication/(.*)
+          - path: /(.*)
             pathType: ImplementationSpecific
             backend:
               service:
-                name: authentication-service
+                name: apigateway
                 port:
-                  number: 7000
-          - path: /business-owner/(.*)
+                  number: 3000
+    - host: www.aadil.online
+      http:
+        paths:
+          - path: /(.*)
             pathType: ImplementationSpecific
             backend:
               service:
-                name: business-owner-service
+                name: apigateway
                 port:
-                  number: 7001
-          - path: /payment/(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: payment-service
-                port:
-                  number: 7005
-          - path: /super-admin/(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: super-admin-service
-                port:
-                  number: 7002
-          - path: /employee/(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: employee-service
-                port:
-                  number: 7004
-          - path: /communication/(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: communication-service
-                port:
-                  number: 7006
-          - path: /manager/(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: manager-service
-                port:
-                  number: 7003
-          - path: /
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: manager-service
-                port:
-                  number: 7003
+                  number: 3000
