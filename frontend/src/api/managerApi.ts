@@ -72,7 +72,7 @@ export const getAllManagers = async () => {
 
 export const validateOtp = async (otp: string ,email: string) => {
    
-    const response = await axios.post('http://backend.aadil.online/authentication-service/api/manager/validate-otp', { otp, email }, {withCredentials: true,});
+    const response = await axios.post('https://backend.aadil.online/authentication-service/api/manager/validate-otp', { otp, email }, {withCredentials: true,});
     return response.data;
 };
 

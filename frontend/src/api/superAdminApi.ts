@@ -20,7 +20,7 @@ interface IBusinessOwnerResponse {
 export const loginSuperAdmin = async (data: { email: string; password: string }) => {
   try {
     const response = await axios.post(
-      "http://backend.aadil.online/api/super-admin/superadmin-login",
+      "https://backend.aadil.online/api/super-admin/superadmin-login",
       data,
       {
         headers: { "Content-Type": "application/json" },

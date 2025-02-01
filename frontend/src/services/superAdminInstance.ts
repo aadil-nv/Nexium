@@ -39,7 +39,7 @@ const handleTokenRefresh = async (
   try {
     console.log("Attempting token refresh...");
     const { data } = await axios.post<RefreshTokenResponse>(
-      "http://backend.aadil.online/superAdmin/api/superadmin/refresh-token"
+      "https://backend.aadil.online/superAdmin/api/superadmin/refresh-token"
     );
     console.log("Token refresh successful:", data);
 
@@ -63,7 +63,7 @@ const handleTokenError = async (error: unknown): Promise<void> => {
   
   try {
     const result = await axios.post<LogoutResponse>(
-      "http://backend.aadil.online/superAdmin/api/superadmin/logout"
+      "https://backend.aadil.online/superAdmin/api/superadmin/logout"
     );
     toast.success(result.data.message);
     console.log("Logged out successfully.");
@@ -73,7 +73,7 @@ const handleTokenError = async (error: unknown): Promise<void> => {
 };
 
 export const superAdminInstance: AxiosInstance = axios.create({
-  baseURL: "http://backend.aadil.online",
+  baseURL: "https://backend.aadil.online",
   withCredentials: true,
 });
 

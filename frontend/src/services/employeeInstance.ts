@@ -52,7 +52,7 @@ const handleTokenError = async (error: AxiosError) => {
   console.log("Handling token error...", error);
   store.dispatch(employeeLogout());
   try {
-    const result = await axios.post("http://backend.aadil.online/employee-service/api/employee/logout");
+    const result = await axios.post("https://backend.aadil.online/employee-service/api/employee/logout");
     toast.success(result.data.message);
     console.log("Logged out successfully.");
   } catch (logoutError) {
@@ -61,7 +61,7 @@ const handleTokenError = async (error: AxiosError) => {
 };
 
 export const employeeInstance: AxiosInstance = axios.create({
-  baseURL: "http://backend.aadil.online",
+  baseURL: "https://backend.aadil.online",
   withCredentials: true,
 });
 
