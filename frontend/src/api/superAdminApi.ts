@@ -22,6 +22,7 @@ export const loginSuperAdmin = async (data: { email: string; password: string })
     const response = await axios.post(
       "https://backend.aadil.online/api/super-admin/superadmin-login",
       data,
+      { withCredentials: true }
       
     );
     return response.data;
