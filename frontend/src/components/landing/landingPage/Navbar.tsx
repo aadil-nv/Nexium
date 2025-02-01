@@ -5,7 +5,8 @@ import { IoMenu } from "react-icons/io5";
 import { FaXmark } from "react-icons/fa6";
 import { ModeToggle } from "../../../components/ui/mode-toggle";
 import { useTheme } from "../../../components/landing/landingPage/theme-provider";
-import images from "../../../images/images";
+// import images from "../../../images/images";
+import NavbarLogo from "../../../assets/landingPageAssets/NavbarLogo.png"
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -42,7 +43,7 @@ const Navbar = () => {
           >
             <Link to="/" className="flex items-center">
               <img
-                src={ images.navBarLogo }
+                src={ NavbarLogo }
                 alt="Logo"
                 className="h-6 w-auto"
               />
