@@ -36,8 +36,11 @@ const accessLogStream = createStream('access.log', {
 app.use(morgan('combined', { stream: accessLogStream }));
 app.use(morgan('dev'));
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
-
+app.use(cors({
+  origin: "https://www.aadil.online" ,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
 app.use(express.json());
 app.use(cookieParser()); // Use cookie-parser middleware
 
@@ -54,4 +57,6 @@ connectConsumer();
 
 app.listen(PORT, () => {
     console.log(`authenticationService on http://localhost:${PORT}`.bgGreen.bold);
+    console.log("Connected to DB".bgGreen.bold);
+    
 });

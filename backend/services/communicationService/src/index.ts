@@ -26,8 +26,8 @@ const server = app.listen(PORT, () => {
 
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
-    methods: ['GET', 'POST'],
+    origin: 'http://www.aadil.online',
+    methods: ['GET', 'POST' , 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   },
 });
@@ -54,8 +54,8 @@ const accessLogStream = createStream('access.log', {
 app.use(morgan('combined', { stream: accessLogStream }));
 // app.use(morgan('tiny'));
 app.use(cors({
-  origin: 'http://localhost:5173',
-  methods: ['GET', 'POST'],
+  origin: 'http://www.aadil.online',
+  methods: ['GET', 'POST' , 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
 }));
 app.use(express.json());
