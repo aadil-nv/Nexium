@@ -59,7 +59,7 @@ const SignUp: React.FC = () => {
     try {
       const data = await signUpBusinessOwner(
         formData.companyName,
-        "NOT_REQUIRED", // Removed registration number
+        "NOT_REQUIRED", 
         formData.email,
         formData.password,
         formData.phone

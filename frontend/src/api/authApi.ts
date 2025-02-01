@@ -107,7 +107,8 @@ export const signUpBusinessOwner = async (companyName: string, registrationNumbe
       website: '',
       documents: [],
     });
-
+    console.log("response from signup",response.data);
+    
     return response.data;
   } catch (error) {
     console.error("Error during signup:", error);
