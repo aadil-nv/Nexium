@@ -11,7 +11,7 @@ export default function Home() {
         <h2 className={`text-2xl md:text-4xl font-bold ${theme === 'dark' ? 'text-white' : 'text-black-800'} mb-2`}> {/* Further decreased font size for smaller screens */}
           Welcome to HRMS Management
         </h2>
-        <p className={`text-sm md:text-base leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} mb-4`}> {/* Decreased paragraph text size */}
+        <p className={`text-sm md:text-base leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} mb-4`}> 
           Streamline your HR processes with our intuitive and powerful HR Management System. Designed for businesses of all sizes, our platform simplifies employee management, recruitment, payroll, and performance tracking. 
           Empower your HR team to focus on what truly matters—your people.
         </p>

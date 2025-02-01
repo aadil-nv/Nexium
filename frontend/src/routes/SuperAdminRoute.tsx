@@ -21,8 +21,6 @@ const SuperAdminRoutes = () => {
         <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<Profile />} />
         <Route path="settings" element={<Settings />} />
-        
-
       </Route>
     </Routes>
   );
