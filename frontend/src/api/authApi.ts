@@ -64,7 +64,7 @@ export const changePasswordAPI = async (password: string, email: string) => {
 
 export const forgotPassword = async (email: string) => {
   try {
-    const response = await axios.post(`${apiUrl}/authentication-service/api/business-owner/forgot-password`, { email });
+    const response = await axios.post(`https://backend.aadil.online/authentication-service/api/business-owner/forgot-password`, { email });
     return response.data; // Return the data
   } catch (error) {
     console.error('Error during forgot password request:', error);
