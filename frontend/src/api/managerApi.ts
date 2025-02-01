@@ -45,7 +45,7 @@ interface CommonInfo {
 
 
 export const managerLogin = async (formData: LoginFormData) => {
-        const response = await axios.post('http://localhost:3000/authentication-service/api/manager/manager-login', formData, {
+        const response = await axios.post('https://backend.aadil.online/authentication-service/api/manager/manager-login', formData, {
             withCredentials: true, 
         });
         return response.data;
