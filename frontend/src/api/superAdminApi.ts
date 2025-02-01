@@ -47,7 +47,7 @@ export const fetchAllPlans = async () => {
     return [];
   }
 };
-
+//============================
 export const updatePlanStatus = async (planId: string, newStatus: boolean) => {
   try {
     await superAdminInstance.patch(`/superAdmin-service/api/subscription/update-status/${planId}`, { isActive: newStatus });
