@@ -4,6 +4,7 @@ import { useTheme } from '../landingPage/theme-provider';
 import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { signUpResendOtp, SignUpValidateOtp } from '../../../api/authApi';
+import  signupbackground  from "../../../assets/landingPageAssets/signupbackground.png"
 
 const LandingOtp = () => {
   const { theme } = useTheme();
@@ -158,7 +159,7 @@ const pulseVariants = {
         variants={itemVariants}
       >
         <motion.img 
-          src="/api/placeholder/800/600"
+          src={signupbackground}
           alt="OTP Verification"
           className="object-cover w-full h-full"
           initial={{ scale: 1.2 }}
