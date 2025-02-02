@@ -38,9 +38,8 @@ app.use(morgan('dev'));
 connectDB();
 
 const corsOptions = {
-  origin: 'http://www.aadil.online',  
-  credentials: true,  
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  origin: process.env.CLIENT_ORIGIN,  // Replace with the actual origin of your frontend
+  credentials: true,  // Allow credentials (cookies, HTTP authentication)
 };
 
 app.use(cors(corsOptions));

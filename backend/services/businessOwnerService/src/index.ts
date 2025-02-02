@@ -39,10 +39,8 @@ app.use(morgan('combined', { stream: accessLogStream }));
 app.use(morgan('dev'));
 
 app.use(cors({
-  origin: 'http://www.aadil.online', // replace with your frontend domain
+  origin: process.env.CLIENT_ORIGIN, // replace with your frontend domain
   credentials: true, // Allow cookies to be sent with requests
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 }));
 app.use(express.json()); 
 app.use(cookieParser()); 

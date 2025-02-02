@@ -37,7 +37,7 @@ app.use(morgan('combined', { stream: accessLogStream }));
 app.use(morgan('dev'));
 
 app.use(cors({
-  origin: "https://www.aadil.online" ,
+  origin: process.env.CLIENT_ORIGIN ,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));

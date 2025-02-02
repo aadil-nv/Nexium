@@ -20,6 +20,7 @@ managerRouter.get('/get-leave-employees',authenticateToken,(req,res)=>managerCon
 
 managerRouter.post('/refresh-token',(req, res, next) => managerController.setNewAccessToken(req, res));
 managerRouter.post('/logout', (req, res) => managerController.logout(req, res));
+managerRouter.post("/update-isactive",authenticateToken,(req, res) => managerController.updateManagerIsActive(req , res));
 
 managerRouter.patch("/update-personalinfo",authenticateToken,(req,res)=>managerController.updateManagerPersonalInfo(req,res))
 managerRouter.patch('/update-profile-picture',authenticateToken,uploadMiddleware,(req,res)=>managerController.updateManagerProfilePicture(req,res))

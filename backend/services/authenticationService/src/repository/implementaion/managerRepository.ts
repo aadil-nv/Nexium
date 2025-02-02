@@ -148,6 +148,20 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
             throw error;
         }
     }
+
+    async updateIsActive (id: any, isActive: boolean): Promise<IManager | null> {
+      try {
+        const manager = await this._managerModel.findOneAndUpdate(
+          { _id: id },
+          { $set: { isActive } },
+          { new: true }
+        ).exec();
+        return manager;
+      } catch (error) {
+        console.error("Error updating manager:", error);
+        throw new Error(error instanceof Error ? error.message : "Unknown error occurred.");
+      }
+    }
     
       
       

@@ -17,7 +17,7 @@ export default class Consumer implements IConsumer {
   }
 
   async receiveFromQueue() {
-    const queue = 'authenticateQueue';
+    const queue = 'employeeQueue';
     const exchange = 'fanout_exchange';
 
     try {
@@ -41,6 +41,12 @@ export default class Consumer implements IConsumer {
             // if (data.employeeData) {
             //   await this._employeeService.addEmployee(data.employeeData);
             // }
+            if (data.employeeIsActiveData) {
+              console.log(`employeeIsActive:2222222222222222222 ${data.employeeIsActiveData._id}`.bgMagenta.bold);
+              
+              await this._employeeService.updateIsActive(data.employeeIsActiveData._id, true);
+            }
+
 
             this._channel?.ack(msg);
           } catch (err) {

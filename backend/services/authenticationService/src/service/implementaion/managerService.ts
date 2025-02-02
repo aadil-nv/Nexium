@@ -1,12 +1,12 @@
 import { injectable, inject } from "inversify";
 import IManagerService from "../interfaces/IManagerService";
-import { ITokenResponse } from "../interfaces/IBusinessOwnerService";
 import IManagerRepository from "../../repository/interfaces/IManagerRepository";
 import { generateAccessToken, generateRefreshToken } from "../../utils/businessOwnerJWT";
 import generateOtp from "../../utils/otp";
 import nodemailer from "nodemailer";
 import OtpModel from "../../model/otpModel";
 import { ILoginDTO, IResponseDTO, IValidateOtpDTO } from "../../dto/managerDTO";
+import RabbitMQMessager from "../../events/rabbitmq/producers/producer";
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -28,6 +28,8 @@ export default class ManagerService implements IManagerService {
     console.log("email",email ,"passwor",password);
     
     try {
+      const rabbitMQMessager = new RabbitMQMessager();
+      await rabbitMQMessager.init();
       if (!email || !password) throw new Error('Email and password are required');
 
       // const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -66,6 +68,10 @@ export default class ManagerService implements IManagerService {
         
       const accessToken = generateAccessToken({  managerData });
       const refreshToken = generateRefreshToken({ managerData });
+
+      const managerIsActiveData = await this._managerRepository.updateIsActive(managerData._id, true);
+      await rabbitMQMessager.sendToMultipleQueues({ managerIsActiveData});
+
 
       const managerName = managerData.personalDetails.managerName;
       const managerProfilePicture = managerData.personalDetails.profilePicture ?`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ managerData.personalDetails.profilePicture }`:managerData.personalDetails.profilePicture

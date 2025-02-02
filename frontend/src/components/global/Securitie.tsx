@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, message } from 'antd';
+import { Form, Input, message } from 'antd';
 import useTheme from '../../hooks/useTheme';
 import useAuth from '../../hooks/useAuth';
 import { managerInstance } from '../../services/managerInstance';
 import { employeeInstance } from '../../services/employeeInstance';
 
-// Define interface for Credentials
 interface Credentials {
   companyEmail: string;
   companyPassword: string;
 }
 
 const Securities: React.FC = () => {
-  const [credentials, setCredentials] = useState<Credentials | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [form] = Form.useForm();
   const { themeColor } = useTheme();
   const { employee, manager } = useAuth();
   const isManager = manager?.isAuthenticated;
@@ -35,7 +34,11 @@ const Securities: React.FC = () => {
         }
 
         const response = await instance.get<Credentials>(url);
-        setCredentials(response.data);
+        // Update form values when credentials are fetched
+        form.setFieldsValue({
+          companyEmail: response.data.companyEmail,
+          companyPassword: response.data.companyPassword,
+        });
       } catch (error) {
         console.error('Error fetching credentials:', error);
         message.error('Failed to fetch credentials');
@@ -43,7 +46,7 @@ const Securities: React.FC = () => {
     };
 
     fetchCredentials();
-  }, [isManager, isEmployee, instance]);
+  }, [isManager, isEmployee, instance, form]);
 
   const handleSubmit = async (values: Credentials) => {
     try {
@@ -54,7 +57,8 @@ const Securities: React.FC = () => {
       await instance.post(url, values);
       message.success('Security settings updated successfully!');
       setIsEditing(false);
-      setCredentials(values);
+      // Update form values after successful submission
+      form.setFieldsValue(values);
     } catch (error) {
       console.error('Error updating credentials:', error);
       message.error('Failed to update credentials');
@@ -65,21 +69,12 @@ const Securities: React.FC = () => {
     <div className="mt-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Your Credentials</h2>
-        <Button 
-          onClick={() => setIsEditing(!isEditing)} 
-          style={{ backgroundColor: themeColor, color: 'white' }}
-        >
-          {isEditing ? 'Cancel' : 'Edit'}
-        </Button>
       </div>
       
       <Form
+        form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        initialValues={{
-          companyEmail: credentials?.companyEmail || '',
-          companyPassword: credentials?.companyPassword || '',
-        }}
         className="mt-4"
       >
         <Form.Item
@@ -111,18 +106,6 @@ const Securities: React.FC = () => {
             style={{ borderColor: themeColor }}
           />
         </Form.Item>
-
-        {isEditing && (
-          <Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
-              style={{ backgroundColor: themeColor }}
-            >
-              Save Changes
-            </Button>
-          </Form.Item>
-        )}
       </Form>
     </div>
   );

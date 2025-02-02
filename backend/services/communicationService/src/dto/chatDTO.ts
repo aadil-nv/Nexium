@@ -14,7 +14,7 @@ export interface IReceiverDTO {
     senderId: any;
      receiverId: any;
      receiverName: string;
-     reciverPosition: any
+     receiverPosition: any
      status: boolean | undefined;
      receiverProfilePicture: string | undefined
      lastSeen?: Date;
@@ -61,9 +61,10 @@ export interface IPrivateChatDTO {
     receiverPosition: string;
     status: boolean;
     receiverProfilePicture?: string;
-    lastMessage?: mongoose.Types.ObjectId;
+    lastMessage?: mongoose.Types.ObjectId ;
     createdAt?: Date;
     updatedAt?: Date;
+    lastSeen?: Date;
 }
 
 
@@ -80,6 +81,7 @@ export interface IParticipantDetails {
     };
     role?: string;
     isActive?: boolean;
+    lastSeen?: Date;
 }
 
 export interface IChatWithDetails extends IChat {
@@ -160,3 +162,11 @@ export interface IUnAddedUsersDTO {
     position: string;
 
 }
+
+export interface IResponseDTO{
+    success?: boolean;
+    message?: string;
+    data?: any;
+    subscription?: string;
+    accessToken?:string;
+  }

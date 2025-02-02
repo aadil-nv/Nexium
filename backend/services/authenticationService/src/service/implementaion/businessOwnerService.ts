@@ -15,6 +15,7 @@ import { IBusinessOwner } from "controllers/interface/IBusinessOwnerController";
 import { generateOtpMail } from "../../utils/generateOtpMail";
 import businessOwnerModel from "../../model/businessOwnerModel";
 import { IGoogleResponseDTO, IResponseDTO } from "dto/managerDTO";
+import { log } from "console";
 
 
 
@@ -35,73 +36,85 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         this.businessOwnerRepository = businessOwnerRepository;
     }
 
-    async login(email: string, password: string): Promise<ITokenResponse> {
-    
-        try {
-          // Validate email and password format
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+      async login(email: string, password: string): Promise<ITokenResponse> {
       
-          if (!emailRegex.test(email)) return { success: false, message: "Invalid email format" };
-          if (!passwordRegex.test(password)) return { success: false, message: "Password must be at least 6 characters, 1 uppercase letter, 1 number, and 1 special character" };
-      
-          // Find the business owner by email
-          const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
-      
-          if (!businessOwnerData || !(await bcrypt.compare(password, businessOwnerData.personalDetails.password))) {
-            return { success: false, message: "Invalid email or password" };
-          }
-      
-          // Check if the account is blocked
-          if (businessOwnerData.isBlocked) {
-            console.log("Account is blocked");
-            return { success: false, message: "Your account has been blocked. Please contact support for assistance.", isVerified: false };
-          }
-      
-          // Check if the account is verified
-          if (!businessOwnerData.isVerified) {
-            const otp = generateOtp();
-            await this.sendOtp(businessOwnerData.personalDetails.email, otp);
-          
-            return {
-              success: false,
-              message: "Your account is not verified. An OTP has been sent to your email for verification.", 
-              isVerified: false,
-              email: businessOwnerData.personalDetails.email,
-            };
-          }
-      
-          // Generate and return tokens if login is successful
-          const accessToken = generateAccessToken({ businessOwnerData });
-          const refreshToken = generateRefreshToken({ businessOwnerData });
-          if(businessOwnerData.personalDetails.profilePicture ){
-              
-            businessOwnerData.personalDetails.profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ businessOwnerData?.personalDetails?.profilePicture}`
-          }
-          if(businessOwnerData.companyDetails.companyLogo){
-              
-            businessOwnerData.companyDetails.companyLogo= `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ businessOwnerData?.companyDetails?.companyLogo}`
-          }
-      
-          return { 
-            success: true, 
-            message: "Login successful", 
-            accessToken, 
-            refreshToken, 
-            isVerified: true,
-            businessOwnerData, 
-            email: businessOwnerData.personalDetails.email ,
-            companyName:businessOwnerData.companyDetails.companyName,
-            profilePicture:businessOwnerData.personalDetails.profilePicture,
-            companyLogo:businessOwnerData.companyDetails.companyLogo,
+          try {
+              const rabbitMQMessager = new RabbitMQMessager();
+              await rabbitMQMessager.init();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$/;
+        
+            if (!emailRegex.test(email)) return { success: false, message: "Invalid email format" };
+            if (!passwordRegex.test(password)) return { success: false, message: "Password must be at least 6 characters, 1 uppercase letter, 1 number, and 1 special character" };
+        
+            const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+        
+            if (!businessOwnerData || !(await bcrypt.compare(password, businessOwnerData.personalDetails.password))) {
+              return { success: false, message: "Invalid email or password" };
+            }
+        
+            if (businessOwnerData.isBlocked) {
+              console.log("Account is blocked");
+              return { success: false, message: "Your account has been blocked. Please contact support for assistance.", isVerified: false };
+            }
+        
+            if (!businessOwnerData.isVerified) {
+              const otp = generateOtp();
+              await this.sendOtp(businessOwnerData.personalDetails.email, otp);
+            
+              return {
+                success: false,
+                message: "Not verified", 
+                isVerified: false,
+                email: businessOwnerData.personalDetails.email,
+              };
+            }
+            console.log("businessOwnerData.subscription",businessOwnerData.subscription);
+            
 
-          };
-      
-        } catch (error) {
-          console.error("Login error:", error);
-          return { success: false, message: "An error occurred during login" };
+            if (!businessOwnerData.subscription || JSON.stringify(businessOwnerData.subscription) === '{}') {
+              return {
+                success: false,
+                message: "Not subscribed",
+                isVerified: false,
+                email: businessOwnerData.personalDetails.email,
+              };
+            }
+            
+            const accessToken = generateAccessToken({ businessOwnerData });
+            const refreshToken = generateRefreshToken({ businessOwnerData });
+            if(businessOwnerData.personalDetails.profilePicture ){
+                
+              businessOwnerData.personalDetails.profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ businessOwnerData?.personalDetails?.profilePicture}`
+            }
+            if(businessOwnerData.companyDetails.companyLogo){
+                
+              businessOwnerData.companyDetails.companyLogo= `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${ businessOwnerData?.companyDetails?.companyLogo}`
+            }
+
+
+            const businessOwnerisActiveData = await this.businessOwnerRepository.updateisActive(businessOwnerData._id, true);
+            await rabbitMQMessager.sendToMultipleQueues({ businessOwnerisActiveData});
+
+            return { 
+              success: true, 
+              message: "Login successful", 
+              accessToken, 
+              refreshToken, 
+              isVerified: true,
+              businessOwnerData, 
+              email: businessOwnerData.personalDetails.email ,
+              companyName:businessOwnerData.companyDetails.companyName,
+              profilePicture:businessOwnerData.personalDetails.profilePicture,
+              companyLogo:businessOwnerData.companyDetails.companyLogo,
+
+            };
+        
+          } catch (error) {
+            console.error("Login error:", error);
+            return { success: false, message: "An error occurred during login" };
+          }
         }
-      }
       
     
     async register(businessOwnerData: Partial<IBusinessOwner>): Promise<ITokenResponse> {
@@ -191,7 +204,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         if (!otpData) {throw new Error("Business owner not found");}
         if (otpData.otp == otp) {
             const verification = await this.businessOwnerRepository.updateVerificationStatus(email);
-                console.log("verification================", verification);
                 
             if (!verification.success) {
                 return { success: false }; 

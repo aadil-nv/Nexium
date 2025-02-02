@@ -29,6 +29,22 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
     }
   }
 
+  async updateIsActive(employeeId: string, isActive: boolean): Promise<IEmployee> {
+    try {
+      const updatedEmployee = await this._employeeModel.findByIdAndUpdate(
+        employeeId,
+        { $set: { isActive } },
+        { new: true }
+      );
+      if (!updatedEmployee) {
+        throw new Error("Employee not found");
+      }
+      return updatedEmployee;
+    } catch (error: any) {
+      throw new Error("Error updating employee status: " + error.message);
+    }
+  }
+
 
   async findBusinessOwnerId(managerId: string): Promise<string> {
     try {

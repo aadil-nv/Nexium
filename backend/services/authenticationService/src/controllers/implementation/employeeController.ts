@@ -19,6 +19,10 @@ export default class EmployeeController implements IEmployeeController {
        try {
         const { email, password } = req.body;
         const result = await this._employeeService.employeeLogin(email, password);
+        res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge:7 * 24 * 3600 * 1000 });
+        res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 3600 * 1000 }); // 7 days
+
+
         return res.status(200).json(result);
         
        } catch (error:any) {

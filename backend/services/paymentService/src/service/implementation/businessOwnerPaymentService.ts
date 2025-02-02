@@ -9,6 +9,7 @@ import { IPaymentIntentResponseDTO } from "../../dto/businessOwnerPaymentsDTO";
 import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
 
 const stripe = new Stripe(process.env.STRIP_SECRET_KEY as string);
+const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN as string;
 
 @injectable()
 export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymentService {
@@ -84,8 +85,8 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
         subscription_data: {
           metadata: { planId: plan._id, email },
         },
-        success_url: 'http://localhost:5173/business-owner/success',
-        cancel_url: 'http://localhost:5173/plan',
+        success_url: `${CLIENT_ORIGIN}/business-owner/success`,
+        cancel_url: `${CLIENT_ORIGIN}/plan`,
       });
       if (!session) throw new Error("Failed to create Stripe session");
       return { session, success: true, planName: plan.planName };
@@ -170,8 +171,8 @@ private async processCheckoutPlan(plan: any, amount: number, currency: string, e
     subscription_data: {
       metadata: { planId: plan._id, email },
     },
-    success_url: 'http://localhost:5173/business-owner/success',
-    cancel_url: 'http://localhost:5173/plan',
+    success_url: `${CLIENT_ORIGIN}/business-owner/success`,
+    cancel_url: `${CLIENT_ORIGIN}/plan`,
   });
 
   console.log('Stripe Session Created:', session);

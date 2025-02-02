@@ -40,6 +40,18 @@ export default class EmployeeService implements IEmployeeService {
     }
   } 
 
+  async updateIsActive(employeeId: string, isActive: boolean): Promise<IEmployeeResponseDTO> {
+    try {
+      const employee = await this._employeeRepository.updateIsActive(employeeId, isActive);
+      return {
+        message: "Employee status updated successfully",
+        success: true,
+      };
+    } catch (error:any) {
+      throw new Error("Error updating employee status: " + error.message);
+    }
+  }
+
   async getProfile(employeeId: string): Promise<IGetProfileDTO> {
         
         try {

@@ -11,11 +11,9 @@ export default class DashboardService implements IDashboardService {
 
 
  async getAllDashboardData(companyId:string): Promise<any> {
-    console.log("hitinge serviceeeeeeeeeeeeeeeeeeeeeeeeeeee",companyId);
     
     try {
       const manager = await this.managerRepository.getDashboardData(companyId)
-      console.log("employees ========================",manager)
     
       return {manager } 
     } catch (error) {

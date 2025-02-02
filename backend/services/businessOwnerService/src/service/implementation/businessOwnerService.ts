@@ -306,5 +306,23 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       throw new Error(error.message || "Error while updating service request");
     }
   }
+
+  async updateLastSeen(businessOwnerId: string): Promise<IResponseDTO> {
+    try {
+      const result = await this._businessOwnerRepository.updateLastSeenForChats(businessOwnerId);
+      return { success: true, message: "Last seen updated successfully!", data: result };
+    } catch (error:any) {
+      throw new Error(error.message || "Error while updating last seen");
+    }
+  }
+
+  async updateIsActive(businessOwnerId: string , isActive: boolean): Promise<IResponseDTO> {
+    try {
+      const result = await this._businessOwnerRepository.updateIsActive(businessOwnerId , isActive);
+      return { success: true, message: "Is active updated successfully!", data: result };
+    } catch (error:any) {
+      throw new Error(error.message || "Error while updating is active");
+    }
+  }
   
 }

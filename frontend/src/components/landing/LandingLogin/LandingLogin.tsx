@@ -10,6 +10,7 @@ import OtpVerification from '../LandingLogin/VerifyEmail';
 import NewPasswordForm from '../LandingLogin/NewPassword';
 import  LoginForm from "../LandingLogin/LoginForm";
 import { z } from 'zod';
+import { AxiosError } from 'axios';
 
 interface LoginFormErrors {
   email?: string;
@@ -150,65 +151,65 @@ const LandingLoginPage = () => {
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+
+const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  const result = loginSchema.safeParse({ email, password });
+  if (!result.success) {
+    const formattedErrors = result.error.format();
+    setErrors({
+      email: formattedErrors.email?._errors[0],
+      password: formattedErrors.password?._errors[0],
+    });
+    return;
+  }
+
+  setErrors({});
+  setCredentialError('');
+
+  try {
+    const data: LoginResponse = await loginBusinessOwnerAPI(email, password);
+    console.log("Login response:", data);
     
-    const result = loginSchema.safeParse({ email, password });
-    if (!result.success) {
-      const formattedErrors = result.error.format();
-      setErrors({
-        email: formattedErrors.email?._errors[0],
-        password: formattedErrors.password?._errors[0],
-      });
-      return;
+
+    if (data.success) {
+      dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
+      dispatch(setBusinessOwnerData({
+        companyName: data.companyName || '',
+        businessOwnerProfilePicture: data.profilePicture || '',
+        companyLogo: data.companyLogo || '',
+      }));
+      navigate('/business-owner/dashboard');
+    } else {
+      if (data.message === "Account is blocked. Please contact admin") {
+        setCredentialError(data.message);
+      } else if (data.message === "Not subscribed" && data.email) {
+        navigate('/plans', { state: { email: data.email } });
+      } else if (data.isVerified === false && data.email) {
+        navigate('/otp', { state: { email: data.email } });
+      } else {
+        setCredentialError(data.message || 'Invalid email or password');
+      }
     }
-  
-    setErrors({});
-    setCredentialError('');
-  
-    try {
-      const data: LoginResponse = await loginBusinessOwnerAPI(email, password);
+  } catch (error) {
+    if (error instanceof AxiosError) {
       
-      if (data.success) {
-        dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
-        dispatch(setBusinessOwnerData({
-          companyName: data.companyName || '',
-          businessOwnerProfilePicture: data.profilePicture || '',
-          companyLogo: data.companyLogo || '',
-        }));
-        navigate('/business-owner/dashboard');
+      const errorMessage = error.response?.data?.message || 'Something went wrong during login';
+
+      if (error.response?.data?.email && error.response?.data?.isVerified === false && error.response?.data?.message === "Not verified") {
+        navigate('/otp', { state: { email: error.response.data.email } });
+      } else if (error.response?.data?.message === "Not subscribed" && error.response?.data?.email) {
+        navigate('/plans', { state: { email: error.response.data.email } });
       } else {
-        if (data.message === "Account is blocked. Please contact admin") {
-          setCredentialError(data.message);
-        } else if (data.isVerified === false && data.email) {
-          navigate('/otp', { state: { email: data.email } });
-        } else {
-          setCredentialError(data.message || 'Invalid email or password');
-        }
-      }
-    } catch (error) {
-     console.log("Error logging in:", error);
-     
-      if (error instanceof Error) {
-        // This handles errors that are instances of Error
-        const errorMessage = error.message || 'Something went wrong during login';
         setCredentialError(errorMessage);
-      } else if (error && (error as { response?: { data?: { message: string, email: string, isVerified: boolean } } }).response) {
-        // This handles errors that contain response data
-        const errorMessage = (error as { response: { data: { message: string } } }).response.data.message || 'Something went wrong during login';
-        
-        if ((error as { response: { data: { email: string, isVerified: boolean } } }).response.data.email &&
-            (error as { response: { data: { isVerified: boolean } } }).response.data.isVerified === false) {
-          navigate('/otp', { state: { email: (error as { response: { data: { email: string } } }).response.data.email } });
-        } else {
-          setCredentialError(errorMessage);
-        }
-      } else {
-        // Fallback for any other unknown error
-        setCredentialError('Something went wrong during login');
       }
+    } else {
+      setCredentialError('Something went wrong during login');
     }
-  };
+  }
+};
+
   
 
   const handleForgotPassword = async (e: { preventDefault: () => void; }) => {

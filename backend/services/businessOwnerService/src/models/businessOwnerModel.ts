@@ -88,6 +88,10 @@ const businessOwnerSchema: Schema<IBusinessOwnerDocument> = new Schema(
       type: String,
       default: "businessOwner",
     },
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
    
 
     subscription: {

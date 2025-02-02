@@ -9,6 +9,7 @@ import generateOtp from "../../utils/otp";
 import { IValidateOtpDTO } from "../../dto/employeeDTO";
 import { log } from "console";
 import IBusinessOwnerRepository from "repository/interfaces/IBusinessOwnerRepository";
+import RabbitMQMessager from "../../events/rabbitmq/producers/producer";
 
 
 const transporter = nodemailer.createTransport({
@@ -31,17 +32,14 @@ export default class EmployeeService implements IEmployeeService {
 
     async employeeLogin(email: string, password: string): Promise<any> {
       try {
-          // Find employee by email and password
           const employeeData = await this._employeeRepository.findByCredentialEmail(email, password);
-  
-          console.log("Employee Data:", employeeData);
-  
-          // Check if employee exists
+           const rabbitMQMessager = new RabbitMQMessager();
+          await rabbitMQMessager.init();
+    
           if (!employeeData) {
               return { message: "Invalid email or password. Please try again." };
           }
   
-          // Check if account is verified
           if (!employeeData.isVerified) {
               const otp = generateOtp();
               await this.sendOtp(employeeData.personalDetails.email, otp);
@@ -53,7 +51,6 @@ export default class EmployeeService implements IEmployeeService {
               };
           }
   
-          // Compare passwords
           const isPasswordValid = password === employeeData.employeeCredentials.companyPassword; 
   
           if (!isPasswordValid) {
@@ -64,7 +61,10 @@ export default class EmployeeService implements IEmployeeService {
           const accessToken = generateAccessToken({ employeeData });
           const refreshToken = generateRefreshToken({ employeeData });
   
-          // Return success response
+          const employeeIsActiveData =await this._employeeRepository.updateIsActive(employeeData._id, true);
+          await rabbitMQMessager.sendToMultipleQueues({ employeeIsActiveData});
+
+         
           return { 
               success: true, 
               message: "Login successful.", 
@@ -73,8 +73,6 @@ export default class EmployeeService implements IEmployeeService {
               refreshToken,
               workTime: employeeData.professionalDetails.workTime,
               position: employeeData.professionalDetails.position,
-              
-
               employeeName: employeeData.personalDetails.employeeName,
               eployeeProfilePicture:employeeData.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`:employeeData.personalDetails.profilePicture ,
               companyLogo:businessOwnerData?.companyDetails.companyLogo? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOwnerData?.companyDetails.companyLogo}`:businessOwnerData?.companyDetails.companyLogo,

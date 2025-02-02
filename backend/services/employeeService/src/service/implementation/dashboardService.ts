@@ -31,7 +31,6 @@ export default class DashboardService implements IDashboardService {
   ) {}
 
   async getAllDashboardData(employeeId: string): Promise<any> {
-    console.log("employeeId--------------------------", employeeId);
   
     try {
       // Fetch employee data to check if the employee is a Team Lead
@@ -45,15 +44,11 @@ export default class DashboardService implements IDashboardService {
       // Fetch project or task dashboard data based on position
       if (isTeamLead) {
         dashboardData = await this._projectService.getProjectDashboardData(employeeId);
-        console.log("Project Dashboard Data--------------------------", dashboardData);
       } else {
         dashboardData = await this.taskRepository.getTaskDashboardData(employeeId); // Assuming there is a task repository
-        console.log("Task Dashboard Data--------------------------", dashboardData);
       }
   
-      // Fetch attendance, payroll, and employee dashboard data
       const attendanceData = await this._attendanceRepository.getAttendanceDashboardData(employeeId);
-      // console.log("Attendance Data--------------------------", attendanceData);
   
       const payrollData = await this._payrollRepository.getPayrollDashboardData(employeeId);
     

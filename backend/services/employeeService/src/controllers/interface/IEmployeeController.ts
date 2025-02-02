@@ -13,5 +13,6 @@ export default interface IEmployeeController {
     getDocuments(req: CustomRequest, res: Response): Promise<Response>;
     updateDocuments(req: CustomRequest, res: Response): Promise<Response>;
     getEmployeeCredentials(req: CustomRequest, res: Response): Promise<Response>;
+    updateIsActive(req: CustomRequest, res: Response): Promise<Response>
 
 }

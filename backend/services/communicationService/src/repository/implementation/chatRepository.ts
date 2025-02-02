@@ -2,7 +2,7 @@ import { inject , injectable } from "inversify";
 import  IChatRepository  from "../../repository/interface/IChatRepository";
 import { IChat } from "../../entities/chatEntities";
 import BaseRepository from "./baseRepository";
-import mongoose from "mongoose";
+import mongoose,{ PipelineStage } from "mongoose";
 import IEmployee from "../../entities/employeeEntities";
 import { IManager } from "../../entities/managerEntities";
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntities";
@@ -141,11 +141,11 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
     
         const userObjectId = new mongoose.Types.ObjectId(userId);
     
-        const pipeline = [
+        const pipeline: PipelineStage[] = [
             {
                 $match: {
                     chatType: "private",
-                    participants: { $elemMatch: { $eq: userObjectId } } // Include chats where userId is a participant
+                    participants: { $elemMatch: { $eq: new mongoose.Types.ObjectId(userObjectId) } }
                 }
             },
             {
@@ -156,7 +156,7 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
                                 $filter: {
                                     input: "$participants",
                                     as: "participant",
-                                    cond: { $ne: ["$$participant", userObjectId] } // Get the other participant's ID
+                                    cond: { $ne: ["$$participant", new mongoose.Types.ObjectId(userObjectId)] }
                                 }
                             },
                             0
@@ -196,6 +196,7 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
                     lastMessage: 1,
                     createdAt: 1,
                     updatedAt: 1,
+                    lastSeen: 1,
                     participantDetails: {
                         $cond: {
                             if: { $gt: [{ $size: "$employeeDetails" }, 0] },
@@ -210,6 +211,9 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
                         }
                     }
                 }
+            },
+            {
+                $sort: { updatedAt: -1 as 1 | -1 } // Explicitly cast to `1 | -1`
             }
         ];
     
@@ -465,6 +469,35 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
             console.log("Error deleting group:", error);
             throw error;
             
+        }
+    }
+
+
+    async updateLastSeenForChats(userId: string): Promise<any> {
+        console.log(`update laste seen for ${userId}`);
+        
+        try {
+         
+    
+    
+            const result = await this._chatModel.updateMany(
+                {
+                    chatType: "private",
+                    groupAdmin: { $ne: userId }, // groupAdminId !== userId
+                    participants: userId // userId exists in participants
+                },
+                {
+                    $set: { lastSeen: new Date() }
+                }
+            );
+    
+            return {
+                success: true,
+                message: "Last seen updated successfully!",
+                data: result
+            };
+        } catch (error: any) {
+            throw new Error(error.message || "Error while updating last seen");
         }
     }
 

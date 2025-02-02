@@ -13,4 +13,5 @@ export default interface IManagerService {
     getLeaveEmployees(managerId: string): Promise<IEmployee>
     updateManagerAddress(managerId: string, data: any): Promise<any>
     uploadDocuments(managerId: string, file: Express.Multer.File, fileType: string): Promise<any>
+    updateManagerIsActive(managerId: string, isActive: boolean): Promise<any>
 }

@@ -10,6 +10,7 @@ import employeeRoutes from './routes/employeeRouter';
 import onboardingRoutes from './routes/onboardingRouter';
 import dashboardRoutes from './routes/dashboardRoutes';
 import payrollRoutes from './routes/payrollRoutes';
+import { connectConsumer } from './events/connect';
 
 import "colors"
 import morgan from 'morgan'; // Import morgan
@@ -37,10 +38,9 @@ app.use(morgan('combined', { stream: accessLogStream }));
 app.use(morgan('dev'));
 
 app.use(cors({
-  origin: 'http://www.aadil.online',
+  origin: process.env.CLIENT_ORIGIN,
+  methods: ['GET', 'POST' , 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-
 }));
 
 app.use(express.json());
@@ -59,7 +59,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/payroll', payrollRoutes);
 app.use('/api/projects', projectRoutes);
 
-
+connectConsumer();
 app.listen(PORT, () => {
   console.log(`managerService on http://localhost:${PORT}`.bgBlue.bold);
 });

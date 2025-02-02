@@ -23,4 +23,5 @@ export default interface IChatRepository extends BaseRepository<IChat>{
     getAllUnAddedUsers(groupId: string): Promise<any>
     updateGroup(groupId: string, data: any): Promise<IChatWithGroupDetails>
     deleteGroup(groupId: string): Promise<void>
+    updateLastSeenForChats(businessOwnerId: string): Promise<any>
 }

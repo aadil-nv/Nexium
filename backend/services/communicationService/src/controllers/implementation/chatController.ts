@@ -43,7 +43,9 @@ export default class ChatController implements IChatController {
         try {
             const myId = this.getMyId(req);
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
-            const response = await this._chatService.getAllPrivateChats(myId);            
+            const response = await this._chatService.getAllPrivateChats(myId);  
+            console.log("response_________ from getAllPrivateChats", response);
+                      
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting chats", error });
@@ -113,7 +115,6 @@ export default class ChatController implements IChatController {
             const myId = this.getMyId(req);
             const response = await this._chatService.getAllUnAddedUsers(groupId , myId);
             return res.status(HttpStatusCode.OK).json(response);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error:any) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error.message });
         }
@@ -168,6 +169,9 @@ export default class ChatController implements IChatController {
 
     async logout(req: Request, res: Response): Promise<Response> {
         try {
+            const myId = this.getMyId(req);
+            if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
+            await this._chatService.updateLastSeen(myId);
             res.clearCookie('accessToken');
             res.clearCookie('refreshToken');
             return res.status(HttpStatusCode.OK).json({ message: "Logout successful" });

@@ -97,6 +97,9 @@ export default function Navbar(): JSX.Element {
   };
 
   const defaultProfileImage = "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png";
+
+  console.log("Manager is 000=========>", manager);
+  
   
   const userName = businessOwner.isAuthenticated ? businessOwner?.companyName :
     superAdmin.isAuthenticated ? "Super Admin" :
@@ -138,14 +141,7 @@ export default function Navbar(): JSX.Element {
   };
 
   const handleLogoutWrapper = () => {
-    handleLogout({
-      isBusinessOwner: businessOwner,
-      isSuperAdmin: superAdmin,
-      isManager: manager,
-      isEmployee: employee,
-      dispatch,
-      navigate
-    });
+    handleLogout({isBusinessOwner: businessOwner,isSuperAdmin: superAdmin,isManager: manager,isEmployee: employee,dispatch,navigate});
   };
 
   return (

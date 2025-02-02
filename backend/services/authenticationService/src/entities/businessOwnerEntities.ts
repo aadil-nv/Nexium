@@ -59,5 +59,6 @@ export interface IBusinessOwnerDocument extends Document {  // <-- Ensure this e
   subscription: ISubscription;
   createdAt: Date;
   updatedAt: Date;
+  isActive: boolean;
 }
 

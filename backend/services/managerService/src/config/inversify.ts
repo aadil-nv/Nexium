@@ -72,10 +72,14 @@ import IProjectRepository from "../repository/interface/IProjectRepository";
 
 import ProjectModel from "../models/projectModel";
 import { IProject } from "../entities/projectEntities";
+import Consumer from "../events/implementation/consumer";
 
 const container = new Container();
 
 // Bind the interfaces to their implementations
+
+container.bind<Consumer>("IConsumer").to(Consumer);
+
 container.bind<IManagerController>("IManagerController").to(ManagerController);
 container.bind<IManagerRepository>("IManagerRepository").to(ManagerRepository);
 container.bind<IManagerService>("IManagerService").to(ManagerService);

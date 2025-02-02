@@ -36,9 +36,8 @@ app.use(morgan('dev'));
 
 // Enable CORS
 app.use(cors({
-  origin: 'http://www.aadil.online',  
-  credentials: true,               
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  origin: 'http://localhost:5173',  // Allow frontend from localhost:5173
+  credentials: true,               // Allow cookies to be sent
 }));
 
 app.use("/webhook", express.raw({ type: 'application/json'}), webhookRouter);

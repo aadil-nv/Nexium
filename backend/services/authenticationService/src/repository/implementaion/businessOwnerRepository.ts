@@ -137,6 +137,20 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
     throw new Error("Failed to find business owner by ID");
   }
 }
+
+async updateisActive(id: any, isActive: boolean): Promise<IBusinessOwnerDocument | null> {
+  try {
+    const businessOwner = await businessOwnerModel.findOneAndUpdate(
+      { _id: id },
+      { $set: { isActive } },
+      { new: true }
+    ).exec();
+    return businessOwner;
+  } catch (error) {
+    console.error("Error updating business owner:", error);
+    throw new Error(error instanceof Error ? error.message : "Unknown error occurred.");
+  }
+}
   
 
   

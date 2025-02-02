@@ -301,4 +301,20 @@ export default class ManagerService implements IManagerService {
       throw new Error('Could not upload document.');
     }
   }
+
+  async updateManagerIsActive(managerId: string, isActive: boolean): Promise<any> {
+    console.log("Updating manager isActive in service layer:", managerId, isActive);
+    
+    try {
+      if (!managerId) {
+        throw new Error("Business owner ID not found");
+      }
+  
+      const result = await this._managerRepository.updateManagerIsActive(managerId, isActive);
+      return result;
+    } catch (error :any) {
+      console.error("Error in updateManagerIsActive:", error.message);
+      throw new Error("Error updating manager isActive");
+    }
+  }
 }

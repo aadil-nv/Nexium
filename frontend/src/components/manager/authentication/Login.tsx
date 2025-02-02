@@ -25,14 +25,14 @@ export default function ManagerLogin() {
 
     try {
       const responseData = await managerLogin(data);
+      console.log("responseData of manager is 1111111111", responseData);
+      
       if(responseData.success === false && responseData.message == "Account is blocked. Please contact admin") {
         setLoginError(responseData.message);
         return
       }
    
       if (responseData.success === false &&  responseData.isVerified === false) {
-
-     
         navigate("/manager-otpvalidation", { state: { email: responseData.email, message: responseData.message } });
         return;
       }
@@ -40,11 +40,11 @@ export default function ManagerLogin() {
       // If verified, proceed to dashboard
       dispatch(login({ role: "manager", isAuthenticated: true }));
       dispatch(setManagerData({
-        managerName: responseData.managerName,
-        managerProfilePicture: responseData.managerProfilePicture,
-        companyLogo: responseData.companyLogo,
-        companyName: responseData.companyName,
-        managerType: responseData.managerType,}));
+        managerName: responseData.data.managerName,
+        managerProfilePicture: responseData.data.managerProfilePicture,
+        companyLogo: responseData.data.companyLogo,
+        companyName: responseData.data.companyName,
+        managerType: responseData.data.managerType,}));
             navigate("/manager/dashboard");
       setLoginError("Login failed. Please check your credentials.");
     } finally {

@@ -23,6 +23,7 @@ interface ChatTarget {
   avatar?: string;
   type: 'private' | 'group';
   status?: boolean;
+  lastSeen?: string
 }
 
 interface GroupMember {
@@ -50,14 +51,22 @@ const MainLayout: React.FC = () => {
   const isEmployee = employee?.isAuthenticated;
   const senderName = employee?.employeeName || businessOwner?.companyName || manager?.managerName
 
-  const formatLastSeen = useCallback((date: Date) => {
-    if (!date || !(date instanceof Date) || isNaN(date.getTime())) return 'Invalid date';
+  const formatLastSeen = useCallback((date: string | Date) => {
+    console.log("Date from last seen function", date);
+    
+    // Check if the input is a valid date string or Date object
+    const validDate = date instanceof Date ? date : new Date(date);
+    
+    // If it's not a valid date, return "Invalid date"
+    if (!(validDate instanceof Date) || isNaN(validDate.getTime())) return 'Invalid date';
+    
     const now = new Date();
-    const diff = Math.floor((now.getTime() - date.getTime()) / 60000);
+    const diff = Math.floor((now.getTime() - validDate.getTime()) / 60000);
+    
     if (diff < 60) return `${diff} minutes ago`;
     if (diff < 1440) return `${Math.floor(diff / 60)} hours ago`;
     return `${Math.floor(diff / 1440)} days ago`;
-  }, []);
+}, []);
 
   const handleDeleteGroup = async (groupId: string) => {    
     confirm({
@@ -154,6 +163,8 @@ const MainLayout: React.FC = () => {
         const employeesResponse = await communicationInstance.get('/communication-service/api/chat/get-all-chats', {
           signal: controller.signal
         });
+        console.log("employeesResponse(((((((((())))))))))))", employeesResponse);
+        
         
         if (employeesResponse.data && isMounted) {
           setEmployees(employeesResponse.data);
@@ -167,6 +178,7 @@ const MainLayout: React.FC = () => {
             status: firstEmployee.status,
             id: firstEmployee.chatId,
             type: 'private',
+            lastSeen: firstEmployee.lastSeen
           });
         }
   
@@ -307,7 +319,7 @@ const MainLayout: React.FC = () => {
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <Badge dot={selectedTarget.type === 'private' ? selectedTarget.status : undefined}>
+                  <Badge >
                     {selectedTarget.avatar ? (
                       <Avatar src={selectedTarget.avatar} size={40} />
                     ) : (
@@ -423,7 +435,7 @@ const MainLayout: React.FC = () => {
           members={groupMembers}
         />
 
-<EditGroupModal
+      <EditGroupModal
         isOpen={isEditGroupModalOpen}
         onClose={() => setIsEditGroupModalOpen(false)}
         groupId={selectedTarget?.id || ''}

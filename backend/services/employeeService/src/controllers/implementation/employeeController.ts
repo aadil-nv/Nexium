@@ -37,6 +37,18 @@ export default class EmployeeController {
         }
     }
 
+    async updateIsActive(req: CustomRequest, res: Response): Promise<Response> {
+        try {
+            const employeeId = req.user?.employeeData?._id;
+            if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
+            const employee = await this._employeeService.updateIsActive(employeeId, false);
+            return res.status(HttpStatusCode.OK).json(employee);
+        } catch (error) {
+            console.error(error);
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
+        }
+    }
+
     async getProfile(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const employeeId = req.user?.employeeData?._id;

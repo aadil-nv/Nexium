@@ -13,4 +13,5 @@ export default interface IEmployeeController {
     getDocuments(employeeId: string): Promise<IGetDocumentDTO>
     uploadDocuments(employeeId: string, file: Express.Multer.File, fileType: "resume"): Promise<IGetDocumentDTO>
     getEmployeeCredentials(employeeId: string): Promise<IGetCredentailsDTO>
+    updateIsActive(employeeId: string, isActive: boolean): Promise<IEmployeeResponseDTO>
 }

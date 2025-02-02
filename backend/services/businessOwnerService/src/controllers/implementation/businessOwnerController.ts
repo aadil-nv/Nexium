@@ -47,9 +47,11 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async logout(req: CustomRequest, res: Response): Promise<Response> {
-
-    
+  
     try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      await this._businessOwnerService.updateLastSeen(businessOwnerId);
       res.clearCookie('accessToken');
       res.clearCookie('refreshToken');
       return this.handleResponse(res, 200, true, 'Logout successful');
@@ -159,6 +161,8 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async uploadLogo(req: CustomRequest, res: Response): Promise<Response> {
+    console.log(`uploadLogo: ${JSON.stringify(req.file)}`);
+    
     try {
       const businessOwnerId = this.getBusinessOwnerId(req);
       if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
@@ -223,6 +227,17 @@ export default class BusinessOwnerController implements IBusinessOwnerController
       const data = req.body;
       if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
       const result = await this._businessOwnerService.updateServiceRequest(serviceRequestId, data);
+      return this.handleResponse(res, 200, true, 'Service request updated', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to update service request');
+    }
+  }
+
+  async updateIsActive(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.updateIsActive(businessOwnerId, false);
       return this.handleResponse(res, 200, true, 'Service request updated', result);
     } catch {
       return this.handleResponse(res, 500, false, 'Failed to update service request');

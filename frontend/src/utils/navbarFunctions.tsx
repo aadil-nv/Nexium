@@ -1,6 +1,7 @@
 import { businessOwnerInstance } from "../services/businessOwnerInstance";
 import { superAdminInstance } from "../services/superAdminInstance";
 import { managerInstance } from "../services/managerInstance";
+import {communicationInstance} from "../services/communicationInstance"
 import { setActiveMenu } from "../redux/slices/menuSlice";
 import { logout as superAdminLogout } from "../redux/slices/superAdminSlice";
 import { logout as businessOwnerLogout } from "../redux/slices/businessOwnerSlice";
@@ -16,9 +17,10 @@ import { Dispatch, UnknownAction } from "redux";
 
 
 export const handleLogout = ({isBusinessOwner,isSuperAdmin,isManager,isEmployee,dispatch,navigate,}: NavbarFunctionsProps) => {
-  if (isBusinessOwner.isAuthenticated) {
+  if (isBusinessOwner.isAuthenticated) {    
+    businessOwnerInstance.post("/businessOwner-service/api/business-owner/update-isactive");
+    communicationInstance.post("/communication-service/api/chat/logout");
     dispatch(businessOwnerLogout());
-    businessOwnerInstance.post("/businessOwner-service/api/business-owner/logout");
     navigate("/login");
   } else if (isSuperAdmin.isAuthenticated) {
     dispatch(superAdminLogout());
@@ -26,13 +28,14 @@ export const handleLogout = ({isBusinessOwner,isSuperAdmin,isManager,isEmployee,
     navigate("/superadmin-login");
   } else if (isManager.isAuthenticated) {
     dispatch(managerLogout());
-    managerInstance.post("/manager-service/api/manager/logout");
+    managerInstance.post("/manager-service/api/manager/update-isactive");
+    communicationInstance.post("/communication-service/api/chat/logout");
     navigate("/manager-login");
   } else if (isEmployee.isAuthenticated) {
-    // persistor.purge()
     dispatch(resetTasks());
     dispatch(employeeLogout());
-    employeeInstance.post("/manager-service/api/manager/logout");
+    employeeInstance.post("/employee-service/api/employee/update-isactive");
+    communicationInstance.post("/communication-service/api/chat/logout");
     navigate("/employee-login");
 
   }

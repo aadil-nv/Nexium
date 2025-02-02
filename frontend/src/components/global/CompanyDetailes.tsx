@@ -51,7 +51,7 @@ const CompanyDetails = () => {
 
     try {
       setLogoLoading(true);
-      const { data } = await businessOwnerInstance.post('/businessOwner/api/business-owner/upload-logo', formData);
+      const { data } = await businessOwnerInstance.post('/businessOwner-service/api/business-owner/upload-logo', formData);
       setLogo(data.data);
       dispatch(setBusinessOwnerData({...businessOwner, companyLogo: data.data }));
       message.success('Logo updated successfully!');
@@ -64,7 +64,7 @@ const CompanyDetails = () => {
 
   const handleSubmit = async (values: CompanyDetailsType) => {
     try {
-       await businessOwnerInstance.patch('/businessOwner/api/business-owner/update-companydetailes', values);
+       await businessOwnerInstance.patch('/businessOwner-service/api/business-owner/update-companydetailes', values);
       // Re-fetch the company details after updating
       const updatedData = await fetchCompanyDetails(businessOwner.isAuthenticated);
       setCompanyDetails(updatedData); // Update state with the new details

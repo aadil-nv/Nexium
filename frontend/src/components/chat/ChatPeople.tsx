@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { List, Badge, Avatar, Button, Space, Typography, message, Modal, Input, Checkbox, Tabs } from 'antd';
 import { Employee, Group } from '../../interface/ChatInterface';
-import { UsergroupAddOutlined, TeamOutlined, UserOutlined, MessageOutlined } from '@ant-design/icons';
+import { UsergroupAddOutlined, TeamOutlined, UserOutlined, MessageOutlined, CheckOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
 import { communicationInstance } from '../../services/communicationInstance';
 import { motion } from 'framer-motion';
@@ -35,10 +35,11 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
   groups,
   setSelectedTarget,
   isMobile,
-  // formatLastSeen,
+  formatLastSeen,
   setSiderVisible,
   refreshGroups
 }) => {
+  
   const { themeColor } = useTheme();
   const [isGroupModalVisible, setIsGroupModalVisible] = useState(false);
   const [isStartChatModalVisible, setIsStartChatModalVisible] = useState(false);
@@ -60,6 +61,8 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
   const fetchAvailablePeople = async () => {
     try {
       const response = await communicationInstance.get('/communication-service/api/chat/get-all-receiver');
+      console.log("Get all reciver is ==>", response);
+      
       setAvailablePeople(response.data);
     } catch (error) {
       console.error('Error fetching available people:', error);
@@ -196,13 +199,13 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
                             <span className="text-xs text-gray-500">{emp.receiverPosition || 'Employee'}</span>
                           </Space>
                         }
-                        // description={
-                        //   emp.status ? (
-                        //     <Space><CheckOutlined className="text-green-500" /> Active now</Space>
-                        //   ) : (
-                        //     <Space><ClockCircleOutlined className="text-gray-400" /> Last seen {formatLastSeen(emp.lastSeen)}</Space>
-                        //   )
-                        // }
+                        description={
+                          emp.status == true ? (
+                            <Space><CheckOutlined className="text-green-500" /> Active now</Space>
+                          ) : (
+                            <Space><ClockCircleOutlined className="text-gray-400" /> Last seen {formatLastSeen(emp.lastSeen)}</Space>
+                          )
+                        }
                       />
                     </List.Item>
                   </motion.div>
@@ -354,7 +357,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
                   </Badge>
                 }
                 title={person.receiverName}
-                description={person.receiverPosition || 'Employee'}
+                description={person.receiverPosition}
               />
             </List.Item>
           )}

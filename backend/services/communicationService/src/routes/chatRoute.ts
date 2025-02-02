@@ -23,7 +23,7 @@ chatRouter.patch('/update-group/:id',authenticateToken, (req, res ,next) => chat
 
 
 chatRouter.post("/refresh-token",(req, res)=> chatController.setNewAccessToken (req, res));
-chatRouter.post("/logout",(req, res)=> chatController.logout (req, res));
+chatRouter.post("/logout",authenticateToken,(req, res)=> chatController.logout (req, res));
 
 chatRouter.delete('/delete-group/:id',authenticateToken, (req, res ,next) => chatController.deleteGroup(req, res));
 

@@ -216,8 +216,6 @@ export default class ManagerController implements IManagerController {
 
       }
 
-      console.log("req.file from mager profule puictre -------->", req.file);
-      
       const result = await this._managerService.updateManagerProfilePicture(managerId, req.file as Express.Multer.File);
       return res.status(200).json(result);
     } catch (error) {
@@ -302,6 +300,27 @@ export default class ManagerController implements IManagerController {
       error,
     });
   }
+  }
+
+  async updateManagerIsActive(req: CustomRequest, res: Response): Promise<Response> { 
+
+    console.log(`"***************************************** htted updateManagerIsActive"`.bgRed);
+    
+    try {
+      const managerId = req?.user?.managerData?._id;
+      if (!managerId) {
+        return res
+          .status(400)
+          .json({ message: "Business owner ID not provided in cookies" });
+      }
+      const result = await this._managerService.updateManagerIsActive(managerId,false);
+      return res.status(200).json(result);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Failed to get manager personal info",
+        error,
+      });
+    }
   }
   
 }

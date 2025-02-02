@@ -2,7 +2,8 @@ import { inject , injectable } from "inversify";
 import  IChatService from "../interface/IChatService";
 import { IChatResponseDTO, IChatWithDetails, ICreateGroupDTO, IGetAllGroupsDTO,
      IGroupDTO, IMembers, IMembersDTO, IParticipantDetails, IPrivateChatDTO, IReceiverDTO, ISetNewAccessTokenDTO ,IParticipant, 
-     IUnAddedUsersDTO} from "../../dto/chatDTO";
+     IUnAddedUsersDTO,
+     IResponseDTO} from "../../dto/chatDTO";
 import  IChatRepository  from "../../repository/interface/IChatRepository";
 import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
 
@@ -27,8 +28,8 @@ export default  class ChatService implements IChatService {
                 senderId: myId,
                 receiverId: businessOner._id,
                 receiverName: businessOner.personalDetails.businessOwnerName,
-                reciverPosition: businessOner.role, 
-                status: true,
+                receiverPosition: businessOner.role, 
+                status: businessOner.isActive,
                 lastSeen: lastSeen,
                 receiverProfilePicture: businessOner.personalDetails.profilePicture
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOner.personalDetails.profilePicture}`
@@ -41,7 +42,7 @@ export default  class ChatService implements IChatService {
                 senderId: myId,
                 receiverId: employee._id,
                 receiverName: employee.personalDetails.employeeName,
-                reciverPosition: employee.professionalDetails.position,
+                receiverPosition: employee.professionalDetails.position,
                 status: employee.isActive,
                 lastSeen: lastSeen,
                 receiverProfilePicture: employee.personalDetails.profilePicture
@@ -54,7 +55,7 @@ export default  class ChatService implements IChatService {
                 senderId: myId,
                 receiverId: manager._id,
                 receiverName: manager.personalDetails.managerName,
-                reciverPosition : manager.role,
+                receiverPosition : manager.role,
                 status: manager.isActive,
                 lastSeen: lastSeen,
                 receiverProfilePicture: manager.personalDetails.profilePicture
@@ -99,6 +100,8 @@ export default  class ChatService implements IChatService {
     async getAllPrivateChats(myId: string): Promise<IPrivateChatDTO[]> {
         try {
             const privateChats = await this._chatRepository.findAllPrivateChats(myId);
+            // console.log("privateChats====>", privateChats);
+            
             
     
             const mappedChats: IPrivateChatDTO[] = privateChats
@@ -133,6 +136,7 @@ export default  class ChatService implements IChatService {
     }
 
     private mapToDTO(chat: IChatWithDetails, receiver: IParticipantDetails , myId: string): IPrivateChatDTO {
+
         const receiverName = this.getReceiverName(receiver);
         const receiverPosition = this.getReceiverPosition(receiver);
         const status = this.getReceiverStatus(receiver);
@@ -151,7 +155,8 @@ export default  class ChatService implements IChatService {
                 : undefined,
             lastMessage: chat.lastMessage,
             createdAt: chat.createdAt,
-            updatedAt: chat.updatedAt
+            updatedAt: chat.updatedAt,
+            lastSeen: chat.lastSeen
         };
     }
 
@@ -493,7 +498,14 @@ export default  class ChatService implements IChatService {
     }
     
     
-    
+    async updateLastSeen(businessOwnerId: string): Promise<IResponseDTO> {
+        try {
+          const result = await this._chatRepository.updateLastSeenForChats(businessOwnerId);
+          return { success: true, message: "Last seen updated successfully!", data: result };
+        } catch (error:any) {
+          throw new Error(error.message || "Error while updating last seen");
+        }
+      }
     
     
     

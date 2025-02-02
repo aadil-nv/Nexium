@@ -14,4 +14,5 @@ export default interface IManagerController {
     getLeaveEmployees(req: CustomRequest, res: Response): Promise<Response>
     updateManagerAddress(req: CustomRequest, res: Response): Promise<Response>
     updateDocuments(req: CustomRequest, res: Response): Promise<Response>
+    updateManagerIsActive(req: CustomRequest, res: Response): Promise<Response>
 }

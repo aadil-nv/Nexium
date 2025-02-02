@@ -18,32 +18,37 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async login(req: Request, res: Response): Promise<Response> {
-      console.log("hitting login=======>");
-      
+    console.log("request coming for login");
+    
+    
+    
     try {
       const { email, password } = req.body;
+      console.log("email is ==>",email);
+      console.log("password is ==>",password);
+      
       if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
 
-      const { success, message, accessToken, refreshToken, isVerified, email: companyEmail } =
+
+      const { success, message, accessToken, refreshToken, isVerified, email: companyEmail,companyName ,companyLogo } =
         await this._businessOwnerService.login(email, password);
+        console.log(" message is ===>",message);
+        
 
       if (!success) {
         if (!isVerified) {
-          return res.status(400).json({ message: "Account not verified. OTP sent to email.", email: companyEmail, isVerified: false, success: false });
+          return res.status(400).json({ message: message, email: companyEmail, isVerified: false, success: false });
         }
       }
-
     
 
       res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
          maxAge:7 * 24 * 60 * 60 * 1000 });
       res.cookie('accessToken', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
          maxAge:7 * 24 * 60 * 60 * 1000 });
-
-         console.log("response", { accessToken, success, message });
          
 
-      return res.status(200).json({ accessToken, success, message });
+      return res.status(200).json({ accessToken, success, message,companyName:companyName ,companyLogo:companyLogo });
     } catch (error) {
       console.error("Error during login", error);
       return res.status(500).json({ message: "An error occurred during login" });
@@ -84,28 +89,6 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
   }
 
-  // async createCheckoutSession(req: Request, res: Response): Promise<Response> {
-  //   const { plan, amount, currency, email } = req.body;
-
-  //   try {
-  //     const result = await this._businessOwnerService.createCheckoutSession(plan, amount, currency, email);
-  //       console.log("result----------------------......-.....>",result);
-        
-  //     res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
-  //        maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
-  //     res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production',
-  //        maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' });
-
-  //     const response = result.planName === 'Trial' 
-  //       ? { message: result.message, success: result.success, role: result.role, planName: result.planName }
-  //       : { sessionId: result.session.id, success: result.success, planName: result.planName };
-
-  //     return res.status(200).json(response);
-  //   } catch (error) {
-  //     console.error('Error creating checkout session:', error);
-  //     return res.status(500).json({ message: 'Failed to create checkout session', error });
-  //   }
-  // }
 
   async forgotPassword(req: Request, res: Response): Promise<Response> {
     try {

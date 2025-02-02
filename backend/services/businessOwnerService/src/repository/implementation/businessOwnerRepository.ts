@@ -9,6 +9,8 @@ import EmployeeModel from "../../models/employeeModel"
 import ManagerModel from "../../models/managerModel"
 import mongoose from "mongoose";
 import serviceRequestModel from "../../models/serviceRequestModel";
+import chatModel from "../../models/chatModel";
+import businessOwnerModel from "../../models/businessOwnerModel";
 
 @injectable()
 export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwnerDocument> implements IBusinessOwnerRepository {
@@ -48,7 +50,6 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
       const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
       const allowedFields: (keyof IPersonalDetailsDTO)[] = ["businessOwnerName", "email", "personalWebsite", "phone"];
   
-      // Extract only the allowed fields from the incoming data
       const updateFields: Partial<IPersonalDetailsDTO> = {};
       for (const key of allowedFields) {
         if (key in data && data[key] !== undefined) {
@@ -56,12 +57,10 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         }
       }
   
-      // Ensure that at least one field is being updated
       if (Object.keys(updateFields).length === 0) {
         throw new Error("No valid fields provided for update.");
       }
   
-      // Update only the allowed fields in the `personalDetails`
       const result = await this._businessOwnerModel.findByIdAndUpdate(
         businessOwnerId,
         { $set: { 
@@ -78,7 +77,6 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         throw new Error(`No business owner found with ID: ${businessOwnerId}`);
       }
 
-      console.log("Business Owner Data:+++++++++++++++++++++++++++>>>", result);
       
       const businessOwner = _switchDb.model('BusinessOwner', BusinessOwnerModel.schema);
        await businessOwner.findByIdAndUpdate(
@@ -118,6 +116,14 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
   async uploadLogo(businessOwnerId: string, filePath: string): Promise<IBusinessOwnerDocument> {
     
     try {
+      const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+      const businessOwner = _switchDb.model('businessOwners', businessOwnerModel.schema)
+      await businessOwner.findByIdAndUpdate(
+        businessOwnerId,
+        { $set: { 'companyDetails.companyLogo': filePath } }, // Save the file path
+        { new: true }
+      );
+
       const result = await this._businessOwnerModel.findByIdAndUpdate(
         businessOwnerId,
         { $set: { 'companyDetails.companyLogo': filePath } }, // Save the file path
@@ -403,5 +409,59 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
       throw new Error("Failed to update service request.");
     }
   }
+
+  async updateLastSeenForChats(businessOwnerId: string): Promise<any> {
+    console.log(`update laste seen for ${businessOwnerId}`);
+    
+    try {
+      const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+      const chat = _switchDb.model('Chats', chatModel.schema);
+
+
+        const result = await chat.updateMany(
+            {
+                chatType: "private",
+                groupAdmin: { $ne: businessOwnerId }, // groupAdminId !== businessOwnerId
+                participants: businessOwnerId // businessOwnerId exists in participants
+            },
+            {
+                $set: { lastSeen: new Date() }
+            }
+        );
+
+        return {
+            success: true,
+            message: "Last seen updated successfully!",
+            data: result
+        };
+    } catch (error: any) {
+        throw new Error(error.message || "Error while updating last seen");
+    }
+  }
+
+  async updateIsActive(businessOwnerId: string , isActive: boolean): Promise<any> {
+    console.log(`update isActive for ${businessOwnerId}`.bgWhite + " " + isActive);
+    
+    try {
+      const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+      console.log(`111111111111111111111111111`.bgWhite.bold,_switchDb);
+      
+      const businessOwner = _switchDb.model('businessOwners', businessOwnerModel.schema)
+      console.log(`2222222222222222222222222`.bgWhite.bold,businessOwner);
+     ;
+      const result = await businessOwner.findOneAndUpdate(
+        { _id: businessOwnerId },
+        { $set: { isActive: isActive } },
+        { new: true }
+      );
+      console.log(`33333333333333333333333333`.bgWhite.bold ,result);
+      // console.log(`444444444444444444444`.bgWhite.bold)
+      return result;
+    } catch (error) {
+      console.error("Error updating service request: ", error);
+      throw new Error("Failed to update service request.");
+    }
+  }
+
   
 }

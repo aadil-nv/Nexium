@@ -11,4 +11,5 @@ export default interface IManagerRepository extends BaseRepository<IManager>  {
     updateManagerAddress(managerId: string, data: any): Promise<any>
     uploadDocuments(managerId: string, documentType: string, documentData: Object): Promise<IManager>
     getDashboardData(managerId: string): Promise<any>
+    updateManagerIsActive(managerId: string, isActive: boolean): Promise<any> 
 }

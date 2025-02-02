@@ -17,5 +17,7 @@ export default interface IBusinessOwnerService {
     addServiceRequest(businessOwnerId: string, data: any): Promise<IResponseDTO>;
     getAllServiceRequests(businessOwnerId: string): Promise<any[]>
     updateServiceRequest(serviceRequestId: string, data: any): Promise<IResponseDTO>;
+    updateLastSeen(businessOwnerId: string): Promise<IResponseDTO>
+    updateIsActive(businessOwnerId: string , isActive: boolean): Promise<IResponseDTO>
 
 }

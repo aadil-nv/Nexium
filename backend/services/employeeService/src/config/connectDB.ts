@@ -6,14 +6,6 @@ let isConnected = false;  // Flag to check if the DB is already connected
 
 const connectDB = async (employeeId: string): Promise<void> => {
 
-    console.log();
-    console.log();
-    
-    console.log("====================calling Connect db===================");
-    console.log("====================employeeId==================",employeeId);
-    
-    console.log();
-    console.log();
 
     if (isConnected) {
         console.log('Already connected to the database');

@@ -249,6 +249,23 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         throw new Error("Failed to fetch dashboard data");
       }
     }
+
+    async updateManagerIsActive(managerId: string, isActive: boolean): Promise<any> {
+
+      console.log("Updating manager isActive in repository layer:", managerId, isActive);
+
+      try {
+        const result = await managerModel.findOneAndUpdate({_id: managerId }, { $set: { isActive: isActive } }, { new: true });
+        
+        if (!result) {
+          throw new Error(`No manager found with ID: ${managerId}`);
+        }
+        return result;
+      } catch (error :any) {
+        console.error("Error in updateManagerIsActive:", error.message);
+        throw new Error("Error updating manager isActive");
+      }
+    }
     
       
 }

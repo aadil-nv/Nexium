@@ -4,6 +4,8 @@ import IEmployeeRepository from "../interfaces/IEmployeeRepository";
 import  IEmployeeDocument  from "../../entities/employeeEntities";
 import BaseRepository from "./baseRepository";
 import OtpModel from "../../model/otpModel";
+import mongoose from "mongoose";
+
 
 
 
@@ -67,14 +69,27 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
       async updateEmployee(employee: any): Promise<any> {
         try {
             const employeeId = employee.employeeId;
-            
-            // Ensure `isVerified` is not updated
             const { isVerified, ...updateData } = employee;
     
             return this._employeeModel.updateOne({ _id: employeeId }, { $set: updateData });
         } catch (error) {
             console.error('Error in updateEmployee service:', error);
             throw error;
+        }
+    }
+
+    async updateIsActive(id: any, isActive: boolean): Promise<IEmployeeDocument | null> {      
+        try {
+
+          const employee = await this._employeeModel.findOneAndUpdate(
+            { _id: id },
+            { $set: { isActive } },
+            { new: true }
+          ).exec();
+          return employee;
+        } catch (error) {
+          console.error("Error updating employee:", error);
+          throw new Error(error instanceof Error ? error.message : "Unknown error occurred.");
         }
     }
     

@@ -15,5 +15,7 @@ export default interface IBusinessOwnerRepository extends BaseRepository<IBusine
     addServiceRequest(businessOwnerId: string,businessOwnerData: any, data: any): Promise<any>
     getAllServiceRequests(businessOwnerId: string): Promise<any[]>
     updateServiceRequest(serviceRequestId: string, data: any): Promise<any>
+    updateLastSeenForChats(businessOwnerId: string): Promise<any>
+    updateIsActive(businessOwnerId: string , isActive: boolean): Promise<any>
 
 }

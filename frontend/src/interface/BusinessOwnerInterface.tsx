@@ -13,7 +13,7 @@ export interface DashboardData {
 export interface StatCardProps {
     icon: React.ReactNode;
     title: string;
-    value: number;
+    value: number | undefined;
     bgColor: string;
   }
 
