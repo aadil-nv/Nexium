@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from './theme-provider';
 import homeImage from "../../../assets/landingPageAssets/signupbackground-removebg.png";
