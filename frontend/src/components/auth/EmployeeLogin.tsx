@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
-import image from "../../images/images";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login, setEmployeeData } from "../../redux/slices/employeeSlice";
@@ -76,9 +75,7 @@ const EmployeeLogin: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-gray-200">
       <div className="bg-white shadow-md rounded-2xl flex flex-col md:flex-row w-full max-w-4xl">
         <div className="w-full md:w-3/5 p-5 md:px-16 sm:px-8">
-          <div className="text-left font-bold mb-8">
-            <img src={image.navBarLogo} alt="Logo" className="w-20 h-auto" />
-          </div>
+        
           <div className="py-6 text-center px-4">
             <h2 className="text-3xl sm:text-4xl font-bold text-blue-500">Employee Login</h2>
             <div className="w-24 h-1 bg-blue-500 mx-auto mt-4 mb-4"></div>

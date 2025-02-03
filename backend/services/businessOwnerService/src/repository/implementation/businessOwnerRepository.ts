@@ -439,29 +439,58 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     }
   }
 
-  async updateIsActive(businessOwnerId: string , isActive: boolean): Promise<any> {
-    console.log(`update isActive for ${businessOwnerId}`.bgWhite + " " + isActive);
+  // async updateIsActive(businessOwnerId: string , isActive: boolean): Promise<any> {
+  //   console.log(`update isActive for ${businessOwnerId}`.bgWhite + " " + isActive);
     
-    try {
-      const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-      console.log(`111111111111111111111111111`.bgWhite.bold,_switchDb);
+  //   try {
+  //     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+  //     console.log(`111111111111111111111111111`.bgWhite.bold,_switchDb);
       
-      const businessOwner = _switchDb.model('businessOwners', businessOwnerModel.schema)
-      console.log(`2222222222222222222222222`.bgWhite.bold,businessOwner);
-     ;
-      const result = await businessOwner.findOneAndUpdate(
-        { _id: businessOwnerId },
-        { $set: { isActive: isActive } },
-        { new: true }
-      );
-      console.log(`33333333333333333333333333`.bgWhite.bold ,result);
-      // console.log(`444444444444444444444`.bgWhite.bold)
-      return result;
-    } catch (error) {
-      console.error("Error updating service request: ", error);
-      throw new Error("Failed to update service request.");
-    }
-  }
+  //     const businessOwner = _switchDb.model('businessOwners', businessOwnerModel.schema)
+  //     console.log(`2222222222222222222222222`.bgWhite.bold,businessOwner);
+  //    ;
+  //     const result = await businessOwner.findOneAndUpdate(
+  //       { _id: businessOwnerId },
+  //       { $set: { isActive: isActive } },
+  //       { new: true }
+  //     );
+  //     console.log(`33333333333333333333333333`.bgWhite.bold ,result);
+  //     // console.log(`444444444444444444444`.bgWhite.bold)
+  //     return result;
+  //   } catch (error) {
+  //     console.error("Error updating service request: ", error);
+  //     throw new Error("Failed to update service request.");
+  //   }
+  // }
+  async updateIsActive(businessOwnerId: string, isActive: boolean): Promise<any> {
+    console.log(`Updating isActive for ${businessOwnerId}`.bgWhite, isActive);
 
+    try {
+        const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+        console.log(`Switching to DB`.bgWhite.bold);
+
+        const businessOwnerCollection = _switchDb.collection('businessOwners');
+        console.log(`Business Owner Collection:`.bgWhite.bold, businessOwnerCollection);
+
+        const first = await businessOwnerCollection.findOneAndUpdate(
+            { _id: new mongoose.Types.ObjectId(businessOwnerId) }, 
+            { $set: { isActive } }, 
+            { upsert: true, returnDocument: "after" } // ✅ Fixed option
+        );
+        console.log(`Updated in businessOwners collection:`.bgRed.bold, first);
+
+        const result = await this._businessOwnerModel.findOneAndUpdate(
+            { _id: new mongoose.Types.ObjectId(businessOwnerId) }, 
+            { $set: { isActive } }, 
+            { returnDocument: "after" } // ✅ Fixed option
+        );
+        console.log(`Updated in _businessOwnerModel:`.bgWhite.bold, result);
+
+        return result;
+    } catch (error) {
+        console.error("Error updating isActive: ", error);
+        throw new Error("Failed to update isActive.");
+    }
+}
   
 }

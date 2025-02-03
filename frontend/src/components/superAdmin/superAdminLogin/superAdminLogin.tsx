@@ -8,8 +8,9 @@ import { useDispatch } from "react-redux";
 import { login } from "../../../redux/slices/superAdminSlice";
 import { loginSuperAdmin } from "../../../api/superAdminApi";
 import { IFormInputs } from "../../../interface/superAdminInterface";
-import IMAGES from "../../../images/images";
 import { AxiosError } from "axios";
+import nabarLogo from "../../../assets/landingPageAssets/NavbarLogo.png"
+
 
 const SuperAdminLogin: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -44,7 +45,7 @@ const SuperAdminLogin: React.FC = () => {
       <div className="bg-white shadow-md rounded-2xl flex flex-col md:flex-row w-full max-w-4xl">
         <div className="w-full md:w-3/5 p-5">
           <div className="text-left font-bold">
-            <img src={IMAGES.navBarLogo} alt="Logo" className="w-20 h-auto" />
+            <img src={nabarLogo} alt="Logo" className="w-20 h-auto" />
           </div>
           <div className="py-10 text-center">
             <h2 className="text-4xl font-bold text-blue-500">Login to your account</h2>

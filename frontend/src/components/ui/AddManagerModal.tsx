@@ -57,7 +57,7 @@ const AddManagerModal: React.FC<AddManagerModalProps> = ({ isVisible, onClose, o
     { id: 'email', label: 'Email', type: 'email' },
     { id: 'phoneNumber', label: 'Phone Number', type: 'text' },
     { id: 'joiningDate', label: 'Date of Join', type: 'date' },
-    { id: 'salary', label: 'Salary', type: 'string' },
+    { id: 'salary', label: 'Salary', type: 'number' },
     { id: 'workTime', label: 'Work Time', type: 'select', options: ['Full-Time', 'Part-Time', 'Contract', 'Temporary'] },
   ];
 

@@ -5,7 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { loginSchema } from "../../../config/validationSchema"; // Import Zod schema
 import { useDispatch } from "react-redux";
-import images from "../../../images/images";
 import { login ,setManagerData } from "../../../redux/slices/managerSlice";
 import { motion } from "framer-motion";
 import { LoginFormData } from "../../../utils/interfaces";
@@ -62,9 +61,7 @@ export default function ManagerLogin() {
       >
         {/* Left Section (Login Form) */}
         <div className="w-full md:w-3/5 p-5">
-          <div className="text-left font-bold">
-            <img src={images.nexuimLogoWithName} alt="Logo" className="w-20 h-auto" />
-          </div>
+          
           <div className="py-10">
             <div className="text-center">
               <h2 className="text-4xl font-bold text-green-500">Login to your account</h2>
