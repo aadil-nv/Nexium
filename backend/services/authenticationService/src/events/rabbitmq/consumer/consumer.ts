@@ -29,7 +29,7 @@ export default class Consumer implements IConsumer {
     const exchange = 'fanout_exchange';
 
     try {
-      this._connection = await amqp.connect("amqp://admin:admin@rabbitmq:5672");
+      this._connection = await amqp.connect(process.env.RABBITMQ_URL as string);
       this._channel = await this._connection.createChannel();
 
       await this._channel.assertQueue(queue, { durable: true });
