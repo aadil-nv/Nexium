@@ -60,7 +60,7 @@ const EmployeeOtp: React.FC = () => {
 
       try {
         setLoading(true); // Start loading
-        const response = await axios.post("http://localhost:3000/authentication-service/api/employee/employee-resendotp", {
+        const response = await axios.post("https://backend.aadil.online/authentication-service/api/employee/employee-resendotp", {
           email,
         });
         setLoading(false); // Stop loading
@@ -88,7 +88,7 @@ const EmployeeOtp: React.FC = () => {
 
     try {
       setLoading(true); // Start loading
-      const response = await axios.post("http://localhost:3000/authentication-service/api/employee/employee-validateotp", 
+      const response = await axios.post("https://backend.aadil.online/authentication-service/api/employee/employee-validateotp", 
         {email,otp},{ withCredentials: true });
       setLoading(false); // Stop loading
       console.log("Response data:", response.data);

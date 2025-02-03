@@ -88,7 +88,7 @@ export default function OtpValidation() {
     setOtpError(null);
 
     try {
-      const response = await resendOtp(email, "http://localhost:3000/authentication-service/api/manager/resend-otp");
+      const response = await resendOtp(email, "https://backend.aadil.online/authentication-service/api/manager/resend-otp");
       if (response.success) {
         dispatch(setTimer(90)); // Start the timer for 90 seconds
       } else {

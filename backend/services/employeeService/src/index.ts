@@ -66,5 +66,5 @@ app.use('/api/project',projectRoutes)
 
 connectConsumer();
 app.listen(PORT, () => {
-  console.log(`employeeService on http://localhost:${PORT}`.bgWhite.bold);
+  console.log(`employeeService on http://localhost:${PORT} v7777777`.bgWhite.bold);
 });

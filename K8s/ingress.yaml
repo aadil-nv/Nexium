@@ -12,6 +12,9 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/websocket-services: "communication-service"  # WebSocket support for socket.io
 spec:
   ingressClassName: nginx
   tls:
@@ -25,6 +28,13 @@ spec:
     - host: backend.aadil.online
       http:
         paths:
+          - path: /socket.io
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: communication-service
+                port:
+                  number: 7006  # Ensure this matches the actual port for communication-service
           - path: /(.*)
             pathType: ImplementationSpecific
             backend:

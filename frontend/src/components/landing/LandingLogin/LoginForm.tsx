@@ -86,7 +86,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         };
         
         const response = await axios.post<LoginResponse>(
-          "http://localhost:3000/authentication-service/api/business-owner/google-login", 
+          "httsp://backend.aadil.online/authentication-service/api/business-owner/google-login", 
           { 
             userData: googleUserData 
           },

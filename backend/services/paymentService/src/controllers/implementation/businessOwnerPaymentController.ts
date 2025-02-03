@@ -62,6 +62,8 @@ export default class BusinessOwnerPaymentController
     console.log(`signature: ${signature}`.bgRed);
     
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    console.log("webhookSecret:===============> ", webhookSecret);
+    
     console.log(`webhookSecret: ${webhookSecret}`.bgRed);
 
     if (!webhookSecret || !req.body) {
