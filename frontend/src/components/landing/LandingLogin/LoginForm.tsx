@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login, setBusinessOwnerData } from '../../../redux/slices/businessOwnerSlice';
 
+
 interface GoogleUserData {
   id: string;
   email: string;
@@ -209,17 +210,6 @@ const LoginForm: React.FC<LoginFormProps> = ({
             <span className={theme === 'dark' ? 'text-white' : 'text-gray-700'}>Continue with Google</span>
           </button>
 
-          <button
-            type="button"
-            className={`w-full flex items-center justify-center px-4 py-3 rounded-lg border transition duration-200 ${
-              theme === 'dark' 
-                ? 'border-gray-700 hover:bg-gray-800' 
-                : 'border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <img src="https://img.icons8.com/material-outlined/24/000000/github.png" alt="GitHub" className="w-5 h-5 mr-2" />
-            <span className={theme === 'dark' ? 'text-white' : 'text-gray-700'}>Continue with GitHub</span>
-          </button>
         </div>
 
         <div className="text-center space-y-4 mt-8">

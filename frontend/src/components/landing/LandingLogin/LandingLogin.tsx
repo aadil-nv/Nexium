@@ -11,6 +11,8 @@ import NewPasswordForm from '../LandingLogin/NewPassword';
 import  LoginForm from "../LandingLogin/LoginForm";
 import { z } from 'zod';
 import { AxiosError } from 'axios';
+import loginBackground from "../../../assets/landingPageAssets/signupbackground.png";
+
 
 interface LoginFormErrors {
   email?: string;
@@ -296,7 +298,7 @@ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
       {/* Left side - Image */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <img 
-          src="/api/placeholder/800/600" 
+          src={loginBackground}
           alt="Login"
           className="object-cover w-full h-full"
         />

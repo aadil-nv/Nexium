@@ -5,12 +5,11 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { signUpSchema } from '../../../config/validationSchema';
 import { signUpBusinessOwner } from '../../../api/authApi';
-import images from "../../../images/images"
+import signupbackground from "../../../assets/landingPageAssets/signupbackground.png";
 
 interface FormErrors {
   [key: string]: string;
 }
-
 
 const Spinner: React.FC = () => (
   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -32,6 +31,7 @@ const SignUp: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -40,10 +40,9 @@ const SignUp: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     const validation = signUpSchema.safeParse({
       ...formData,
-      registrationNumber: "NOT_REQUIRED", // Add default value since we removed the field
+      registrationNumber: "NOT_REQUIRED",
     });
 
     if (!validation.success) {
@@ -59,7 +58,7 @@ const SignUp: React.FC = () => {
     try {
       const data = await signUpBusinessOwner(
         formData.companyName,
-        "NOT_REQUIRED", 
+        "NOT_REQUIRED",
         formData.email,
         formData.password,
         formData.phone
@@ -78,161 +77,147 @@ const SignUp: React.FC = () => {
     }
   };
 
-  const getInputStyle = (fieldError?: string): string => {
-    const baseStyle = `w-full px-4 py-3 rounded-lg transition duration-200 outline-none ${
-      theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-900'
-    }`;
+  const getInputStyle = (fieldName: string, fieldError?: string): string => {
+    const isDark = theme === 'dark';
+    const isFocused = focusedField === fieldName;
+    
+    const baseStyle = `
+      w-full px-4 py-3 rounded-lg transition-all duration-300
+      ${isDark ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'}
+      ${isFocused ? (isDark ? 'ring-2 ring-blue-400' : 'ring-2 ring-blue-500') : ''}
+      ${fieldError ? 'border-red-500' : (isDark ? 'border-gray-700' : 'border-gray-300')}
+      placeholder:text-gray-400
+      outline-none
+    `;
 
-    if (fieldError) {
-      return `${baseStyle} border-2 border-red-500 focus:border-red-500`;
-    }
+    return baseStyle;
+  };
 
-    return `${baseStyle} border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500`;
+  const inputVariants = {
+    initial: { y: 20, opacity: 0 },
+    animate: { y: 0, opacity: 1 },
+    focus: { scale: 1.02 },
   };
 
   return (
-    <div className={`min-h-screen flex ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}>
-      {/* Left side - Image */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <img 
-          src={images.homePicture}
-          alt="Signup"
-          className="object-cover w-full h-full"
-        />
+    <div className={`min-h-screen flex ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'}`}>
+      <div className="hidden lg:flex lg:w-1/2 relative">
+        <img src={signupbackground} alt="Signup" className="object-cover w-full h-full" />
         <div className="absolute inset-0 bg-blue-500 bg-opacity-30 backdrop-blur-sm flex items-center justify-center">
-          <div className="text-white text-center p-8">
-            <h1 className="text-4xl font-bold mb-4">Welcome!</h1>
-            <p className="text-xl">Join us to manage your business efficiently</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-white text-center p-8"
+          >
+            <h1 className="text-5xl font-bold mb-4">Welcome!</h1>
+            <p className="text-xl font-light">Join us to manage your business efficiently</p>
+          </motion.div>
         </div>
       </div>
 
-      {/* Right side - Signup Form */}
-      <div className={`w-full lg:w-1/2 flex items-center justify-center p-8 ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
+      <div className={`w-full lg:w-1/2 flex items-center justify-center p-8 ${theme === 'dark' ? 'bg-gray-950' : 'bg-white'}`}>
         <motion.div
           className="w-full max-w-md"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="mb-10 text-center">
-            <h2 className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+          <motion.div
+            className="mb-10 text-center"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <h2 className={`text-4xl font-bold mb-2 ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
               Create Account
             </h2>
-            <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-              Sign up to get started with our services
-            </p>
-          </div>
+          </motion.div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`}>
-                Company Name
-              </label>
-              <input
-                type="text"
-                name="companyName"
-                className={getInputStyle(error.companyName)}
-                placeholder="Enter your company name"
-                value={formData.companyName}
-                onChange={handleChange}
-              />
-              {error.companyName && <p className="mt-1 text-sm text-red-500">{error.companyName}</p>}
-            </div>
-
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`}>
-                Email Address
-              </label>
-              <input
-                type="email"
-                name="email"
-                className={getInputStyle(error.email)}
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-              {error.email && <p className="mt-1 text-sm text-red-500">{error.email}</p>}
-            </div>
-
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`}>
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                className={getInputStyle(error.phone)}
-                placeholder="Enter your phone number"
-                value={formData.phone}
-                onChange={handleChange}
-              />
-              {error.phone && <p className="mt-0 text-sm text-red-500">{error.phone}</p>}
-            </div>
-
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`}>
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  className={getInputStyle(error.password)}
-                  placeholder="Create a password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowPassword(prev => !prev)}
-                >
-                  {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
-                </button>
-              </div>
-              {error.password && <p className="mt-1 text-sm text-red-500">{error.password}</p>}
-            </div>
-
-            <div>
-              <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`}>
-                Confirm Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  name="confirm_password"
-                  className={getInputStyle(error.confirm_password)}
-                  placeholder="Confirm your password"
-                  value={formData.confirm_password}
-                  onChange={handleChange}
-                />
-                <button
-                  type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowConfirmPassword(prev => !prev)}
-                >
-                  {showConfirmPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
-                </button>
-              </div>
-              {error.confirm_password && <p className="mt-1 text-sm text-red-500">{error.confirm_password}</p>}
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {['companyName', 'email', 'phone', 'password', 'confirm_password'].map((field, index) => (
+              <motion.div
+                key={field}
+                initial="initial"
+                animate="animate"
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                variants={inputVariants}
+              >
+                <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')}
+                </label>
+                <div className="relative">
+                  <motion.input
+                    type={
+                      field === 'password' ? (showPassword ? 'text' : 'password') :
+                      field === 'confirm_password' ? (showConfirmPassword ? 'text' : 'password') :
+                      field === 'email' ? 'email' : 'text'
+                    }
+                    name={field}
+                    className={getInputStyle(field, error[field])}
+                    placeholder={`Enter your ${field.replace('_', ' ').toLowerCase()}`}
+                    value={formData[field as keyof typeof formData]}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField(field)}
+                    onBlur={() => setFocusedField(null)}
+                    whileFocus="focus"
+                  />
+                  {(field === 'password' || field === 'confirm_password') && (
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      onClick={() => field === 'password' ? 
+                        setShowPassword(prev => !prev) : 
+                        setShowConfirmPassword(prev => !prev)
+                      }
+                    >
+                      {(field === 'password' ? showPassword : showConfirmPassword) ? 
+                        <FaEyeSlash size={20} /> : 
+                        <FaEye size={20} />
+                      }
+                    </button>
+                  )}
+                </div>
+                {error[field] && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-1 text-sm text-red-500"
+                  >
+                    {error[field]}
+                  </motion.p>
+                )}
+              </motion.div>
+            ))}
 
             {error.form && (
-              <div className="p-3 rounded-lg bg-red-100 text-red-700 text-sm">
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3 rounded-lg bg-red-100 text-red-700 text-sm"
+              >
                 {error.form}
-              </div>
+              </motion.div>
             )}
 
-            <button
+            <motion.button
               type="submit"
-              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition duration-200 transform hover:scale-[1.02] flex items-center justify-center"
+              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium
+                transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50
+                disabled:cursor-not-allowed disabled:hover:scale-100"
               disabled={loading}
+              whileHover={{ scale: loading ? 1 : 1.02 }}
+              whileTap={{ scale: loading ? 1 : 0.98 }}
             >
               {loading ? <Spinner /> : 'Create Account'}
-            </button>
+            </motion.button>
 
-            <div className="text-center mt-6">
+            <motion.div
+              className="text-center mt-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
               <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                 Already have an account?{' '}
                 <a 
@@ -242,7 +227,7 @@ const SignUp: React.FC = () => {
                   Sign in
                 </a>
               </p>
-            </div>
+            </motion.div>
           </form>
         </motion.div>
       </div>
