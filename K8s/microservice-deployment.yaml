@@ -272,7 +272,7 @@ spec:
     spec:
       containers:
       - name: communication-service
-        image: aadilnv/nexium-communicationservice:v3
+        image: aadilnv/nexium-communicationservice:v4
         imagePullPolicy: Always
         ports:
         - containerPort: 7006

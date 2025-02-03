@@ -10,6 +10,10 @@ import { IParticipantDetails } from "dto/chatDTO";
 export default class MessageService implements IMessageService {
     constructor(@inject("IMessageRepository") private _messageRepository: IMessageRepository) { }
     async createMessage(senderId: string,chatId: string,message: any): Promise<IMessageDTO> {
+        console.log("message----->",message);
+        console.log("senderId----->",senderId);
+        console.log("chatId----->",chatId);
+        
         try {
             // Prepare message data
             const messageData = {
