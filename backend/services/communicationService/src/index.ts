@@ -33,7 +33,7 @@ const io = new Server(server, {
 });
 
 // Create a specific namespace for chat
-const chatNamespace = io.of('/communication-service/socket');
+const chatNamespace = io.of('/socket');
 
 // Initialize chat socket logic on this namespace
 initializeChatSocket(chatNamespace);
