@@ -17,7 +17,7 @@ export default class BusinessOwnerConsumer implements IConsumer {
     const exchange = 'fanout_exchange';
 
     try {
-      const connection = await amqp.connect(process.env.RABBITMQ_URL || "amqp://guest:guest@rabbitmq:5672");
+      const connection = await amqp.connect(process.env.RABBITMQ_URL as string);
       const channel = await connection.createChannel();
 
       await channel.assertExchange(exchange, 'fanout', { durable: true });

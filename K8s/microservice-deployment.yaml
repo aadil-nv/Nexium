@@ -51,7 +51,7 @@ spec:
     spec:
       containers:
       - name: business-owner-service
-        image: aadilnv/nexium-businessownerservice:latest
+        image: aadilnv/nexium-businessownerservice:v2
         imagePullPolicy: Always
         ports:
         - containerPort: 7001
