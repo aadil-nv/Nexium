@@ -369,12 +369,18 @@ const EmployeeLeave: React.FC = () => {
               <Radio value="half">Half Day</Radio>
             </Radio.Group>
            </Form.Item>
-          <Form.Item name="half" label="Half" rules={[{ required: true }]}>
+           {selectedDays === 1 && form.getFieldValue('dayType') === 'half' && (
+            <Form.Item 
+              name="halfDayType" 
+              label="Half Day Type" 
+              rules={[{ required: true, message: 'Please select half day type' }]}
+            >
               <Radio.Group>
-              <Radio value="first half">First Half</Radio>
-              <Radio value="second half">Second Half</Radio>
-            </Radio.Group>
-           </Form.Item>
+                <Radio value="first half">First Half</Radio>
+                <Radio value="second half">Second Half</Radio>
+              </Radio.Group>
+            </Form.Item>
+          )}
 
           <Form.Item name="reason" label="Reason" rules={[{ required: true }]}>
             <Input.TextArea placeholder="Enter reason" />
