@@ -19,7 +19,6 @@ import meetingRoutes from './routes/meetingRoute';
 const app = express();
 const PORT = process.env.PORT 
 
-// Set up HTTP server and Socket.IO
 const server = app.listen(PORT, () => {
   console.log(`communication-service is running on http://localhost:${PORT} v3333333333`.bgBlue.bold);
 });
@@ -32,13 +31,10 @@ const io = new Server(server, {
   },
 });
 
-// Create a specific namespace for chat
 const chatNamespace = io.of('/socket');
 
-// Initialize chat socket logic on this namespace
 initializeChatSocket(chatNamespace);
 
-// Log directory setup
 const logDirectory = path.resolve(__dirname, './logs');
 if (!fs.existsSync(logDirectory)) {
   fs.mkdirSync(logDirectory);
@@ -46,13 +42,11 @@ if (!fs.existsSync(logDirectory)) {
 
 // Set up log file rotation
 const accessLogStream = createStream('access.log', {
-  interval: '7d',
+  interval: process.env.LOG_INTERVAL || '1d',
   path: logDirectory,
 });
 
-// Middleware setup
 app.use(morgan('combined', { stream: accessLogStream }));
-// app.use(morgan('tiny'));
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN,
   methods: ['GET', 'POST' , 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

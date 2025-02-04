@@ -26,6 +26,10 @@ export default function Home() {
         stiffness: 100,
         damping: 10
       }
+    },
+    hover: {
+      textShadow: '0 0 15px rgba(37, 99, 235, 0.5)',
+      transition: { duration: 0.3 }
     }
   };
 
@@ -39,6 +43,10 @@ export default function Home() {
         stiffness: 80,
         damping: 12
       }
+    },
+    hover: {
+      textShadow: '0 0 10px rgba(37, 99, 235, 0.4)',
+      transition: { duration: 0.3 }
     }
   };
 
@@ -55,6 +63,7 @@ export default function Home() {
     },
     hover: {
       scale: 1.05,
+      boxShadow: '0 0 20px rgba(37, 99, 235, 0.5)',
       transition: {
         duration: 0.2
       }
@@ -80,6 +89,7 @@ export default function Home() {
     hover: {
       scale: 1.02,
       rotate: 2,
+      boxShadow: '0 0 30px rgba(37, 99, 235, 0.6)',
       transition: {
         duration: 0.4
       }
@@ -96,6 +106,7 @@ export default function Home() {
       <motion.div className='md:w-1/2 space-y-4 md:space-y-6 flex flex-col justify-center mt-8 md:mt-12 px-4 md:px-10'>
         <motion.h2 
           variants={headingVariants}
+          whileHover="hover"
           className={`text-2xl md:text-4xl font-bold ${theme === 'dark' ? 'text-white' : 'text-black-800'} mb-2`}
         >
           Welcome to Nexium
@@ -103,6 +114,7 @@ export default function Home() {
         
         <motion.p 
           variants={textVariants}
+          whileHover="hover"
           className={`text-sm md:text-base leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} mb-4`}
         >
           Transform your business management with Nexium's comprehensive solution. Our platform streamlines operations, enhances productivity, and drives growth through intelligent automation. Experience seamless project tracking, resource allocation, and team collaboration all in one place.
