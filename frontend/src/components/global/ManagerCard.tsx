@@ -70,7 +70,7 @@ const ManagerCard: React.FC<IManagerCardProps> = ({
         <div className="flex items-center justify-center">
           <h2 className="text-lg font-semibold text-gray-800 truncate">{name}</h2>
           {/* Verified Icon */}
-          {isVerified ? (
+          {isVerified == true ? (
             <FaCheckCircle className="text-green-500 ml-2" size={20} />
           ) : (
             <FaTimesCircle className="text-red-500 ml-2" size={20} />
