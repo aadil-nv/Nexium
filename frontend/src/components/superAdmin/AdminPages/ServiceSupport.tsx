@@ -179,7 +179,7 @@ export default function CustomerCare() {
       title: 'Company Logo',
       dataIndex: 'companyLogo',
       key: 'companyLogo',
-      render: (companyLogo: string) => <img src={companyLogo || "https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png"} alt="Company Logo" width={30} height={30} />
+      render: (companyLogo: string) => <img src={companyLogo ? companyLogo : 'https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png'} alt="Company Logo" width={30} height={30} />
     },
     {
       title: 'Company Name',
