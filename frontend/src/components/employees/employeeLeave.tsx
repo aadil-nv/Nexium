@@ -364,11 +364,17 @@ const EmployeeLeave: React.FC = () => {
           </Form.Item>
 
           <Form.Item name="dayType" label="Day Type" rules={[{ required: true }]}>
-  <Radio.Group>
-    <Radio value="full">Full Day</Radio>
-    <Radio value="half">Half Day</Radio>
-  </Radio.Group>
-</Form.Item>
+              <Radio.Group>
+              <Radio value="full">Full Day</Radio>
+              <Radio value="half">Half Day</Radio>
+            </Radio.Group>
+           </Form.Item>
+          <Form.Item name="half" label="Half" rules={[{ required: true }]}>
+              <Radio.Group>
+              <Radio value="first half">First Half</Radio>
+              <Radio value="second half">Second Half</Radio>
+            </Radio.Group>
+           </Form.Item>
 
           <Form.Item name="reason" label="Reason" rules={[{ required: true }]}>
             <Input.TextArea placeholder="Enter reason" />

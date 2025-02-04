@@ -9,8 +9,6 @@ import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
 
 
 
-
-
 @injectable()
 
 export default  class ChatService implements IChatService {
@@ -396,8 +394,7 @@ export default  class ChatService implements IChatService {
             throw new Error("Error deleting group");
         }
     }
-    
-    
+
     
     async getAllUnAddedUsers(groupId: string, myId: string): Promise<IUnAddedUsersDTO[]> {
         try {
