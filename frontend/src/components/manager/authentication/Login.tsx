@@ -139,10 +139,10 @@ export default function ManagerLogin() {
           transition={{ duration: 0.5 }}
         >
           <div className="text-center">
-            <h2 className="text-3xl font-bold mb-2">Hello, 👋 Admin</h2>
+            <h2 className="text-3xl font-bold mb-2">Hello, 👋 Manager</h2>
             <div className="w-24 h-1 bg-white mx-auto mb-4"></div>
           </div>
-          <p className="mb-4 text-center">Welcome back Admin, show your skill</p>
+          <p className="mb-4 text-center">Welcome back Manager, show your skill</p>
           <a
             href="/"
             className="border-2 border-white rounded-full px-12 py-2 inline-block font-semibold hover:bg-white hover:text-green-500 transition-colors"

@@ -72,9 +72,9 @@ const SuperAdminLogin: React.FC = () => {
           </div>
         </div>
         <div className="w-full md:w-2/5 bg-blue-500 text-white rounded-tr-2xl rounded-br-2xl py-36 px-12 flex flex-col justify-center items-center">
-          <h2 className="text-3xl font-bold mb-2">Hello, 👋 Admin</h2>
+          <h2 className="text-3xl font-bold mb-2">Hello, 👋 Super-admin</h2>
           <div className="w-24 h-1 bg-white mx-auto mb-4"></div>
-          <p className="mb-4 text-center">Welcome back Admin, show your skill</p>
+          <p className="mb-4 text-center">Welcome back Super-admin, show your skill</p>
           <a href="/" className="border-2 border-white rounded-full px-12 py-2 font-semibold hover:bg-white hover:text-blue-500 transition-colors">Home</a>
         </div>
       </div>
