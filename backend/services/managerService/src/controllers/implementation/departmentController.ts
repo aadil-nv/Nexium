@@ -1,8 +1,10 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import IDepartmentController from "../interface/IDepartmentController";
 import IDepartmentService from "../../service/interface/IDepartmentService";
 import { injectable, inject } from "inversify";
-import { log } from 'node:console';
+import { CustomRequest } from 'middlewares/tokenAuthenticate';
+import {HttpStatusCode} from "../../utils/enums"
+
 
 @injectable()
 export default class DepartmentController implements IDepartmentController {
@@ -10,32 +12,30 @@ export default class DepartmentController implements IDepartmentController {
         @inject("IDepartmentService") private _departmentService: IDepartmentService
     ) {}
 
-    async addDepartments(req: Request, res: Response): Promise<Response> {
+    async addDepartments(req: CustomRequest, res: Response): Promise<Response> {
         try {
           const { departmentName, employees } = req.body;
+          const businessOwnerId = req.user?.managerData?.businessOwnerId;
       
-          // Validate employees input
           if (!Array.isArray(employees)) {
-            return res.status(400).json({ 
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ 
               message: "Employees must be an array of objects", 
               success: false 
             });
           }
       
-          // Call the service layer
-          const result = await this._departmentService.addDepartments(departmentName, employees);
+          const result = await this._departmentService.addDepartments(departmentName, employees,businessOwnerId as string);
       
-          // Return the response from the service layer
           if (!result.success) {
-            return res.status(400).json(result); 
+            return res.status(HttpStatusCode.BAD_REQUEST).json(result); 
           }
       
-          return res.status(200).json(result);
+          return res.status(HttpStatusCode.OK).json(result);
       
         } catch (error: any) {
           console.error("Error in addDepartments:", error);
       
-          return res.status(500).json({
+          return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
             message: "An unexpected error occurred.",
             success: false,
             error: error.message
@@ -44,114 +44,112 @@ export default class DepartmentController implements IDepartmentController {
       }
       
 
-    async getDepartments(req: Request, res: Response): Promise<void> {
+    async getDepartments(req: CustomRequest, res: Response): Promise<void> {
         try {
-            const departments = await this._departmentService.getDepartments();
+            const businessOwnerId = req.user?.managerData?.businessOwnerId;
+            const departments = await this._departmentService.getDepartments(businessOwnerId as string);
             const datas = departments.map((dep: any) => ({
                 employees : dep.employees.employeeId,
                 empname : dep.employees.name
             }))
-            console.log(`get departments-------------------------------------------------`.bgRed, departments.employees);
-            console.log(`get departments-------------------------------------------------`.bgRed, datas);
             
-            res.status(200).json(departments);
+            res.status(HttpStatusCode.OK).json(departments);
         } catch (error) {
             console.error("Error fetching departments:", error);
-            res.status(500).json({ message: "Failed to get departments" });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to get departments" });
         }
     }
 
-    async removeEmployee(req: Request, res: Response): Promise<void> {
+    async removeEmployee(req: CustomRequest, res: Response): Promise<void> {
         try {
             const { employeeId, departmentId } = req.body;
-            console.log("req.body", req.body);
-
-            console.log("employeeId##################", employeeId);
-            console.log("departmentId##################", departmentId);
-            
-            
-            
+            const businessOwnerId = req.user?.managerData?.businessOwnerId;
 
             if (!employeeId || !departmentId) {
-                res.status(400).json({ message: 'Employee ID and Department ID are required' });
+                res.status(HttpStatusCode.BAD_REQUEST).json({ message: 'Employee ID and Department ID are required' });
                 return;
             }
 
-            await this._departmentService.removeEmployee(employeeId, departmentId);
-            res.status(200).json({ message: 'Employee removed successfully from the department' });
+            await this._departmentService.removeEmployee(employeeId, departmentId ,businessOwnerId as string);
+            res.status(HttpStatusCode.OK).json({ message: 'Employee removed successfully from the department' });
         } catch (error) {
             console.error('Error in removeEmployee:', error);
-            res.status(500).json({ message: 'An error occurred' });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
         }
     }
 
-    async deleteDepartment(req: Request, res: Response): Promise<void> {
+    async deleteDepartment(req: CustomRequest, res: Response): Promise<void> {
         try {
             const { departmentId } = req.body;
+            const businessOwnerId = req.user?.managerData?.businessOwnerId;
 
             if (!departmentId) {
-                res.status(400).json({ message: 'Department ID is required' });
+                res.status(HttpStatusCode.BAD_REQUEST).json({ message: 'Department ID is required' });
                 return;
             }
 
-            await this._departmentService.deleteDepartment(departmentId);
-            res.status(200).json({ message: 'Department deleted successfully' });
+            await this._departmentService.deleteDepartment(departmentId ,businessOwnerId as string);
+            res.status(HttpStatusCode.OK).json({ message: 'Department deleted successfully' });
         } catch (error) {
             console.error('Error in deleteDepartment:', error);
-            res.status(500).json({ message: 'An error occurred' });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
         }
     }
   
 
-    async updateDepartmentName(req: Request, res: Response): Promise<void> {
+    async updateDepartmentName(req: CustomRequest, res: Response): Promise<void> {
         try {
-            const { departmentId, newDepartmentName } = req.body;
+            const { newDepartmentName } = req.body;
+            const departmentId = req.params.id;
+            const businessOwnerId = req.user?.managerData?.businessOwnerId;
     
-            // Ensure required fields are provided
-            if (!departmentId || !newDepartmentName) {
-                res.status(400).json({ message: 'Department ID and new department name are required.' });
+            if (!departmentId) {
+                res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Department ID is required." });
+                return;
+            }
+    
+            if (!newDepartmentName) {
+                res.status(HttpStatusCode.BAD_REQUEST).json({ message: "New department name is required." });
+                return;
+            }
+    
+            if (!businessOwnerId) {
+                res.status(403).json({ message: "Unauthorized. Business owner ID is missing." });
                 return;
             }
     
             // Call service to update department name
-            const updatedDepartment = await this._departmentService.updateDepartmentName(departmentId, newDepartmentName);
-            
+            const updatedDepartment = await this._departmentService.updateDepartmentName(departmentId, newDepartmentName, businessOwnerId as string);
+    
             // Return success response
-            res.status(200).json({
-                message: 'Department name updated successfully.',
+            res.status(HttpStatusCode.OK).json({
+                message: "Department name updated successfully.",
                 department: updatedDepartment
             });
-            
-        } catch (error:any) {
-           
-                // Generic error handling
-                res.status(500).json({ message: 'An error occurred while updating the department name.' });
-            
+    
+        } catch (error: any) {
+            console.error("Error in updateDepartmentName controller:", error.message);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || "Internal server error" });
         }
     }
     
+    
 
-    async addEmployeesToDepartment(req: Request, res: Response): Promise<Response> {
-        console.log("hitting add employee to department controller");
+    async addEmployeesToDepartment(req: CustomRequest, res: Response): Promise<Response> {
         
         try {
             const { departmentId, employeeData } = req.body;
+            const businessOwnerId = req.user?.managerData?.businessOwnerId;
            
       
-
-            console.log("req.body", req.body);
-           
-            
-    
-            // Validate input
             if (!employeeData) {
-                return res.status(400).json({ message: 'Employee ID and Department ID are required.' });
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ message: 'Employee ID and Department ID are required.' });
             }
     
             // Call the service layer
-            const result = await this._departmentService.addEmployeesToDepartment(employeeData ,departmentId);
+            const result = await this._departmentService.addEmployeesToDepartment(employeeData ,departmentId ,businessOwnerId as string); ;
     
-            return res.status(200).json({ 
+            return res.status(HttpStatusCode.OK).json({ 
                 message: 'Employee added to department successfully.', 
                 data: result 
             });
@@ -168,11 +166,11 @@ export default class DepartmentController implements IDepartmentController {
             }
     
             if (error.message === 'Employee is already in the department.') {
-                return res.status(400).json({ message: 'Employee is already in the department.' });
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ message: 'Employee is already in the department.' });
             }
     
             // Generic error message for internal server errors
-            return res.status(500).json({ message: 'Internal server error.', error: error.message });
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error.', error: error.message });
         }
     }
     

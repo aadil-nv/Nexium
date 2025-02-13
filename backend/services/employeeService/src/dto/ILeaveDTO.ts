@@ -12,5 +12,7 @@
         approvedBy?: string;       // Date when the leave was approved
         rejectionReason?: string; // Reason for rejection
         status?: string;
+        isFirstHalf?:boolean;
+        isSecondHalf?:boolean
     }
   

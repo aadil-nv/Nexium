@@ -15,7 +15,8 @@ export default class DashboardController implements IDashboardController {
        try {
         const employeeId = req.user?.employeeData?._id;
         if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-        const result = await this._dashboardService.getAllDashboardData(employeeId as string);
+        const businessOwnerId = req.user?.employeeData?.businessOwnerId;
+        const result = await this._dashboardService.getAllDashboardData(employeeId as string ,businessOwnerId as string);
         if(!result) return res.status(HttpStatusCode.OK).json([]);
         return res.status(HttpStatusCode.OK).json(result);
         

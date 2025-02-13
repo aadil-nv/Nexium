@@ -39,6 +39,8 @@ export default class SubscriptionController {
   async updateSubscriptionDetails(req: Request, res: Response): Promise<Response> {
     try {
       const updateData = req.body;
+      console.log(updateData);
+      
       const result = await this._subscriptionService.updateSubscriptionDetails(req.params.id, updateData);
       return res.status(result ? 200 : 400).json(result);
     } catch (error) {

@@ -21,7 +21,7 @@ export default class BusinessOwnerConsumer implements IConsumer {
 
     try {
       // Establish connection
-      this.connection = await amqp.connect(process.env.RABBITMQ_URL || 'amqp://guest:guest@rabbitmq:5672');
+      this.connection = await amqp.connect(process.env.RABBITMQ_URL as string);
       this.channel = await this.connection.createChannel();
 
       // Declare queue and exchange

@@ -3,6 +3,7 @@ import { Model } from "mongoose";
 import BaseRepository from "./baseRepository";
 import IDepartment from "../../entities/departmentEntities";
 import IDepartmentRepository from "../../repository/interface/IDepartmentRepository";
+import connectDB from "../../config/connectDB";
 
 @injectable()
 export default class DepartmentRepository extends BaseRepository<IDepartment> implements IDepartmentRepository {
@@ -10,18 +11,25 @@ export default class DepartmentRepository extends BaseRepository<IDepartment> im
         super(_departmentModel);
     }
 
-    async getDepartment(departmentId: string): Promise<IDepartment> {
-        
+    async getDepartment(departmentId: string, businessOwnerId: string): Promise<IDepartment> {
         try {
-            const department = await this._departmentModel.findOne({ _id:departmentId }).exec();
-            
-             if(!department){
+            const switchDB = await connectDB(businessOwnerId);
+            const DepartmentModel = switchDB.model<IDepartment>('Department', this._departmentModel.schema);
+    
+            const department = await DepartmentModel
+                .findOne({ _id: departmentId })
+                .populate("employees.employeeId")  // Populate employeeId reference
+                .exec();
+    
+            if (!department) {
                 throw new Error("Department not found");
-             }
+            }
+    
             return department;
-        } catch (error:any) {
+        } catch (error: any) {
             console.error(error);
             throw new Error("Error fetching department: " + error.message);
         }
     }
+    
 }

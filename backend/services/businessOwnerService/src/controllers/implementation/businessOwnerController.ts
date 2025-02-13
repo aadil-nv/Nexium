@@ -22,17 +22,10 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async setNewAccessToken(req: CustomRequest, res: Response): Promise<Response> {
-    
     const refreshToken = req.cookies.refreshToken;
-
-
     try {
       const newAccessToken = await this._businessOwnerService.setNewAccessToken(refreshToken);
-
       if (!newAccessToken) return this.handleResponse(res, 401, false, 'Failed to generate new access token.');
-
-
-
       res.cookie('accessToken', newAccessToken.accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -47,11 +40,9 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async logout(req: CustomRequest, res: Response): Promise<Response> {
-  
     try {
       const businessOwnerId = this.getBusinessOwnerId(req);
       if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
-      await this._businessOwnerService.updateLastSeen(businessOwnerId);
       res.clearCookie('accessToken');
       res.clearCookie('refreshToken');
       return this.handleResponse(res, 200, true, 'Logout successful');
@@ -238,6 +229,17 @@ export default class BusinessOwnerController implements IBusinessOwnerController
       const businessOwnerId = this.getBusinessOwnerId(req);
       if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
       const result = await this._businessOwnerService.updateIsActive(businessOwnerId, false);
+      return this.handleResponse(res, 200, true, 'Service request updated', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to update service request');
+    }
+  }
+
+  async updateLastSeen(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.updateLastSeen(businessOwnerId);
       return this.handleResponse(res, 200, true, 'Service request updated', result);
     } catch {
       return this.handleResponse(res, 500, false, 'Failed to update service request');

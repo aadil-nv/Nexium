@@ -18,9 +18,9 @@ export default class LeaveService implements ILeaveService {
      @inject("IManagerRepository")
      private  _managerRepository: IManagerRepository) {}
 
-    async updateLeaveApproval(employeeId: string, data: object): Promise<ILeaveResonseDTO> {
+    async updateLeaveApproval(employeeId: string, data: object ,businessOwnerId: string): Promise<ILeaveResonseDTO> {
         try {
-            const result = await this._leaveRepository.updateLeaveApproval(employeeId, data);
+            const result = await this._leaveRepository.updateLeaveApproval(employeeId, data, businessOwnerId); ;
     
             return {
                 leaveStatus: result?.attendance[0].leaveStatus,
@@ -38,9 +38,9 @@ export default class LeaveService implements ILeaveService {
     }
     
 
-async getAllLeaveEmployees(): Promise<ILeaveDTO[]> {
+    async getAllLeaveEmployees(buisinessownerId: string): Promise<ILeaveDTO[]> {
     try {
-        const results = await this._leaveRepository.getAllLeaveEmployees();
+        const results = await this._leaveRepository.getAllLeaveEmployees(buisinessownerId);
 
         const leaveDTOs: ILeaveDTO[] = results.flatMap((result) => {
             return result.attendance?.map((attendanceEntry) => {
@@ -76,15 +76,12 @@ async getAllLeaveEmployees(): Promise<ILeaveDTO[]> {
         console.error("Error in getAllLeaveEmployees service:", error);
         throw new Error("Failed to fetch leave employees");
     }
-}
+    }
 
 
-
-
-
-    async getAllLeaveTypes(): Promise<ILeaveTypesDTO[]> {
+    async getAllLeaveTypes(businessOwnerId: string): Promise<ILeaveTypesDTO[]> {
         try {
-            const result = await this._leaveRepository.findAllLeaveTypes();
+            const result = await this._leaveRepository.findAllLeaveTypes(businessOwnerId);
 
             if (!result) {
                 throw new Error("No leave types found");
@@ -112,9 +109,9 @@ async getAllLeaveEmployees(): Promise<ILeaveDTO[]> {
     }
     
     
-    async  updateLeaveTypes(leaveTypeId: string, data: ILeaveTypesDTO): Promise<ILeaveResonseDTO> {
+    async  updateLeaveTypes(leaveTypeId: string, data: ILeaveTypesDTO ,businessOwnerId: string): Promise<ILeaveResonseDTO> {
         try {
-            const result = await this._leaveRepository.updateLeaveTypes(leaveTypeId, data);
+            const result = await this._leaveRepository.updateLeaveTypes(leaveTypeId, data ,businessOwnerId);
             return {
                 message: "Leave approval updated successfully",
                 success: true
@@ -125,16 +122,11 @@ async getAllLeaveEmployees(): Promise<ILeaveDTO[]> {
         }
     }
     
-   
 
-
-
-    async fetchAllPreAppliedLeaves(): Promise<IAppliedLeaveDTO[]> {
+    async fetchAllPreAppliedLeaves(businessOwnerId: string): Promise<IAppliedLeaveDTO[]> {
         try {
-          // Fetch all pre-applied leaves from the repository
-          const leaves = await this._leaveRepository.fetchAllPreAppliedLeaves();
+          const leaves = await this._leaveRepository.fetchAllPreAppliedLeaves(businessOwnerId);
     
-          // Map the result to the DTO format
           const mappedLeaves: IAppliedLeaveDTO[] = leaves.map((leave) => ({
             _id:leave._id,
             employeeId: leave.employeeId?._id?.toString() || '',
@@ -157,20 +149,20 @@ async getAllLeaveEmployees(): Promise<ILeaveDTO[]> {
           console.error('Error fetching pre-applied leaves:', error);
           throw new Error('Failed to fetch pre-applied leaves');
         }
-      }
+    }
 
 
-      async updatePreAppliedLeaves(employeeId: string, managerId: string, data: any): Promise<IAppliedLeaveResponce> {
+    async updatePreAppliedLeaves(employeeId: string, managerId: string, data: any ,businessOwnerId: string): Promise<IAppliedLeaveResponce> {
         try {
           // Fetch manager details
-          const managerData = await this._managerRepository.getDetails(managerId);
+          const managerData = await this._managerRepository.getDetails(managerId , businessOwnerId);
           console.log("Manager data is:", managerData);
       
           const managerName = managerData.personalDetails.managerName;
           console.log("Manager name is:", managerName);
     
       
-          const result = await this._leaveRepository.updatePreAppliedLeaves(employeeId,managerName, data);
+          const result = await this._leaveRepository.updatePreAppliedLeaves(employeeId,managerName, data ,businessOwnerId);
           console.log("Result of update:", result);
       
           if (!result) {
@@ -182,7 +174,7 @@ async getAllLeaveEmployees(): Promise<ILeaveDTO[]> {
           console.error('Error updating pre-applied leaves:', error);
           throw new Error('Failed to update pre-applied leaves');
         }
-      }
+    }
       
       
 }

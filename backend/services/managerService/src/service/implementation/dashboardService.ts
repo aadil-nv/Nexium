@@ -10,10 +10,10 @@ export default class DashboardService implements IDashboardService {
     private managerRepository:IManagerRepository) {}
 
 
- async getAllDashboardData(companyId:string): Promise<any> {
+ async getAllDashboardData(companyId:string ,businessOwnerId: string): Promise<any> {
     
     try {
-      const manager = await this.managerRepository.getDashboardData(companyId)
+      const manager = await this.managerRepository.getDashboardData(companyId ,businessOwnerId);
     
       return {manager } 
     } catch (error) {

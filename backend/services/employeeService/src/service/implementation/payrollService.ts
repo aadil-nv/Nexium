@@ -23,17 +23,17 @@ export default class PayrollService implements IPayrollService {
     @inject("ITaskRepository") private _taskRepository: ITaskRepository
   ) {}
 
-  async updatePayroll(employeeId: string): Promise<any> {
+  async updatePayroll(employeeId: string , businessOwnerId: string): Promise<any> {
     try {
       const currentDate = new Date(); // Get today's date
       const year = getPreviousMonthAndYear(currentDate).previousYear;
       const month = getPreviousMonthAndYear(currentDate).previousMonth;
-      const payrollCriteria = await this._payrollRepository.getPayrollCriteria();
-      const employeeData = await this._employeeRepository.getProfile(employeeId);
-      const attendanceData = await this._attendanceRepository.getPreviousMonthAttendance(employeeId);
+      const payrollCriteria = await this._payrollRepository.getPayrollCriteria( businessOwnerId);
+      const employeeData = await this._employeeRepository.getProfile(employeeId ,businessOwnerId);
+      const attendanceData = await this._attendanceRepository.getPreviousMonthAttendance(employeeId,businessOwnerId);
       const monthlyWorkingDays: any = calculateWorkingDaysWithHolidays(new Date().getMonth(), new Date().getFullYear(), "IN");
-      const preAprrovedLeaves = await this._leaveRepository.approvedLasmonthLeaves(employeeId);
-      const taskCount = await this._taskRepository.getPreviousMonthCompletedTasks(employeeId);
+      const preAprrovedLeaves = await this._leaveRepository.approvedLasmonthLeaves(employeeId ,businessOwnerId);
+      const taskCount = await this._taskRepository.getPreviousMonthCompletedTasks(employeeId ,businessOwnerId);
       const position = employeeData.professionalDetails.position;      const bankAccount = employeeData.personalDetails.bankAccountNumber;
       const bankIfsc = employeeData.personalDetails.ifscCode;      
       const employeeName = employeeData.personalDetails.employeeName.toUpperCase();
@@ -137,7 +137,7 @@ export default class PayrollService implements IPayrollService {
       };
   
   
-      await this._payrollRepository.updatePayroll(employeeId, employeeDetails, payrollDetails);
+      await this._payrollRepository.updatePayroll(employeeId, employeeDetails, payrollDetails , businessOwnerId);
     } catch (error) {
       console.error(error);
       throw error;
@@ -145,17 +145,17 @@ export default class PayrollService implements IPayrollService {
   }
   
 
-  async getPayroll(employeeId: string): Promise<IGetPayRollDTO> {
+  async getPayroll(employeeId: string , businessOwnerId: string): Promise<IGetPayRollDTO> {
     try {
       const currentDate = new Date();
   
       // Check if it's the 2nd of the month, update payroll if true
       if (currentDate.getDate() === 2) {
-        await this.updatePayroll(employeeId);
+        await this.updatePayroll(employeeId , businessOwnerId);
       }
   
       // Retrieve payroll data for the given employee
-      const payroll = await this._payrollRepository.getPayroll(employeeId);
+      const payroll = await this._payrollRepository.getPayroll(employeeId , businessOwnerId);
   
       // If payroll not found, return a default response
       if (!payroll || !payroll.employeeDetails || !payroll.payrollDetails) {
@@ -167,17 +167,14 @@ export default class PayrollService implements IPayrollService {
         };
       }
   
-      // Get the latest payroll entry (the last element in the array of payrollDetails)
-      const latestPayroll = payroll.payrollDetails; // Assuming only one payroll entry for simplicity
+      const latestPayroll = payroll.payrollDetails; 
   
-      // Validate if the latest payroll entry is available
       if (!latestPayroll) {
         throw new Error("Latest payroll entry is invalid");
       }
   
-      // Map the latest payroll entry to the DTO format
       const mappedPayroll: IGetPayRollDTO = {
-        employeeId: payroll.employeeDetails.employeeId, // Accessing employeeId from employeeDetails
+        employeeId: payroll.employeeDetails.employeeId, 
         payroll: [
           {
             payDate: latestPayroll.payDate,
@@ -194,8 +191,6 @@ export default class PayrollService implements IPayrollService {
           }
         ]
       };
-
-      console.log(`"@@@@@@@@@@@@@mappedPayroll@@@@@@@@@@"`.bgRed, mappedPayroll);
   
       return mappedPayroll;
   
@@ -207,33 +202,26 @@ export default class PayrollService implements IPayrollService {
   
   
   
-  async downloadPayrollMonthly(employeeId: string, payrollId: string): Promise<IPayrollDTO> {
+  async downloadPayrollMonthly(employeeId: string, payrollId: string , businessOwnerId: string): Promise<IPayrollDTO> {
     try {
-      // Retrieve payroll data for the employee and the specific payrollId
-      const payroll = await this._payrollRepository.downloadPayrollMonthly(employeeId, payrollId);
-      const employeeData = await this._employeeRepository.getProfile(employeeId);
-
-      console.log(`"@@@@@@@@@@@@@payroll@@@@@@@@@@"`.bgRed, payroll);
+      const payroll = await this._payrollRepository.downloadPayrollMonthly(employeeId, payrollId , businessOwnerId);
+      const employeeData = await this._employeeRepository.getProfile(employeeId , businessOwnerId);
   
-      // If payroll not found, return a default response
       if (!payroll || !payroll.employeeDetails || !payroll.payrollDetails) {
         return {
           employeeId,
           message: "Payroll not found for employee",
           success: false,
-          payroll: [] // Return an empty payroll array when not found
+          payroll: [] 
         };
       }
   
-      // Get the payroll entry
       const latestPayroll = payroll.payrollDetails;
   
-      // Validate if the latest payroll entry is available
       if (!latestPayroll) {
         throw new Error("Payroll details are invalid or missing");
       }
   
-      // Map the payroll entry to the DTO format
       const mappedPayroll: IPayrollDTO = {
         employeeId: payroll.employeeDetails.employeeId.toString(), // Access employeeId from employeeDetails
         message: "Payroll retrieved successfully",

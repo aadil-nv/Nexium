@@ -17,11 +17,17 @@ export default class ChatController implements IChatController {
             ''
         );
     }
+    private getBusinessOwnerId(req: CustomRequest): string {
+        return req.user?.businessOwnerData?._id ||
+         req.user?.managerData?.businessOwnerId || 
+         req.user?.employeeData?.businessOwnerId || '';
+    }
     async getAllReceiver(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const myId = this.getMyId(req);
+            const businessOwnerId = this.getBusinessOwnerId(req);
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
-            const response = await this._chatService.getAllReceiver(myId);
+            const response = await this._chatService.getAllReceiver(myId , businessOwnerId);
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting receivers", error });
@@ -31,8 +37,9 @@ export default class ChatController implements IChatController {
     async getAllGroups(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const myId = this.getMyId(req);
+            const businessOwnerId = this.getBusinessOwnerId(req);
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
-            const response = await this._chatService.getAllGroups(myId);
+            const response = await this._chatService.getAllGroups(myId ,businessOwnerId);
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting groups", error });
@@ -42,9 +49,12 @@ export default class ChatController implements IChatController {
     async getAllPrivateChats(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const myId = this.getMyId(req);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
-            const response = await this._chatService.getAllPrivateChats(myId);  
-            console.log("response_________ from getAllPrivateChats", response);
+            const response = await this._chatService.getAllPrivateChats(myId ,businessOwnerId);
+            // console.log("response ==========>", response);
+              
                       
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
@@ -57,10 +67,8 @@ export default class ChatController implements IChatController {
         try {
             const myId = this.getMyId(req);
             const receiverId = req.params.id;
-
-            const response = await this._chatService.createChat( myId, receiverId);
-            // console.log("response_________ from create chat", response);
-            
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const response = await this._chatService.createChat( myId, receiverId ,businessOwnerId);            
             return res.status(HttpStatusCode.CREATED).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error creating chat", error });
@@ -69,7 +77,8 @@ export default class ChatController implements IChatController {
     async createMessage(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const myId = this.getMyId(req);
-            const response = await this._chatService.createMessage(req.body, myId);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const response = await this._chatService.createMessage(req.body, myId , businessOwnerId);
             return res.status(HttpStatusCode.CREATED).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error creating message", error });
@@ -77,11 +86,11 @@ export default class ChatController implements IChatController {
     }
 
     async createGroup(req: CustomRequest, res: Response): Promise<Response> {
-        // console.log(`hitting createGroup: ${JSON.stringify(req.body)}`.bgMagenta);
         
         try {
             const myId = this.getMyId(req);
-            const response = await this._chatService.createGroup(req.body, myId);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const response = await this._chatService.createGroup(req.body, myId , businessOwnerId);
             return res.status(HttpStatusCode.CREATED).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error creating group", error });
@@ -91,7 +100,8 @@ export default class ChatController implements IChatController {
     async getAllGroupMembers(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const groupId = req.params.id;
-            const response = await this._chatService.getAllGroupMembers(groupId);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const response = await this._chatService.getAllGroupMembers(groupId , businessOwnerId);
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting group members", error });
@@ -101,8 +111,10 @@ export default class ChatController implements IChatController {
     async getGroupDetails(req: CustomRequest, res: Response): Promise<Response> {        
         try {
             const groupId = req.params.id;
-            const response = await this._chatService.getGroupDetails(groupId);
-            
+            const businessOwnerId = this.getBusinessOwnerId(req);
+
+            const response = await this._chatService.getGroupDetails(groupId , businessOwnerId); ;
+
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting group details", error });
@@ -113,7 +125,8 @@ export default class ChatController implements IChatController {
         try {
             const groupId = req.params.id;
             const myId = this.getMyId(req);
-            const response = await this._chatService.getAllUnAddedUsers(groupId , myId);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const response = await this._chatService.getAllUnAddedUsers(groupId , myId , businessOwnerId);
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error:any) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error.message });
@@ -124,7 +137,9 @@ export default class ChatController implements IChatController {
     async updateGroup(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const groupId = req.params.id;
-            const response = await this._chatService.updateGroup(groupId, req.body);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+
+            const response = await this._chatService.updateGroup(groupId, req.body , businessOwnerId);
         
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
@@ -135,21 +150,32 @@ export default class ChatController implements IChatController {
     async deleteGroup(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const groupId = req.params.id;
-            const response = await this._chatService.deleteGroup(groupId);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+
+            const response = await this._chatService.deleteGroup(groupId , businessOwnerId);
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error deleting group", error });
         }
     }
 
-  
+
+    async getChatParticipants(req: CustomRequest, res: Response): Promise<Response> {
+        try {
+            const chatId = req.params.id;
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const response = await this._chatService.getChatParticipants(chatId , businessOwnerId);
+            return res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting chat participants", error });
+        }
+    }
+
+
+
 
     async setNewAccessToken(req: Request, res: Response): Promise<Response> {
         try {
-            // const accessToken = req.cookies?.accessToken;
-            // if (!accessToken) {
-            //     return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access token is missing." });
-            // }
             const { refreshToken } = req.cookies || {};
             const response = await this._chatService.setNewAccessToken(refreshToken);
             if (!response.accessToken) {
@@ -170,13 +196,30 @@ export default class ChatController implements IChatController {
     async logout(req: Request, res: Response): Promise<Response> {
         try {
             const myId = this.getMyId(req);
+            const businessOwnerId = this.getBusinessOwnerId(req);
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
-            await this._chatService.updateLastSeen(myId);
             res.clearCookie('accessToken');
             res.clearCookie('refreshToken');
             return res.status(HttpStatusCode.OK).json({ message: "Logout successful" });
         } catch {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error logging out" });
+        }
+    }
+
+    async updateLastSeen(req: CustomRequest, res: Response): Promise<Response> {
+        console.log(`updateLastSeen====================`.bgMagenta);
+        
+        
+        try {
+            const myId = this.getMyId(req);
+            console.log(`myId====================`.bgMagenta ,myId);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            console.log(`businessOwnerId====================`.bgMagenta,businessOwnerId);
+            if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
+            const response = await this._chatService.updateLastSeen(myId , businessOwnerId);
+            return res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error updating last seen", error });
         }
     }
 

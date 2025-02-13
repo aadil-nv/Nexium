@@ -37,7 +37,7 @@ export default class EmployeeService implements IEmployeeService {
 
   ) {}
 
-  async addEmployees(employeeData: any, managerData: any): Promise<any> {
+  async addEmployees(employeeData: any, managerData: any , businessOwnerId: string): Promise<any> {
     const rabbitMQMessager = new RabbitMQMessager();
     await rabbitMQMessager.init();   
 
@@ -49,7 +49,7 @@ export default class EmployeeService implements IEmployeeService {
             return { success: false, message: "Invalid manager ID." };
         }
 
-        const existingEmail = await this._employeeRepository.findByEmail(employeeData.email);
+        const existingEmail = await this._employeeRepository.findByEmail(employeeData.email,businessOwnerId) ;
         if (existingEmail) {
             return { success: false, message: "Email already exists" };
         }
@@ -87,7 +87,7 @@ export default class EmployeeService implements IEmployeeService {
         mappedEmployeeData.employeeCredentials.companyPassword = password;
 
 
-        const addedEmployee = await this._employeeRepository.addEmployee(mappedEmployeeData); // Renamed variable
+        const addedEmployee = await this._employeeRepository.addEmployee(mappedEmployeeData , businessOwnerId); // Renamed variable
         await rabbitMQMessager.sendToMultipleQueues({ employeeData: addedEmployee });
         return { success: true, data: addedEmployee }; // Renamed variable
         await this.sendOfferLetter(managerName, mappedEmployeeData);
@@ -169,16 +169,15 @@ export default class EmployeeService implements IEmployeeService {
       };
 
       const info = await transporter.sendMail(mailOptions);
-      console.log("Offer letter sent: %s", info.messageId);
     } catch (error) {
       console.error("Error sending offer letter:", error);
       throw new Error("Failed to send offer letter. Please try again later.");
     }
   }
 
-  async getEmployees(): Promise<IEmployeesDTO[]> {
+  async getEmployees(businessOwnerId : string): Promise<IEmployeesDTO[]> {
     try {
-        const employeesData = await this._employeeRepository.findAll();
+        const employeesData = await this._employeeRepository.getEmployees(businessOwnerId);
 
         // Map the repository data to the DTO structure
         const employeesDTO: IEmployeesDTO[] = employeesData.map((employee) => ({
@@ -198,9 +197,9 @@ export default class EmployeeService implements IEmployeeService {
     }
 }
 
-async updateEmployeePersonalInformation(employeeId: string ,personalInformation: any) : Promise<IEmployeePersonalInformationDTO> {
+async updateEmployeePersonalInformation(employeeId: string ,personalInformation: any ,businessOwnerId:string) : Promise<IEmployeePersonalInformationDTO> {
     try {
-        const employeeData = await this._employeeRepository.updateEmployeePersonalInformation(employeeId ,personalInformation);
+        const employeeData = await this._employeeRepository.updateEmployeePersonalInformation(employeeId ,personalInformation ,businessOwnerId);
 
         if (!employeeData) {
             throw new Error("Employee not found");
@@ -218,9 +217,9 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
     }
   }
 
-  async updateAddress(employeeId: string ,address: any): Promise<IEmployeeAddressDTO> {
+  async updateAddress(employeeId: string ,address: any,businessOwnerId:string): Promise<IEmployeeAddressDTO> {
     try {
-        const employeeData = await this._employeeRepository.updateAddress(employeeId ,address);
+        const employeeData = await this._employeeRepository.updateAddress(employeeId ,address ,businessOwnerId);
 
         if (!employeeData) {
             throw new Error("Employee not found");
@@ -239,25 +238,20 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
     }
    }
 
-   async updateEmployeeProfessionalInfo(employeeId: string, professionalInfo: any): Promise<IEmployeeProfessionalInfoDTO> {
+   async updateEmployeeProfessionalInfo(employeeId: string, professionalInfo: any,businessOwnerId:string): Promise<IEmployeeProfessionalInfoDTO> {
     try {
-        // Check if department is not added, then set it as null
         if (!professionalInfo.department || professionalInfo.department === 'Not added') {
             professionalInfo.department = null;  // Assign null if department is not added
         }
 
-        // Update employee professional information
-        const employeeData = await this._employeeRepository.updateEmployeeProfessionalInfo(employeeId, professionalInfo);
+        const employeeData = await this._employeeRepository.updateEmployeeProfessionalInfo(employeeId, professionalInfo ,businessOwnerId);
 
         if (!employeeData) {
             throw new Error("Employee not found");
         }
 
-        // Retrieve department name after update
-        const departmentName = await this._employeeRepository.getDepartmentName(employeeData.professionalDetails.department);
-        console.log("******************departmentName************", departmentName);
+        const departmentName = await this._employeeRepository.getDepartmentName(employeeData.professionalDetails.department,businessOwnerId);
 
-        // Return the updated professional information
         return {
             position: employeeData.professionalDetails.position,
             workTime: employeeData.professionalDetails.workTime,
@@ -275,9 +269,9 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
 }
 
    
-     async getEmployeeCredentials(employeeId: string): Promise<IEmployeeCredentialsDTO> {
+     async getEmployeeCredentials(employeeId: string , businessOwnerId: string): Promise<IEmployeeCredentialsDTO> {
         try {
-            const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId);
+            const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId, businessOwnerId);
     
             if (!employeeData) {
                 throw new Error("Employee not found");
@@ -293,9 +287,9 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
         }
      }
 
-     async getEmployeeDocuments(employeeId: string): Promise<IEmployeeDocumentsDTO> {
+     async getEmployeeDocuments(employeeId: string ,businessOwnerId:string): Promise<IEmployeeDocumentsDTO> {
         try {
-            const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId);
+            const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId ,businessOwnerId);
     
             if (!employeeData) {
                 throw new Error("Employee not found");
@@ -316,111 +310,110 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
         }
      }
 
-     async getEmployee(employeeId: string): Promise<IEmployeeFullDataDTO> {
+     async getEmployee(employeeId: string, businessOwnerId: string): Promise<IEmployeeFullDataDTO> {
+        try {
+            const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId, businessOwnerId);
+            const leaveData = await this._leaveRepository.getEmployeeLeaves(employeeId, businessOwnerId);
+    
+            if (!employeeData) {
+                throw new Error("Employee not found");
+            }
+    
+            let departmentName: string | null = await this._employeeRepository.getDepartmentName(
+                employeeData.professionalDetails.department,
+                businessOwnerId
+            );
+    
+            if (!departmentName) {
+                departmentName = null;
+            }
+    
+            return {
+                _id: employeeData._id.toString(),
+                managerId: employeeData.managerId?.toString() || '',
+                businessOwnerId: employeeData.businessOwnerId?.toString() || '',
+                isActive: employeeData.isActive,
+                isVerified: employeeData.isVerified,
+                isBlocked: employeeData.isBlocked,
+    
+                personalDetails: {
+                    employeeName: employeeData.personalDetails.employeeName,
+                    email: employeeData.personalDetails.email,
+                    phone: employeeData.personalDetails.phone,
+                    profilePicture: employeeData.personalDetails.profilePicture
+                        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`
+                        : employeeData.personalDetails.profilePicture,
+                    personalWebsite: employeeData.personalDetails.personalWebsite,
+                    bankAccountNumber: employeeData.personalDetails.bankAccountNumber,
+                    ifscCode: employeeData.personalDetails.ifscCode,
+                    aadharNumber: employeeData.personalDetails.aadharNumber,
+                    panNumber: employeeData.personalDetails.panNumber,
+                    gender: employeeData.personalDetails.gender,
+                },
+    
+                address: {
+                    street: employeeData.address.street,
+                    city: employeeData.address.city,
+                    state: employeeData.address.state,
+                    country: employeeData.address.country,
+                    postalCode: employeeData.address.postalCode,
+                },
+    
+                professionalDetails: {
+                    position: employeeData.professionalDetails.position,
+                    department: departmentName, // Now allows null
+                    workTime: employeeData.professionalDetails.workTime,
+                    joiningDate: employeeData.professionalDetails.joiningDate,
+                    currentStatus: employeeData.professionalDetails.currentStatus,
+                    companyName: employeeData.professionalDetails.companyName,
+                    salary: employeeData.professionalDetails.salary,
+                    uanNumber: employeeData.professionalDetails.uanNumber,
+                    pfAccount: employeeData.professionalDetails.pfAccount,
+                    esiAccount: employeeData.professionalDetails.esiAccount,
+                    comapanyLogo: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.professionalDetails.comapanyLogo}`,
+                },
+    
+                employeeCredentials: {
+                    companyEmail: employeeData.employeeCredentials.companyEmail,
+                    companyPassword: employeeData.employeeCredentials.companyPassword,
+                },
+    
+                documents: {
+                    resume: {
+                        documentName: employeeData.documents.resume.documentName,
+                        documentUrl: employeeData.documents.resume.documentUrl
+                            ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.documents.resume.documentUrl}`
+                            : '',
+                        documentSize: employeeData.documents.resume.documentSize,
+                        uploadedAt: employeeData.documents.resume.uploadedAt,
+                    },
+                },
+    
+                leaveData: {
+                    sickLeave: leaveData.sickLeave,
+                    casualLeave: leaveData.casualLeave,
+                    maternityLeave: leaveData.maternityLeave,
+                    paternityLeave: leaveData.paternityLeave,
+                    paidLeave: leaveData.paidLeave,
+                    unpaidLeave: leaveData.unpaidLeave,
+                    compensatoryLeave: leaveData.compensatoryLeave,
+                    bereavementLeave: leaveData.bereavementLeave,
+                    marriageLeave: leaveData.marriageLeave,
+                    studyLeave: leaveData.studyLeave,
+                },
+            };
+        } catch (error) {
+            console.error("Error in service layer:", error);
+            throw new Error("Failed to fetch employee information");
+        }
+    }
+    
 
-      try {
-          const employeeData = await this._employeeRepository.getEmployeeInformation(employeeId);
-          const leaveData = await this._leaveRepository.getEmployeeLeaves(employeeId);
-  
-          if (!employeeData) {
-              throw new Error("Employee not found");
-          }
-  
-          let departmentName: string | null = await this._employeeRepository.getDepartmentName(employeeData.professionalDetails.department);
-        
-
-  
-          if (!departmentName) {
-              departmentName = null;
-          }
-
-  
-          return {
-              _id: employeeData._id.toString(),
-              managerId: employeeData.managerId?.toString() || '',
-              businessOwnerId: employeeData.businessOwnerId?.toString() || '',
-              isActive: employeeData.isActive,
-              isVerified: employeeData.isVerified,
-              isBlocked: employeeData.isBlocked,
-  
-              personalDetails: {
-                  employeeName: employeeData.personalDetails.employeeName,
-                  email: employeeData.personalDetails.email,
-                  phone: employeeData.personalDetails.phone,
-                  profilePicture: employeeData.personalDetails.profilePicture ?  `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}` :employeeData.personalDetails.profilePicture,
-                  personalWebsite: employeeData.personalDetails.personalWebsite,
-                  bankAccountNumber: employeeData.personalDetails.bankAccountNumber,
-                  ifscCode: employeeData.personalDetails.ifscCode,
-                  aadharNumber: employeeData.personalDetails.aadharNumber,
-                  panNumber: employeeData.personalDetails.panNumber,
-                  gender: employeeData.personalDetails.gender,
-
-
-              },
-  
-              address: {
-                  street: employeeData.address.street,
-                  city: employeeData.address.city,
-                  state: employeeData.address.state,
-                  country: employeeData.address.country,
-                  postalCode: employeeData.address.postalCode,
-              },
-  
-              professionalDetails: {
-                  position: employeeData.professionalDetails.position,
-                  department: departmentName,  // Now allows null
-                  workTime: employeeData.professionalDetails.workTime,
-                  joiningDate: employeeData.professionalDetails.joiningDate,
-                  currentStatus: employeeData.professionalDetails.currentStatus,
-                  companyName: employeeData.professionalDetails.companyName,
-                  salary: employeeData.professionalDetails.salary,
-                  uanNumber: employeeData.professionalDetails.uanNumber,
-                  pfAccount: employeeData.professionalDetails.pfAccount,
-                  esiAccount: employeeData.professionalDetails.esiAccount,
-                  comapanyLogo: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.professionalDetails.comapanyLogo}`,
-              },
-  
-              employeeCredentials: {
-                  companyEmail: employeeData.employeeCredentials.companyEmail,
-                  companyPassword: employeeData.employeeCredentials.companyPassword,
-              },
-  
-              documents: {
-                  resume: {
-                      documentName: employeeData.documents.resume.documentName,
-                      documentUrl: employeeData.documents.resume.documentUrl ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.documents.resume.documentUrl}` : '',
-                      documentSize: employeeData.documents.resume.documentSize,
-                      uploadedAt: employeeData.documents.resume.uploadedAt,
-                  },
-              },
-
-              leaves :{
-                sickLeave: leaveData.sickLeave,
-                casualLeave: leaveData.sickLeave,
-                maternityLeave: leaveData.sickLeave,
-                paternityLeave: leaveData.sickLeave,
-                paidLeave: leaveData.sickLeave,
-                unpaidLeave: leaveData.sickLeave,
-                compensatoryLeave: leaveData.sickLeave,
-                bereavementLeave: leaveData.sickLeave,
-                marriageLeave: leaveData.sickLeave,
-                studyLeave: leaveData.sickLeave,
-              }
-  
-             
-          };
-  
-      } catch (error) {
-          console.error("Error in service layer:", error);
-          throw new Error("Failed to fetch employee information");
-      }
-  }
-
-  async updateProfilePicture(employeeId: string ,file: Express.Multer.File): Promise<any> {
+  async updateProfilePicture(employeeId: string ,file: Express.Multer.File ,businessOwnerId:string): Promise<any> {
     try {
-      const imageUrl = await this.uploadFileToS3(employeeId, file, "profilePicture");
+      const imageUrl = await this.uploadFileToS3(employeeId, file, "profilePicture",businessOwnerId);
 
-       const result = await this._employeeRepository.updateProfilePicture(employeeId, imageUrl);
+       const result = await this._employeeRepository.updateProfilePicture(employeeId, imageUrl ,businessOwnerId);
        return { success: true, message: 'Image uploaded successfully!', data: { imageUrl:`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${result}` } };
     } catch (error) {
         console.error("Error in service layer:", error);
@@ -428,9 +421,9 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
     }
   }
 
-  private async uploadFileToS3(employeeId: string, file: Express.Multer.File, fileType: "profilePicture" | "resume" | "idProof"): Promise<string> {
+  private async uploadFileToS3(employeeId: string, file: Express.Multer.File, fileType: "profilePicture" | "resume" | "idProof",businessOwnerId:string): Promise<string> {
 
-    const result = await this._employeeRepository.getEmployeeInformation(employeeId);
+    const result = await this._employeeRepository.getEmployeeInformation(employeeId,businessOwnerId);
 
     const existingFile = fileType === "profilePicture"
         ? result.personalDetails.profilePicture 
@@ -451,9 +444,9 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
 }
 
 
-  async updateResume(employeeId: string, file: Express.Multer.File): Promise<any> {
+  async updateResume(employeeId: string, file: Express.Multer.File ,businessOwnerId:string): Promise<any> {
     try {
-        const documentUrl = await this.uploadFileToS3(employeeId, file, "resume");
+        const documentUrl = await this.uploadFileToS3(employeeId, file, "resume" ,businessOwnerId);
 
         const documentMetadata = {
             documentName: file.originalname,
@@ -463,7 +456,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
         };
 
         // Update employee document details in the repository
-        const result = await this._employeeRepository.updateResume(employeeId, documentMetadata);
+        const result = await this._employeeRepository.updateResume(employeeId, documentMetadata,businessOwnerId);
 
         return {
             success: true,
@@ -479,9 +472,9 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
     }
 }
 
-async updateBlocking(employeeId: string, blocking: any): Promise<any> {
+async updateBlocking(employeeId: string, blocking: any ,businessOwnerId:string): Promise<any> {
   try {
-      const result = await this._employeeRepository.updateBlocking(employeeId, blocking);
+      const result = await this._employeeRepository.updateBlocking(employeeId, blocking,businessOwnerId);
       
       return result;
   } catch (error) {
@@ -490,9 +483,9 @@ async updateBlocking(employeeId: string, blocking: any): Promise<any> {
   }
 }
 
-async getEmployeeWithOutDepartment(): Promise<IEmployeesDTO[]> {
+async getEmployeeWithOutDepartment(businessOwnerId:string): Promise<IEmployeesDTO[]> {
     try {
-        const employeesData = await this._employeeRepository.getEmployeeWithOutDepartment();
+        const employeesData = await this._employeeRepository.getEmployeesWithoutDepartment(businessOwnerId);
         
 
         const employeesDTO: IEmployeesDTO[] = employeesData.map((employee) => ({
@@ -512,9 +505,9 @@ async getEmployeeWithOutDepartment(): Promise<IEmployeesDTO[]> {
     }
 }
 
-async removeEmployee(employeeId: string): Promise<any> {
+async removeEmployee(employeeId: string ,businessOwnerId:string): Promise<any> {
   try {
-      const result = await this._employeeRepository.removeEmployee(employeeId);
+      const result = await this._employeeRepository.removeEmployee(employeeId ,businessOwnerId);
       return result;
   } catch (error) {
       console.error("Error in removeEmployee service:", error);
@@ -523,9 +516,9 @@ async removeEmployee(employeeId: string): Promise<any> {
 }
 
 
-async updateCredentials(employeeId: string ,credentials: any): Promise<any> {
+async updateCredentials(employeeId: string ,credentials: any,businessOwnerId:string ): Promise<any> {
   try {
-      const result = await this._employeeRepository.updateCredentials(employeeId, credentials);
+      const result = await this._employeeRepository.updateCredentials(employeeId, credentials ,businessOwnerId);
       return result;
   } catch (error) {
       console.error("Error in updateCredentials service:", error);

@@ -11,6 +11,6 @@ export default interface IManagerService {
     updatePersonalInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager>
     updateProfessionalInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager>
     updateAddressInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager>
-    uploadProfilePic(businessOwnerId: string, managerId: string, file: any): Promise<IManager>
+    uploadProfilePic(businessOwnerId: string, managerId: string, file: any): Promise<string>
     updateResume(businessOwnerId: string, managerId: string, file: any): Promise<IManager>
 }

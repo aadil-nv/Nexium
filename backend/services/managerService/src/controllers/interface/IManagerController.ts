@@ -8,8 +8,8 @@ export default interface IManagerController {
     getManagerDocuments(req: CustomRequest, res: Response): Promise<Response>;
     getManagerCredentials(req: CustomRequest, res: Response): Promise<Response>;
     updateManagerPersonalInfo( req: CustomRequest, res: Response): Promise<Response>;
-    setNewAccessToken(req: Request, res: Response): Promise<Response> 
-    logout(req: Request, res: Response): Promise<Response>
+    setNewAccessToken(req: CustomRequest, res: Response): Promise<Response> 
+    logout(req: CustomRequest, res: Response): Promise<Response>
     updateManagerProfilePicture(req: CustomRequest, res: Response): Promise<Response>
     getLeaveEmployees(req: CustomRequest, res: Response): Promise<Response>
     updateManagerAddress(req: CustomRequest, res: Response): Promise<Response>

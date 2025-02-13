@@ -6,6 +6,11 @@ export  interface IValidateOtpDTO{
     accessToken?:string;
     refreshToken?:string;
     email?:string;
+    managerName?:string;
+    managerType?:string;
+    managerProfilePicture?:string;
+    companyLogo?:string;
+    companyName?:string;
 }
 
 export  interface ILoginDTO{

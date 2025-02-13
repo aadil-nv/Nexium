@@ -16,8 +16,9 @@ export default class LeaveController implements ILeaveController {
         try {
             const employeeId = req.params.id;
             const data = req.body;
+            const businessOwnerId = req.user?.managerData?.businessOwnerId
     
-            const result = await this._leaveService.updateLeaveApproval(employeeId, data);
+            const result = await this._leaveService.updateLeaveApproval(employeeId, data ,businessOwnerId as string);
     
             if (result.success) {
                 return res.status(200).json({
@@ -44,11 +45,9 @@ export default class LeaveController implements ILeaveController {
 
     async getAllLeaveEmployees(req: CustomRequest, res: Response): Promise<void> {
 
-        
         try {
-            const result = await this._leaveService.getAllLeaveEmployees();
-         
-            
+            const businessOwnerId = req.user?.managerData?.businessOwnerId
+            const result = await this._leaveService.getAllLeaveEmployees(businessOwnerId as string);
             res.status(200).json(result);
         } catch (error) {
             console.error("Error fetching leave employees:", error);
@@ -59,13 +58,10 @@ export default class LeaveController implements ILeaveController {
 
 
     async getAllLeaveTypes(req: CustomRequest, res: Response): Promise<Response> {
-        console.log("hitting get leave types==================");
         
         try {
-            const result = await this._leaveService.getAllLeaveTypes();
-            console.log("result", result);
-            
-            
+            const businessOwnerId = req.user?.managerData?.businessOwnerId
+            const result = await this._leaveService.getAllLeaveTypes(businessOwnerId as string);
             return res.status(200).json(result);
         } catch (error) {
             console.error("Error fetching leave types:", error);
@@ -74,16 +70,13 @@ export default class LeaveController implements ILeaveController {
     }
 
     async updateLeaveTypes(req: CustomRequest, res: Response): Promise<Response> {
-        console.log("hitting update leave types==================");
         
         try {
             const leaveTypeId = req.params.id;
-            console.log("leaveTypeId", leaveTypeId);
-            
+            const businessOwnerId = req.user?.managerData?.businessOwnerId
             const data = req.body;
-            console.log("data------------------------------", data);
             
-            const result = await this._leaveService.updateLeaveTypes(leaveTypeId, data);
+            const result = await this._leaveService.updateLeaveTypes(leaveTypeId, data , businessOwnerId as string);
             return res.status(200).json(result);
         } catch (error) {
             console.error("Error updating leave types:", error);
@@ -92,13 +85,9 @@ export default class LeaveController implements ILeaveController {
     }
 
     async fetchAllPreAppliedLeaves(req: CustomRequest, res: Response): Promise<Response>{
-        console.log("hitting get leave types==================");
-        
         try {
-            const result = await this._leaveService.fetchAllPreAppliedLeaves();
-            console.log("result", result);
-            
-            
+            const businessOwnerId = req.user?.managerData?.businessOwnerId
+            const result = await this._leaveService.fetchAllPreAppliedLeaves(businessOwnerId as string);
             return res.status(200).json(result);
         } catch (error) {
             console.error("Error fetch All PreAppliedLeaves  :", error);
@@ -107,23 +96,13 @@ export default class LeaveController implements ILeaveController {
     }
 
     async updatePreAppliedLeaves(req: CustomRequest, res: Response): Promise<Response>{
-        console.log("hitttttttttttttttttttttttttttttttttttttttttttt");
         
         try {
             const data = req.body
-            console.log("data00000000000",data);
-            
             const employeeId = req.params.id
-            console.log("employeeId is ---->",employeeId);
-            
             const managerId = req.user?.managerData?._id
-
-            console.log("manager is --->",managerId);
-            
-
-            const response = await this._leaveService.updatePreAppliedLeaves(employeeId , managerId as string , data)
-            console.log("responce is >>>>>>>>",response);
-            
+            const businessOwnerId = req.user?.managerData?.businessOwnerId
+            const response = await this._leaveService.updatePreAppliedLeaves(employeeId , managerId as string , data ,businessOwnerId as string);
             return res.status(200).json(response);
             
         } catch (error) {

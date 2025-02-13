@@ -9,10 +9,9 @@ export default class LeaveService implements ILeaveService {
   private _leaveRepository: ILeaveRepository,
   ) {}
 
-  async applyLeave(employeeId: string, leaveData: Partial<ILeaveDTO>): Promise<ILeaveDTO> {
+  async applyLeave(employeeId: string, leaveData: Partial<ILeaveDTO> , businessOwnerId: string): Promise<ILeaveDTO> {
     try {
-        // Apply the leave using the repository
-        const leave = await this._leaveRepository.applyLeave(employeeId, leaveData);
+        const leave = await this._leaveRepository.applyLeave(employeeId, leaveData , businessOwnerId);
 
         if (!leave) {
             return {
@@ -21,20 +20,19 @@ export default class LeaveService implements ILeaveService {
             };
         }
 
-        // Ensure leaveDetails is treated as an array of objects
         
-
-        // Map the repository result to the DTO
         const leaveDTO: ILeaveDTO = {
             leaveId: leave._id,
             employeeId: leave.employeeId,
-            leaveType: leave.leaveType, // Now correctly accessing leaveType
+            leaveType: leave.leaveType, 
             reason: leave.reason,
             startDate: new Date(leave.startDate),
             endDate: new Date(leave.endDate),
             duration: leave.duration || 0,
             message: "Leave applied successfully",
             success: true,
+            isFirstHalf: leave.isFirstHalf,
+            isSecondHalf: leave.isSecondHalf
         };
 
         return leaveDTO;
@@ -47,13 +45,10 @@ export default class LeaveService implements ILeaveService {
     }
 }
 
-
-  async fetchAppliedLeaves(employeeId: string): Promise<ILeaveDTO[]> {
+  async fetchAppliedLeaves(employeeId: string ,businessOwnerId: string): Promise<ILeaveDTO[]> {
     try {
-        // Find all leave records for the given employeeId
-        const appliedLeaves = await this._leaveRepository.fetchAppliedLeaves(employeeId);
+        const appliedLeaves = await this._leaveRepository.fetchAppliedLeaves(employeeId , businessOwnerId);
 
-        // Map the applied leaves to ILeaveDTO format
         const leaveDTOs: ILeaveDTO[] = appliedLeaves.map((leave) => ({
             leaveId: leave._id,                         // Assign the leave ID
             employeeId: leave.employeeId,               // Employee's ID
@@ -68,6 +63,8 @@ export default class LeaveService implements ILeaveService {
             approvedBy: leave.approvedBy,               // Approved date
             rejectionReason: leave.rejectionReason,     // Rejection reason
             status: leave.status,                       // Leave status
+            isFirstHalf: leave.isFirstHalf,
+            isSecondHalf: leave.isSecondHalf
         }));
 
         return leaveDTOs;
@@ -77,11 +74,9 @@ export default class LeaveService implements ILeaveService {
     }
 }
 
-
-async updateAppliedLeave(employeeId: string, leaveId: string, leaveData: any): Promise<ILeaveDTO> {
+async updateAppliedLeave(employeeId: string, leaveId: string, leaveData: any ,businessOwnerId: string): Promise<ILeaveDTO> {
     try {
-        // Update the leave using the repository
-        const updatedLeave = await this._leaveRepository.updateAppliedLeave(employeeId, leaveId, leaveData);
+        const updatedLeave = await this._leaveRepository.updateAppliedLeave(employeeId, leaveId, leaveData ,businessOwnerId);
 
         if (!updatedLeave) {
             return {
@@ -89,18 +84,18 @@ async updateAppliedLeave(employeeId: string, leaveId: string, leaveData: any): P
                 success: false,
             }
         }
-
-        // Map the updated leave to ILeaveDTO format
         const leaveDTO: ILeaveDTO = {
             leaveId: updatedLeave._id,
             employeeId: updatedLeave.employeeId,
-            leaveType: updatedLeave.leaveType, // Now correctly accessing leaveType
+            leaveType: updatedLeave.leaveType, 
             reason: updatedLeave.reason,
             startDate: new Date(updatedLeave.startDate),
             endDate: new Date(updatedLeave.endDate),
             duration: updatedLeave.duration || 0,
             message: "Leave updated successfully",
             success: true,
+            isFirstHalf: updatedLeave.isFirstHalf,
+            isSecondHalf: updatedLeave.isSecondHalf
         };
 
         return leaveDTO;
@@ -110,16 +105,13 @@ async updateAppliedLeave(employeeId: string, leaveId: string, leaveData: any): P
     }
 }
 
-async deleteAppliedLeave(employeeId: string, leaveId: string): Promise<ILeaveDTO> {
+async deleteAppliedLeave(employeeId: string, leaveId: string ,businessOwnerId: string): Promise<ILeaveDTO> {
     try {
-        // Call the repository to delete the leave
-        const deletedLeave = await this._leaveRepository.deleteAppliedLeave(employeeId, leaveId);
-
+        const deletedLeave = await this._leaveRepository.deleteAppliedLeave(employeeId, leaveId ,businessOwnerId);  
         if (!deletedLeave) {
             throw new Error("No leave found for the provided employeeId and leaveId");
         }
 
-        // Map the deleted leave to ILeaveDTO format
         const leaveDTO: ILeaveDTO = {
             leaveId: deletedLeave._id,
             employeeId: deletedLeave.employeeId.toString(),
@@ -130,6 +122,8 @@ async deleteAppliedLeave(employeeId: string, leaveId: string): Promise<ILeaveDTO
             duration: deletedLeave.duration,
             message: "Leave deleted successfully",
             success: true,
+            isFirstHalf: deletedLeave.isFirstHalf,
+            isSecondHalf: deletedLeave.isSecondHalf
         };
 
         return leaveDTO;
@@ -138,8 +132,6 @@ async deleteAppliedLeave(employeeId: string, leaveId: string): Promise<ILeaveDTO
         throw new Error("Error deleting applied leave");
     }
 }
-
-
 
 
 }

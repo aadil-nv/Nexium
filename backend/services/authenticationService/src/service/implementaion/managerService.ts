@@ -7,6 +7,8 @@ import nodemailer from "nodemailer";
 import OtpModel from "../../model/otpModel";
 import { ILoginDTO, IResponseDTO, IValidateOtpDTO } from "../../dto/managerDTO";
 import RabbitMQMessager from "../../events/rabbitmq/producers/producer";
+import IBusinessOwnerRepository from "repository/interfaces/IBusinessOwnerRepository";
+import { ObjectId } from "mongoose";
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -19,9 +21,12 @@ const transporter = nodemailer.createTransport({
 @injectable()
 export default class ManagerService implements IManagerService {
   private _managerRepository: IManagerRepository;
+  private _businessOwnerRepository: IBusinessOwnerRepository;
 
-  constructor(@inject("IManagerRepository") managerRepository: IManagerRepository) {
+  constructor(@inject("IManagerRepository") managerRepository: IManagerRepository ,
+    @inject("IBusinessOwnerRepository") businessOwnerRepository: IBusinessOwnerRepository) {
     this._managerRepository = managerRepository;
+    this._businessOwnerRepository = businessOwnerRepository;
   }
 
   async managerLogin(email: string, password: string): Promise<ILoginDTO> {
@@ -32,26 +37,21 @@ export default class ManagerService implements IManagerService {
       await rabbitMQMessager.init();
       if (!email || !password) throw new Error('Email and password are required');
 
-      // const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      // const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
-
-      // if (!emailRegex.test(email)) throw new Error('Invalid email format');
-      // if (!passwordRegex.test(password)) throw new Error('Password must be at least 6 characters, 1 uppercase, 1 digit, 1 symbol');
-
       const managerData = await this._managerRepository.findByCredentialEmail(email);
-    
-      console.log("managerData",managerData);
-      
-      if (!managerData || managerData.managerCredentials.companyPassword !== password) throw new Error('Invalid email or password');
-   
-
-      
+      const businessOwnerData = await this._businessOwnerRepository.findBusinessOwnerById(managerData?.businessOwnerId);
+          
+      if (!managerData ) {
+        return {  message: "Invalid email or password", success:false};
+      }
+  
+      if(businessOwnerData?.isBlocked) {
+        return {  message: "company is blocked. Please contact admin", isVerified:false, email: managerData.personalDetails.email };
+      }
 
       if(managerData.isBlocked) {
-
-      
         return {  message: "Account is blocked. Please contact admin", isVerified:false, email: managerData.personalDetails.email };
       }
+
 
       if (!managerData.isVerified) {
     
@@ -121,44 +121,64 @@ export default class ManagerService implements IManagerService {
   }
 
   async validateOtp(email: string, otp: string): Promise<IValidateOtpDTO> {
-    try {
-      const otpData = await this._managerRepository.findOtpByEmail(email);
-      if (!otpData) throw new Error("Manager not found");
+  try {
+    const otpData = await this._managerRepository.findOtpByEmail(email);
+    if (!otpData) throw new Error("Manager not found");
 
-      if (otpData.otp === otp) {
-        const verification = await this._managerRepository.updateVerificationStatus(email);
-        if (!verification) {
-          return { success: false, message: "Manager verification failed." };
-        }
-          console.log("email",email);
-          
-        const managerData = await this._managerRepository.findByEmail(email);
-        console.log("managerData",managerData);
-        
-        const accessToken = generateAccessToken({ managerData });
-        const refreshToken = generateRefreshToken({ managerData });
-
-        console.log("managerData",managerData);
-        console.log("accessToken",accessToken);
-        console.log("refreshToken",refreshToken);
-        
-        
-
-        return {
-          success: true,
-          email,
-          message: "OTP validated and company verified successfully",
-          accessToken,
-          refreshToken,
-        };
-      } else {
-        throw new Error("Invalid OTP provided.");
-      }
-    } catch (error) {
-      console.error("Error validating OTP:", error);
-      return { message: error instanceof Error ? error.message : "Unknown error occurred" };
+    const managerData = await this._managerRepository.findByEmail(email);
+    if (!managerData) {
+      return { success: false, message: "Manager not found" };
     }
+
+    if (!managerData.businessOwnerId) {
+      return { success: false, message: "Business owner ID is missing." };
+    }
+
+
+
+    if (otpData.otp === otp) {
+      const verification = await this._managerRepository.updateVerificationStatus(email, managerData.businessOwnerId as ObjectId);
+      if (!verification) {
+        return { success: false, message: "Manager verification failed." };
+      }
+
+      console.log("email", email);
+
+      const accessToken = generateAccessToken({ managerData });
+      const refreshToken = generateRefreshToken({ managerData });
+
+      const managerName = managerData.personalDetails.managerName;
+      const managerProfilePicture = managerData.personalDetails.profilePicture
+        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${managerData.personalDetails.profilePicture}`
+        : managerData.personalDetails.profilePicture;
+
+      const companyLogo = managerData.companyDetails.companyLogo
+        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${managerData.companyDetails.companyLogo}`
+        : managerData.companyDetails.companyLogo;
+
+      const managerType = managerData.professionalDetails.managerType;
+      const companyName = managerData.companyDetails.companyName;
+
+      return {
+        success: true,
+        email,
+        message: "OTP validated and company verified successfully",
+        accessToken,
+        refreshToken,
+        managerName,
+        managerProfilePicture,
+        companyLogo,
+        managerType,
+        companyName,
+      };
+    } else {
+      throw new Error("Invalid OTP provided.");
+    }
+  } catch (error) {
+    console.error("Error validating OTP:", error);
+    return { message: error instanceof Error ? error.message : "Unknown error occurred" };
   }
+}
 
   async addManager(data: any): Promise<any> {
     console.log("data derpppppppppppppppppppppppppppppppp",data);

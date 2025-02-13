@@ -3,6 +3,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import IBusinessOwnerController from "../interface/IBusinessOwnerController";
 import IBusinessOwnerService from "../../service/interfaces/IBusinessOwnerService";
 import { inject, injectable } from "inversify";
+import { HttpStatusCode } from "../../utils/statusCodes";
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!);
 
@@ -18,16 +19,13 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async login(req: Request, res: Response): Promise<Response> {
-    console.log("request coming for login");
-    
-    
-    
+  
     try {
       const { email, password } = req.body;
       console.log("email is ==>",email);
       console.log("password is ==>",password);
       
-      if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
+      if (!email || !password) return res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Email and password are required" });
 
 
       const { success, message, accessToken, refreshToken, isVerified, email: companyEmail,companyName ,companyLogo } =
@@ -37,7 +35,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
 
       if (!success) {
         if (!isVerified) {
-          return res.status(400).json({ message: message, email: companyEmail, isVerified: false, success: false });
+          return res.status(HttpStatusCode.BAD_REQUEST).json({ message: message, email: companyEmail, isVerified: false, success: false });
         }
       }
     
@@ -48,10 +46,10 @@ export default class BusinessOwnerController implements IBusinessOwnerController
          maxAge:7 * 24 * 60 * 60 * 1000 });
          
 
-      return res.status(200).json({ accessToken, success, message,companyName:companyName ,companyLogo:companyLogo });
+      return res.status(HttpStatusCode.OK).json({ accessToken, success, message,companyName:companyName ,companyLogo:companyLogo });
     } catch (error) {
       console.error("Error during login", error);
-      return res.status(500).json({ message: "An error occurred during login" });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "An error occurred during login" });
     }
   }
 
@@ -60,7 +58,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
       const { companyName, email, password, phone } = req.body;
       const businessOwnerData = { companyName, email, password, phone };
       const { success, message, email: registeredEmail  } = await this._businessOwnerService.register(businessOwnerData);
-      res.status(201).json({ message, email: registeredEmail, success });
+      res.status(HttpStatusCode.CREATED).json({ message, email: registeredEmail, success });
     } catch (error) {
       console.error("Error during registration:", error);
       next(error);
@@ -71,7 +69,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     try {
       const { email, otp } = req.body;
       const response = await this._businessOwnerService.validateOtp(email, otp);
-      res.status(200).json({ success: response.success, email: response.email });
+      res.status(HttpStatusCode.OK).json({ success: response.success, email: response.email });
     } catch (error) {
       console.error("Error validating OTP:", error);
       next(error);
@@ -82,10 +80,10 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     try {
       const { email } = req.body;
       const result = await this._businessOwnerService.resendOtp(email);
-      return res.status(200).json(result);
+      return res.status(HttpStatusCode.OK).json(result);
     } catch (error) {
       console.error('Error resending OTP:', error);
-      return res.status(500).json({ message: 'Internal Server Error' });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
     }
   }
 
@@ -94,16 +92,16 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     try {
       const { email } = req.body;
       const result = await this._businessOwnerService.forgotPassword(email);
-      return res.status(200).json(result);
+      return res.status(HttpStatusCode.OK).json(result);
     } catch (error) {
       console.error('Error during forgot password:', error);
-      return res.status(500).json({ message: 'Internal Server Error' });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
     }
   }
 
   async addNewPassword(req: Request, res: Response): Promise<Response> {
     const { email, password } = req.body;
     const result = await this._businessOwnerService.addNewPassword(email, password);
-    return res.status(200).json(result);
+    return res.status(HttpStatusCode.OK).json(result);
   }
 }

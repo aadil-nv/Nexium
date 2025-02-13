@@ -102,19 +102,6 @@ export interface IEmployeeDocumentsDTO {
       companyPassword: string;
     };
   
-  
-    leaves: {
-      sickLeave: number;
-      casualLeave: number;
-      maternityLeave: number;
-      paternityLeave: number;
-      paidLeave: number;
-      unpaidLeave: number;
-      compensatoryLeave: number;
-      bereavementLeave: number;
-      marriageLeave: number;
-      studyLeave: number;
-    };
     documents: {
       resume: {
         documentName: string;
@@ -124,5 +111,17 @@ export interface IEmployeeDocumentsDTO {
       };
     };
 
+    leaveData: {
+      sickLeave: number;
+    casualLeave: number;
+    maternityLeave: number;
+    paternityLeave: number;
+    paidLeave: number;
+    unpaidLeave: number;
+    compensatoryLeave: number;
+    bereavementLeave: number;
+    marriageLeave: number;
+    studyLeave: number;
+    };
   }
   

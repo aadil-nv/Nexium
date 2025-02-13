@@ -7,13 +7,17 @@ import { uploadTosS3 } from "../../middlewares/multer-s3";
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import e from "express";
 import RabbitMQMessager from "../../events/implementation/producer";
+import ILeaveRepository from "repository/interface/ILeaveRepository";
 
 
 
 @injectable()
 export default class EmployeeService implements IEmployeeService {
+
     constructor(@inject("IEmployeeRepository")
-     private _employeeRepository: IEmployeeRepository) {}
+     private _employeeRepository: IEmployeeRepository , 
+     @inject("ILeaveRepository")
+     private _leaveRepository: ILeaveRepository) {}
     
   async  setNewAccessToken(refreshToken:string):Promise<ISetNewAccessTokenDTO> {
     try {
@@ -40,9 +44,11 @@ export default class EmployeeService implements IEmployeeService {
     }
   } 
 
-  async updateIsActive(employeeId: string, isActive: boolean): Promise<IEmployeeResponseDTO> {
+  async updateIsActive(employeeId: string, isActive: boolean ,businessOwnerId: string): Promise<IEmployeeResponseDTO> {
+    console.log("calling updateIsActive from service---->", employeeId, isActive ,businessOwnerId);
+    
     try {
-      const employee = await this._employeeRepository.updateIsActive(employeeId, isActive);
+      const employee = await this._employeeRepository.updateIsActive(employeeId, isActive ,businessOwnerId);
       return {
         message: "Employee status updated successfully",
         success: true,
@@ -52,10 +58,10 @@ export default class EmployeeService implements IEmployeeService {
     }
   }
 
-  async getProfile(employeeId: string): Promise<IGetProfileDTO> {
+  async getProfile(employeeId: string ,businessOwnerId: string): Promise<IGetProfileDTO> {
         
         try {
-          const employee = await this._employeeRepository.getProfile( employeeId);
+          const employee = await this._employeeRepository.getProfile( employeeId ,businessOwnerId);
 
                 console.log("data from service", employee);
                 
@@ -84,9 +90,10 @@ export default class EmployeeService implements IEmployeeService {
         }
   }
 
-  async getPersonalInfo(employeeId: string): Promise<IGetProfileDTO> {
+  async getPersonalInfo(employeeId: string ,businessOwnerId: string): Promise<IGetProfileDTO> {
         try {
-          const employee = await this._employeeRepository.getProfile(employeeId);
+          const employee = await this._employeeRepository.getProfile(employeeId ,businessOwnerId);
+          // const leaves = await this._leaveRepository.getEmployeeLeaves()
           if (!employee) {
             throw new Error("Employee not found");
           }
@@ -109,9 +116,9 @@ export default class EmployeeService implements IEmployeeService {
         }
   }
 
-  async getAddress(employeeId: string): Promise<IGetAddressDTO> {
+  async getAddress(employeeId: string ,businessOwnerId: string): Promise<IGetAddressDTO> {
         try {
-          const employee = await this._employeeRepository.getProfile( employeeId);
+          const employee = await this._employeeRepository.getProfile( employeeId, businessOwnerId);
           return {
             street: employee?.address.street,
             city: employee?.address.city,
@@ -126,9 +133,9 @@ export default class EmployeeService implements IEmployeeService {
   }
 
      
-  async getEmployeeProfessionalInfo(employeeId: string): Promise<IGetEmployeeProfessionalDTO> {
+  async getEmployeeProfessionalInfo(employeeId: string ,businessOwnerId: string): Promise<IGetEmployeeProfessionalDTO> {
     try {
-      const employee = await this._employeeRepository.getProfile(employeeId);
+      const employee = await this._employeeRepository.getProfile(employeeId , businessOwnerId);
       if (!employee) {throw new Error("Employee not found")}
       return {
         position:employee?.professionalDetails.position, 
@@ -148,9 +155,9 @@ export default class EmployeeService implements IEmployeeService {
     }
   }
 
-  async getDocuments(employeeId: string): Promise<IGetDocumentDTO> {
+  async getDocuments(employeeId: string ,businessOwnerId:string): Promise<IGetDocumentDTO> {
     try {
-        const employee = await this._employeeRepository.getProfile(employeeId);
+        const employee = await this._employeeRepository.getProfile(employeeId ,businessOwnerId);
         if (!employee) {throw new Error("Employee not found")}
         return {
           documentName:employee?.documents.resume.documentName,     
@@ -163,9 +170,9 @@ export default class EmployeeService implements IEmployeeService {
     }
   }
 
-  async getEmployeeCredentials(employeeId: string): Promise<IGetCredentailsDTO> {
+  async getEmployeeCredentials(employeeId: string,businessOwnerId:string): Promise<IGetCredentailsDTO> {
     try {
-      const employee = await this._employeeRepository.getProfile(employeeId);
+      const employee = await this._employeeRepository.getProfile(employeeId ,businessOwnerId);
       if (!employee) {throw new Error("Employee not found")}
   
       return {
@@ -178,14 +185,14 @@ export default class EmployeeService implements IEmployeeService {
     }
   }
 
-  async updateProfile(employeeId: string, data: any): Promise<IEmployeeResponseDTO> {
+  async updateProfile(employeeId: string, data: any,businessOwnerId:string): Promise<IEmployeeResponseDTO> {
     console.log(`profile updatye data is ==>`.bgMagenta, data);
     
         try {
              const rabbitMQMessager = new RabbitMQMessager();
              await rabbitMQMessager.init();
 
-            const employee = await this._employeeRepository.updateProfile(employeeId, data);
+            const employee = await this._employeeRepository.updateProfile(employeeId, data ,businessOwnerId); ;
             await rabbitMQMessager.sendToMultipleQueues({ employee });
 
             if (!employee) {throw new Error("Employee not found")}
@@ -199,16 +206,16 @@ export default class EmployeeService implements IEmployeeService {
   }
 
 
-  async updateProfilePicture(employeeId: string, file: Express.Multer.File): Promise<IEmployeeResponseDTO> {
+  async updateProfilePicture(employeeId: string, file: Express.Multer.File ,businessOwnerId:string): Promise<IEmployeeResponseDTO> {
         try {
           const rabbitMQMessager = new RabbitMQMessager();
           await rabbitMQMessager.init();
-          const imageUrl = await this.uploadFileToS3(employeeId, file, "profilePicture");
+          const imageUrl = await this.uploadFileToS3(employeeId, file, "profilePicture" ,businessOwnerId);
 
-            const employee = await this._employeeRepository.updateProfilePicture(employeeId, imageUrl);
+            const employee = await this._employeeRepository.updateProfilePicture(employeeId, imageUrl,businessOwnerId);
             if (!employee) {throw new Error("Employee not found")}
             const profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
-            await rabbitMQMessager.sendToMultipleQueues({ employee });
+            await rabbitMQMessager.sendToMultipleQueues({ employee});
 
     
             return { success: true,data: profilePicture,  message: "Profile updated successfully" };
@@ -219,15 +226,15 @@ export default class EmployeeService implements IEmployeeService {
         }
   }
 
-  private async getDetails(employeeId: string) {
+  private async getDetails(employeeId: string ,businessOwnerId:string ) {
       if (!employeeId) throw new Error("Business owner ID not found");
-      const result = await this._employeeRepository.getProfile(employeeId);
+      const result = await this._employeeRepository.getProfile(employeeId ,businessOwnerId);
       if (!result) throw new Error("Business owner not found");
       return result;
   }
   
-  private async uploadFileToS3(employeeId: string, file: Express.Multer.File, fileType: "profilePicture" | "resume" ) {
-      const result = await this.getDetails(employeeId);
+  private async uploadFileToS3(employeeId: string, file: Express.Multer.File, fileType: "profilePicture" | "resume",businessOwnerId:string)  {
+      const result = await this.getDetails(employeeId,businessOwnerId); 
       const existingFile = fileType
   
       if (existingFile) {
@@ -242,9 +249,9 @@ export default class EmployeeService implements IEmployeeService {
   } 
 
 
-  async updateAddress(employeeId: string, data: any): Promise<IEmployeeResponseDTO> {
+  async updateAddress(employeeId: string, data: any,businessOwnerId:string): Promise<IEmployeeResponseDTO> {
     try {
-        const employee = await this._employeeRepository.updateAddress(employeeId, data);
+        const employee = await this._employeeRepository.updateAddress(employeeId, data ,businessOwnerId);
         if (!employee) {throw new Error("Employee not found")}
         return { success: true,data: employee.address,  message: "Address updated successfully" };
     } catch (error: any) {
@@ -254,10 +261,10 @@ export default class EmployeeService implements IEmployeeService {
     }
   }
 
-  async uploadDocuments(employeeId: string, file: Express.Multer.File, fileType: "resume"): Promise<IGetDocumentDTO> {
+  async uploadDocuments(employeeId: string, file: Express.Multer.File, fileType: "resume",businessOwnerId:string): Promise<IGetDocumentDTO> {
   try {
     // Upload file to S3
-    const fileKey = await this.uploadFileToS3(employeeId, file, "resume")
+    const fileKey = await this.uploadFileToS3(employeeId, file, "resume" ,businessOwnerId);
     
     const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
 
@@ -268,7 +275,7 @@ export default class EmployeeService implements IEmployeeService {
       uploadedAt: new Date(),
     };
 
-    const updatedManager = await this._employeeRepository.uploadDocuments(employeeId,fileType,documentData);
+    const updatedManager = await this._employeeRepository.uploadDocuments(employeeId,fileType,documentData ,businessOwnerId);
 
     return {
       documentName: fileType,

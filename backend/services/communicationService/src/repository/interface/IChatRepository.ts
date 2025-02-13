@@ -8,20 +8,20 @@ import { IMessage } from "../../entities/messageEntities";
 import { IChatWithDetails, IChatWithGroupDetails } from "dto/chatDTO";
 
 export default interface IChatRepository extends BaseRepository<IChat>{
-    createChat( myId: string, receiverId: string): Promise<IChat>
-    createMessage(message: any , myId: string): Promise<IMessage>
-    createGroup(data: any, myId: string): Promise<IChat>
-    findAllEmployees(): Promise<IEmployee[]>
-    findAllManagers(): Promise<IManager[]>
-    findAllBusinessOwners(): Promise<IBusinessOwnerDocument[]>
-    findAllGroups(myId: string): Promise<IChat[]>
-    findAllPrivateChats(userId: string): Promise<IChatWithDetails[]>
-    findChatId(myId: string, receiverId: string, chatType: string): Promise<IChat>
-    getChatParticipants(chatId: string): Promise<any> 
-    getAllGroupMembers(groupId: string): Promise<IChatWithGroupDetails>
-    getGroupDetails(groupId: string): Promise<IChatWithGroupDetails>
-    getAllUnAddedUsers(groupId: string): Promise<any>
-    updateGroup(groupId: string, data: any): Promise<IChatWithGroupDetails>
-    deleteGroup(groupId: string): Promise<void>
-    updateLastSeenForChats(businessOwnerId: string): Promise<any>
+    createChat( myId: string, receiverId: string, businessOwnerId: string): Promise<IChat>
+    createMessage(message: any , myId: string ,businessOwnerId: string): Promise<IMessage>
+    createGroup(data: any, myId: string ,businessOwnerId: string): Promise<IChat>
+    findAllEmployees(businessOwnerId : string): Promise<IEmployee[]>
+    findAllManagers(businessOwnerId : string): Promise<IManager[]>
+    findAllBusinessOwners( businessOwnerId : string): Promise<IBusinessOwnerDocument[]>
+    findAllGroups(myId: string ,businessOwnerId: string): Promise<IChat[]>
+    findAllPrivateChats(userId: string ,businessOwnerId: string): Promise<IChatWithDetails[]>
+    findChatId(myId: string, receiverId: string, chatType: string ,businessOwnerId: string): Promise<IChat>
+    getChatParticipants(chatId: string ,businessOwnerId: string): Promise<any> 
+    getAllGroupMembers(groupId: string, businessOwnerId: string): Promise<IChatWithGroupDetails>
+    getGroupDetails(groupId: string ,businessOwnerId: string): Promise<IChatWithGroupDetails>
+    getAllUnAddedUsers(groupId: string ,businessOwnerId: string): Promise<any>
+    updateGroup(groupId: string, data: any ,businessOwnerId: string): Promise<IChatWithGroupDetails>
+    deleteGroup(groupId: string ,businessOwnerId: string): Promise<void>
+    updateLastSeenForChats(userId: string, businessOwnerId: string): Promise<any>
 }

@@ -3,6 +3,8 @@ import IMessageRepository  from "../../repository/interface/IMessageRepository";
 import {IMessage} from "../../entities/messageEntities";
 import BaseRepository from "./baseRepository";
 import mongoose from "mongoose";
+import connectDB from "../../config/connectDB";
+import chatModel from "../../models/chatModel";
 
 @injectable()
 export default class MessageRepository extends BaseRepository<IMessage> implements IMessageRepository {
@@ -11,10 +13,24 @@ export default class MessageRepository extends BaseRepository<IMessage> implemen
         super(_messageModel);
     }
 
-    async createMessage(message: any): Promise<IMessage> {
+    async createMessage(messageData: any, businessOwnerId: string): Promise<IMessage> {
+     
         try {
-            // Save the new message
-            const createdMessage = await new this._messageModel(message).save();
+            const switchDB = await connectDB(businessOwnerId);
+            const MessageModel = switchDB.model("messages", this._messageModel.schema);
+            const ChatModel = switchDB.model("chats", chatModel.schema);
+            
+            const createdMessage = await new MessageModel(messageData).save();
+
+            await ChatModel.updateOne(
+                { _id: messageData.chatId },
+                {
+                    $set: { 
+                        lastMessage: createdMessage._id, 
+                        lastMessageTime: createdMessage.createdAt 
+                    }
+                }
+            );
     
             // Use an aggregation pipeline to fetch the complete message details
             const pipeline = [
@@ -75,7 +91,7 @@ export default class MessageRepository extends BaseRepository<IMessage> implemen
                 }
             ];
     
-            const [result] = await this._messageModel.aggregate(pipeline).exec();
+            const [result] = await MessageModel.aggregate(pipeline).exec();
     
             if (!result) {
                 throw new Error("Failed to retrieve the created message details");
@@ -87,8 +103,9 @@ export default class MessageRepository extends BaseRepository<IMessage> implemen
             throw new Error("Error creating message");
         }
     }
+    
 
-    async getAllMessages(chatRoomId: string): Promise<IMessage[]> {
+    async getAllMessages(chatRoomId: string , businessOwnerId: string): Promise<IMessage[]> {
         if (!mongoose.Types.ObjectId.isValid(chatRoomId)) {
             throw new Error("Invalid chatRoomId provided");
         }
@@ -154,19 +171,21 @@ export default class MessageRepository extends BaseRepository<IMessage> implemen
         ];
     
         try {
-            return await this._messageModel.aggregate(pipeline).exec();
+            const switchDB = await connectDB(businessOwnerId);
+            return await switchDB.model("messages", this._messageModel.schema).aggregate(pipeline).exec();
         } catch (error: any) {
             throw new Error(`Failed to fetch messages: ${error.message}`);
         }
     }
     
 
-    async deleteMessage(messageId: string): Promise<IMessage | null> {
+    async deleteMessage(messageId: string,businessOwnerId: string): Promise<IMessage | null> {
         try {
-            return await this._messageModel.findByIdAndDelete(messageId);
+            const switchDB = await connectDB(businessOwnerId);
+            return await switchDB.model("messages", this._messageModel.schema).findByIdAndDelete(messageId);
         } catch (error) {
             console.error("Error deleting message:", error);
-            throw new Error("Error deleting message");
+            throw new Error("Error deleting message"); 
         }
     }
 

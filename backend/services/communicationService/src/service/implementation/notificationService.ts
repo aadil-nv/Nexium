@@ -8,9 +8,9 @@ import { INotification } from "../../entities/notificationEntities";
 export default class NotificationService implements INotificationService {
   constructor(@inject("INotificationRepository") private _notificationRepository: INotificationRepository) {}
 
-  async getAllNotifications(myId: string): Promise<INotificationsDTO[]> { 
+  async getAllNotifications(myId: string ,businessOwnerId: string): Promise<INotificationsDTO[]> { 
     try {
-      const notifications: INotification[] = await this._notificationRepository.getAllNotifications(myId);
+      const notifications: INotification[] = await this._notificationRepository.getAllNotifications(myId ,businessOwnerId);
 
       // Map database model data to the DTO format
       const mappedNotificationsDTO: INotificationsDTO[] = notifications.map((notification: INotification) => {
@@ -32,11 +32,11 @@ export default class NotificationService implements INotificationService {
   }
   
 
-  async saveNotification(userId: string,message: string,type: string,title: string): Promise<INotificationsDTO> {
+  async saveNotification(userId: string,message: string,type: string,title: string ,businessOwnerId: string): Promise<INotificationsDTO> {
     console.log(`"hitting saveNotification: "`.bgMagenta,userId,message,type,title);
     
     try {
-       const notification:INotification = await this._notificationRepository.saveNotification(userId,message,type,title);
+       const notification:INotification = await this._notificationRepository.saveNotification(userId,message,type,title ,businessOwnerId);
 
       return {
         _id: notification._id,
@@ -51,9 +51,9 @@ export default class NotificationService implements INotificationService {
     }
   }
 
-  async deleteNotification(notificationId: string): Promise<INotificationsDTO | null> {
+  async deleteNotification(notificationId: string ,businessOwnerId: string): Promise<INotificationsDTO | null> {
     try {
-      const notification = await this._notificationRepository.deleteNotification(notificationId);
+      const notification = await this._notificationRepository.deleteNotification(notificationId ,businessOwnerId);
   
       if (!notification) {
         console.error(`Notification with ID ${notificationId} not found.`);
@@ -78,9 +78,9 @@ export default class NotificationService implements INotificationService {
   }
   
   
-  async clearAllNotifications(myId: string): Promise<number> {
+  async clearAllNotifications(myId: string ,businessOwnerId: string): Promise<number> {
     try {
-      const result = await this._notificationRepository.clearAllNotifications(myId);
+      const result = await this._notificationRepository.clearAllNotifications(myId ,businessOwnerId);
       return result.deletedCount || 0; // Ensure a numeric response
     } catch (error) {
       console.error("Error clearing notifications:", error);

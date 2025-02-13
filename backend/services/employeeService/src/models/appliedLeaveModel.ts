@@ -48,6 +48,14 @@
         type: Number,
         default: 0,  // This can be used to store total days applied for leave
       },
+      isFirstHalf:{
+        type: Boolean, 
+        default: false 
+      },
+      isSecondHalf:{
+        type: Boolean, 
+        default: false 
+      }
     },
     { timestamps: true } // Automatically adds createdAt and updatedAt fields
   );

@@ -9,10 +9,10 @@ import { IParticipantDetails } from "dto/chatDTO";
 
 export default class MessageService implements IMessageService {
     constructor(@inject("IMessageRepository") private _messageRepository: IMessageRepository) { }
-    async createMessage(senderId: string,chatId: string,message: any): Promise<IMessageDTO> {
-        console.log("message----->",message);
-        console.log("senderId----->",senderId);
-        console.log("chatId----->",chatId);
+    async createMessage(senderId: string,chatId: string,message: any, businessOwnerId: string): Promise<IMessageDTO> {
+        console.log(`createMessage====================>`.bgMagenta , message);
+        console.log(`createMessage==========businessOwnerId==========>`.bgMagenta , businessOwnerId);
+        console.log(`createMessage=======senderId=============>`.bgMagenta , senderId);
         
         try {
             // Prepare message data
@@ -25,7 +25,7 @@ export default class MessageService implements IMessageService {
             };
     
             // Create the message using the repository
-            const createdMessage:any = await this._messageRepository.createMessage(messageData);
+            const createdMessage:any = await this._messageRepository.createMessage(messageData , businessOwnerId);
     
             // Map the created message to the DTO format
             const response: IMessageDTO = {
@@ -47,9 +47,9 @@ export default class MessageService implements IMessageService {
         }
     }
     
-    async getAllMessages(chatRoomId: string, myId: string): Promise<IMessageDTO[]> {
+    async getAllMessages(chatRoomId: string, myId: string , businessOwnerId: string): Promise<IMessageDTO[]> {
         try {
-            const messages: IMessage[] = await this._messageRepository.getAllMessages(chatRoomId);
+            const messages: IMessage[] = await this._messageRepository.getAllMessages(chatRoomId ,businessOwnerId);
 
             const response: IMessageDTO[] = messages.map((message: any) => ({
                 messageId: message._id.toString(),
@@ -91,10 +91,10 @@ export default class MessageService implements IMessageService {
          : senderDetails.personalDetails.profilePicture;
     }
     
-    async deleteMessage(messageId: string): Promise<IMessageResponse> {
+    async deleteMessage(messageId: string , businessOwnerId: string): Promise<IMessageResponse> {
         try {
             // Ensure the delete operation is awaited
-            const message = await this._messageRepository.deleteMessage(messageId);
+            const message = await this._messageRepository.deleteMessage(messageId ,businessOwnerId);
     
             if (!message) {
                 return {

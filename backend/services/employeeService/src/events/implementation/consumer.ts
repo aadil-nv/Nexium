@@ -37,14 +37,13 @@ export default class Consumer implements IConsumer {
             console.log("data ---------------QUEUE", data);
 
 
-            // Check for employeeData and send it to the employee service
             // if (data.employeeData) {
-            //   await this._employeeService.addEmployee(data.employeeData);
+            //   await this._employeeService.addEmployee(data.employeeData , data.businessOwnerId);
             // }
             if (data.employeeIsActiveData) {
-              console.log(`employeeIsActive:2222222222222222222 ${data.employeeIsActiveData._id}`.bgMagenta.bold);
+              // console.log(`employeeIsActive:2222222222222222222 ${data.employeeIsActiveData._id}`.bgMagenta.bold);
               
-              await this._employeeService.updateIsActive(data.employeeIsActiveData._id, true);
+              await this._employeeService.updateIsActive(data.employeeIsActiveData._id, true , data.employeeIsActiveData.businessOwnerId);
             }
 
 

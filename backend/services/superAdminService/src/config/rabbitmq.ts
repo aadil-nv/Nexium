@@ -6,7 +6,7 @@ let channel:Channel
 
 export const rabbitmqConnect = async()=>{
     try {
-        connection = await amqplib.connect('amqp://rabbitmq:5672')
+        connection = await amqplib.connect('amqp://localhost')
         channel = await connection.createChannel()
         console.log('connected to rabbtimq in userService');
         

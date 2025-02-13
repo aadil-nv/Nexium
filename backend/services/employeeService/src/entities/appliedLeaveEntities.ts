@@ -12,4 +12,6 @@ export interface IAppliedLeave extends Document {
     approvedBy?: string;           // ID of the approver (if applicable)
     rejectionReason?: string;      // Reason for rejection (if applicable)
     daysCount: number;             // Total number of days applied
+    isFirstHalf:boolean
+    isSecondHalf:boolean
 }

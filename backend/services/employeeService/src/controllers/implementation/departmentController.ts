@@ -11,16 +11,12 @@ export default class DepartmentController implements IDepartmentController {
     constructor(@inject("IDepartmentService") private _departmentService: IDepartmentService) { }
 
     async getDepartment(req: CustomRequest, res: Response): Promise<Response> {
-        console.log("hitting get department ===============**********==================");
         
         try {
             const employeeId = req.user?.employeeData?._id;
-            console.log("employeeId from controller--------------",employeeId);
-            
+            const businessOwnerId = req.user?.employeeData?.businessOwnerId;
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const department = await this._departmentService.getDepartment(employeeId);
-            console.log(`department from controller `.bgCyan,department);
-            
+            const department = await this._departmentService.getDepartment(employeeId,businessOwnerId as string);
             return res.status(HttpStatusCode.OK).json(department);
         } catch (error) {
             console.error(error);

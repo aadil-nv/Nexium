@@ -11,30 +11,14 @@ import 'colors';
 import cookieParser from 'cookie-parser'; 
 import { connectConsumer } from './events/rabbitmq/connectConsumer';
 import employeeRoutes from './routes/employeeRoutes';
-import morgan from 'morgan'; // Import morgan
-import { createStream } from 'rotating-file-stream';
-import path from 'path';
-import fs from 'fs';
+import logger from './utils/logger'; 
 
 const app = express();
-const PORT = process.env.PORT 
+const PORT = process.env.PORT;
 
 connectDB();
-const logDirectory = path.resolve(__dirname, './logs');
-if (!fs.existsSync(logDirectory)) {
-  fs.mkdirSync(logDirectory);
-}
 
-
-// Set up log file rotation
-const accessLogStream = createStream('access.log', {
-    interval: process.env.LOG_INTERVAL ,
-    path: logDirectory,
-  });
-
-
-app.use(morgan('combined', { stream: accessLogStream }));
-app.use(morgan('dev'));
+app.use(logger); // Use the logger middleware/morgan
 
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN,
@@ -42,7 +26,7 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 app.use(express.json());
-app.use(cookieParser()); // Use cookie-parser middleware
+app.use(cookieParser());
 
 app.get('/', (req, res) => {
     res.send('Auth service is running..');
@@ -58,5 +42,4 @@ connectConsumer();
 app.listen(PORT, () => {
     console.log(`authenticationService on http://localhost:${PORT}`.bgGreen.bold);
     console.log("Connected to DB".bgGreen.bold);
-    
 });

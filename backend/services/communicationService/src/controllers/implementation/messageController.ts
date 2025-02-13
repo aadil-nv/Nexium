@@ -18,14 +18,18 @@ export default  class MessageController implements IMessageController {
             ''
         );
     }
+    private getBusinessOwnerId(req: CustomRequest): string {
+        return req.user?.businessOwnerData?._id ||
+         req.user?.managerData?.businessOwnerId || 
+         req.user?.employeeData?.businessOwnerId || '';
+    }
 
     async getAllMessages(req: CustomRequest, res: Response): Promise<Response> {
-        
         try {
-            
             const chatRoomId = req.params.id;
-            const myId = this.getMyId(req);
-            const response = await this._messageService.getAllMessages(chatRoomId , myId);
+            const myId = this.getMyId(req);            
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const response = await this._messageService.getAllMessages(chatRoomId , myId ,businessOwnerId);
             
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
@@ -36,7 +40,8 @@ export default  class MessageController implements IMessageController {
     async deleteMessage(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const messageId = req.params.id;
-            const response = await this._messageService.deleteMessage(messageId);
+            const busineesOwnerId = this.getBusinessOwnerId(req);
+            const response = await this._messageService.deleteMessage(messageId , busineesOwnerId); ;
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error deleting message" });

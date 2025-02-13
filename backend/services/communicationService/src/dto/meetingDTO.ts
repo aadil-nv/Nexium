@@ -9,6 +9,9 @@ export interface IMeetingsDTO {
       participants: string[]; // List of participant IDs
       meetingLink: string; // Link to join the meeting
       scheduledBy: string; // ID of the user who scheduled the meeting
+      isRecurring: boolean;
+      recurringType?: "daily" | "weekly"
+    recurringDay?: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday"
   }
   export interface IParticipantsDTO {
      userId: any;
@@ -28,6 +31,9 @@ export interface IGetAllMeetingsDTO {
     scheduledBy: IScheduledByDTO; // Details of the user who scheduled the meeting
     createdAt: Date; // Timestamp when the meeting was created
     updatedAt: Date; // Timestamp when the meeting was last updated
+    isRecurring: boolean;
+    recurringType?: "daily" | "weekly"
+    recurringDay?: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday"
 }
 
 export interface IParticipantDTO {
@@ -43,28 +49,6 @@ export interface IScheduledByDTO {
     userPosition: string; // Position of the scheduler
     profilePicture?: string; // Profile picture of the scheduler (optional)
 }
-
-
-
-// export interface IParticipantDetails {
-//     _id: mongoose.Types.ObjectId;
-//     personalDetails?: {
-//         employeeName?: string;
-//         managerName?: string;
-//         businessOwnerName?: string;
-//         profilePicture?: string;
-//     };
-//     professionalDetails?: {
-//         position?: string;
-//     };
-//     role?: string;
-//     isActive?: boolean;
-// }
-
-// export interface IMeetDetailes extends IMeet {
-//     participantDetails: IParticipantDetails;
-// }
-
 
 
 export interface IPersonalDetails {
@@ -105,4 +89,7 @@ export interface IMeetingDetails {
     scheduledBy: IScheduledByDetails;
     createdAt: Date;
     updatedAt: Date;
+    isRecurring: boolean;
+    recurringType?: "daily" | "weekly"
+    recurringDay?: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday"
 }

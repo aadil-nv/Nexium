@@ -3,11 +3,11 @@ import  IMeetingRepository  from "../../repository/interface/IMeetingRepository"
 import BaseRepository from "./baseRepository";
 import mongoose from "mongoose";
 import { IMeeting } from "../../entities/meetingEntities";
-import { log } from "console";
 import IEmployee from "../../entities/employeeEntities";
 import { IManager } from "../../entities/managerEntities";
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntities";
 import { IMeetingDetails } from "../../dto/meetingDTO";
+import connectDB from "../../config/connectDB";
 
 
 @injectable()
@@ -24,7 +24,7 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
         
     }
 
-    async getAllMeetings(myId: string): Promise<IMeetingDetails[]> {
+    async getAllMeetings(myId: string , businessOwnerId: string): Promise<IMeetingDetails[]> {
         if (!mongoose.Types.ObjectId.isValid(myId)) {
             throw new Error("Invalid user ID provided");
         }
@@ -140,6 +140,9 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
                     meetingTime: 1,
                     meetingLink: 1,
                     participants: "$participantDetails",
+                    isRecurring: 1,
+                    recurringType: 1,
+                    recurringDay: 1,
                     scheduledBy: {
                         $cond: [
                             { $gt: [{ $size: "$scheduledByEmployee" }, 0] },
@@ -160,7 +163,9 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
         ];
     
         try {
-            const meetings = await this._meetingModel.aggregate(pipeline).exec();
+            const switchDB = await connectDB(businessOwnerId);
+
+            const meetings = await switchDB.model("Meeting", this._meetingModel.schema).aggregate(pipeline).exec();
             return meetings;
         } catch (error: any) {
             console.error(`Failed to fetch meetings: ${error.message}`);
@@ -170,7 +175,13 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
     
     
 
-    async createMeeting(meeting: any, myId: string): Promise<IMeeting> {
+    async createMeeting(meeting: any, myId: string , businessOwnerId: string): Promise<IMeeting> {
+
+        console.log("Touiching create meeting ======>from repo " ,meeting);
+        console.log("myId ======>from repo  " ,myId);
+        console.log("businessOwnerId ======> from repo" ,businessOwnerId);
+        
+        
         try {
             // Set the scheduledBy field to the current user's ID
             meeting.scheduledBy = myId;
@@ -185,8 +196,8 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
                 ) as any;
             }
     
-            // Create the meeting document in the database
-            const createdMeeting = await this._meetingModel.create(meeting);
+            const switchDB = await connectDB(businessOwnerId);
+            const createdMeeting = await switchDB.model("Meeting", this._meetingModel.schema).create(meeting);
     
             // Ensure the result is returned with the correct type
             return createdMeeting as IMeeting;
@@ -199,14 +210,11 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
     
     
 
-    async updateMeeting(meetingId: string, meeting: any): Promise<IMeeting > {
+    async updateMeeting(meetingId: string, meeting: any ,businessOwnerId: string): Promise<IMeeting > {
 
-        console.log("Updating meeting with ID:", meetingId);
-        console.log("Meeting data:", meeting);
-        
-        
         try {
-          const updatedMeeting = await this._meetingModel
+            const switchDB = await connectDB(businessOwnerId);
+          const updatedMeeting = await switchDB.model("Meeting", this._meetingModel.schema)
             .findByIdAndUpdate(meetingId, meeting)
             .exec();
     
@@ -221,9 +229,10 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
         }
       }
 
-      async deleteMeeting(meetingId: string): Promise<IMeeting> {
+      async deleteMeeting(meetingId: string , businessOwnerId: string): Promise<IMeeting> {
         try {
-          const deletedMeeting = await this._meetingModel.findByIdAndDelete(meetingId).exec();
+            const switchDB = await connectDB(businessOwnerId);
+          const deletedMeeting = await switchDB.model("Meeting", this._meetingModel.schema).findByIdAndDelete(meetingId).exec();
     
           if (!deletedMeeting) {
             throw new Error(`Meeting with ID ${meetingId} not found.`);

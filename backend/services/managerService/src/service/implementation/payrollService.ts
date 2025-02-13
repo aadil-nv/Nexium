@@ -8,10 +8,10 @@ import { IPayrollCriteriaDTO } from "dto/IPayrollDTO";
 export default class PayrollService implements IPayrollService {
     constructor(@inject("IPayrollRepository") private _payrollRepository: IPayrollRepository) {}
 
-    async getPayrollCriteria(): Promise<IPayrollCriteriaDTO[]> {
+    async getPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteriaDTO[]> {
         try {
             // Fetch payroll criteria from the repository (this could be an array)
-            const payrollCriteriaList = await this._payrollRepository.getPayrollCriteria();
+            const payrollCriteriaList = await this._payrollRepository.getPayrollCriteria(businessOwnerId);
 
             // If not found, throw an error
             if (!payrollCriteriaList || payrollCriteriaList.length === 0) {
@@ -60,9 +60,9 @@ export default class PayrollService implements IPayrollService {
         }
     }
 
-    async updatePayrollCriteria(payrollData: IPayrollCriteria, payrollId: string): Promise<IPayrollCriteriaDTO> {
+    async updatePayrollCriteria(payrollData: IPayrollCriteria, payrollId: string ,businessOwnerId: string): Promise<IPayrollCriteriaDTO> {
         try {
-            const updatedPayroll = await this._payrollRepository.updatePayrollCriteria(payrollData, payrollId);
+            const updatedPayroll = await this._payrollRepository.updatePayrollCriteria(payrollData, payrollId ,businessOwnerId);
             return updatedPayroll;
         } catch (error) {
             console.error("Error in PayrollService:", error);
@@ -70,10 +70,10 @@ export default class PayrollService implements IPayrollService {
         }
     }
 
-    async deleteIncentive(incentiveId: string, data:any): Promise<IPayrollCriteria> {
+    async deleteIncentive(incentiveId: string, data:any,businessOwnerId: string): Promise<IPayrollCriteria> {
         try {
             const payrollCriteriaId = data.payrollCriteriaId;
-            const updatedPayroll = await this._payrollRepository.deleteIncentive(incentiveId, payrollCriteriaId);
+            const updatedPayroll = await this._payrollRepository.deleteIncentive(incentiveId, payrollCriteriaId,businessOwnerId);
             return updatedPayroll;
         } catch (error) {
             console.error("Error in PayrollService:", error);

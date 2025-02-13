@@ -1,5 +1,5 @@
 
 
 export default interface IDashboardService {
-    getAllDashboardData(companyId:string): Promise<any>
+    getAllDashboardData(managerId:string, businessOwnerId: string): Promise<any>
 }

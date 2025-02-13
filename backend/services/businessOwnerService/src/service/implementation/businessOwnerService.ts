@@ -217,10 +217,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
   }
   async uploadImages(businessOwnerId: string, file: Express.Multer.File): Promise<IResponseDTO> {
     try {
-      const imageUrl = await this.uploadFileToS3(businessOwnerId, file, "profilePicture");
-
-      console.log("==============imageUrl======================", imageUrl);
-      
+      const imageUrl = await this.uploadFileToS3(businessOwnerId, file, "profilePicture");      
       await this._businessOwnerRepository.uploadImages(businessOwnerId, imageUrl);
       return { success: true, message: 'Image uploaded successfully!', data: { imageUrl:`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${imageUrl}` } };
     } catch (error:any) {

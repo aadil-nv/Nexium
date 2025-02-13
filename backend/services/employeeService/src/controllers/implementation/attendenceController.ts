@@ -17,12 +17,18 @@ export default class AttendanceController implements IAttendanceController {
     private getEmployeeId(req: CustomRequest): string | null {
         return req.user?.employeeData?._id || null;
     }
+    private getBusinessOwnerId(req: CustomRequest): string {
+        return req.user?.employeeData?.businessOwnerId || '';
+    }
 
     async fetchAttendance(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const employeeId = this.getEmployeeId(req);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            console.log("businessOwnerId from controller ===>", businessOwnerId);
+            
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "No token provided" });
-            const attendances = await this.attendanceService.fetchAttendances(employeeId);
+            const attendances = await this.attendanceService.fetchAttendances(employeeId, businessOwnerId);
             return res.status(HttpStatusCode.OK).json(attendances);
         } catch (error) {
             return this.handleError(res, error);
@@ -32,8 +38,9 @@ export default class AttendanceController implements IAttendanceController {
     async markCheckin(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const employeeId = this.getEmployeeId(req);
+            const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const attendance = await this.attendanceService.markCheckin(req.body, employeeId);
+            const attendance = await this.attendanceService.markCheckin(req.body, employeeId , businessOwnerId);
             return res.status(HttpStatusCode.OK).json(attendance);
         } catch (error) {
             return this.handleError(res, error);
@@ -43,8 +50,9 @@ export default class AttendanceController implements IAttendanceController {
     async markCheckout(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const employeeId = this.getEmployeeId(req);
+            const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const attendance = await this.attendanceService.markCheckout(req.body, employeeId);
+            const attendance = await this.attendanceService.markCheckout(req.body, employeeId ,businessOwnerId);
             return res.status(HttpStatusCode.OK).json(attendance);
         } catch (error) {
             return this.handleError(res, error);
@@ -54,8 +62,9 @@ export default class AttendanceController implements IAttendanceController {
     async fetchApprovedLeaves(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const employeeId = this.getEmployeeId(req);
+            const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const leaves = await this.attendanceService.fetchApprovedLeaves(employeeId);
+            const leaves = await this.attendanceService.fetchApprovedLeaves(employeeId , businessOwnerId);
             return res.status(HttpStatusCode.OK).json(leaves);
         } catch (error) {
             return this.handleError(res, error);
@@ -65,8 +74,9 @@ export default class AttendanceController implements IAttendanceController {
     async applyLeave(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const employeeId = this.getEmployeeId(req);
+            const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const leaves = await this.attendanceService.applyLeave(req.body, employeeId);
+            const leaves = await this.attendanceService.applyLeave(req.body, employeeId , businessOwnerId);
             return res.status(HttpStatusCode.OK).json(leaves);
         } catch (error) {
             return this.handleError(res, error);
@@ -76,8 +86,9 @@ export default class AttendanceController implements IAttendanceController {
     async updateAttendanceEntry(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const employeeId = this.getEmployeeId(req);
+            const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const leaves = await this.attendanceService.updateAttendanceEntry(employeeId);
+            const leaves = await this.attendanceService.updateAttendanceEntry(employeeId , businessOwnerId);
             return res.status(HttpStatusCode.OK).json(leaves);
         } catch (error) {
             return this.handleError(res, error);

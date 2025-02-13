@@ -8,4 +8,7 @@ export interface IMeeting extends Document {
     participants: mongoose.Types.ObjectId[]; // Array of participant IDs
     meetingLink: string; // Link for the meeting
     scheduledBy: mongoose.Types.ObjectId; // ID of the user who scheduled the meeting
+    isRecurring: boolean;
+    recurringType?: string;
+    recurringDay?: string;
   }

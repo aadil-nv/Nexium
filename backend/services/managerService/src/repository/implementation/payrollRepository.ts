@@ -3,6 +3,7 @@ import IPayrollRepository from "../../repository/interface/IPayrollRepository";
 import { IPayrollCriteria } from "../../entities/payrollCriteriaEntities";
 import BaseRepository from "../../repository/implementation/baseRepository";
 import { Model } from "mongoose";
+import connectDB from "../../config/connectDB";
 
 @injectable()
 export default class PayrollRepository extends BaseRepository<IPayrollCriteria> implements IPayrollRepository {
@@ -11,12 +12,12 @@ export default class PayrollRepository extends BaseRepository<IPayrollCriteria> 
         super(payrollCriteriaModel);
     }
 
-    async getPayrollCriteria(): Promise<IPayrollCriteria[]> {
+    async getPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]> {
         try {
-            // Find existing payroll criteria
-            let payrollCriteria = await this.payrollCriteriaModel.find({}).exec();
+            const db = await connectDB(businessOwnerId);
 
-            // If no payroll criteria exist, create a new default one without any incentive slabs
+            const payrollCriteria = await db.model<IPayrollCriteria>("PayrollCriteria", this.payrollCriteriaModel.schema).find({}).exec();
+
             if (payrollCriteria.length === 0) {
                 const defaultPayrollCriteria = new this.payrollCriteriaModel({
                     allowances: {
@@ -42,7 +43,8 @@ export default class PayrollRepository extends BaseRepository<IPayrollCriteria> 
                 });
 
                 // Save the new payroll criteria
-                payrollCriteria = [await defaultPayrollCriteria.save()];
+                await defaultPayrollCriteria.save();
+                return [defaultPayrollCriteria]; // Return the newly created default payroll criteria
             }
 
             return payrollCriteria;
@@ -51,41 +53,49 @@ export default class PayrollRepository extends BaseRepository<IPayrollCriteria> 
             throw new Error("Failed to fetch or create payroll criteria");
         }
     }
-    async updatePayrollCriteria(payrollData: any, payrollId: string): Promise<IPayrollCriteria> {
-
-        
+    
+    async updatePayrollCriteria(payrollData: any, payrollId: string, businessOwnerId: string): Promise<IPayrollCriteria> {
         try {
-            const updatedPayroll = await this.payrollCriteriaModel.findByIdAndUpdate(payrollId, payrollData, { new: true }).exec();
-            if(!updatedPayroll) {
+            const db = await connectDB(businessOwnerId);
+    
+            // Correct model usage to access the payrollCriteria collection
+            const updatedPayroll = await db.model<IPayrollCriteria>("PayrollCriteria", this.payrollCriteriaModel.schema)
+                .findByIdAndUpdate(payrollId, payrollData, { new: true })
+                .exec();
+    
+            if (!updatedPayroll) {
                 throw new Error("Payroll criteria not found");
             }
+    
             return updatedPayroll;
         } catch (error) {
             console.error("Error updating payroll criteria:", error);
             throw new Error("Failed to update payroll criteria");
         }
     }
-
-    async deleteIncentive(incentiveId: string, payrollCriteriaId: string): Promise<IPayrollCriteria> {
-        console.log("incentiveId", incentiveId);
-        console.log("payrollCriteriaId", payrollCriteriaId);
-        
+    
+    async deleteIncentive(incentiveId: string, payrollCriteriaId: string, businessOwnerId: string): Promise<IPayrollCriteria> {
         try {
-            // Pull the incentive object from the incentives array by matching a unique identifier
-            const updatedPayroll = await this.payrollCriteriaModel.findByIdAndUpdate(
-                payrollCriteriaId, 
-                { $pull: { incentives: { _id: incentiveId } } },  // Match by _id (assuming incentiveId corresponds to this field)
-                { new: true }
-            ).exec();
+            const db = await connectDB(businessOwnerId);
+    
+            const updatedPayroll = await db.model<IPayrollCriteria>("PayrollCriteria", this.payrollCriteriaModel.schema)
+                .findByIdAndUpdate(
+                    payrollCriteriaId, 
+                    { $pull: { incentives: { _id: incentiveId } } }, 
+                    { new: true } 
+                )
+                .exec();
     
             if (!updatedPayroll) {
                 throw new Error("Payroll criteria not found");
             }
+    
             return updatedPayroll;
         } catch (error) {
             console.error("Error deleting incentive:", error);
             throw new Error("Failed to delete incentive");
         }
     }
+    
     
 }

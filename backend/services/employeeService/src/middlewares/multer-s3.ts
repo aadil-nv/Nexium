@@ -11,7 +11,6 @@ import multer from "multer";
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-console.log("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
 
 export const uploadMiddleware = upload.single('file'); // Use 'file' as the field name
 

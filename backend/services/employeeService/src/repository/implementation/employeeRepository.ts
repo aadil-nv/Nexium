@@ -3,8 +3,11 @@ import { Model } from "mongoose";
 import BaseRepository from "./baseRepository";
 import IEmployee from "../../entities/employeeEntities";
 import IEmployeeRepository from "../../repository/interface/IEmployeeRepository";
-import {IManager} from "../../entities/managerEntities";
 import managerModel from "../../models/managerModel";
+import connectDB from "../../config/connectDB";
+import { IManager } from "../../entities/managerEntities";
+import { IBusinessOwnerDocument } from "entities/businessOwnerEntities";
+import businessOwnerModel from "../../models/businessOwnerModel";
 
 @injectable()
 export default class EmployeeRepository extends BaseRepository<IEmployee> implements IEmployeeRepository {
@@ -12,9 +15,10 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
     super(_employeeModel);
   }
 
-  async getProfile(employeeId: string): Promise<IEmployee> {
+  async getProfile(employeeId: string ,businessOwnerId: string): Promise<IEmployee> {
     try {
-      const employee = await this._employeeModel
+      const switchDB = await connectDB(businessOwnerId);
+      const employee = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema)
         .findOne({ _id: employeeId }) // Adjusted to use `_id` if that's the field
         .select({ password: 0 })
         .exec();
@@ -29,9 +33,10 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
     }
   }
 
-  async updateIsActive(employeeId: string, isActive: boolean): Promise<IEmployee> {
+  async updateIsActive(employeeId: string, isActive: boolean ,businessOwnerId: string): Promise<IEmployee> {
     try {
-      const updatedEmployee = await this._employeeModel.findByIdAndUpdate(
+      const switchDB = await connectDB( businessOwnerId);
+      const updatedEmployee = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema).findByIdAndUpdate(
         employeeId,
         { $set: { isActive } },
         { new: true }
@@ -46,9 +51,10 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
   }
 
 
-  async findBusinessOwnerId(managerId: string): Promise<string> {
+  async findBusinessOwnerId(managerId: string ,businessOwnerId: string): Promise<string> {
     try {
-        const manager = await managerModel
+      const switchDB = await connectDB(businessOwnerId);
+        const manager = await switchDB.model<IManager>("Manager", managerModel.schema)
             .findOne({ _id: managerId })
             .select({ businessOwnerId: 1 })
             .exec();
@@ -64,11 +70,11 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
     }
 }
 
-async updateProfile(employeeId: string, data: any): Promise<IEmployee> {
+async updateProfile(employeeId: string, data: any,businessOwnerId: string): Promise<IEmployee> {
   try {
       const { profilePicture, ...updateData } = data;
-
-      const employee = await this._employeeModel.findByIdAndUpdate(
+      const switchDB = await connectDB(businessOwnerId);
+      const employee = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema).findByIdAndUpdate(
         employeeId,
         { $set: { 
             "personalDetails.businessOwnerName": data.employeeName,
@@ -96,11 +102,12 @@ async updateProfile(employeeId: string, data: any): Promise<IEmployee> {
 }
 
 
-async  updateProfilePicture(employeeId: string, file: string): Promise<IEmployee>{
+async  updateProfilePicture(employeeId: string, file: string,businessOwnerId: string): Promise<IEmployee>{
 
     
     try {
-      const result = await this._employeeModel.findByIdAndUpdate(
+      const switchDB = await connectDB(businessOwnerId);
+      const result = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema).findByIdAndUpdate(
         employeeId,
         { $set: { 'personalDetails.profilePicture': file } }, // Save the file path
         { new: true }
@@ -118,9 +125,11 @@ async  updateProfilePicture(employeeId: string, file: string): Promise<IEmployee
   }
   
 
-async updateAddress(employeeId: string, data: any): Promise<IEmployee> {
+async updateAddress(employeeId: string, data: any,businessOwnerId: string): Promise<IEmployee> {
   try {
-      const result = await this._employeeModel.findByIdAndUpdate(
+    const switchDB = await connectDB(businessOwnerId);
+
+      const result = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema).findByIdAndUpdate(
         employeeId,
         { $set: { 'address': data } }, // Save the file path
         { new: true }
@@ -137,9 +146,11 @@ async updateAddress(employeeId: string, data: any): Promise<IEmployee> {
     }
   }
 
-  async uploadDocuments(employeeId: string, fileType: "resume", documentData: any): Promise<IEmployee> {
+  async uploadDocuments(employeeId: string, fileType: "resume", documentData: any,businessOwnerId: string): Promise<IEmployee> {
     try {
-      const result = await this._employeeModel.findByIdAndUpdate(
+      const switchDB = await connectDB(businessOwnerId);
+
+      const result = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema).findByIdAndUpdate(
         employeeId,
         { $set: { [`documents.${fileType}`]: documentData } }, // Save the file path
         { new: true }
@@ -156,9 +167,11 @@ async updateAddress(employeeId: string, data: any): Promise<IEmployee> {
     }
   }
 
-  async getEmployeeDashboardData(employeeId: string): Promise<any> {
+  async getEmployeeDashboardData(employeeId: string,businessOwnerId: string): Promise<any> {
     try {
-        const employee = await this._employeeModel.findOne({ _id: employeeId });
+      const switchDB = await connectDB(businessOwnerId);
+
+        const employee = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema).findOne({ _id: employeeId });
         if (!employee) {
             throw new Error(`No employee records found for employee ID ${employeeId}`);
         }
@@ -167,6 +180,39 @@ async updateAddress(employeeId: string, data: any): Promise<IEmployee> {
         console.error(error);
         throw error;
     }
+}
+
+
+async findEmployeeIsBlocked(employeeId: string,businessOwnerId: string): Promise<boolean> {
+  try {
+    const switchDB = await connectDB(businessOwnerId);
+    const employee = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema).findOne({ _id: employeeId });
+    if (!employee) {
+        throw new Error(`No employee records found for employee ID ${employeeId}`);
+    }
+    return employee.isBlocked;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+async findBusinessOwnerIsBlocked(employeeId: string, businessOwnerId: string): Promise<boolean> {
+  try {
+    const db = await connectDB(businessOwnerId);
+          const businessOwner = await db
+            .model<IBusinessOwnerDocument>("businessowners", businessOwnerModel.schema)
+            .findById(businessOwnerId)
+      
+          if (!businessOwner ) {
+            throw new Error(`No BusinessOwner records found for employee ID ${employeeId}`);
+          }
+      
+          return businessOwner.isBlocked ?? null; // Cast to `any` to avoid TypeScript errors
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 }
 
 }

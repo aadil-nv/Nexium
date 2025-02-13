@@ -33,7 +33,6 @@ export default class SuperAdminService implements ISuperAdminService {
     }
   }
 
-
   async getAllServiceRequest(): Promise<ServiceRequestsDTO> {
     try {
       const response = await this._superAdminRepository.getAllServiceRequest();
@@ -44,8 +43,8 @@ export default class SuperAdminService implements ISuperAdminService {
         serviceRequests: response.map((request: any) => ({
           _id: request._id,
           businessOwnerId: request.businessOwnerId,
-          companyName: request.companyName,
-          companyLogo: request.companyLogo ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${request.companyLogo}` : request.companyLogo,
+          companyName: request.businessOwnerId.companyDetails.companyName,
+          companyLogo: request.businessOwnerId.companyDetails.companyLogo ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${request.businessOwnerId.companyDetails.companyLogo}` : request.businessOwnerId.companyDetails.companyLogo,
           serviceName: request.serviceName,
           requestReason: request.requestReason,
           status: request.status,

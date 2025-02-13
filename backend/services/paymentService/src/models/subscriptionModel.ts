@@ -20,7 +20,7 @@ const subscriptionPlanSchema: Schema<ISubscription> = new Schema(
     planType: {
       type: String,
       required: true,
-      enum: ["Trial", "Basic", "Premium"], // Enum for plan types
+      enum: ["Trial", "Basic", "Premium"],
     },
     durationInMonths: {
       type: Number,
@@ -30,21 +30,46 @@ const subscriptionPlanSchema: Schema<ISubscription> = new Schema(
       type: [String],
       default: [],
     },
+    employeeCount: {
+      type: Number,
+      default: null, // null means unlimited
+    },
+    managerCount: {
+      type: Number,
+      default: null,
+    },
+    projectCount: {
+      type: Number,
+      default: null,
+    },
+    serviceRequestCount: {
+      type: Number,
+      default: null,
+    },
     isActive: {
       type: Boolean,
       required: true,
       default: true,
     },
   },
-  {
-    timestamps: true, // Automatically manage createdAt and updatedAt fields
-  }
+  { timestamps: true }
 );
 
+// Pre-save middleware to handle Premium unlimited values
+subscriptionPlanSchema.pre("save", function (next) {
+  if (this.planType === "Premium") {
+    this.employeeCount = null;
+    this.managerCount = null;
+    this.projectCount = null;
+    this.serviceRequestCount = null;
+  }
+  next();
+});
+
 // Create the model based on the schema
-const Subscription= mongoose.model<ISubscription>(
+const Subscription = mongoose.model<ISubscription>(
   "Subscription",
   subscriptionPlanSchema
 );
 
-export default Subscription
+export default Subscription;

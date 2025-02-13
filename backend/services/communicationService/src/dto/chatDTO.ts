@@ -18,6 +18,7 @@ export interface IReceiverDTO {
      status: boolean | undefined;
      receiverProfilePicture: string | undefined
      lastSeen?: Date;
+     busineesOwnerId?:any
 
 }
 
@@ -40,6 +41,7 @@ export interface IGetAllGroupsDTO {
     groupAdmin: string;
     participants: string[];
     chatType: 'private' | 'group';
+    busineesOwnerId : string
 }
 
 
@@ -61,12 +63,21 @@ export interface IPrivateChatDTO {
     receiverPosition: string;
     status: boolean;
     receiverProfilePicture?: string;
-    lastMessage?: mongoose.Types.ObjectId ;
+    lastMessage?: string;
     createdAt?: Date;
     updatedAt?: Date;
     lastSeen?: Date;
+    businessOwnerId?:any;
+    lastMessageTime?:Date ;
 }
 
+
+export interface ILastMessage {
+    _id: mongoose.Types.ObjectId;
+    content?: string;
+    sender?: mongoose.Types.ObjectId;
+    createdAt?: Date;
+}
 
 export interface IParticipantDetails {
     _id: mongoose.Types.ObjectId;
@@ -82,11 +93,14 @@ export interface IParticipantDetails {
     role?: string;
     isActive?: boolean;
     lastSeen?: Date;
+    lastMessage?:ILastMessage
+    lastMessageTime?: Date;
+    businessOwnerId?:any
 }
 
 export interface IChatWithDetails extends IChat {
     participantDetails: IParticipantDetails;
-}
+    }
 
 export interface IMembersDTO{
     _id: string;
@@ -137,6 +151,7 @@ export interface IGroupDTO{
     groupAdmin: string;
     participants: IMembers[];
     chatType: string;
+    businessOwnerId?:string
 }
 
 export interface IParticipant {

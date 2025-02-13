@@ -2,6 +2,7 @@ import { injectable } from "inversify";
 import businessOwnerModel from "../../models/businessOwnerModel";
 import IBusinessOwnerRepository from "../interface/IBusinessOwnerRepository";
 import subscriptionModel from "../../models/subscriptionModel";
+import mongoose from "mongoose";
 
 @injectable()
 export default class BusinessOwnerRepository implements IBusinessOwnerRepository {
@@ -15,20 +16,32 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
     }
   }
 
-
-
   async updateIsBlocked(id: string): Promise<any> {
     try {
+      const _switchDb = mongoose.connection.useDb(id, { useCache: true });
+      const SwitchedBusinessOwnerModel = _switchDb.model('businessowners', businessOwnerModel.schema);
+  
+      // Find the business owner in the original database
       const businessOwner = await businessOwnerModel.findById(id);
       if (!businessOwner) throw new Error("Business owner not found");
-      
+  
+      // Find the business owner in the switched database
+      const switchedBusinessOwner = await SwitchedBusinessOwnerModel.findById(id);
+      if (!switchedBusinessOwner) throw new Error("Business owner not found in switched DB");
+  
+      // Toggle isBlocked status
       businessOwner.isBlocked = !businessOwner.isBlocked;
-      return await businessOwner.save();
+      switchedBusinessOwner.isBlocked = !switchedBusinessOwner.isBlocked;
+  
+      // Save both changes
+      await businessOwner.save();
+      return await switchedBusinessOwner.save();
     } catch (error) {
       console.error("Error updating business owner:", error);
       throw new Error("Could not update business owner.");
     }
   }
+  
 
   async getDashboardData(): Promise<any> {
     try {

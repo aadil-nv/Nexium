@@ -14,7 +14,8 @@ export default interface IChatController {
     getAllUnAddedUsers(req: CustomRequest, res: Response): Promise<Response>;
     updateGroup(req: CustomRequest, res: Response): Promise<Response>;
     deleteGroup(req: CustomRequest, res: Response): Promise<Response>;
-
+    getChatParticipants(req: CustomRequest, res: Response): Promise<Response>;
     setNewAccessToken(req: Request, res: Response): Promise<Response>;
     logout(req: Request, res: Response): Promise<Response>;
+    updateLastSeen(req: CustomRequest, res: Response): Promise<Response>;
 }

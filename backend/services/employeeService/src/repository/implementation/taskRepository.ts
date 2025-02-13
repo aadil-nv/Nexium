@@ -6,8 +6,10 @@ import ITaskRepository from "../../repository/interface/ITaskRepository";
 import IEmployee from "../../entities/employeeEntities";
 import employeeModel from "../../models/employeeModel"; // Importing the employee model
 import departmentModel from "../../models/departmentModel";
-import { MonthlyStatCount, TaskStatusCount, MonthlyTaskData, TaskStats,
+import { TaskStatusCount, MonthlyTaskData, TaskStats,
      TaskPriorities, DashboardResponse, MonthlyAggregationResult, StatusAggregationResult } from '../../dto/ITaskDTO';
+     import connectDB from "../../config/connectDB";
+import IDepartment from "../../entities/departmentEntities";
 
 
 
@@ -18,13 +20,14 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
         super(taskModel);
     }
 
-    async getTasks(employeeId: string): Promise<ITask[]> {
+    async getTasks(employeeId: string ,businessOwnerId:string): Promise<ITask[]> {
         try {
-            const tasks = await this.taskModel
+           const switchDB = await connectDB(businessOwnerId);
+            const tasks = await switchDB
+                .model<ITask>("Task", this.taskModel.schema)
                 .find({ employeeId })
                 .populate("employeeId")
                 .exec();
-
             if (!tasks || tasks.length === 0) throw new Error("No tasks found for the given employee");
 
             return tasks;
@@ -36,16 +39,17 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
 
 
 
-   async getAllTasks(teamLeadId: string): Promise<ITask[]> {
+   async getAllTasks(teamLeadId: string ,businessOwnerId:string): Promise<ITask[]> {
     try {
-        const teamLeadData = await employeeModel.findById(teamLeadId);
+      const switchDB = await connectDB(businessOwnerId);
+        const teamLeadData = await switchDB.model<IEmployee>("Employee", employeeModel.schema).findById(teamLeadId);
 
         if (!teamLeadData) {
             throw new Error("Team lead not found");
         }
         const departmentId = teamLeadData?.professionalDetails.department;
 
-        const departmentData = await departmentModel.findById(departmentId);
+        const departmentData = await switchDB.model<IDepartment>("Department", departmentModel.schema).findById(departmentId);
 
         if (!departmentData) {
             throw new Error("Department not found");
@@ -55,7 +59,7 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
             return employee.employeeId}
         );
 
-        const allTasks = await this.taskModel.find({
+        const allTasks = await switchDB.model<ITask>("Task", this.taskModel.schema).find({
             employeeId: { $in: employeesList }
         }).exec();
         
@@ -73,28 +77,24 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
     }
 
     
-    async getEmployeesToAddTask(teamLeadId: string): Promise<IEmployee[]> {
+    async getEmployeesToAddTask(teamLeadId: string,businessOwnerId:string): Promise<IEmployee[]> {
         try {
-          // Fetch the Team Lead data
-          const teamLeadData = await employeeModel.findById({ _id: teamLeadId });
+          const switchDB = await connectDB(businessOwnerId);
+          const teamLeadData = await switchDB.model<IEmployee>("Employee", employeeModel.schema).findById({ _id: teamLeadId });
           if (!teamLeadData) {
             throw new Error("Team Lead not found");
           }
       
-          // Fetch the department data using the Team Lead's department ID
-          const departmentData = await departmentModel.findById(teamLeadData.professionalDetails.department);
+          const departmentData = await switchDB.model<IDepartment>("Department", departmentModel.schema).findById(teamLeadData.professionalDetails.department);
           if (!departmentData) {
             throw new Error("Department not found");
           }
       
-          // Extract the employee IDs from the department's employees list
           const employeeIds = departmentData.employees.map((employee) => employee.employeeId);
-      
-          // Find employees whose position is not "Team Lead" and are in the department
-          const employeesToTask = await employeeModel
+          const employeesToTask = await switchDB.model<IEmployee>("Employee", employeeModel.schema)
             .find({
-              _id: { $in: employeeIds }, // Filter by employee IDs in the department
-              "professionalDetails.position": { $ne: "Team Lead" }, // Exclude "Team Lead"
+              _id: { $in: employeeIds }, 
+              "professionalDetails.position": { $ne: "Team Lead" }, 
             })
             .exec();
       
@@ -111,12 +111,10 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
       
 
     
-async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> {
-    console.log("TASK DATA FOR ASSIGN:", taskData);
-
+    async assignTaskToEmployee(taskData: ITask, teamLeadId: string,businessOwnerId:string): Promise<ITask> {
     try {
-        // Fetch team lead data
-        const teamLeadData = await employeeModel.findById({ _id: teamLeadId });
+        const switchDB = await connectDB(businessOwnerId);
+        const teamLeadData = await switchDB.model<IEmployee>("Employee", employeeModel.schema).findById({ _id: teamLeadId });
 
         if (!teamLeadData) {
             throw new Error("Team Lead not found with the provided ID");
@@ -126,22 +124,19 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
             throw new Error("Employee ID is required in task data");
         }
 
-        // Fetch employee details using the employeeId from taskData
-        const employee = await employeeModel.findById(taskData.employeeId);
+        const employee = await switchDB.model<IEmployee>("Employee", employeeModel.schema).findById(taskData.employeeId);
         if (!employee) {
             throw new Error(`Employee not found with ID: ${taskData.employeeId}`);
         }
 
-        // Include employeeName, profilePicture, assignedBy, and assignedDate in taskData
         const enrichedTaskData = {
             ...taskData,
             employeeName: employee.personalDetails.employeeName,
             employeeProfilePicture: employee.personalDetails.profilePicture,
-            assignedBy: teamLeadData.personalDetails.employeeName, // Assigning team lead's name
-            assignedDate: new Date(), // Setting today's date
+            assignedBy: teamLeadData.personalDetails.employeeName,
+            assignedDate: new Date(), 
         };
 
-        // Create and save the task
         const task = new this.taskModel(enrichedTaskData);
         const result = await task.save();
 
@@ -154,13 +149,13 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
         console.error("Error assigning task to employee:", error);
         throw new Error(error.message || "Error assigning task to employee");
     }
-}
+    }
 
-        async updateTask(taskId: string, taskData: ITask): Promise<ITask> {
+    async updateTask(taskId: string, taskData: ITask,businessOwnerId:string): Promise<ITask> {
     
-      
         try {
-            const employee = await employeeModel.findById(taskData.employeeId);
+            const switchDB = await connectDB(businessOwnerId);
+            const employee = await switchDB.model<IEmployee>("Employee", employeeModel.schema).findById(taskData.employeeId);
             if (!employee) {
                 throw new Error(`Employee not found with ID: ${taskData.employeeId}`);
             }
@@ -172,7 +167,7 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
                 employeeProfilePicture: employee.personalDetails.profilePicture,
             };
         
-            const result = await this.taskModel.findByIdAndUpdate({ _id:taskId}, updatedTaskData, { new: true }).exec();
+            const result = await switchDB.model<ITask>("Task", this.taskModel.schema).findByIdAndUpdate({ _id:taskId}, updatedTaskData, { new: true }).exec();
             if (!result) {
                 throw new Error(`Task with ID ${taskId} not found or update failed`);
             }
@@ -187,26 +182,28 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
             });
             throw new Error(error.message); // Pass original error message for debugging
         }
-      }
+    }
 
-      async deleteTask(taskId: string): Promise<ITask> {
+    async deleteTask(taskId: string ,businessOwnerId:string): Promise<ITask> {
         try {
-          const result = await this.taskModel.findByIdAndDelete(taskId);
+          const switchDB = await connectDB(businessOwnerId);
+          const result = await switchDB.model<ITask>("Task", this.taskModel.schema).findByIdAndDelete(taskId);
           if (!result) {
             throw new Error(`Task with ID ${taskId} not found or deletion failed`);
           }
-          return result; // Return the deleted task document
+          return result; 
         } catch (error: any) {
           console.error("Error deleting task:", error.message);
           throw new Error(error.message);
         }
-      }
+    }
 
-      async getTasksByEmployeeId(employeeId: string, taskId: string): Promise<ITask | null> {
+    async getTasksByEmployeeId(employeeId: string, taskId: string ,businessOwnerId:string): Promise<ITask | null> {
         try {
-            const task = await this.taskModel.findOne({
+          const switchDB = await connectDB(businessOwnerId);
+            const task = await switchDB.model<ITask>("Task", this.taskModel.schema).findOne({
                 employeeId: employeeId,
-                _id: taskId, // Using _id to match the taskId
+                _id: taskId, 
             }).exec();
     
     
@@ -218,12 +215,13 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
     }
     
 
-    async updateTaskCompletion( data: {taskId: string, isCompleted: boolean }, employeeId: string): Promise<ITask> {
+    async updateTaskCompletion( data: {taskId: string, isCompleted: boolean }, employeeId: string ,businessOwnerId:string): Promise<ITask> {
         try {
+           const switchDB = await connectDB(businessOwnerId);
             const result = await this.taskModel.findOneAndUpdate(
-                { "employeeId": employeeId, "tasks._id": data.taskId }, // Match both employeeId and taskId
-                { $set: { "tasks.$.isCompleted": data.isCompleted } }, // Update isCompleted in the specific task
-                { new: true } // Return the updated document
+                { "employeeId": employeeId, "tasks._id": data.taskId },
+                { $set: { "tasks.$.isCompleted": data.isCompleted } }, 
+                { new: true } 
             ).exec();
     
             if (!result) {
@@ -237,25 +235,18 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
         }
     }
 
-    async updateTaskApproval(data: any, taskId: string): Promise<ITask | null> {
-        console.log(`taskId from the body: ${taskId}`);
-        console.log(`Data received: ${JSON.stringify(data)}`);
-        
+    async updateTaskApproval(data: any, taskId: string ,businessOwnerId:string): Promise<ITask | null> {
         try {
-            // Find the task by taskId and update the 'isApproved' field
-            const result = await this.taskModel.findOneAndUpdate(
-                { _id: taskId }, // Match by taskId
-                { $set: { isApproved: data.isApproved } }, // Update isApproved field
-                { new: true } // Return the updated document
+            const switchDB = await connectDB(businessOwnerId);
+            const result = await switchDB.model<ITask>("Task", this.taskModel.schema).findOneAndUpdate(
+                { _id: taskId }, 
+                { $set: { isApproved: data.isApproved } }, 
+                { new: true }
             ).exec();
     
             if (!result) {
                 throw new Error(`Task with ID ${taskId} not found or update failed`);
             }
-    
-            console.log(`Updated task: ${JSON.stringify(result)}`);
-    
-            // Return the updated task object
             return result;
         } catch (error) {
             console.error("Error updating task approval:", error);
@@ -264,10 +255,10 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
     }
     
     
-    async getTaskListOfEmployee(employeeId: string): Promise<ITask[]> {
+    async getTaskListOfEmployee(employeeId: string ,businessOwnerId:string): Promise<ITask[]> {
         try {
-          const tasks = await this.taskModel.find({ employeeId: employeeId }).exec();
-          
+          const switchDB = await connectDB(businessOwnerId);
+          const tasks = await switchDB.model<ITask>("Task", this.taskModel.schema).find({ employeeId: employeeId }).exec();
           return tasks;
         } catch (error) {
           console.error("Error fetching tasks by employee:", error);
@@ -275,21 +266,20 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
         }
     }
     
-    async updateCompletedTask(data: any, taskId: string): Promise<ITask> {
+    async updateCompletedTask(data: any, taskId: string ,businessOwnerId:string): Promise<ITask> {
         try {
-            
-            const subTaskId = data.taskId;  // Get the sub-taskId
-    
-            const result = await this.taskModel.findOneAndUpdate(
-                { _id: taskId, "tasks._id": subTaskId }, // Match employeeId and sub-taskId
+            const subTaskId = data.taskId;  
+            const switchDB = await connectDB(businessOwnerId);
+            const result = await switchDB.model<ITask>("Task", this.taskModel.schema).findOneAndUpdate(
+                { _id: taskId, "tasks._id": subTaskId },
                 { 
                     $set: {
-                        "tasks.$.taskStatus": data.taskStatus,  // Update taskStatus
-                        "tasks.$.isCompleted": data.isCompleted,  // Update isCompleted
-                        "tasks.$.response": data.response        // Update response
+                        "tasks.$.taskStatus": data.taskStatus, 
+                        "tasks.$.isCompleted": data.isCompleted,  
+                        "tasks.$.response": data.response    
                     }
                 }, 
-                { new: true } // Return the updated document
+                { new: true } 
             ).exec();
     
             if (!result) {
@@ -303,18 +293,13 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
         }
     }
     
-    async getPreviousMonthCompletedTasks(employeeId: string): Promise<number> {
+    async getPreviousMonthCompletedTasks(employeeId: string ,businessOwnerId:string): Promise<number> {
         try {
             const now = new Date();
             const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
             const endOfPreviousMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-
-            console.log("Start of previous month:", startOfPreviousMonth);
-            console.log("End of previous month:", endOfPreviousMonth);
-            
-            
-    
-            const taskCount = await this.taskModel.countDocuments({
+            const switchDB = await connectDB(businessOwnerId);
+            const taskCount = await switchDB.model<ITask>("Task", this.taskModel.schema).countDocuments({
                 employeeId: employeeId,
                 isApproved: true,
                 dueDate: { $gte: startOfPreviousMonth, $lte: endOfPreviousMonth }
@@ -327,24 +312,23 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
         }
     }
 
-    async reassignTask(taskId: string, taskData: any): Promise<ITask> {
+    async reassignTask(taskId: string, taskData: any,businessOwnerId:string): Promise<ITask> {
         try {
-            // Fetch employee details
-            const employee = await employeeModel.findById(taskData.employeeId);
+          const switchDB = await connectDB(businessOwnerId);
+            const employee = await switchDB.model<IEmployee>("Employee", employeeModel.schema).findById(taskData.employeeId);
             if (!employee) {
                 throw new Error(`Employee not found with ID: ${taskData.employeeId}`);
             }
     
-            // Update the task with new employeeId and employeeName
             const result = await this.taskModel.findOneAndUpdate(
-                { _id: taskId }, // Match by taskId
+                { _id: taskId }, 
                 { 
                     $set: { 
                         employeeId: taskData.employeeId, 
-                        employeeName: employee.personalDetails.employeeName || ""  // Update employeeName
+                        employeeName: employee.personalDetails.employeeName || "" 
                     } 
-                }, // Update fields in the task
-                { new: true } // Return the updated document
+                },
+                { new: true }
             ).exec();
     
             if (!result) {
@@ -353,7 +337,6 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
     
             console.log(`Updated task: ${JSON.stringify(result)}`);
     
-            // Return the updated task object
             return result;
         } catch (error) {
             console.error("Error updating task approval:", error);
@@ -361,8 +344,9 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
         }
     }
 
-    async getTaskDashboardData(employeeId: string): Promise<DashboardResponse> {
+    async getTaskDashboardData(employeeId: string ,businessOwnerId:string): Promise<DashboardResponse> {
         try {
+          const switchDB = await connectDB(businessOwnerId);
           const employeeObjectId = new mongoose.Types.ObjectId(employeeId);
           
           const currentDate = new Date();
@@ -370,7 +354,7 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
           twelveMonthsAgo.setMonth(currentDate.getMonth() - 12);
       
           // Get monthly stats with completed tasks
-          const monthlyStats = await this.taskModel.aggregate<MonthlyAggregationResult>([
+          const monthlyStats = await switchDB.model<ITask>("Task", this.taskModel.schema).aggregate<MonthlyAggregationResult>([
             {
               $match: {
                 employeeId: employeeObjectId,
@@ -420,7 +404,7 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
           ]);
       
           // Get current status counts
-          const currentStats = await this.taskModel.aggregate<StatusAggregationResult>([
+          const currentStats = await switchDB.model<ITask>("Task", this.taskModel.schema).aggregate<StatusAggregationResult>([
             {
               $match: {
                 employeeId: employeeObjectId
@@ -443,7 +427,7 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
           ]);
       
           // Get priority stats
-          const priorityStats = await this.taskModel.aggregate<TaskStatusCount>([
+          const priorityStats = await switchDB.model<ITask>("Task", this.taskModel.schema).aggregate<TaskStatusCount>([
             {
               $match: {
                 employeeId: employeeObjectId
@@ -494,7 +478,7 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
             low: priorityStats.find(p => p._id === "low")?.count || 0
           };
       
-          const employeeDetails = await this.taskModel.findOne({ employeeId })
+          const employeeDetails = await switchDB.model<IEmployee>("Employee", employeeModel.schema).findOne({ employeeId })
             .select('employeeName profilePicture')
             .lean();
       
@@ -503,8 +487,8 @@ async assignTaskToEmployee(taskData: ITask, teamLeadId: string): Promise<ITask> 
       
           return {
             employee: {
-              name: employeeDetails?.employeeName,
-              profilePicture: employeeDetails?.employeeProfilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeDetails?.employeeProfilePicture}` : employeeDetails?.employeeProfilePicture
+              name: employeeDetails?.personalDetails?.employeeName,
+              profilePicture: employeeDetails?.personalDetails?.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeDetails?.personalDetails?.profilePicture}` : employeeDetails?.personalDetails?.profilePicture
             },
             monthlyTaskData: monthlyData,
             currentTaskStats,

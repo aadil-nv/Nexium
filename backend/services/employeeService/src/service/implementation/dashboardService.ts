@@ -30,33 +30,29 @@ export default class DashboardService implements IDashboardService {
     private readonly taskRepository: ITaskRepository
   ) {}
 
-  async getAllDashboardData(employeeId: string): Promise<any> {
+  async getAllDashboardData(employeeId: string ,businessOwnerId: string): Promise<any> {
   
     try {
-      // Fetch employee data to check if the employee is a Team Lead
-      const employeeData = await this._employeeRepository.getProfile(employeeId);
-      console.log(employeeData);
+      const employeeData = await this._employeeRepository.getProfile(employeeId ,businessOwnerId);
       
       const isTeamLead = employeeData.professionalDetails.position === 'Team Lead'; // Assuming the position check
   
       let dashboardData;
   
-      // Fetch project or task dashboard data based on position
       if (isTeamLead) {
-        dashboardData = await this._projectService.getProjectDashboardData(employeeId);
+        dashboardData = await this._projectService.getProjectDashboardData(employeeId ,businessOwnerId);
       } else {
-        dashboardData = await this.taskRepository.getTaskDashboardData(employeeId); // Assuming there is a task repository
+        dashboardData = await this.taskRepository.getTaskDashboardData(employeeId ,businessOwnerId); // Assuming there is a task repository
       }
   
-      const attendanceData = await this._attendanceRepository.getAttendanceDashboardData(employeeId);
+      const attendanceData = await this._attendanceRepository.getAttendanceDashboardData(employeeId,businessOwnerId);
   
-      const payrollData = await this._payrollRepository.getPayrollDashboardData(employeeId);
+      const payrollData = await this._payrollRepository.getPayrollDashboardData(employeeId ,businessOwnerId);
     
       return {
-        // ...employeeDashboardData,
         ...payrollData,
         ...attendanceData,
-        dashboardData,  // Include the project or task dashboard data
+        dashboardData, 
       };
     } catch (error) {
       console.error("Error fetching dashboard data:", error);

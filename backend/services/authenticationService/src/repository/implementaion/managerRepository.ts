@@ -5,6 +5,7 @@ import {IManager} from "../../entities/managerEntities";
 import BaseRepository from "./baseRepository";
 import OtpModel, { IOtpDocument } from "../../model/otpModel";
 import { IUpdateOtpResult } from "../interfaces/IManagerRepository";
+import mongoose, { ObjectId } from "mongoose";
 
 @injectable()
 export default class ManagerRepository extends BaseRepository<IManager> implements IManagerRepository {
@@ -52,8 +53,11 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         }
     }
 
-    async updateVerificationStatus(email: string): Promise<any> {
+    async updateVerificationStatus(email: string ,businessOwnerId : ObjectId): Promise<any> {
         try {
+          const _switchDb = mongoose.connection.useDb(businessOwnerId.toString(), { useCache: true });
+          const manager = _switchDb.model('Manager', managerModel.schema)
+          await manager.updateOne({"personalDetails.email": email }, { isVerified: true }).exec();
             return await this._managerModel.updateOne({"personalDetails.email": email }, { isVerified: true }).exec();
         } catch (error) {
             console.error("Error updating verification status:", error);
@@ -90,43 +94,25 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
 
       async blockManager(managerData: any): Promise<any> {
         try {
-          console.log("ManagerData received:", managerData);
-      
-          // Validate that managerData contains an email and isBlocked property
           if (!managerData.managerId || managerData.isBlocked === undefined) {
             throw new Error("Invalid input: email or isBlocked status is missing.");
-          }
-      console.log("11111111111111111111111111111111");
-    
+          }    
       
-          // Find the manager by email
+
           const existingManager = await this._managerModel.findOne({ _id: managerData.managerId });
-          console.log("22222222222222222222222222");
      
           if (!existingManager) {
             console.error("Manager not found:", managerData.managerId);
             throw new Error("Manager not found.");
           }
-          console.log("333333333333333333333333333333333333333");
-      
-      
-          // Log current and desired isBlocked status
-          console.log("Current isBlocked status:", existingManager.isBlocked);
-          console.log("Requested isBlocked status:", managerData.isBlocked);
-      
-          // Update the isBlocked status in the database
+  
           const updateResult = await this._managerModel.updateOne(
             { _id: managerData.managerId },
             { $set: { isBlocked: managerData.isBlocked } }
           );
-          console.log("4444444444444444444444444444444");
        
       
-          // Log the update result
-          console.log("Update result:", updateResult);
-      
           return updateResult;
-          console.log("555555555555555555555555555555");
      
         } catch (error) {
           // Log error for debugging

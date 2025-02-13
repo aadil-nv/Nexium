@@ -12,11 +12,12 @@ export default class DepartmentService implements IDepartmentService {
     @inject("IEmployeeRepository")
     private _employeeRepository:IEmployeeRepository
 ) {}
-async getDepartment(employeeId: string): Promise<DepartmentWithEmployeesDTO> {
+async getDepartment(employeeId: string , businessOwnerId: string): Promise<DepartmentWithEmployeesDTO> {
   try {
     // Fetch employee data
-    const employeeData = await this._employeeRepository.getProfile(employeeId);
-
+    const employeeData = await this._employeeRepository.getProfile(employeeId , businessOwnerId);
+    console.log("Employee data from service:", employeeData);
+    
     if (!employeeData) {
       throw new Error("Employee not found");
     }
@@ -27,35 +28,41 @@ async getDepartment(employeeId: string): Promise<DepartmentWithEmployeesDTO> {
       throw new Error("Department ID not found");
     }
 
-    // Fetch department details using department ID
-    const result: IDepartment | null = await this._departmentRepository.getDepartment(departmentId);
+    // Fetch department details with populated employeeId
+    const result: IDepartment | null = await this._departmentRepository.getDepartment(departmentId , businessOwnerId);
 
-    console.log("Result from service department:", result);
+    // console.log("Result from service department:", result);
+    // const empData :result.map((item:any) => item.employees.map((emp : any) => emp.employeeId));
 
     if (!result) {
       throw new Error("Department not found");
     }
 
-    // Map department data to DTO
     return {
-      departmentId: result._id, // Ensure it's returned as a string
+      departmentId: result._id, // Convert ObjectId to string
       departmentName: result.departmentName,
-      employees: result.employees.map((employee) => ({
-        employeeId: employee.employeeId.toString(), // Map _id to employeeId
-        name: employee.name,
-        email: employee.email,
-        position: employee.position,
-        profilePicture: employee.profilePicture
-          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.profilePicture}`
-          : undefined, // Return undefined if profilePicture is null
-        isActive: employee.isActive,
-      })),
+      employees: result.employees.map((employee) => {
+        console.log("Employee from service:", employee);
+        
+        const emp = employee.employeeId as any; // Ensure it's fully populated
+        return {
+          employeeId: emp._id.toString(), // Get the actual employeeId
+          name: emp.personalDetails?.employeeName || "Unknown", // Access personalDetails safely
+          email: emp.employeeCredentials?.companyEmail || "Unknown", // Access employeeCredentials safely
+          position: emp.professionalDetails?.position || "Unknown", // Access professionalDetails safely
+          profilePicture: emp.personalDetails?.profilePicture
+            ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${emp.personalDetails?.profilePicture}`
+            : undefined, // Return undefined if profilePicture is null
+          isActive:emp?.isActive,
+        };
+      }),
     };
   } catch (error) {
     console.error("Error in getDepartment service:", error);
     throw error;
   }
 }
+
 
 
       

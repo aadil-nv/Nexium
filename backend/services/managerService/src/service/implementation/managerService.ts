@@ -2,14 +2,11 @@ import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
 import IManagerRepository from "../../repository/interface/IManagerRepository";
 import IManagerService from "../interface/IManagerService";
 import { inject, injectable } from "inversify";
-
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { uploadTosS3 } from "../../middlewares/multer-s3";
 import IManagerProfileDTO from "../../dto/IManagerDTO";
 import IEmployee from "../../entities/employeeEntities";
-import { ID } from "aws-sdk/clients/s3";
 import { IDocumentDTO } from "../../dto/IEmployeesDTO";
-import RabbitMQMessager from "../../events/implementation/producer";
 
 @injectable()
 export default class ManagerService implements IManagerService {
@@ -19,9 +16,9 @@ export default class ManagerService implements IManagerService {
 
 
 
-  async getManagers(): Promise<any> {
+  async getManagers(businessOwnerId: string): Promise<any> {
     try {
-     const managers = await this._managerRepository.findAll();
+     const managers = await this._managerRepository.findAllManagers(businessOwnerId);
 
      
      if (!managers) {
@@ -34,7 +31,7 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async getManagerPersonalInfo(managerId: string): Promise<IManagerProfileDTO> {
+  async getManagerPersonalInfo(managerId: string ,businessOwnerId: string): Promise<IManagerProfileDTO> {
 
     try {
    
@@ -42,10 +39,7 @@ export default class ManagerService implements IManagerService {
         throw new Error("Manager ID not found");
        
       }
-    
-      const managerProfile = await this._managerRepository.findOne({managerId});
-  
-          
+      const managerProfile = await this._managerRepository.findManager(managerId, businessOwnerId);   
       return {
 
         managerName: managerProfile?.personalDetails?.managerName,
@@ -61,7 +55,7 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async getManagerProfessionalInfo(managerId: string): Promise<any> {
+  async getManagerProfessionalInfo(managerId: string ,businessOwnerId: string): Promise<any> {
   
     try {
       if (!managerId) {
@@ -69,7 +63,7 @@ export default class ManagerService implements IManagerService {
        
       }
   
-      const managerProfile = await this._managerRepository.findOne({ managerId });
+      const managerProfile = await this._managerRepository.findManager(managerId , businessOwnerId);
 
       if (!managerProfile?.professionalDetails) {
         throw new Error("Professional details not found for this manager");
@@ -83,22 +77,18 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async getManagerAddress(managerId: string): Promise<any> {
+  async getManagerAddress(managerId: string ,businessOwnerId: string): Promise<any> {
 
     try {
       if (!managerId) {
         throw new Error("Manager ID not found");
-       
       }
-  
-      const managerProfile = await this._managerRepository.findOne({ managerId });
+      const managerProfile = await this._managerRepository.findManager(managerId ,businessOwnerId);
 
       if (!managerProfile?.address) {
         throw new Error("Professional details not found for this manager");
       }
 
-      
-  
       return managerProfile.address;
   
     } catch (error: any) {
@@ -107,14 +97,14 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async getManagerCredentials(managerId: string): Promise<any> {
+  async getManagerCredentials(managerId: string ,businessOwnerId: string): Promise<any> {
     try {
       if (!managerId) {
         throw new Error("Manager ID not found");
        
       }
   
-      const managerProfile = await this._managerRepository.findOne({ managerId });
+      const managerProfile = await this._managerRepository.findManager( managerId ,businessOwnerId);
 
   
       // Return only professionalDetails
@@ -122,8 +112,6 @@ export default class ManagerService implements IManagerService {
         throw new Error("Professional details not found for this manager");
       }
  
-      
-  
       return managerProfile.managerCredentials;
   
     } catch (error: any) {
@@ -132,14 +120,14 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async getManagerDocuments(managerId: string): Promise<any> {
+  async getManagerDocuments(managerId: string ,businessOwnerId: string): Promise<any> {
     try {
       if (!managerId) {
         throw new Error("Manager ID not found");
        
       }
   
-      const managerProfile = await this._managerRepository.findOne({ managerId });
+      const managerProfile = await this._managerRepository.findManager(managerId , businessOwnerId);
   
       // Return only professionalDetails
       if (!managerProfile?.documents) {
@@ -154,15 +142,14 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async updateManagerPersonalInfo(managerId: string, personalData: any): Promise<any> {
-    console.log("Hitting manager update personal info==========service layer========");
+  async updateManagerPersonalInfo(managerId: string, personalData: any,businessOwnerId: string): Promise<any> {
   
     try {
       if (!managerId) {
         throw new Error("Manager ID not provided");
       }
   
-      const managerProfile = await this._managerRepository.updateManagerPersonalInfo(managerId, personalData);
+      const managerProfile = await this._managerRepository.updateManagerPersonalInfo(managerId, personalData ,businessOwnerId);
   
       if (!managerProfile?.personalDetails) {
         throw new Error("Personal details not found for this manager");
@@ -196,15 +183,15 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  private async getDetails(managerId: string) {
+  private async getDetails(managerId: string , businessOwnerId: string) {
     if (!managerId) throw new Error("Business owner ID not found");
-    const result = await this._managerRepository.getDetails(managerId);
+    const result = await this._managerRepository.getDetails(managerId , businessOwnerId);
     if (!result) throw new Error("Business owner not found");
     return result;
   }
 
-  private async uploadFileToS3(managerId: string, file: Express.Multer.File, fileType: "profileImage" | "companyLogo" | "resume"): Promise<string> {
-    const result = await this.getDetails(managerId);
+  private async uploadFileToS3(managerId: string, file: Express.Multer.File, fileType: "profileImage" | "companyLogo" | "resume", businessOwnerId: string): Promise<string> {
+    const result = await this.getDetails(managerId ,businessOwnerId);
     const existingFile = fileType === "profileImage" ? result.personalDetails.profileImage : result.companyDetails.companyLogo;
 
     if (existingFile) {
@@ -213,37 +200,26 @@ export default class ManagerService implements IManagerService {
     }
 
     const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
-    console.log("==============fileUrl======================", fileUrl);
-    
     return fileUrl
   }
 
-  async updateManagerProfilePicture(managerId: string, file: Express.Multer.File): Promise<any> {
+  async updateManagerProfilePicture(managerId: string, file: Express.Multer.File , businessOwnerId: string): Promise<any> {
     try {
-      // const rabbitMQMessager = new RabbitMQMessager();
-      // await rabbitMQMessager.init();
-      const imageUrl = await this.uploadFileToS3(managerId, file, "profileImage");
-
-      console.log("==============imageUrl======================", imageUrl);
-      
-      const updatedManagerData = await this._managerRepository.uploadProfilePicture(managerId, imageUrl);
-      console.log(`updatedManagerData: ${JSON.stringify(updatedManagerData)}`.bgWhite.bold);
-      
-      // await rabbitMQMessager.sendToMultipleQueues({ updatedManagerData });
-
+      const imageUrl = await this.uploadFileToS3(managerId, file, "profileImage" ,businessOwnerId);
+      const updatedManagerData = await this._managerRepository.uploadProfilePicture(managerId, imageUrl ,businessOwnerId);
       return { success: true, message: 'Image uploaded successfully!', data: { imageUrl:`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${imageUrl}` } };
     } catch (error:any) {
       throw new Error(error.message || 'Error while uploading image');
     }
   }
   
-  async getLeaveEmployees(managerId: string): Promise<IEmployee> {
+  async getLeaveEmployees(managerId: string ,businessOwnerId: string): Promise<IEmployee> {
     try {
       if (!managerId) {
         throw new Error("Business owner ID not found");
       }
   
-      const result = await this._managerRepository.getLeaveEmployees(managerId);
+      const result = await this._managerRepository.getLeaveEmployees(managerId , businessOwnerId);
       return result;
     } catch (error :any) {
       console.error("Error in getLeaveEmployees:", error.message);
@@ -251,13 +227,13 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async updateManagerAddress(managerId: string, data: any): Promise<any> {
+  async updateManagerAddress(managerId: string, data: any ,businessOwnerId: string): Promise<any> {
     try {
       if (!managerId) {
         throw new Error("Business owner ID not found");
       }
   
-      const result = await this._managerRepository.updateManagerAddress(managerId, data);
+      const result = await this._managerRepository.updateManagerAddress(managerId, data ,businessOwnerId);
         console.log("result", result);
         
       return result;
@@ -267,11 +243,11 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async uploadDocuments(managerId: string, file: Express.Multer.File, fileType: "resume"): Promise<IDocumentDTO> {
+  async uploadDocuments(managerId: string, file: Express.Multer.File, fileType: "resume" ,businessOwnerId: string): Promise<IDocumentDTO> {
 
     try {
       // Upload file to S3
-      const fileKey = await this.uploadFileToS3(managerId, file, "resume");
+      const fileKey = await this.uploadFileToS3(managerId, file, "resume" ,businessOwnerId);
 
       
       const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
@@ -285,11 +261,8 @@ export default class ManagerService implements IManagerService {
         uploadedAt: new Date(),
       };
   
-      const updatedManager = await this._managerRepository.uploadDocuments(managerId,fileType,documentData);
+      const updatedManager = await this._managerRepository.uploadDocuments(managerId,fileType,documentData ,businessOwnerId);
 
-
-      
-  
       return {
         documentName: fileType,
         documentUrl: fileUrl,
@@ -302,15 +275,14 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async updateManagerIsActive(managerId: string, isActive: boolean): Promise<any> {
-    console.log("Updating manager isActive in service layer:", managerId, isActive);
+  async updateManagerIsActive(managerId: string, isActive: boolean ,businessOwnerId: string): Promise<any> {
     
     try {
       if (!managerId) {
         throw new Error("Business owner ID not found");
       }
   
-      const result = await this._managerRepository.updateManagerIsActive(managerId, isActive);
+      const result = await this._managerRepository.updateManagerIsActive(managerId, isActive ,businessOwnerId);
       return result;
     } catch (error :any) {
       console.error("Error in updateManagerIsActive:", error.message);

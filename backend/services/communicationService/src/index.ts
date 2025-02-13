@@ -4,52 +4,23 @@ import dotenv from 'dotenv';
 dotenv.config();
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import chatRoutes from './routes/chatRoute';
-import "colors";
-import morgan from 'morgan'; 
-import { createStream } from 'rotating-file-stream';
-import path from 'path';
-import fs from 'fs';
 import { Server } from 'socket.io';
 import { initializeChatSocket } from './config/chatSocket';
+import chatRoutes from './routes/chatRoute';
 import messageRoutes from './routes/messageRoute';
 import notificationRoutes from './routes/notificationRoute';
 import meetingRoutes from './routes/meetingRoute';
+import 'colors';
+import logger from './utils/logger'; // Import logger
 
 const app = express();
-const PORT = process.env.PORT 
+const PORT = process.env.PORT;
 
-const server = app.listen(PORT, () => {
-  console.log(`communication-service is running on http://localhost:${PORT} v3333333333`.bgBlue.bold);
-});
-
-const io = new Server(server, {
-  cors: {
-    origin: process.env.CLIENT_ORIGIN,
-    methods: ['GET', 'POST' , 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    credentials: true,
-  },
-});
-
-const chatNamespace = io.of('/socket');
-
-initializeChatSocket(chatNamespace);
-
-const logDirectory = path.resolve(__dirname, './logs');
-if (!fs.existsSync(logDirectory)) {
-  fs.mkdirSync(logDirectory);
-}
-
-// Set up log file rotation
-const accessLogStream = createStream('access.log', {
-  interval: process.env.LOG_INTERVAL || '1d',
-  path: logDirectory,
-});
-
-app.use(morgan('combined', { stream: accessLogStream }));
+// Middleware setup
+app.use(logger);
 app.use(cors({
   origin: process.env.CLIENT_ORIGIN,
-  methods: ['GET', 'POST' , 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   credentials: true,
 }));
 app.use(express.json());
@@ -60,8 +31,26 @@ app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
-// Use chat routes
+// API routes
 app.use('/api/chat', chatRoutes);
 app.use('/api/message', messageRoutes);
-app. use('/api/notification', notificationRoutes);
-app. use('/api/meeting', meetingRoutes);
+app.use('/api/notification', notificationRoutes);
+app.use('/api/meeting', meetingRoutes);
+
+// Start HTTP server
+const server = app.listen(PORT, () => {
+  console.log(`communication-service is running on http://localhost:${PORT}`.bgBlue.bold);
+});
+
+// Set up WebSocket server
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_ORIGIN,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  },
+});
+
+// Create a specific namespace for chat
+const chatNamespace = io.of('/socket');
+initializeChatSocket(chatNamespace);

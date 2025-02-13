@@ -11,8 +11,6 @@ import multer from 'multer';
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-console.log("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
-
 export const uploadMiddleware = upload.single('file'); // Use 'file' as the field name
 
 const bucketName = process.env.AWS_BUCKET_NAME;
@@ -35,10 +33,6 @@ const s3Client = new S3Client({
 const randomFileName = (bytes = 32) => crypto.randomBytes(bytes).toString("hex");
 
 export const uploadTosS3 = async (fileBuffer: Buffer, mimeType: string): Promise<string> => {
-    console.log("11111111111111111111111111111111111111111");
-
-    
-    
     try {
         const fileName = randomFileName();
 
@@ -49,14 +43,11 @@ export const uploadTosS3 = async (fileBuffer: Buffer, mimeType: string): Promise
             Body: fileBuffer,
             contentType: newMimeType,
         };
-        console.log("222222222222222222222222222222222222222222");
       
-
         const command = new PutObjectCommand(uploadParams);
         await s3Client.send(command);
         return fileName;
     } catch (error) {
-        console.log("3333333333333333333333333333333333333333333");
         console.log("error while uploading image to s3: ", error);
         return "error";
     }

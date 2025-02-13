@@ -13,6 +13,7 @@ export interface IChat extends Document {
   createdAt?: Date; // Optional, as it is auto-assigned
   updatedAt?: Date; // Optional, as it is auto-assigned
   lastSeen?: Date
+  lastMessageTime?: Date
 }
 
 

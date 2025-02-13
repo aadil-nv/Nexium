@@ -21,7 +21,7 @@ const employeeLeaveSchema = new Schema<IEmployeeLeave>(
   }
 );
 
-const EmployeeLeave = mongoose.model<IEmployeeLeave>('EmployeeLeave', employeeLeaveSchema);
+const   EmployeeLeave = mongoose.model<IEmployeeLeave>('EmployeeLeave', employeeLeaveSchema);
 
 export default EmployeeLeave;
 export { IEmployeeLeave };

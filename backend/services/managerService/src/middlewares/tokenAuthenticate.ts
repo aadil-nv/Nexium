@@ -1,70 +1,52 @@
-import managerModel from "../models/managerModel"; // Add this import
-import jwt, { JwtPayload, VerifyErrors } from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import connectDB from "../config/connectDB"; // Import connectDB function
-import ManagerRepository from "../repository/implementation/managerRepository"; // Import the ManagerRepository
+import managerModel from "../models/managerModel";
+import ManagerRepository from "../repository/implementation/managerRepository";
 
-// Extend the Request interface to include the user property
 export interface CustomRequest extends Request {
-  user?: JwtPayload & {
-    managerData?: {
-      _id: string;
-      businessOwnerId: string;
-    };
-  };
+  user?: JwtPayload & { managerData?: { _id: string; businessOwnerId: string } };
 }
 
 const authenticateToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
+  
   try {
     const token = req.cookies.accessToken;
-
+    
     if (!token) {
-      return res.status(401).json({ message: "Access denied from middleware. No token provided" });
+
+      console.log("NOt given token");
+      return res.status(401).json({ message: "No token provided" });
     }
+  
 
-    const secret = process.env.ACCESS_TOKEN_SECRET; 
-    if (!secret) {
-      console.error("Access token secret is not defined");
-      return res.status(500).json({ message: "Internal server error" }); 
-    }
+    const secret = process.env.ACCESS_TOKEN_SECRET;
+  
+    if (!secret) return res.status(500).json({ message: "Internal server error" });
+  ;
 
-
-    jwt.verify(token, secret, async (err: VerifyErrors | null, decoded: JwtPayload | string | undefined) => {
-      if (err) {
-        console.error("Token verification failed:", err);
-        return res.status(401).json({ message: "Invalid token" });
-      }
-
-      req.user = decoded as JwtPayload; 
-
-
-      const managerData = req.user?.managerData;
-      if (!managerData || !managerData.businessOwnerId) {
-        return res.status(401).json({ message: "Business owner ID not found in manager data" });
-      }
-
-      const { _id: managerId, businessOwnerId } = managerData;
-
-
-      await connectDB(businessOwnerId); 
-
-      const managerRepo = new ManagerRepository(managerModel); 
-
-      const isBlocked = await managerRepo.findIsBlocked(managerId); 
+    const decoded = jwt.verify(token, secret) as JwtPayload;
+   
+    if (!decoded || !decoded.managerData?._id || !decoded.managerData.businessOwnerId) {
       
-      if (isBlocked === null) {
-        return res.status(404).json({ message: "Manager not found" });
-      }
+      return res.status(401).json({ message: "Invalid token data" });
+    }
+    req.user = decoded;
 
-      if (isBlocked) {
-        return res.status(403).json({ message: "Manager is blocked" });
-      }
+    const { _id, businessOwnerId } = decoded.managerData;
+    const repository = new ManagerRepository(managerModel);
 
-      next();
-    });
+    const [isBusinessOwnerBlocked, isBlocked] = await Promise.all([
+      repository.findBusinessOwnerIsBlocked(_id, businessOwnerId),
+      repository.findIsBlocked(_id, businessOwnerId),
+    ]);
+
+    if (isBusinessOwnerBlocked) return res.status(403).json({ message: "Business owner is blocked by you." });
+    if (isBlocked) return res.status(403).json({ message: "Business owner is blocked." });
+
+    next();
   } catch (error) {
     console.error("Error in authenticateToken:", error);
-    return res.status(500).json({ message: "An error occurred during authentication" });
+    return res.status(401).json({ message: "Authentication error" });
   }
 };
 

@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import IDashboardController from "../interface/IDashboardController";
 import IDashboardService from "../../service/interface/IDashboardService";
 import { CustomRequest } from "../../middlewares/tokenAuthenticate";
+import {HttpStatusCode} from "../../utils/enums"
 
 
 @injectable()
@@ -13,11 +14,12 @@ export default class DashboardController implements IDashboardController {
     async getAllDashboardData(req: CustomRequest, res: Response): Promise<Response> {
         
         try {
-            const companyId = req.user?.managerData?._id;
+            const managerId = req.user?.managerData?._id;
+            const businessOwnerId = req.user?.managerData?.businessOwnerId;
             
-            const result = await this._dashboardService.getAllDashboardData(companyId as string);
+            const result = await this._dashboardService.getAllDashboardData(managerId as string ,businessOwnerId as string);
             
-            return res.status(result ? 200 : 400).json(result);
+            return res.status(result ? HttpStatusCode.OK : HttpStatusCode.BAD_REQUEST).json(result);
         } catch (error) {
             console.error("Error in controller:", error);
             return res.status(500).json({ success: false, message: "Internal Server Error" });

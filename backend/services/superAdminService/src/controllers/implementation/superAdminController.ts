@@ -10,13 +10,14 @@ export default class SuperAdminController implements ISuperAdminController {
   constructor(@inject("ISuperAdminService") private _superAdminService: ISuperAdminService) {} 
 
   async setNewAccessToken(req: Request, res: Response): Promise<Response> {
+    console.log("set new access token is callling ===>", req.cookies.refreshToken);
     
     try {
       const refreshToken = req.cookies.refreshToken;
       if (!refreshToken) return res.status(400).json({ message: 'Refresh token missing.' });
 
       const newAccessToken = await this._superAdminService.setNewAccessToken(refreshToken);
-      if (!newAccessToken) return res.status(401).json({ message: 'Failed to generate new access token.' });
+      if (!newAccessToken) return res.status(403).json({ message: 'Failed to generate new access token.' });
 
       res.cookie('accessToken', newAccessToken, {
         httpOnly: true,

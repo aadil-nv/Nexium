@@ -26,12 +26,7 @@ import EmployeeService from "../service/implementation/employeeService";  // Ens
 import EmployeeController from "../controllers/implementation/employeeController";  // Ensure correct import
 import  EmployeeModel  from "../models/employeeModel";
 
-import IOnboardingController from "../controllers/interface/IOnboardingController";
-import IOnboardingService from "../service/interface/IOnboardingService";
-import IOnboardingRepository from "../repository/interface/IOnboardingRepository";
-import OnboardingRepository from "../repository/implementation/onboardingRepository";  // Ensure correct import
-import OnboardingService from "../service/implementation/onboardingService";  // Ensure correct import
-import OnboardingController from "../controllers/implementation/onboardingController";  // Ensure correct import
+
 
 import ILeaveController from "../controllers/interface/ILeaveController";
 import ILeaveService from "../service/interface/ILeaveService";
@@ -74,6 +69,10 @@ import ProjectModel from "../models/projectModel";
 import { IProject } from "../entities/projectEntities";
 import Consumer from "../events/implementation/consumer";
 
+import SubscriptionModel from "../models/subscriptionModel";
+import  ISubscription  from "../entities/subscriptionEntity";
+import { commonParams } from "@aws-sdk/client-s3/dist-types/endpoint/EndpointParameters";
+
 const container = new Container();
 
 // Bind the interfaces to their implementations
@@ -98,9 +97,6 @@ container.bind<IEmployeeRepository>("IEmployeeRepository").to(EmployeeRepository
 container.bind<IEmployeeService>("IEmployeeService").to(EmployeeService);
 
 
-container.bind<IOnboardingController>("IOnboardingController").to(OnboardingController);
-container.bind<IOnboardingRepository>("IOnboardingRepository").to(OnboardingRepository);
-container.bind<IOnboardingService>("IOnboardingService").to(OnboardingService);
 
 container.bind<typeof EmployeeModel>("EmployeeModel").toConstantValue(EmployeeModel);
 
@@ -130,7 +126,7 @@ container.bind<IProjectRepository>("IProjectRepository").to(ProjectRepository);
 container.bind<IProjectService>("IProjectService").to(ProjectService);
 
 container.bind<typeof ProjectModel>("IProject").toConstantValue(ProjectModel);
-
+container.bind<typeof SubscriptionModel>("ISubscription").toConstantValue(SubscriptionModel);
 
 
 

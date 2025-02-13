@@ -9,7 +9,6 @@ const MeetingSchema: Schema = new mongoose.Schema(
     meetingTitle: {
       type: String,
       required: true,
-      minlength: [3, "Meeting title must be at least 3 characters long"],
     },
     meetingDate: {
       type: Date,
@@ -33,6 +32,20 @@ const MeetingSchema: Schema = new mongoose.Schema(
       required: true,
       ref: "User", // Reference to User model
     },
+    isRecurring: {
+      type: Boolean,
+      default: false,
+    },
+    recurringType: {
+      type: String,
+      enum: ["daily", "weekly"],
+      default: "daily",
+    },
+    recurringDay: {
+      type: String,
+      enum: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+      default: "monday",
+    }
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt

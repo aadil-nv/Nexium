@@ -9,6 +9,7 @@ import employeeLeaveModel from "../../models/employeeLeaveModel";
 import leaveTypeModel from "../../models/leaveTypeModel";
 import { ILeaveType } from "../../entities/leaveTypeEntities";
 import {IEmployeeLeave} from "../../entities/employeeLeaveEntities";
+import connectDB from "../../config/connectDB";
 
 
 @injectable()
@@ -26,9 +27,12 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         this.leaveTypeModel = leaveTypeModel
     }
 
-    async getEmployees(): Promise<IEmployee[]> {
+    async getEmployees(businessOwnerId: string): Promise<IEmployee[]> {
         try {
-            const employees = await this.employeeModel.find();
+
+            const switchDB = await connectDB(businessOwnerId); 
+
+            const employees = await switchDB.model("Employee", this.employeeModel.schema).find();
             return employees;
         } catch (error) {
             console.error("Error finding employees:", error);
@@ -36,25 +40,19 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }
     }
     
-
-    async addEmployee(employeeData: IEmployee): Promise<IEmployee> {
+    async addEmployee(employeeData: IEmployee, businessOwnerId: string): Promise<IEmployee> {
         try {
-            // Create a new employee from the employeeData
-            const employee = new this.employeeModel(employeeData);
-            console.log("Employee from repo -----------------", employee);
+            const db = await connectDB(businessOwnerId);
+            const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
+            const savedEmployee = await new employeeModel(employeeData).save();
     
-            // Save the employee to the database
-            const savedEmployee = await employee.save();
+            const leaveTypeModel = db.model<ILeaveType>("LeaveType", this.leaveTypeModel.schema);
+            const existingLeaves = await leaveTypeModel.findOne();
+            
+            if (!existingLeaves) throw new Error("Leave type not found");
     
-            // Find the existing leave types
-            const existingLeaves = await this.leaveTypeModel.findOne();
-            if (!existingLeaves) {
-                throw new Error("Leave type not found");
-            }
-    
-            // Create a new leave entry for the employee
             const employeeLeaveData = {
-                employeeId: savedEmployee._id,  // Link the leave record to the saved employee
+                employeeId: savedEmployee._id,
                 sickLeave: existingLeaves.sickLeave,
                 casualLeave: existingLeaves.casualLeave,
                 maternityLeave: existingLeaves.maternityLeave,
@@ -67,83 +65,78 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
                 studyLeave: existingLeaves.studyLeave,
             };
     
-            // Save the employee's leave data
-            const employeeLeave = new this.employeeLeaveModel(employeeLeaveData);
-            await employeeLeave.save();
+            const employeeLeaveModel = db.model<IEmployeeLeave>("EmployeeLeave", this.employeeLeaveModel.schema);
+            await new employeeLeaveModel(employeeLeaveData).save();
     
-            // Return the saved employee
             return savedEmployee;
-    
         } catch (error) {
             console.error("Error in addEmployee repository:", error);
             throw new Error("Failed to add employee to the database");
         }
     }
     
-
-    async findByEmail(email: string): Promise<IEmployee | null> {
+    async findByEmail(email: string, businessOwnerId: string): Promise<IEmployee | null> {
         try {
-            return await this.employeeModel.findOne({ "personalDetails.email": email });
+            const switchDB = await connectDB(businessOwnerId);
+            return await switchDB.model("Employee", this.employeeModel.schema).findOne({ "personalDetails.email": email });
         } catch (error) {
-            console.error("Error finding employee by email:", error);
+            console.error(`Error finding employee with email ${email} for business owner ${businessOwnerId}:`, error);
             return null;
         }
     }
+    
 
-    async getEmployeeInformation(employeeId: string): Promise<IEmployee> {
+    async getEmployeeInformation(employeeId: string, businessOwnerId: string): Promise<IEmployee> {
         try {
-            const employee = await this.employeeModel.findById(employeeId);
+            const switchDB = await connectDB(businessOwnerId);
+            const employee = await switchDB.model<IEmployee>("Employee", this.employeeModel.schema).findById(employeeId);
+    
             if (!employee) {
                 throw new Error("Employee not found");
             }
+    
             return employee;
         } catch (error) {
             console.error("Error finding employee by ID:", error);
             throw new Error("Failed to fetch employee information");
         }
     }
+    
 
-    async updateEmployeePersonalInformation(employeeId: string, personalInformation: any): Promise<IEmployee> {
-        console.log("personalInformation", personalInformation);
+    async updateEmployeePersonalInformation(employeeId: string, personalInformation: any, businessOwnerId: string): Promise<IEmployee> {
         try {
-            // Find the employee by ID
-            const employee = await this.employeeModel.findById(employeeId);
+            const switchDB = await connectDB(businessOwnerId);
+            const employee = await switchDB.model<IEmployee>("Employee", this.employeeModel.schema).findById(employeeId);
+    
             if (!employee) {
                 throw new Error("Employee not found");
             }
     
-            // Update the personal details
             employee.personalDetails = { 
                 ...employee.personalDetails, 
                 ...personalInformation 
             };
     
-            // Save the updated employee document
             const updatedEmployee = await employee.save();
-    
-            console.log("updatedEmployee", updatedEmployee);
-    
             return updatedEmployee;
         } catch (error) {
             console.error("Error updating employee information:", error);
             throw new Error("Failed to update employee personal information");
         }
     }
+    
 
-    async updateAddress(employeeId: string, address: IEmployee['address']): Promise<IEmployee> {
-
-        console.log("address from repo ", address);
-        
+    async updateAddress(employeeId: string, address: IEmployee['address'], businessOwnerId: string): Promise<IEmployee> {
         try {
-            // Find the employee by ID and update the address in a single step
-            const updatedEmployee = await this.employeeModel.findByIdAndUpdate(
+            // Connect to the correct database based on the businessOwnerId
+            const switchDB = await connectDB(businessOwnerId);
+            
+            // Use the dynamic employee model from the correct database context
+            const updatedEmployee = await switchDB.model<IEmployee>("Employee", this.employeeModel.schema).findByIdAndUpdate(
                 employeeId,
                 { address }, // Directly update the address field
                 { new: true, runValidators: true } // Return the updated document and run schema validations
             );
-
-            console.log("updatedEmployee from repo ------------", updatedEmployee);
-            
     
             if (!updatedEmployee) {
                 throw new Error("Employee not found");
@@ -155,11 +148,18 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
             throw new Error("Failed to update employee address");
         }
     }
+    
 
-    async updateEmployeeProfessionalInfo(employeeId: string, professionalInfo: any): Promise<IEmployee> {
+    async updateEmployeeProfessionalInfo(employeeId: string, professionalInfo: any, businessOwnerId: string): Promise<IEmployee> {
         try {
-            // Find the employee by ID
-            const employee = await this.employeeModel.findById(employeeId);
+            // Connect to the correct database
+            const switchDB = await connectDB(businessOwnerId);
+            
+            // Get the employee model dynamically from the correct database context
+            const employeeModel = switchDB.model<IEmployee>("Employee", this.employeeModel.schema);
+    
+            // Find the employee
+            const employee = await employeeModel.findById(employeeId);
             if (!employee) {
                 throw new Error("Employee not found");
             }
@@ -170,143 +170,205 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
                 ...professionalInfo
             };
     
-            // Save the updated employee document
-            const updatedEmployee = await employee.save();
-    
-            return updatedEmployee;
+            // Save and return the updated employee document
+            return await employee.save();
         } catch (error) {
             console.error("Error updating employee professional information:", error);
             throw new Error("Failed to update employee professional information");
         }
     }
     
-    async getDepartmentName(departmentId: string): Promise<any> {
+    
+    async getDepartmentName(departmentId: string, businessOwnerId: string): Promise<string | null> {
         try {
-            const department = await this.departmentModel.findById(departmentId);
-            if (!department) {
-               return null;
-            }
-            return department.departmentName;
+            // Connect to the correct database
+            const db = await connectDB(businessOwnerId);
+    
+            // Get the department model dynamically from the correct database context
+            const departmentModel = db.model<IDepartment>("Department", this.departmentModel.schema);
+    
+            // Find the department
+            const department = await departmentModel.findById(departmentId).select("departmentName");
+    
+            return department ? department.departmentName : null;
         } catch (error) {
             console.error("Error finding department by ID:", error);
             throw new Error("Failed to fetch department name");
         }
     }
+    
 
-    async updateProfilePicture(employeeId: string ,profilePicture: any): Promise<any> {
+    async updateProfilePicture(employeeId: string, profilePicture: any, businessOwnerId: string): Promise<string> {
         try {
-            const employee = await this.employeeModel.findById(employeeId);
+            // Connect to the correct database
+            const db = await connectDB(businessOwnerId);
+    
+            // Get the employee model dynamically from the correct database context
+            const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
+    
+            // Find the employee
+            const employee = await employeeModel.findById(employeeId);
             if (!employee) {
                 throw new Error("Employee not found");
             }
+    
+            // Update profile picture
             employee.personalDetails.profilePicture = profilePicture;
-            const updatedEmployee = await employee.save();
-            console.log(`updatedEmployee((((((((((((((((()))))))))))))))))`.bgRed, updatedEmployee);
-            
-            return updatedEmployee.personalDetails.profilePicture;
+            await employee.save();
+    
+            return employee.personalDetails.profilePicture;
         } catch (error) {
             console.error("Error updating employee profile picture:", error);
             throw new Error("Failed to update employee profile picture");
         }
     }
+    
+    
 
-    async updateResume(employeeId: string, documentMetadata: any): Promise<any> {
+    async updateResume(employeeId: string, documentMetadata: any, businessOwnerId: string): Promise<any> {
         try {
-            const employee = await this.employeeModel.findById(employeeId);
+            // Connect to the correct database
+            const db = await connectDB(businessOwnerId);
+    
+            // Get the employee model dynamically from the correct database context
+            const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
+    
+            // Find the employee
+            const employee = await employeeModel.findById(employeeId);
             if (!employee) {
                 throw new Error("Employee not found");
             }
     
             // Update the resume details in the `documents` section
-            employee.documents.resume = {
-                ...documentMetadata,
-            };
+            employee.documents.resume = documentMetadata;
     
             await employee.save();
     
             return employee.documents.resume;
         } catch (error) {
-            console.error("Error in updateResume repository:", error);
+            console.error("Error updating resume:", error);
             throw new Error("Failed to update resume in the database");
         }
     }
-
- 
-
-    async updateBlocking(employeeId: string, blocking: any): Promise<any> {
-        console.log("blocking object received:", blocking);
-      
-        try {
-          // Find the employee by ID
-          const employee = await this.employeeModel.findById(employeeId);
-          if (!employee) {
-            throw new Error("Employee not found");
-          }
-      
-          // Toggling the isBlocked value based on current state
-          const newBlocking = !employee.isBlocked;
-      
-          return await this.employeeModel.updateOne(
-            { _id: employeeId },
-            { $set: { isBlocked: newBlocking } }
-          );
-      
-          // Returning the updated isBlocked value
-        } catch (error) {
-          console.error("Error in updateBlocking repository:", error);
-          throw new Error("Failed to update blocking in the database");
-        }
-      }
-      
-      async getEmployeeWithOutDepartment(): Promise<IEmployee[]> {
-        try {
-          const employees = await this.employeeModel.find({ "professionalDetails.department": null });
-          return employees;
-        } catch (error) {
-          console.error("Error in getEmployeeWithOutDepartment repository:", error);
-          throw new Error("Failed to fetch employees without department");
-        }
-      }
-
-      async removeEmployee(employeeId: string): Promise<any> {
-        try {
-          const result = await this.employeeModel.findByIdAndDelete(employeeId);
-          return result;
-        } catch (error) {
-          console.error("Error in removeEmployee repository:", error);
-          throw new Error("Failed to remove employee");
-        }   
-      }
     
-      async updateCredentials(employeeId: string ,credentials: any): Promise<any> {
+    
+
+
+    async updateBlocking(employeeId: string,blocking: any, businessOwnerId: string): Promise<boolean> {
+        console.log("businessOwnerId from updateBlocking ==>",businessOwnerId);
+        
         try {
-            const employee = await this.employeeModel.findById(employeeId);
+            // Ensure connection to the correct database
+            const db = await connectDB(businessOwnerId);
+    
+            // Get the employee model dynamically from the correct database context
+            const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
+    
+            // Find the employee
+            const employee = await employeeModel.findById(employeeId);
             if (!employee) {
                 throw new Error("Employee not found");
             }
+    
+            // Toggle the isBlocked value
+            employee.isBlocked = !employee.isBlocked;
+    
+            // Save the updated employee document
+            await employee.save();
+    
+            return employee.isBlocked;
+        } catch (error) {
+            console.error("Error updating employee blocking status:", error);
+            throw new Error("Failed to update blocking status in the database");
+        }
+    }
+    
+      
+    async getEmployeesWithoutDepartment(businessOwnerId: string): Promise<IEmployee[]> {
+        try {
+            // Ensure connection to the correct database
+            const db = await connectDB(businessOwnerId);
+    
+            // Get the employee model dynamically from the correct database context
+            const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
+    
+            // Find employees where department is null or not assigned
+            const employees = await employeeModel.find({ "professionalDetails.department": { $in: [null, undefined] } });
+    
+            return employees;
+        } catch (error) {
+            console.error("Error fetching employees without department:", error);
+            throw new Error("Failed to fetch employees without department");
+        }
+    }
+    
+
+    async removeEmployee(employeeId: string, businessOwnerId: string): Promise<IEmployee | null> {
+        try {
+            // Ensure connection to the correct database
+            const db = await connectDB(businessOwnerId);
+    
+            // Get the employee model dynamically from the correct database context
+            const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
+    
+            // Delete the employee by ID
+            const deletedEmployee = await employeeModel.findByIdAndDelete(employeeId);
+    
+            return deletedEmployee;
+        } catch (error) {
+            console.error("Error removing employee:", error);
+            throw new Error("Failed to remove employee");
+        }
+    }
+    
+    async updateCredentials(employeeId: string, credentials: any, businessOwnerId: string): Promise<any> {
+        try {
+            // Ensure connection to the correct database
+            const db = await connectDB(businessOwnerId);
+            
+            // Get the employee model dynamically from the correct database context
+            const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
+            
+            // Find the employee by ID
+            const employee = await employeeModel.findById(employeeId);
+            
+            if (!employee) {
+                throw new Error("Employee not found");
+            }
+            
+            // Update employee credentials
             employee.employeeCredentials = credentials;
+            
+            // Save the updated employee and return the updated credentials
             const updatedEmployee = await employee.save();
+            
             return updatedEmployee.employeeCredentials;
         } catch (error) {
             console.error("Error updating employee credentials:", error);
             throw new Error("Failed to update employee credentials");
         }
     }
-
-    async getAllTeamLeads(): Promise<IEmployee[]> {
-        try {
-            // Fetch employees with position "Team Lead"
-            const employees = await this.employeeModel.find({
-                "professionalDetails.position": "Team Lead"
-               
-            });
     
+
+    async getAllTeamLeads(businessOwnerId: string): Promise<IEmployee[]> {
+        try {
+            const db = await connectDB(businessOwnerId);
+            
+            const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
+            
+            // Find employees with the position of "Team Lead"
+            const employees = await employeeModel.find({
+                "professionalDetails.position": "Team Lead"
+            });
+            
             return employees;
         } catch (error) {
             console.error("Error in getAllTeamLeads repository:", error);
             throw new Error("Failed to fetch all team leads.");
         }
     }
+    
+    
     
     
     

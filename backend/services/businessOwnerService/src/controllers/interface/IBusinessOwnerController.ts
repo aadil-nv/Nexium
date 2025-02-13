@@ -17,6 +17,7 @@ export default interface IBusinessOwnerController {
     addServiceRequest(req:CustomRequest ,res:Response):Promise<Response>
     getAllServiceRequests(req:CustomRequest ,res:Response):Promise<Response>
     updateServiceRequest(req:CustomRequest ,res:Response):Promise<Response>
-    updateIsActive(req: CustomRequest, res: Response): Promise<Response>    
+    updateIsActive(req: CustomRequest, res: Response): Promise<Response> 
+    updateLastSeen(req:CustomRequest ,res:Response):Promise<Response>   
 
 }

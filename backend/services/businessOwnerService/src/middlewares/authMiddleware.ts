@@ -25,6 +25,7 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
   try {
     // Verify and decode the token
     const decoded = verifyAccessToken(token);
+    
 
     if (!decoded) {
       return res.status(401).json({ message: "Invalid token" });
@@ -42,7 +43,6 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
       const repository = new businessOwnerRepository(businessOwnerModel);
 
       try {
-        // Ensure you're using the businessOwnerModel and checking if blocked
         const isBlocked = await repository.findIsBlocked(businessOwnerId);
         if (isBlocked) {
           return res.status(403).json({ message: "Access denied. Business owner is blocked." });

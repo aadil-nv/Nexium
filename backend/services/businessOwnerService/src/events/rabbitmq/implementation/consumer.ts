@@ -33,7 +33,7 @@ export default class BusinessOwnerConsumer implements IConsumer {
             const data = JSON.parse(msg.content.toString());
             console.log("data from rabbit mq------------------------------",data);
             if(data.businessOwnerisActiveData){
-              await this._businessOwnerService.updateIsActive(data.businessOwnerisActiveData._id, true)
+              await this._businessOwnerService.updateIsActive(data.businessOwnerisActiveData._id, true )
             }
             
             if (Array.isArray(data)) {

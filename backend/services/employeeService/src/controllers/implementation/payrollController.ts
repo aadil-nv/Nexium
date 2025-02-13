@@ -10,11 +10,16 @@ import { log } from "util";
 export default class PayrollController implements IPayrollController {
     constructor(@inject("IPayrollService") private _payrollService: IPayrollService) { }
 
+    private getBusinessOwnerId(req: CustomRequest): string {
+        return req.user?.employeeData?.businessOwnerId || '';
+    }
+
     async getPayroll(req: CustomRequest, res: Response): Promise<Response> {
         
         try {
             const employeeId = req.user?.employeeData?._id;
-            const payroll = await this._payrollService.getPayroll(employeeId as string);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const payroll = await this._payrollService.getPayroll(employeeId as string ,businessOwnerId);
             return res.status(200).json(payroll);
         } catch (error) {
             console.error(error);
@@ -25,19 +30,12 @@ export default class PayrollController implements IPayrollController {
     }
 
     async downloadPayrollMonthly(req: CustomRequest, res: Response): Promise<Response> {
-        console.log("hitting downloadPayrollMonthly ===============**********==================");
         
         try {
             const employeeId = req.user?.employeeData?._id;
-            console.log("employeeId--------------------------",employeeId);
-            
             const payrollId = req.params.id;
-            console.log("payrollId--------------------------",payrollId);
-            
-            const payroll = await this._payrollService.downloadPayrollMonthly(employeeId as string ,payrollId);
-
-            console.log("payroll------------------dfdfasdfasfasfasfasfasf--------",payroll);
-            
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const payroll = await this._payrollService.downloadPayrollMonthly(employeeId as string ,payrollId ,businessOwnerId);
             return res.status(200).json(payroll);
         } catch (error) {
             console.error(error);

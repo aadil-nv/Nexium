@@ -79,18 +79,30 @@ export default class ManagerController implements IManagerController {
                     success: true,
                     message: response.message,
                     email: response.email,
-                    accessToken: response.accessToken,
-                    refreshToken: response.refreshToken,
+                    data:response
+
                 });
             } else {
                 res.status(HttpStatusCode.BAD_REQUEST).json({
                     success: false,
                     message: response.message || "OTP validation failed.",
+                    
                 });
             }
         } catch (error) {
             console.error("Error validating OTP:", error);
             next(error);
+        }
+    }
+
+    async resendOtp(req: Request, res: Response): Promise<Response> {
+        try {
+            const { email } = req.body;
+            const result = await this._managerService.resendOtp(email);
+            return res.status(HttpStatusCode.OK).json(result);
+        } catch (error) {
+            console.error('Error resending OTP:', error);
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
         }
     }
 }

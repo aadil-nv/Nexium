@@ -5,56 +5,40 @@ dotenv.config();
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import connectDB from './config/connectDB';
-import businessOwnerPaymentRoutes from './routes/businessOwnerPaymentRoute';
 import webhookRouter from './routes/webhookRoute';
-import "colors";
-import { createStream } from 'rotating-file-stream';
-import path from 'path';
-import fs from 'fs';
-import morgan from 'morgan';
+import businessOwnerPaymentRoutes from './routes/businessOwnerPaymentRoute';
+import 'colors';
+import logger from './utils/logger';
 
 const app = express();
-const PORT = process.env.PORT  
+const PORT = process.env.PORT || 3000;
 
-// Connect to the database
+// Connect Database
 connectDB();
 
-const logDirectory = path.resolve(__dirname, './logs');
-if (!fs.existsSync(logDirectory)) {
-  fs.mkdirSync(logDirectory);
-}
-
-
-// Set up log file rotation
-const accessLogStream = createStream('access.log', {
-    interval: '7d',
-    path: logDirectory,
-  });
-
-app.use(morgan('combined', { stream: accessLogStream }));
-app.use(morgan('dev'));
+// Logging Middleware
+app.use(logger);
 
 // Enable CORS
 app.use(cors({
-  origin: 'https://www.aadil.online',  // Allow frontend from localhost:5173
-  credentials: true,    
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],      
+  origin: process.env.CLIENT_ORIGIN, 
+  credentials: true, 
 }));
 
-app.use("/webhook", express.raw({ type: 'application/json'}), webhookRouter);
-// Middlewares
-app.use(express.json());  // Body parser for JSON
-app.use(cookieParser());  // Cookie parser for handling cookies
+// Webhook Middleware (Stripe requires raw body)
+app.use("/webhook", express.raw({ type: 'application/json' }), webhookRouter);
 
-// Root route for testing
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
-});
+// Other Middleware
+app.use(express.json()); 
+app.use(cookieParser()); 
+
+// Test Route
+app.get('/', (req, res) => res.send('Hello, World!'));
 
 // Routes
 app.use('/api/businessowner-payment', businessOwnerPaymentRoutes);
 
-// Start the server
+// Start Server
 app.listen(PORT, () => {
-  console.log(`paymentService on http://localhost:${PORT}v6666666`.bgCyan.bold);
+  console.log(`paymentService running at http://localhost:${PORT}`.bgCyan.bold);
 });

@@ -8,6 +8,7 @@ import { IManager } from "../../entities/managerEntities";
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntities";
 import { IMessage } from "entities/messageEntities";
 import { IChatWithDetails, IChatWithGroupDetails } from "dto/chatDTO";
+import connectDB from "../../config/connectDB";
 
 @injectable()
 
@@ -26,46 +27,49 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         
     }
 
-    async createChat(myId: string, receiverId: string): Promise<IChat> {
+    async createChat(myId: string, receiverId: string, businessOwnerId: string): Promise<IChat> {
         try {
-            const existingChat = await this._chatModel.findOne({
+            const switchDB = await connectDB(businessOwnerId);
+            const ChatModel = switchDB.model("chats", this._chatModel.schema);
+    
+            const existingChat = await ChatModel.findOne({
                 chatType: "private",
-                participants: { $all: [myId, receiverId] }, // Ensure both myId and receiverId are in participants
+                participants: { $all: [myId, receiverId] },
             });
     
             if (existingChat) {
-               return existingChat;
+                return existingChat;
             }
     
-            // Create a new chat if no existing chat is found
-            const createdChat = new this._chatModel({
-                chatType: "private", // Set chatType to "individual"
-                participants: [myId, receiverId], // Add both myId and receiverId as participants
-                groupName: "", // Empty groupName for individual chats
-                groupAdmin: myId, // No group admin for individual chats
+            const createdChat = new ChatModel({
+                chatType: "private",
+                participants: [myId, receiverId],
+                groupName: "",
+                groupAdmin: myId,
             });
     
             return await createdChat.save();
-        } catch (error:any) {
+        } catch (error: any) {
             console.log("Error creating chat:", error.message);
             throw error;
         }
     }
     
-    
-    async createMessage(chat: any): Promise<IMessage> {
+    async createMessage(chat: any, businessOwnerId: string): Promise<IMessage> {
         try {
-            const createdMessage = new this._messageModel(chat);
-            return await createdMessage.save();
+            const switchDB = await connectDB(businessOwnerId);
+            const MessageModel = switchDB.model("messages", this._messageModel.schema); // Store model in a variable
+            const createdMessage = new MessageModel(chat);
             
+            return await createdMessage.save();
         } catch (error) {
             console.log("Error creating message:", error);
             throw error;
-            
         }
     }
+    
 
-    async createGroup(data: any, myId: string): Promise<IChat> {
+    async createGroup(data: any, myId: string, businessOwnerId: string): Promise<IChat> {
         try {
             const groupData = {
                 chatType: "group",  // Set chat type as group
@@ -74,10 +78,13 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
                     ...data.members,  // Add the members from the request
                 ],
                 groupName: data.groupName,
-                groupAdmin: myId,  // Set the creator as the group admin
+                groupAdmin: myId,  
             };
     
-            const createdGroup = new this._chatModel(groupData);
+            const switchDB = await connectDB(businessOwnerId);
+            const ChatModel = switchDB.model("chats", this._chatModel.schema); // Store model in a variable
+            const createdGroup = new ChatModel(groupData);
+    
             return await createdGroup.save();
         } catch (error) {
             console.log("Error creating group:", error);
@@ -85,9 +92,11 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         }
     }
     
-    async findAllEmployees(): Promise<IEmployee[]> {
+    
+    async findAllEmployees(businessOwnerId : string): Promise<IEmployee[]> {
         try {
-            const allReceiver = await this._employeeModel.find();
+            const switchDB = await connectDB(businessOwnerId);
+            const allReceiver = await switchDB.model("employees" , this._employeeModel.schema).find();
             return allReceiver;
             
         } catch (error) {
@@ -96,9 +105,10 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
             
         }
     }
-    async findAllManagers(): Promise<IManager[]> {
+    async findAllManagers(businessOwnerId : string): Promise<IManager[]> {
         try {
-            const allReceiver = await this._managerModel.find();
+            const switchDB = await connectDB(businessOwnerId);
+            const allReceiver = await switchDB.model("managers" , this._managerModel.schema).find();
             return allReceiver;
             
         } catch (error) {
@@ -107,9 +117,10 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
             
         }
     }
-    async findAllBusinessOwners(): Promise<IBusinessOwnerDocument[]> {
+    async findAllBusinessOwners(businessOwnerId : string): Promise<IBusinessOwnerDocument[]> {
         try {
-            const allReceiver = await this._businessOwnerModel.find();
+            const switchDB = await connectDB(businessOwnerId);
+            const allReceiver = await switchDB.model("businessOwners" , this._businessOwnerModel.schema).find();
             return allReceiver;
             
         } catch (error) {
@@ -119,10 +130,10 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         }
     }
 
-    async findAllGroups(myId: string): Promise<IChat[]> {
+    async findAllGroups(myId: string ,businessOwnerId: string): Promise<IChat[]> {
         try {
-            // Search for all groups where myId is included in the participants array
-            const allGroups = await this._chatModel.find({
+            const switchDB = await connectDB(businessOwnerId);
+            const allGroups = await switchDB.model("chats" , this._chatModel.schema).find({
                 chatType: "group", // Ensure it is a group chat
                 participants: myId, // Find groups where myId is in the participants array
             });
@@ -134,12 +145,14 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         }
     }
 
-    async findAllPrivateChats(userId: string): Promise<IChatWithDetails[]> {
+    async findAllPrivateChats(userId: string ,businessOwnerId: string): Promise<IChatWithDetails[]> {
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             throw new Error('Invalid user ID provided');
         }
     
         const userObjectId = new mongoose.Types.ObjectId(userId);
+    
+        const switchDB = await connectDB(businessOwnerId);
     
         const pipeline: PipelineStage[] = [
             {
@@ -189,14 +202,23 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
                 }
             },
             {
+                $lookup: {
+                    from: "messages",
+                    localField: "lastMessage",
+                    foreignField: "_id",
+                    as: "lastMessageDetails",
+                },
+            },
+            {
                 $project: {
                     _id: 1,
                     chatType: 1,
                     participants: 1,
-                    lastMessage: 1,
+                    lastMessage: { $arrayElemAt: ["$lastMessageDetails", 0] },
                     createdAt: 1,
                     updatedAt: 1,
                     lastSeen: 1,
+                    lastMessageTime: 1,
                     participantDetails: {
                         $cond: {
                             if: { $gt: [{ $size: "$employeeDetails" }, 0] },
@@ -218,17 +240,18 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         ];
     
         try {
-            return await this._chatModel.aggregate(pipeline);
+
+            return  await switchDB.model("chats", this._chatModel.schema).aggregate(pipeline);
         } catch (error: any) {
             throw new Error(`Failed to fetch private chats: ${error.message}`);
         }
     }
 
       
-      async findChatId(myId: string, receiverId: string, chatType: string): Promise<IChat> {
+      async findChatId(myId: string, receiverId: string, chatType: string ,businessOwnerId: string): Promise<IChat> {
           try {
-              // Query the Chat model to find a chat with matching participants and chatType
-              const chat = await this._chatModel.findOne({
+            const switchDB = await connectDB(businessOwnerId);
+              const chat = await switchDB.model("chats", this._chatModel.schema).findOne({
                   chatType,
                   participants: { $all: [myId, receiverId] }, // Ensure both participants are in the array
               });
@@ -248,9 +271,10 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
       
       
       
-      async getChatParticipants(chatId: string): Promise<IChat | null> {
+      async getChatParticipants(chatId: string ,businessOwnerId: string): Promise<IChat | null> {
         try {
-            const chat = await this._chatModel.findById(chatId).exec();
+            const switchDB = await connectDB(businessOwnerId);
+            const chat = await switchDB.model("chats", this._chatModel.schema).findById(chatId).exec();
             return chat;
         } catch (error) {
             console.error("Error getting chat participants:", error);
@@ -258,7 +282,7 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         }
     }
 
-    async getAllGroupMembers(groupId: string): Promise<IChatWithGroupDetails> {
+    async getAllGroupMembers(groupId: string , businessOwnerId: string): Promise<IChatWithGroupDetails> {
         if (!mongoose.Types.ObjectId.isValid(groupId)) {
             throw new Error('Invalid group ID provided');
         }
@@ -313,7 +337,8 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         ];
     
         try {
-            const [result] = await this._chatModel.aggregate(pipeline).exec();
+            const switchDB = await connectDB(businessOwnerId);
+            const [result] = await switchDB.model("chats", this._chatModel.schema).aggregate(pipeline).exec();
     
             if (!result) {
                 throw new Error("Group not found");
@@ -326,7 +351,7 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         }
     }
 
-    async getGroupDetails(groupId: string): Promise<IChatWithGroupDetails> {
+    async getGroupDetails(groupId: string , businessOwnerId: string): Promise<IChatWithGroupDetails> {
         if (!mongoose.Types.ObjectId.isValid(groupId)) {
             throw new Error("Invalid group ID provided");
         }
@@ -422,7 +447,8 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         ];
     
         try {
-            const [result] = await this._chatModel.aggregate(pipeline).exec();
+            const switchDB = await connectDB(businessOwnerId);
+            const [result] = await switchDB.model("chats", this._chatModel.schema).aggregate(pipeline).exec();
             
             if (!result) {
                 throw new Error("Group not found");
@@ -436,9 +462,10 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
     }
     
     
-   async getAllUnAddedUsers(groupId: string): Promise<any> {
+   async getAllUnAddedUsers(groupId: string , businessOwnerId: string): Promise<any> {
         try {
-            const allReceiver = await this._chatModel.find({ _id: groupId }).exec();
+            const switchDB = await connectDB(businessOwnerId);
+            const allReceiver = await switchDB.model("chats", this._chatModel.schema).find({ _id: groupId }).exec();
             return allReceiver;
             
         } catch (error) {
@@ -448,9 +475,10 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         }
     }
 
-    async updateGroup(groupId: string, data: any): Promise<any> {
+    async updateGroup(groupId: string, data: any ,businessOwnerId: string): Promise<any> {
         try {
-            const updatedGroup = await this._chatModel.findOneAndUpdate({ _id: groupId }, data, { new: true }).exec();
+            const switchDB =await connectDB(businessOwnerId);
+            const updatedGroup = await switchDB.model("chats", this._chatModel.schema).findOneAndUpdate({ _id: groupId }, data, { new: true }).exec();
             return updatedGroup;
             
         } catch (error) {
@@ -460,9 +488,10 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         }
     }
 
-    async deleteGroup(groupId: string): Promise<any> {
+    async deleteGroup(groupId: string ,businessOwnerId: string): Promise<any> {
         try {
-            const deletedGroup = await this._chatModel.findOneAndDelete({ _id: groupId }).exec();
+            const switchDB = await connectDB(businessOwnerId);
+            const deletedGroup = await switchDB.model("chats", this._chatModel.schema).findOneAndDelete({ _id: groupId }).exec();
             return deletedGroup;
             
         } catch (error) {
@@ -473,18 +502,20 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
     }
 
 
-    async updateLastSeenForChats(userId: string): Promise<any> {
-        console.log(`update laste seen for ${userId}`);
+    async updateLastSeenForChats(userId: string ,businessOwnerId: string): Promise<any> {
+        console.log(`"update lastseen of "`.bgMagenta, userId);
+        console.log(`"update lastseen of "`.bgMagenta, businessOwnerId);
+        
         
         try {
          
     
-    
-            const result = await this._chatModel.updateMany(
+            const switchDB = await connectDB(businessOwnerId);
+            const result = await switchDB.model("chats", this._chatModel.schema).updateMany(
                 {
                     chatType: "private",
-                    groupAdmin: { $ne: userId }, // groupAdminId !== userId
-                    participants: userId // userId exists in participants
+                    groupAdmin: { $ne: userId }, 
+                    participants: userId 
                 },
                 {
                     $set: { lastSeen: new Date() }

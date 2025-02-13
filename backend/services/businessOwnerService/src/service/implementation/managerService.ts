@@ -7,7 +7,7 @@ import nodemailer from "nodemailer";
 import RabbitMQMessager from "../../events/rabbitmq/implementation/producer";
 import { IResponseDTO } from "dto/businessOwnerDTO";
 import { IManager } from "entities/managerEntity";
-import { uploadTosS3 } from '../../middlewares/multer-s3';
+import { getSignedImageURL, uploadTosS3 } from '../../middlewares/multer-s3';
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { ManagerDTO } from "../../dto/managerDTO";
 
@@ -225,12 +225,11 @@ export default class ManagerService implements IManagerService {
         throw new Error("Failed to update manager status. Please try again.");
       }
   
-      console.log("Manager block status toggled:", response);
-      console.log("1111111111111111111111111111111111");
+
       
       
       // await rabbitMQMessager.sendToMultipleQueues({ isBlocked:managerData });
-      console.log("222222222222222222222222222222222222");
+
   
       return {
         success: true,
@@ -367,14 +366,17 @@ export default class ManagerService implements IManagerService {
     }
   }
 
-  async uploadProfilePic(businessOwnerId: string, managerId: string, file: Express.Multer.File): Promise<IManager> {
+  async uploadProfilePic(businessOwnerId: string, managerId: string, file: Express.Multer.File): Promise<string> {
+    console.log("update mangaer prfile pic serviceis -==>",managerId ,file);
+    
     try {
-      const imageUrl = await this.uploadFileToS3(businessOwnerId,managerId, file, "companyLogo");
+      const imageUrl = await this.uploadFileToS3(businessOwnerId,managerId, file, "profilePicture");
      const result = await this._managerRepository.uploadProfilePic(businessOwnerId, managerId, imageUrl);
      if(!result){
       throw new Error("Manager not found");
      }
-     return result;
+     const profilePicture =getSignedImageURL(result.personalDetails.profilePicture as string ) 
+     return profilePicture
     } catch (error) {
       console.error("Error updating manager:", error);
       throw error;
@@ -391,7 +393,7 @@ export default class ManagerService implements IManagerService {
     }
 
     const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
-    return `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileUrl}`;
+    return fileUrl
   }
 
   private async getDetails(businessOwnerId: string , managerId : string) {

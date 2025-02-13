@@ -32,59 +32,82 @@ export default class EmployeeService implements IEmployeeService {
 
     async employeeLogin(email: string, password: string): Promise<any> {
       try {
+          // Fetch employee data using email and password
           const employeeData = await this._employeeRepository.findByCredentialEmail(email, password);
-           const rabbitMQMessager = new RabbitMQMessager();
-          await rabbitMQMessager.init();
-    
           if (!employeeData) {
-              return { message: "Invalid email or password. Please try again." };
+              return { message: "Invalid email or password. Please try again.", success: false };
           }
   
+          // Fetch business owner data
+          const businessOwnerData = await this._businessOwnerRepository.findBusinessOwnerById(employeeData.businessOwnerId);
+  
+          // Initialize RabbitMQ messenger
+          const rabbitMQMessager = new RabbitMQMessager();
+          await rabbitMQMessager.init();
+  
+          // Check if the employee is verified
           if (!employeeData.isVerified) {
               const otp = generateOtp();
               await this.sendOtp(employeeData.personalDetails.email, otp);
-  
-              return { 
-                  success: false, 
+              return {
+                  success: true,
+                  isVerified: false,
                   message: "Account not verified. OTP has been sent to your registered email.",
-                  email: employeeData.personalDetails.email 
+                  email: employeeData.personalDetails.email
               };
           }
   
-          const isPasswordValid = password === employeeData.employeeCredentials.companyPassword; 
-  
+          // Validate password
+          const isPasswordValid = password === employeeData.employeeCredentials.companyPassword;
           if (!isPasswordValid) {
               return { success: false, message: "Invalid email or password. Please try again." };
           }
   
-          const businessOwnerData = await this._businessOwnerRepository.findBusinessOwnerById(employeeData.businessOwnerId);
+          // Check if the business owner is blocked
+          if (businessOwnerData?.isBlocked) {
+              return { message: "Company is blocked. Please contact admin.", isBusinessOwnerBlocked: true };
+          }
+  
+          // Check if the employee account is blocked
+          if (employeeData.isBlocked) {
+              return { message: "Account is blocked. Please contact admin.", isBlocked: true };
+          }
+  
+          // Generate authentication tokens
           const accessToken = generateAccessToken({ employeeData });
           const refreshToken = generateRefreshToken({ employeeData });
   
-          const employeeIsActiveData =await this._employeeRepository.updateIsActive(employeeData._id, true);
-          await rabbitMQMessager.sendToMultipleQueues({ employeeIsActiveData});
-
-         
-          return { 
-              success: true, 
-              message: "Login successful.", 
+          // Update employee active status
+          const employeeIsActiveData = await this._employeeRepository.updateIsActive(employeeData._id, true);
+          await rabbitMQMessager.sendToMultipleQueues({ employeeIsActiveData });
+  
+          // Construct response with necessary employee and company details
+          return {
+              success: true,
+              isVerified: true,
+              isBlocked: false,
+              message: "Login successful.",
               data: { ...employeeData.toJSON() },
               accessToken,
               refreshToken,
               workTime: employeeData.professionalDetails.workTime,
               position: employeeData.professionalDetails.position,
               employeeName: employeeData.personalDetails.employeeName,
-              eployeeProfilePicture:employeeData.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`:employeeData.personalDetails.profilePicture ,
-              companyLogo:businessOwnerData?.companyDetails.companyLogo? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOwnerData?.companyDetails.companyLogo}`:businessOwnerData?.companyDetails.companyLogo,
+              employeeProfilePicture: employeeData.personalDetails.profilePicture
+                  ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`
+                  : employeeData.personalDetails.profilePicture,
+              companyLogo: businessOwnerData?.companyDetails.companyLogo
+                  ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOwnerData.companyDetails.companyLogo}`
+                  : businessOwnerData?.companyDetails.companyLogo,
               employeePosition: employeeData.professionalDetails.position,
               companyName: employeeData.professionalDetails.companyName
           };
-  
       } catch (error) {
           console.error("Error in employee login service:", error);
           throw new Error("An error occurred while processing your request. Please try again.");
       }
   }
+  
   
 
    async  addEmployee(employeeData: any):Promise<any>{
@@ -104,7 +127,6 @@ export default class EmployeeService implements IEmployeeService {
 
     async sendOtp(email: string, otp: string): Promise<void> {
         const otpRecord = new OtpModel({
-        
           email,
           otp,
           createdAt: new Date(),
@@ -137,12 +159,15 @@ export default class EmployeeService implements IEmployeeService {
         }
       }
 
-      async validateOtp(email: string, otp: string): Promise<IValidateOtpDTO> {
+      async validateOtp(email: string, otp: string): Promise<any> {
         try {
-            // Check if OTP exists for the email
             const otpData = await this._employeeRepository.findOtpByEmail(email);
             if (!otpData) {
-                return { success: false, message: "No OTP record found for the provided email." };
+                return { success: false, message: "Invalid OTP provided. Please try again." };
+            }
+            const employeeData = await this._employeeRepository.findByEmail(email);
+            if (!employeeData) {
+                return { success: false, message: "Employee not found after verification. Please contact support." };
             }
     
             // Verify OTP match
@@ -151,34 +176,41 @@ export default class EmployeeService implements IEmployeeService {
             }
     
             // Update verification status
-            const verification = await this._employeeRepository.updateVerificationStatus(email);
+            const verification = await this._employeeRepository.updateVerificationStatus(email ,employeeData.businessOwnerId);
             if (!verification) {
                 return { success: false, message: "Failed to update verification status. Please try again." };
             }
     
             // Retrieve employee data
-            const employeeData = await this._employeeRepository.findByEmail(email);
-            if (!employeeData) {
-                return { success: false, message: "Employee not found after verification. Please contact support." };
+            
+            const businessOwnerData = await this._businessOwnerRepository.findBusinessOwnerById(employeeData.businessOwnerId);
+            if (!businessOwnerData) {
+                return { success: false, message: "Business owner not found after verification. Please contact support." };
             }
     
-            // Generate tokens
+             
             const accessToken = generateAccessToken({employeeData });
             const refreshToken = generateRefreshToken({ employeeData });
 
-            console.log("accessToken",accessToken);
-            console.log("refreshToken",refreshToken);
-            
-    
-            // Return success response
             return {
-                success: true,
-                email,
-                message: "OTP validated and account verified successfully.",
-                accessToken,
-                refreshToken,
-                workTime: employeeData.professionalDetails.workTime,
-                position: employeeData.professionalDetails.position
+              success: true,
+              isVerified: true,
+              isBlocked: false,
+              message: "Login successful.",
+              data: { ...employeeData.toJSON() },
+              accessToken,
+              refreshToken,
+              workTime: employeeData.professionalDetails.workTime,
+              position: employeeData.professionalDetails.position,
+              employeeName: employeeData.personalDetails.employeeName,
+              employeeProfilePicture: employeeData.personalDetails.profilePicture
+                  ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employeeData.personalDetails.profilePicture}`
+                  : employeeData.personalDetails.profilePicture,
+              companyLogo: businessOwnerData?.companyDetails.companyLogo
+                  ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOwnerData.companyDetails.companyLogo}`
+                  : businessOwnerData?.companyDetails.companyLogo,
+              employeePosition: employeeData.professionalDetails.position,
+              companyName: employeeData.professionalDetails.companyName
             };
         } catch (error: any) {
             console.error("Error validating OTP:", error.message);
@@ -201,12 +233,8 @@ export default class EmployeeService implements IEmployeeService {
   }
 
   async updateEmployee(employee: any): Promise<any> {
-    console.log("employee data---------------to rabbbbbbbb", employee);
-    
     try {
-        const employeeId = employee._id;
-        console.log("employeeId", employeeId);
-        
+        const employeeId = employee._id;        
       return this._employeeRepository.update(employeeId, employee);
     } catch (error) {
       console.error('Error in updateEmployee service:', error);

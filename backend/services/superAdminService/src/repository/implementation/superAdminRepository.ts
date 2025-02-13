@@ -9,7 +9,7 @@ export default class SuperAdminRepository implements ISuperAdminRepository {
     
     async getAllServiceRequest(): Promise<any> {
         try {
-            const response = await ServiceRequestModel.find();
+            const response = await ServiceRequestModel.find().populate('businessOwnerId');
             return response
 
         } catch (error) {

@@ -1,6 +1,5 @@
-import { IGetEmployeesCountDTO } from "../../dto/IDashboardDTO";
 
 export default interface IDashboardService {
-    getAllDashboardData(employeeId: string): Promise<any>;
+    getAllDashboardData(employeeId: string ,businessOwnerId: string): Promise<any>;
  
 }

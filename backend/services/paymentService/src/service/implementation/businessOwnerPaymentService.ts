@@ -9,7 +9,6 @@ import { IPaymentIntentResponseDTO } from "../../dto/businessOwnerPaymentsDTO";
 import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
 
 const stripe = new Stripe(process.env.STRIP_SECRET_KEY as string);
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN as string;
 
 @injectable()
 export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymentService {
@@ -21,8 +20,16 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
   async getAllSubscriptionPlans(): Promise<ISubscriptionDTO[]> {
     try {
       const payments = await this.repository.getAllSubscriptionPlans();
+      
       return payments.map(({ _id, planName, description, price, planType, durationInMonths, features, isActive }) => ({
-        _id, planName, description, price, planType, durationInMonths, features, isActive,
+        _id: new Types.ObjectId(_id as string),  // Cast _id to ObjectId
+        planName,
+        description,
+        price,
+        planType,
+        durationInMonths,
+        features,
+        isActive,
       }));
     } catch (error) {
       throw new Error("Error fetching payments: " + error);
@@ -85,8 +92,8 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
         subscription_data: {
           metadata: { planId: plan._id, email },
         },
-        success_url: `${CLIENT_ORIGIN}/business-owner/success`,
-        cancel_url: `${CLIENT_ORIGIN}/plan`,
+        success_url: 'http://localhost:5173/business-owner/success',
+        cancel_url: 'http://localhost:5173/plan',
       });
       if (!session) throw new Error("Failed to create Stripe session");
       return { session, success: true, planName: plan.planName };
@@ -121,7 +128,7 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
 
       const newPlan = await this.repository.findNewSubscriptionPlan(planId);
       const subscription: ISubscription = {
-        subscriptionId: new Types.ObjectId(newPlan[0]._id),
+        subscriptionId: new Types.ObjectId(newPlan[0]._id as unknown as string),
         customerId: session.customer,
         startDate: new Date(),
         endDate: new Date(new Date().setDate(new Date().getDate() + 30)),
@@ -171,8 +178,8 @@ private async processCheckoutPlan(plan: any, amount: number, currency: string, e
     subscription_data: {
       metadata: { planId: plan._id, email },
     },
-    success_url: `${CLIENT_ORIGIN}/business-owner/success`,
-    cancel_url: `${CLIENT_ORIGIN}/plan`,
+    success_url: 'http://localhost:5173/business-owner/success',
+    cancel_url: 'http://localhost:5173/plan',
   });
 
   console.log('Stripe Session Created:', session);

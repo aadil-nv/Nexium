@@ -14,9 +14,9 @@ export default class AttendanceService implements IAttendanceService {
         this.attendanceRepository = attendanceRepository;
      }
 
-     async updateAttendanceEntry(employeeId: string): Promise<IAttendanceResponceDTO> {
+     async updateAttendanceEntry(employeeId: string , businessOwnerId: string): Promise<IAttendanceResponceDTO> {
         try {    
-            const updated =  await this.attendanceRepository.updateAttendances(employeeId);
+            const updated =  await this.attendanceRepository.updateAttendances(employeeId , businessOwnerId);
 
             if(!updated){return{status: "error",message: "Attendance not updated"}}
 
@@ -28,9 +28,9 @@ export default class AttendanceService implements IAttendanceService {
         }
      }
 
-    async fetchAttendances(employeeId: string): Promise<any> {
+    async fetchAttendances(employeeId: string , businessOwnerId: string): Promise<any> {
         try {
-            const attendances = await this.attendanceRepository.fetchAttendances(employeeId);
+            const attendances = await this.attendanceRepository.fetchAttendances(employeeId , businessOwnerId);
             return attendances
         } catch (error) {
             console.error(error);
@@ -39,10 +39,10 @@ export default class AttendanceService implements IAttendanceService {
         }
     }
 
-    async markCheckin(attendanceData: any, employeeId: string): Promise<IAttendanceResponceDTO> {
+    async markCheckin(attendanceData: any, employeeId: string , businessOwnerId: string): Promise<IAttendanceResponceDTO> {
         try {
-            let employeeAttendance = await this.attendanceRepository.findAttendanceByEmployeeId(employeeId) 
-                || await this.attendanceRepository.createAttendanceRecord(employeeId);
+            let employeeAttendance = await this.attendanceRepository.findAttendanceByEmployeeId(employeeId , businessOwnerId) 
+                || await this.attendanceRepository.createAttendanceRecord(employeeId , businessOwnerId);
     
             if (!employeeAttendance.attendance) employeeAttendance.attendance = [];
     
@@ -63,7 +63,7 @@ export default class AttendanceService implements IAttendanceService {
                 status: "Present"
             };
     
-            const updatedAttendance = await this.attendanceRepository.markCheckIn(employeeAttendance._id, todaysCheckIn ,employeeId);
+            const updatedAttendance = await this.attendanceRepository.markCheckIn(employeeAttendance._id, todaysCheckIn ,employeeId , businessOwnerId);
     
             return { status: "success", data: updatedAttendance, message: "Attendance marked successfully" };
         } catch (error) {
@@ -72,9 +72,9 @@ export default class AttendanceService implements IAttendanceService {
         }
     }
     
-    async markCheckout(attendanceData: any, employeeId: string): Promise<IAttendanceResponceDTO> {
+    async markCheckout(attendanceData: any, employeeId: string , businessOwnerId: string): Promise<IAttendanceResponceDTO> {
         try {
-            const employeeAttendance = await this.attendanceRepository.findAttendanceByEmployeeId(employeeId);
+            const employeeAttendance = await this.attendanceRepository.findAttendanceByEmployeeId(employeeId , businessOwnerId);
             if (!employeeAttendance) {
                 return { status: "error", message: "No attendance record found" };
             }
@@ -100,21 +100,18 @@ export default class AttendanceService implements IAttendanceService {
                 return { status: "error", message: "Invalid date format" };
             }
     
-            // Calculate worked minutes
             const workedMinutes = Math.floor((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60));
             if (workedMinutes < 0) {
                 return { status: "error", message: "Check-out time cannot be earlier than check-in time" };
             }
     
-            // Store worked minutes in the 'hours' field
             todayAttendance.minutes = workedMinutes;
     
-            // Determine work status thresholds (in minutes)
             const workTimeThreshold: { [key: string]: number } = {
-                "Full-Time": 480, // 8 hours
-                "Part-Time": 240, // 4 hours
-                "Contract": 540, // 9 hours
-                "Temporary": 420, // 7 hours
+                "Full-Time": 480, 
+                "Part-Time": 240, 
+                "Contract": 540, 
+                "Temporary": 420, 
             };
     
             const workType = employeeAttendance.position as keyof typeof workTimeThreshold;
@@ -128,7 +125,7 @@ export default class AttendanceService implements IAttendanceService {
                 todayAttendance.status = "Present";
             }
     
-            const updatedAttendance = await this.attendanceRepository.markCheckOut(employeeAttendance._id, todayAttendance ,employeeId);
+            const updatedAttendance = await this.attendanceRepository.markCheckOut(employeeAttendance._id, todayAttendance ,employeeId , businessOwnerId);
             if (!updatedAttendance) {
                 return { status: "error", message: "Failed to update attendance record" };
             }
@@ -140,12 +137,10 @@ export default class AttendanceService implements IAttendanceService {
         }
     }
     
-    async fetchApprovedLeaves(employeeId: string): Promise<IApprovedLeaveDTO> {
+    async fetchApprovedLeaves(employeeId: string , businessOwnerId: string): Promise<IApprovedLeaveDTO> {
         try {
-            const approvedLeaves= await this.attendanceRepository.fetchApprovedLeaves(employeeId)
-            console.log("approvedLeaves--------------------------",approvedLeaves);
+            const approvedLeaves= await this.attendanceRepository.fetchApprovedLeaves(employeeId , businessOwnerId);
             
-
             if (!approvedLeaves) {
                 throw new Error("No leave records found");
             }
@@ -174,12 +169,12 @@ export default class AttendanceService implements IAttendanceService {
   
     }
     
-    async applyLeave(data: any, employeeId: any): Promise<any> {
+    async applyLeave(data: any, employeeId: any , businessOwnerId: string): Promise<any> {
         console.log("Apply Leave Data:", data);
     
         try {
  
-          const employeeData = await this.attendanceRepository.applyLeave(employeeId, data);
+          const employeeData = await this.attendanceRepository.applyLeave(employeeId, data ,businessOwnerId);
           if (!employeeData) {
             return { message: "Failed to apply leave", status: "error" };
           }

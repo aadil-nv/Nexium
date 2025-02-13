@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import IEmployeeController from "../interface/IEmployeeController";
 import IEmployeeService from "../../service/interfaces/IEmployeeService";
 import { inject, injectable } from "inversify";
+import { HttpStatusCode } from "../../utils/statusCodes";
 
 
 @injectable()
@@ -23,11 +24,11 @@ export default class EmployeeController implements IEmployeeController {
         res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 3600 * 1000 }); // 7 days
 
 
-        return res.status(200).json(result);
+        return res.status(HttpStatusCode.OK).json(result);
         
        } catch (error:any) {
         console.error('Error during employee login:', error);
-        return res.status(500).json({ message: 'Internal Server Error' });
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
         
        }
     }
@@ -40,21 +41,18 @@ export default class EmployeeController implements IEmployeeController {
             console.log("Email:", email, "OTP:", otp);
             
             const response = await this._employeeService.validateOtp(email, otp);
-            console.log("OTP validation response:", response);
-
             if (response.success) {
                 res.cookie('accessToken', response.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge:7 * 24 * 3600 * 1000 });
                 res.cookie('refreshToken', response.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 3600 * 1000 }); // 7 days
 
-                res.status(200).json({
+                res.status(HttpStatusCode.OK).json({
                     success: true,
                     message: response.message,
                     email: response.email,
-                    accessToken: response.accessToken,
-                    refreshToken: response.refreshToken,
+                    response 
                 });
             } else {
-                res.status(400).json({
+                res.status(HttpStatusCode.BAD_REQUEST).json({
                     success: false,
                     message: response.message || "OTP validation failed.",
                 });
@@ -64,6 +62,17 @@ export default class EmployeeController implements IEmployeeController {
             next(error);
         }
     }
+
+    async resendOtp(req: Request, res: Response): Promise<Response> {
+        try {
+          const { email } = req.body;
+          const result = await this._employeeService.resendOtp(email);
+          return res.status(HttpStatusCode.OK).json(result);
+        } catch (error) {
+          console.error('Error resending OTP:', error);
+          return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
+        }
+      }
 
 
 }

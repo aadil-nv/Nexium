@@ -3,6 +3,7 @@ import { generateAccessToken, generateRefreshToken } from '../../utils/businessO
 import ISuperAdminController from '../interface/ISuperAdminController';
 import ISuperAdminService from '../../service/interfaces/ISuperAdminService';
 import { inject, injectable } from "inversify";
+import { HttpStatusCode } from '../../utils/statusCodes';
 
 @injectable()
 export default class SuperAdminController implements ISuperAdminController {
@@ -32,9 +33,9 @@ export default class SuperAdminController implements ISuperAdminController {
                 maxAge:7 * 24 * 60 * 60 * 1000
             });
 
-            return res.status(200).json({ accessToken });
+            return res.status(HttpStatusCode.OK).json({ accessToken });
         } catch (error: unknown) {
-            return res.status(error instanceof Error ? 400 : 500).json({
+            return res.status(error instanceof Error ? HttpStatusCode.BAD_REQUEST : HttpStatusCode.INTERNAL_SERVER_ERROR).json({
                 message: error instanceof Error ? error.message : 'An unexpected error occurred.',
             });
         }
@@ -55,9 +56,9 @@ export default class SuperAdminController implements ISuperAdminController {
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
 
-            return res.status(201).json({ accessToken, admin: newAdmin });
+            return res.status(HttpStatusCode.CREATED).json({ accessToken, admin: newAdmin });
         } catch (error: unknown) {
-            return res.status(error instanceof Error ? 400 : 500).json({
+            return res.status(error instanceof Error ? HttpStatusCode.BAD_REQUEST : HttpStatusCode.INTERNAL_SERVER_ERROR).json({
                 message: error instanceof Error ? error.message : 'An unexpected error occurred.',
             });
         }
@@ -69,7 +70,7 @@ export default class SuperAdminController implements ISuperAdminController {
             const newAccessToken = await this._adminService.setNewAccessToken(refreshToken);
             return res.status(200).json({ accessToken: newAccessToken });
         } catch (error: unknown) {
-            return res.status(error instanceof Error ? 400 : 500).json({
+            return res.status(error instanceof Error ? HttpStatusCode.BAD_REQUEST : HttpStatusCode.INTERNAL_SERVER_ERROR).json({
                 message: error instanceof Error ? error.message : 'An unexpected error occurred.',
             });
         }

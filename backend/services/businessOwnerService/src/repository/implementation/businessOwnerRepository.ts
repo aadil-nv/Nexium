@@ -11,6 +11,8 @@ import mongoose from "mongoose";
 import serviceRequestModel from "../../models/serviceRequestModel";
 import chatModel from "../../models/chatModel";
 import businessOwnerModel from "../../models/businessOwnerModel";
+import subscriptionModel from "../../models/subscriptionModel";
+import ISubscription from "../../entities/subscriptionEntity";
 
 @injectable()
 export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwnerDocument> implements IBusinessOwnerRepository {
@@ -78,10 +80,15 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
       }
 
       
-      const businessOwner = _switchDb.model('BusinessOwner', BusinessOwnerModel.schema);
+      const businessOwner = _switchDb.model('businessowners', BusinessOwnerModel.schema);
        await businessOwner.findByIdAndUpdate(
         businessOwnerId,
-        { $set: result }, // Save the file path
+        { $set: { 
+          "personalDetails.businessOwnerName": updateFields.businessOwnerName,
+          "personalDetails.email": updateFields.email,
+          "personalDetails.personalWebsite": updateFields.personalWebsite,
+          "personalDetails.phone": updateFields.phone
+        } }, // Save the file path
         { new: true }
       );
   
@@ -96,6 +103,14 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
   async uploadImages(businessOwnerId: string, filePath: string): Promise<IBusinessOwnerDocument> {
     
     try {
+      const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+      const businessOwner = _switchDb.model('businessowners', businessOwnerModel.schema)
+      await businessOwner.findByIdAndUpdate(
+        businessOwnerId,
+        { $set: { 'personalDetails.profilePicture': filePath } }, // Save the file path
+        { new: true }
+      );
+
       const result = await this._businessOwnerModel.findByIdAndUpdate(
         businessOwnerId,
         { $set: { 'personalDetails.profilePicture': filePath } }, // Save the file path
@@ -117,7 +132,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     
     try {
       const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-      const businessOwner = _switchDb.model('businessOwners', businessOwnerModel.schema)
+      const businessOwner = _switchDb.model('businessowners', businessOwnerModel.schema)
       await businessOwner.findByIdAndUpdate(
         businessOwnerId,
         { $set: { 'companyDetails.companyLogo': filePath } }, // Save the file path
@@ -134,7 +149,6 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         throw new Error(`No business owner found with ID: ${businessOwnerId}`);
       }
   
-
       return result;
     } catch (error) {
       console.error('Error updating personal details:', error);
@@ -142,8 +156,6 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     }
   }
   async findIsBlocked(businessOwnerId: string): Promise<boolean | null> {
-
-    
     try {
       const businessOwner = await this._businessOwnerModel.findById(businessOwnerId);
       if (!businessOwner) {
@@ -158,7 +170,15 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
  
   async updateAddress(businessOwnerId: string, data: any): Promise<IBusinessOwnerDocument> {
     try {
+      const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+      const businessOwner = _switchDb.model('businessowners', businessOwnerModel.schema)
       const result = await this._businessOwnerModel.findByIdAndUpdate(
+        businessOwnerId,
+        { $set: { 'address': data } }, // Save the file path
+        { new: true }
+      );
+
+       await businessOwner.findByIdAndUpdate(
         businessOwnerId,
         { $set: { 'address': data } }, // Save the file path
         { new: true }
@@ -179,7 +199,19 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
   async updateCompanyDetails(businessOwnerId: string, data: any): Promise<IBusinessOwnerDocument> {
 
     try {
+      const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+      const businessOwner = _switchDb.model('businessowners', businessOwnerModel.schema)
       const result = await this._businessOwnerModel.findByIdAndUpdate(
+        businessOwnerId,
+        { $set: { 
+          'companyDetails.companyName': data.companyName,
+          'companyDetails.companyRegistrationNumber': data.companyRegistrationNumber,
+           'companyDetails.companyWebsite': data.companyWebsite,
+           'companyDetails.companyEmail': data.companyEmail } }, // Save the file path
+        { new: true }
+      );
+
+       await businessOwner.findByIdAndUpdate(
         businessOwnerId,
         { $set: { 
           'companyDetails.companyName': data.companyName,
@@ -202,15 +234,14 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
   }
 
   async uploadDocuments(businessOwnerId: string, documentType: string, documentData: Object): Promise<IBusinessOwnerDocument> {
-
-  
     try {
-      // Validate document type
+      const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+      const businessOwner = _switchDb.model('businessowners', businessOwnerModel.schema)
+
       if (documentType !== 'companyCertificate') {
         throw new Error(`Invalid document type: ${documentType}`);
       }
   
-      // Construct the update data based on documentType
       const updateData = {
         [`documents.${documentType}`]: documentData
       };
@@ -220,6 +251,11 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         updateData,
         { new: true }
       );
+      await businessOwner.findByIdAndUpdate(
+        businessOwnerId,
+        updateData,
+        { new: true }
+      )
   
       if (!result) throw new Error(`No business owner found with ID: ${businessOwnerId}`);
 
@@ -232,35 +268,25 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
 
   async getDashboardData(companyId: string): Promise<any> {
     try {
-      // Switch to the correct database using the companyId
       const _switchDb = mongoose.connection.useDb(companyId, { useCache: true });
   
-      // Define the Employee and Manager models for the switched database
       const Employee = _switchDb.model('Employees', EmployeeModel.schema);
       const Manager = _switchDb.model('Managers', ManagerModel.schema);
   
-      // Get the total count of employees
       const totalEmployees = await Employee.countDocuments();
   
-      // Get the count of active employees
       const activeEmployees = await Employee.countDocuments({ isActive: true });
   
-      // Get the count of verified employees
       const verifiedEmployees = await Employee.countDocuments({ isVerified: true });
   
-      // Get the count of managers
       const totalManagers = await Manager.countDocuments();
   
-      // Get the count of active managers
       const activeManagers = await Manager.countDocuments({ isActive: true });
   
-      // Get the count of verified managers
       const verifiedManagers = await Manager.countDocuments({ isVerified: true });
   
-      // Get the total company employees count (sum of total employees and total managers)
       const totalCompanyEmployees = totalEmployees + totalManagers;
   
-      // Get the count of employees who joined in the last month
       const lastMonthEmployees = await Employee.countDocuments({
         "professionalDetails.joiningDate": {
           $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
@@ -283,27 +309,26 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
           },
         },
         {
-          $sort: { _id: 1 }, // Sort by month in ascending order
+          $sort: { _id: 1 },
         },
       ]);
   
-      // Get the count of managers who joined in each month over the past 6 months
       const managerMonthsJoined = await Manager.aggregate([
         {
           $match: {
             "professionalDetails.joiningDate": {
-              $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)), // Last 6 months
+              $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)),
             },
           },
         },
         {
           $group: {
-            _id: { $month: "$professionalDetails.joiningDate" }, // Group by month of joining
+            _id: { $month: "$professionalDetails.joiningDate" },
             count: { $sum: 1 },
           },
         },
         {
-          $sort: { _id: 1 }, // Sort by month in ascending order
+          $sort: { _id: 1 }, 
         },
       ]);
   
@@ -313,34 +338,30 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         "July", "August", "September", "October", "November", "December"
       ];
   
-      // Initialize an empty object for the months and counts for employees and managers
       const employeeMonthCounts: { [key: string]: number } = {};
       const managerMonthCounts: { [key: string]: number } = {};
   
-      const currentMonth = new Date().getMonth(); // Get the current month (0-based index)
+      const currentMonth = new Date().getMonth(); 
   
-      // Initialize all months with 0 count for employees and managers in their respective objects
       for (let i = 0; i < 6; i++) {
         const monthIndex = (currentMonth - i + 12) % 12;
-        employeeMonthCounts[monthNames[monthIndex]] = 0; // Set default count for employees for each month
-        managerMonthCounts[monthNames[monthIndex]] = 0;  // Set default count for managers for each month
+        employeeMonthCounts[monthNames[monthIndex]] = 0; 
+        managerMonthCounts[monthNames[monthIndex]] = 0; 
       }
   
-      // Map the aggregated employee data into the employeeMonthCounts object
+ 
       employeeMonthsJoined.forEach((entry: any) => {
-        const monthIndex = (currentMonth - entry._id + 12) % 12; // Adjust for past months
-        const monthName = monthNames[entry._id - 1]; // Get the month name (1-based index)
+        const monthIndex = (currentMonth - entry._id + 12) % 12; 
+        const monthName = monthNames[entry._id - 1]; 
         employeeMonthCounts[monthName] = entry.count;
       });
-  
-      // Map the aggregated manager data into the managerMonthCounts object
+ 
       managerMonthsJoined.forEach((entry: any) => {
-        const monthIndex = (currentMonth - entry._id + 12) % 12; // Adjust for past months
-        const monthName = monthNames[entry._id - 1]; // Get the month name (1-based index)
+        const monthIndex = (currentMonth - entry._id + 12) % 12; 
+        const monthName = monthNames[entry._id - 1]; 
         managerMonthCounts[monthName] = entry.count;
       });
-  
-      // Return the collected data for the dashboard
+
       return {
         totalEmployees,
         activeEmployees,
@@ -348,10 +369,10 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         totalManagers,
         activeManagers,
         verifiedManagers,
-        totalCompanyEmployees, // New total company employees count
+        totalCompanyEmployees, 
         lastMonthEmployees,
-        employeeMonthCounts, // Object of month names and their corresponding employee join counts
-        managerMonthCounts,  // Object of month names and their corresponding manager join counts
+        employeeMonthCounts, 
+        managerMonthCounts,  
       };
     } catch (error) {
       console.error("Error retrieving dashboard data: ", error);
@@ -374,10 +395,8 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         status: 'Pending', 
       });
   
-      // Save the service request to the database
       const result = await newServiceRequest.save();
   
-      // Return the saved result
       return result;
     } catch (error) {
       console.error("Error adding service request: ", error);
@@ -410,9 +429,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     }
   }
 
-  async updateLastSeenForChats(businessOwnerId: string): Promise<any> {
-    console.log(`update laste seen for ${businessOwnerId}`);
-    
+  async updateLastSeenForChats(businessOwnerId: string): Promise<any> {    
     try {
       const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
       const chat = _switchDb.model('Chats', chatModel.schema);
@@ -439,52 +456,21 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     }
   }
 
-  // async updateIsActive(businessOwnerId: string , isActive: boolean): Promise<any> {
-  //   console.log(`update isActive for ${businessOwnerId}`.bgWhite + " " + isActive);
-    
-  //   try {
-  //     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-  //     console.log(`111111111111111111111111111`.bgWhite.bold,_switchDb);
-      
-  //     const businessOwner = _switchDb.model('businessOwners', businessOwnerModel.schema)
-  //     console.log(`2222222222222222222222222`.bgWhite.bold,businessOwner);
-  //    ;
-  //     const result = await businessOwner.findOneAndUpdate(
-  //       { _id: businessOwnerId },
-  //       { $set: { isActive: isActive } },
-  //       { new: true }
-  //     );
-  //     console.log(`33333333333333333333333333`.bgWhite.bold ,result);
-  //     // console.log(`444444444444444444444`.bgWhite.bold)
-  //     return result;
-  //   } catch (error) {
-  //     console.error("Error updating service request: ", error);
-  //     throw new Error("Failed to update service request.");
-  //   }
-  // }
   async updateIsActive(businessOwnerId: string, isActive: boolean): Promise<any> {
-    console.log(`Updating isActive for ${businessOwnerId}`.bgWhite, isActive);
-
     try {
-        const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-        console.log(`Switching to DB`.bgWhite.bold);
-
-        const businessOwnerCollection = _switchDb.collection('businessOwners');
-        console.log(`Business Owner Collection:`.bgWhite.bold, businessOwnerCollection);
-
+      const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+        const businessOwnerCollection = _switchDb.model('businessowners', this._businessOwnerModel.schema);
         const first = await businessOwnerCollection.findOneAndUpdate(
             { _id: new mongoose.Types.ObjectId(businessOwnerId) }, 
             { $set: { isActive } }, 
             { upsert: true, returnDocument: "after" } // ✅ Fixed option
         );
-        console.log(`Updated in businessOwners collection:`.bgRed.bold, first);
 
         const result = await this._businessOwnerModel.findOneAndUpdate(
             { _id: new mongoose.Types.ObjectId(businessOwnerId) }, 
             { $set: { isActive } }, 
             { returnDocument: "after" } // ✅ Fixed option
-        );
-        console.log(`Updated in _businessOwnerModel:`.bgWhite.bold, result);
+        );1
 
         return result;
     } catch (error) {
@@ -492,5 +478,8 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
         throw new Error("Failed to update isActive.");
     }
 }
+
+
+
   
 }

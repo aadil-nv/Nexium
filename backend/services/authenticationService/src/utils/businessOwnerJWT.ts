@@ -23,7 +23,7 @@ export const generateRefreshToken = (data: object): string => {
 
 export const verifyRefreshToken = (token: string): JwtPayload | null => {
     try {
-        return jwt.verify(token, "Admin@123") as JwtPayload; // Verify refresh token
+        return jwt.verify(token, REFRESH_TOKEN_SECRET) as JwtPayload; // Verify refresh token
     } catch {
         return null;
     }

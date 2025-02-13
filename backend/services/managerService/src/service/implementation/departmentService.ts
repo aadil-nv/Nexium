@@ -2,8 +2,7 @@ import { DepartmentWithEmployeesDTO } from "dto/IDepartmentDTO";
 import IDepartmentRepository from "../../repository/interface/IDepartmentRepository";
 import IDepartmentService from "../interface/IDepartmentService";
 import { inject, injectable } from "inversify";
-import { profile } from "node:console";
-
+import connectDB from "../../config/connectDB";
 
 
 @injectable()
@@ -12,14 +11,11 @@ export default class DepartmentService implements IDepartmentService {
     @inject("IDepartmentRepository") private _departmentRepository: IDepartmentRepository
   ) {}
 
-  async addDepartments(departmentName: string, employees: any): Promise<any> {
-    console.log(`"departmentName=================="`.bgRed, employees);
+  async addDepartments(departmentName: string, employees: any ,businessOwnerId:string): Promise<any> {
   
     try {
-      // Fetch all existing departments
-      const departments = await this._departmentRepository.findAllDepartments();
+      const departments = await this._departmentRepository.findAllDepartments(businessOwnerId);
   
-      // Check if the department name already exists
       const existingDepartment = departments.find(
         (department: any) => department.departmentName.toLowerCase() === departmentName.toLowerCase()
       );
@@ -31,7 +27,6 @@ export default class DepartmentService implements IDepartmentService {
         };
       }
   
-      // Validate "Team Lead" position in employees
       const teamLeads = employees.filter((employee: any) => employee.position === "Team Lead");
   
       if (teamLeads.length === 0) {
@@ -49,7 +44,7 @@ export default class DepartmentService implements IDepartmentService {
       }
   
       // Add the department if validation passes
-      const department = await this._departmentRepository.addDepartments(departmentName, employees);
+      const department = await this._departmentRepository.addDepartments(departmentName, employees ,businessOwnerId);
   
       console.log("Department added successfully:", department);
   
@@ -69,12 +64,11 @@ export default class DepartmentService implements IDepartmentService {
     }
   }
   
-  async getDepartments(): Promise<DepartmentWithEmployeesDTO[]> {
+  async getDepartments(businessOwnerId: string): Promise<DepartmentWithEmployeesDTO[]> {
     try {
-        const departments = await this._departmentRepository.getDepartments();
-        console.log("departments========================", departments);
         
-
+        const departments = await this._departmentRepository.getDepartments(businessOwnerId);
+        
         const departmentDTOs: DepartmentWithEmployeesDTO[] = departments.map((department: any) => ({
             departmentId: department._id.toString(),
             departmentName: department.departmentName,
@@ -88,7 +82,6 @@ export default class DepartmentService implements IDepartmentService {
             })),
         }));
 
-        console.log(`"departmentDTOs====================="`.bgGreen, departmentDTOs);
         
         return departmentDTOs;
     } catch (error) {
@@ -98,26 +91,25 @@ export default class DepartmentService implements IDepartmentService {
 }
 
 
-  async removeEmployee(employeeId: string, departmentId: string): Promise<any> {
+  async removeEmployee(employeeId: string, departmentId: string ,businessOwnerId:string): Promise<any> {
     try {
-     const result = await this._departmentRepository.removeEmployeeFromDepartment(departmentId, employeeId);
+     const result = await this._departmentRepository.removeEmployeeFromDepartment(departmentId, employeeId ,businessOwnerId);
     } catch (error: any) {
       console.error("Error in removeEmployee service:", error.message);
       throw error;
     }
   }
 
-  async deleteDepartment(departmentId: string): Promise<any> {
-    console.log("departmentId%%%%%%%%%%%%%%%%%%%%%%%%", departmentId);
+  async deleteDepartment(departmentId: string,businessOwnerId:string): Promise<any> {
     
     try {
-      const department = await this._departmentRepository.findDepartment(departmentId);
+      const department = await this._departmentRepository.findDepartment(departmentId ,businessOwnerId);
 
       if (!department) {
         throw new Error("Department not found");
       }
 
-      await this._departmentRepository.deleteDepartment(departmentId);
+      await this._departmentRepository.deleteDepartment(departmentId ,businessOwnerId);
 
       return { message: "Department deleted successfully", department };
     } catch (error: any) {
@@ -126,38 +118,54 @@ export default class DepartmentService implements IDepartmentService {
     }
   }
 
-  async updateDepartmentName(departmentId: string, newDepartmentName: string): Promise<any> {
+  async updateDepartmentName(departmentId: string, newDepartmentName: string, businessOwnerId: string): Promise<any> {
     try {
-        // Validation: Ensure the new department name is not empty and has at least 3 characters
-        if (!newDepartmentName || newDepartmentName.length < 3) {
-            throw new Error("Department name must be at least 3 characters long and cannot be empty");
+        if (!newDepartmentName || newDepartmentName.trim().length < 3) {
+            throw new Error("Department name must be at least 3 characters long and cannot be empty.");
         }
 
-        // Retrieve department using repository
-        const department = await this._departmentRepository.findDepartment(departmentId);
+        if (!businessOwnerId) {
+            throw new Error("Business owner ID is required.");
+        }
+
+        const departments = await this._departmentRepository.findAllDepartments(businessOwnerId);
+
+        console.log("Departments fetched:", departments);
+
+        const existingDepartment = departments.find(
+            (department: any) => department.departmentName.toLowerCase() === newDepartmentName.toLowerCase()
+        );
+
+        console.log("Existing Department:", existingDepartment);
+
+        if (existingDepartment) {
+            throw new Error(`The department name "${newDepartmentName}" already exists. Please choose a different name.`);
+        }
+
+        const department = await this._departmentRepository.findDepartment(departmentId, businessOwnerId);
 
         if (!department) {
-            throw new Error("Department not found");
+            throw new Error("Department not found.");
         }
 
         // Update the department name
         department.departmentName = newDepartmentName;
 
         // Save the updated department
-        return await this._departmentRepository.saveDepartment(department);
+        return await this._departmentRepository.saveDepartment(department, businessOwnerId);
 
-          // Return the updated department
     } catch (error: any) {
-      console.error("Error in removeEmployee service:", error.message);
-      throw error;
+        console.error("Error in updateDepartmentName service:", error.message);
+        throw new Error(error.message || "An unexpected error occurred while updating department name.");
     }
 }
 
-async addEmployeesToDepartment(employeeData: any[], departmentId: string): Promise<any> {
+
+async addEmployeesToDepartment(employeeData: any[], departmentId: string ,businessOwnerId:string): Promise<any> {
 
   try {
       // Fetch the department
-      const department = await this._departmentRepository.findDepartment(departmentId);
+      const department = await this._departmentRepository.findDepartment(departmentId ,businessOwnerId);
       if (!department) {
           throw new Error('Department not found.');
       } 
@@ -165,7 +173,7 @@ async addEmployeesToDepartment(employeeData: any[], departmentId: string): Promi
       // Process each employee
       const results = [];
       for (const employee of employeeData) {
-          const updatedInfo = await this._departmentRepository.addEmployeesToDepartment(departmentId, employee);
+          const updatedInfo = await this._departmentRepository.addEmployeesToDepartment(departmentId, employee ,businessOwnerId);
           results.push(updatedInfo);
       }
 

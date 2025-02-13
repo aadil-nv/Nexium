@@ -14,18 +14,17 @@ export default class ProjectService implements IProjectService {
     @inject("IEmployeeRepository") 
     private _employeeRepository: IEmployeeRepository) {}
 
-    async addNewProject(managerId: string, data: any): Promise<IProjectResponseDTO | IProjectDTO> {
+    async addNewProject(managerId: string, data: any,buisinessownerId:string): Promise<IProjectResponseDTO | IProjectDTO> {
         try {
             if (!data.teamLeadId) {
                 throw new Error("Team lead is required");
             }
-            const teamLeadData = await this._employeeRepository.getEmployeeInformation(data.teamLeadId);
+            const teamLeadData = await this._employeeRepository.getEmployeeInformation(data.teamLeadId,buisinessownerId);
     
             if (!teamLeadData) {
                 throw new Error("Team lead not found");
             }
     
-            // Extract the employeeName from teamLeadData and assign it to assignedEmployee field
             const assignedEmployee = {
                 employeeId: teamLeadData._id, // Assuming the teamLeadData has _id field
                 employeeName: teamLeadData.personalDetails.employeeName, // Assuming employeeName is in personalDetails
@@ -48,19 +47,16 @@ export default class ProjectService implements IProjectService {
                         };
                     })
                 );
-                data.projectFiles = uploadedFiles; // Replace local files with signed URLs
-            } else {
-                data.projectFiles = []; // Default to empty array if no files provided
+                data.projectFiles = uploadedFiles; 
+                data.projectFiles = [];
             }
-    
-            // Pass the assignedEmployee to the repository layer
-            const result = await this._projectRepository.addNewProject(managerId, data, assignedEmployee);
+
+            const result = await this._projectRepository.addNewProject(managerId, data, assignedEmployee ,buisinessownerId);
     
             if (!result) {
                 throw new Error("Failed to add a new project");
             }
     
-            // Create IProjectDTO from the saved project
             const projectDTO: IProjectDTO = {
                 projectId: result._id,
                 projectName: result.projectName,
@@ -86,10 +82,10 @@ export default class ProjectService implements IProjectService {
         }
     }
     
-    async getAllTeamLeads(): Promise<IEmployeesDTO[]> {
+    async getAllTeamLeads(businessOwnerId: string): Promise<IEmployeesDTO[]> {
         try {
             // Fetch all team leads from the repository
-            const employees = await this._employeeRepository.getAllTeamLeads()
+            const employees = await this._employeeRepository.getAllTeamLeads(businessOwnerId);
           
             
     
@@ -112,11 +108,12 @@ export default class ProjectService implements IProjectService {
         }
     }
 
-    async getAllProjects(): Promise<IProjectDTO[]> {
+    async getAllProjects(businessOwnerId : string): Promise<IProjectDTO[]> {
+        
         try {
-            const projects = await this._projectRepository.findAllProjects();
+            const projects = await this._projectRepository.findAllProjects(businessOwnerId);
    
-            const projectDTOs: IProjectDTO[] = projects.map((project) => {
+            const projectDTOs: IProjectDTO[] = projects.map((project:any) => {
                 return {
                     projectId: project._id,
                     projectName: project.projectName,
@@ -143,11 +140,11 @@ export default class ProjectService implements IProjectService {
         }
     }
 
-    async updateProject(projectId: string, data: any): Promise<IProjectDTO> {
+    async updateProject(projectId: string, data: any,businessOwnerId:string): Promise<IProjectResponseDTO | IProjectDTO> {
         console.log("data is from service is ===>".bgWhite.bold ,data);
         
         try {
-            const updatedProject = await this._projectRepository.updateProject(projectId, data);
+            const updatedProject = await this._projectRepository.updateProject(projectId, data ,businessOwnerId);
             if (!updatedProject) {
                 throw new Error("Failed to update project");
             }
@@ -177,9 +174,9 @@ export default class ProjectService implements IProjectService {
     }
     
 
-    async deleteProject(projectId: string): Promise<IProjectDTO> {
+    async deleteProject(projectId: string , businessOwnerId:string): Promise<IProjectDTO> {
         try {
-            const deletedProject = await this._projectRepository.deleteProject(projectId);
+            const deletedProject = await this._projectRepository.deleteProject(projectId, businessOwnerId);
             if (!deletedProject) {
                 throw new Error("Failed to delete project");
             }
@@ -207,9 +204,9 @@ export default class ProjectService implements IProjectService {
         }
     }
 
-    async updateProjectFile(projectId: string, file: any): Promise<IProjectDTO> {
+    async updateProjectFile(projectId: string, file: any,businessOwnerId:string): Promise<IProjectDTO> {
         try {
-            const updatedProject = await this._projectRepository.updateProjectFile(projectId, file);
+            const updatedProject = await this._projectRepository.updateProjectFile(projectId, file ,businessOwnerId);
             if (!updatedProject) {
                 throw new Error("Failed to update project file");
             }
@@ -235,9 +232,9 @@ export default class ProjectService implements IProjectService {
             console.error("Error in ProjectService:", error);
             throw new Error("Error updating project file");
         }
-            }
+     }
         
-        }
+ }
     
  
 

@@ -10,7 +10,7 @@ export default class ProjectService implements IProjectService {
     constructor(@inject("IProjectRepository") private _projectRepository: IProjectRepository) { }
 
 
-    async updateEmployeeFiles(projectId: string, projectFile: Express.Multer.File): Promise<IProjectDTO> {
+    async updateEmployeeFiles(projectId: string, projectFile: Express.Multer.File,businessOwnerId:string): Promise<IProjectDTO> {
         try {
             // Upload file to S3
             const s3Key = await uploadTosS3(projectFile.buffer, projectFile.mimetype);
@@ -22,7 +22,7 @@ export default class ProjectService implements IProjectService {
             const fileUrl = await getSignedImageURL(s3Key);
 
             // Save file URL in the database
-            const updatedProject = await this._projectRepository.updateEmployeeFiles(projectId, fileUrl);
+            const updatedProject = await this._projectRepository.updateEmployeeFiles(projectId, fileUrl ,businessOwnerId);
             if (!updatedProject) {
                 throw new Error("Project not found");
             }
@@ -47,10 +47,10 @@ export default class ProjectService implements IProjectService {
         }
     }
 
-    async getAllProjects(employeeId: string): Promise<IProjectDTO[]> {
+    async getAllProjects(employeeId: string ,businessOwnerId :string ): Promise<IProjectDTO[]> {
         try {
             // Fetch projects using the repository
-            const projects = await this._projectRepository.findAllProjects(employeeId);
+            const projects = await this._projectRepository.findAllProjects(employeeId,businessOwnerId);
 
             // Transform the projects into DTOs
             const projectDTOs: IProjectDTO[] = projects.map((project) => ({
@@ -78,9 +78,9 @@ export default class ProjectService implements IProjectService {
         }
     }
 
-    async updateProjectStatus(projectId: string, status: string): Promise<IProjectDTO> {
+    async updateProjectStatus(projectId: string, status: string ,businessOwnerId:string): Promise<IProjectDTO> {
         try {
-            const updatedProject = await this._projectRepository.updateProjectStatus(projectId, status);
+            const updatedProject = await this._projectRepository.updateProjectStatus(projectId, status ,businessOwnerId);
 
             if (!updatedProject) {
                 throw new Error("Project not found");
@@ -106,22 +106,19 @@ export default class ProjectService implements IProjectService {
         }
     }
 
-    async getProjectDashboardData(employeeId: string): Promise<IGetProjectDashboardData> {
+    async getProjectDashboardData(employeeId: string ,businessOwnerId:string): Promise<IGetProjectDashboardData> {
         try {
-            // Fetch project data from the repository
-            const projectData = await this._projectRepository.getProjectDashboardData(employeeId);
+            const projectData = await this._projectRepository.getProjectDashboardData(employeeId ,businessOwnerId);
 
             if (!projectData) {
                 throw new Error("No projects found for the given employee ID.");
             }
 
-            // Calculate the breakdown of project statuses
             const projectStatusCount = projectData.reduce((acc: Record<string, number>, project: IProject) => {
                 acc[project.status] = (acc[project.status] || 0) + 1;
                 return acc;
             }, {});
 
-            // Month-wise breakdown of completed projects
             const monthWiseCompletedProjects = projectData
                 .filter((project: IProject) => project.status === 'completed')
                 .reduce((acc: Record<string, number>, project: IProject) => {
@@ -137,7 +134,6 @@ export default class ProjectService implements IProjectService {
                 })
             );
 
-            // Prepare dashboard data
             const dashboardData: IGetProjectDashboardData = {
                 totalProjects: projectData.length,
                 completedProjects: projectData.filter((project: IProject) => project.status === 'completed').length,
@@ -156,8 +152,6 @@ export default class ProjectService implements IProjectService {
                         assignedEmployee: project.assignedEmployee.employeeName, // Adjust this based on how your data is structured
                     })),
             };
-
-            console.log(`"dashbord data from project service "`.bgMagenta,dashboardData)
             
 
             return dashboardData;

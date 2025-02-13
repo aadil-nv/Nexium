@@ -1,10 +1,11 @@
 import { injectable, inject } from "inversify";
-import employeeModel from "../../model/employeeModel";
 import IEmployeeRepository from "../interfaces/IEmployeeRepository";
 import  IEmployeeDocument  from "../../entities/employeeEntities";
 import BaseRepository from "./baseRepository";
 import OtpModel from "../../model/otpModel";
-import mongoose from "mongoose";
+import mongoose, { ObjectId } from "mongoose";
+import e from "express";
+import employeeModel from "../../model/employeeModel";
 
 
 
@@ -32,8 +33,11 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
         return OtpModel.findOne({ email }).exec();
       }
 
-      async updateVerificationStatus(email: string): Promise<any> {
+      async updateVerificationStatus(email: string ,businessOwnerId: ObjectId): Promise<any> {
         try {
+          const _switchDb = mongoose.connection.useDb(businessOwnerId.toString(), { useCache: true });
+           const employee = _switchDb.model('Employee', employeeModel.schema)
+           await employee.updateOne({"personalDetails.email": email }, { isVerified: true });
             return await this._employeeModel.updateOne({"personalDetails.email": email }, { isVerified: true }).exec();
         } catch (error) {
             console.error("Error updating verification status:", error);

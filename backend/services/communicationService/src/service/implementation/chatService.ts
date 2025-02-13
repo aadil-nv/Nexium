@@ -3,9 +3,12 @@ import  IChatService from "../interface/IChatService";
 import { IChatResponseDTO, IChatWithDetails, ICreateGroupDTO, IGetAllGroupsDTO,
      IGroupDTO, IMembers, IMembersDTO, IParticipantDetails, IPrivateChatDTO, IReceiverDTO, ISetNewAccessTokenDTO ,IParticipant, 
      IUnAddedUsersDTO,
-     IResponseDTO} from "../../dto/chatDTO";
+     IResponseDTO,
+     ILastMessage} from "../../dto/chatDTO";
 import  IChatRepository  from "../../repository/interface/IChatRepository";
 import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
+
+
 
 
 
@@ -15,11 +18,11 @@ export default  class ChatService implements IChatService {
     constructor(@inject("IChatRepository") private _chatRepository: IChatRepository) {}
 
     
-    async getAllReceiver(myId: string): Promise<IReceiverDTO[]> {
+    async getAllReceiver(myId: string , businessOwnerId: string): Promise<IReceiverDTO[]> {
         try {
-            const employees = await this._chatRepository.findAllEmployees();
-            const managers = await this._chatRepository.findAllManagers();
-            const businessOwners = await this._chatRepository.findAllBusinessOwners();
+            const employees = await this._chatRepository.findAllEmployees(businessOwnerId);
+            const managers = await this._chatRepository.findAllManagers(businessOwnerId);
+            const businessOwners = await this._chatRepository.findAllBusinessOwners(businessOwnerId);
             const lastSeen = new Date();
 
             const buisinessOwnereDTO: IReceiverDTO[] = businessOwners.map(businessOner => ({
@@ -29,6 +32,7 @@ export default  class ChatService implements IChatService {
                 receiverPosition: businessOner.role, 
                 status: businessOner.isActive,
                 lastSeen: lastSeen,
+                businesOwnerId: businessOner._id,
                 receiverProfilePicture: businessOner.personalDetails.profilePicture
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOner.personalDetails.profilePicture}`
                     : businessOner.personalDetails.profilePicture,
@@ -43,6 +47,7 @@ export default  class ChatService implements IChatService {
                 receiverPosition: employee.professionalDetails.position,
                 status: employee.isActive,
                 lastSeen: lastSeen,
+                businesOwnerId: employee.businessOwnerId,
                 receiverProfilePicture: employee.personalDetails.profilePicture
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
                     : employee.personalDetails.profilePicture,
@@ -56,6 +61,7 @@ export default  class ChatService implements IChatService {
                 receiverPosition : manager.role,
                 status: manager.isActive,
                 lastSeen: lastSeen,
+                businesOwnerId: manager.businessOwnerId,
                 receiverProfilePicture: manager.personalDetails.profilePicture
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${manager.personalDetails.profilePicture}`
                     : manager.personalDetails.profilePicture,
@@ -74,10 +80,10 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async getAllGroups(myId: string): Promise<IGetAllGroupsDTO[]> {
+    async getAllGroups(myId: string ,businessOwnerId: string): Promise<IGetAllGroupsDTO[]> {
         try {
             // Fetch all the groups from the repository
-            const groups = await this._chatRepository.findAllGroups(myId);
+            const groups = await this._chatRepository.findAllGroups(myId ,businessOwnerId);
     
             // Map the groups to the IGetAllGroupsDTO format
             const groupsDTO: IGetAllGroupsDTO[] = groups.map(group => ({
@@ -87,6 +93,7 @@ export default  class ChatService implements IChatService {
                 groupAdmin: group.groupAdmin ? group.groupAdmin.toString() : '', // Ensure groupAdmin is a string
                 participants: group.participants.map(participant => participant.toString()), // Convert ObjectId to string
                 chatType: group.chatType,
+                busineesOwnerId :businessOwnerId
             }));
     
             return groupsDTO;
@@ -95,13 +102,10 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async getAllPrivateChats(myId: string): Promise<IPrivateChatDTO[]> {
+    async getAllPrivateChats(myId: string ,businessOwnerId: string): Promise<IPrivateChatDTO[]> {
         try {
-            const privateChats = await this._chatRepository.findAllPrivateChats(myId);
-            // console.log("privateChats====>", privateChats);
+            const privateChats = await this._chatRepository.findAllPrivateChats(myId ,businessOwnerId);            
             
-            
-    
             const mappedChats: IPrivateChatDTO[] = privateChats
                 .map(chat => {
                     try {
@@ -122,6 +126,9 @@ export default  class ChatService implements IChatService {
                     }
                 })
                 .filter((chat): chat is IPrivateChatDTO => chat !== null); 
+
+                console.log("mappedChats are ===>",mappedChats);
+                
             return mappedChats;
         } catch (error:any) {
             console.error("Error in getAllPrivateChats: ", error.message);
@@ -134,11 +141,13 @@ export default  class ChatService implements IChatService {
     }
 
     private mapToDTO(chat: IChatWithDetails, receiver: IParticipantDetails , myId: string): IPrivateChatDTO {
-
+            // console.log("participants are ===>",receiver);
+            
         const receiverName = this.getReceiverName(receiver);
         const receiverPosition = this.getReceiverPosition(receiver);
         const status = this.getReceiverStatus(receiver);
         const profilePicture = receiver.personalDetails?.profilePicture;
+        const lastMessage = (chat.lastMessage as ILastMessage | null)?.content || undefined;
 
         return {
             senderId:myId,
@@ -151,10 +160,12 @@ export default  class ChatService implements IChatService {
             receiverProfilePicture: profilePicture 
                 ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${profilePicture}`
                 : undefined,
-            lastMessage: chat.lastMessage,
+            lastMessage: lastMessage,
             createdAt: chat.createdAt,
             updatedAt: chat.updatedAt,
-            lastSeen: chat.lastSeen
+            lastSeen: chat.lastSeen,
+            lastMessageTime: chat.lastMessageTime,
+            businessOwnerId: receiver.businessOwnerId || receiver._id.toString(),
         };
     }
 
@@ -179,10 +190,9 @@ export default  class ChatService implements IChatService {
         return true; 
     }
 
-
-    async createChat(myId: string, receiverId: string): Promise<ICreateGroupDTO> {
+    async createChat(myId: string, receiverId: string , businessOwnerId: string): Promise<ICreateGroupDTO> {
         try {
-            const createdChat = await this._chatRepository.createChat(myId, receiverId);
+            const createdChat = await this._chatRepository.createChat(myId, receiverId , businessOwnerId);
         
             return {
                 chatId: createdChat._id,        // Convert ObjectId to string
@@ -197,11 +207,9 @@ export default  class ChatService implements IChatService {
         }
     }
     
-    
-
-    async createMessage(message: any, myId: string): Promise<IChatResponseDTO> {
+    async createMessage(message: any, myId: string ,businessOwnerId: string): Promise<IChatResponseDTO> {
         try {
-            const createdMessage = await this._chatRepository.createMessage(message, myId);
+            const createdMessage = await this._chatRepository.createMessage(message, myId , businessOwnerId);
             return {
                 message: "Message created successfully",
                 success: true
@@ -213,9 +221,9 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async createGroup(data: any, myId: string): Promise<IChatResponseDTO> {
+    async createGroup(data: any, myId: string ,businessOwnerId: string): Promise<IChatResponseDTO> {
         try {
-            const createdGroup = await this._chatRepository.createGroup(data, myId);
+            const createdGroup = await this._chatRepository.createGroup(data, myId , businessOwnerId);
             return {
                 message: "Group created successfully",
                 success: true
@@ -265,9 +273,9 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async findChatId(myId: string, receiverId: string, chatType: string): Promise<any> {        
+    async findChatId(myId: string, receiverId: string, chatType: string ,businessOwnerId: string): Promise<any> {        
         try {
-            const chat = await this._chatRepository.findChatId(myId, receiverId, chatType);
+            const chat = await this._chatRepository.findChatId(myId, receiverId, chatType , businessOwnerId);
 
             if (!chat) {
                 throw new Error("Chat not found");
@@ -280,10 +288,10 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async getChatParticipants(chatId: string): Promise<any> {
+    async getChatParticipants(chatId: string , businessOwnerId: string): Promise<any> {
     
         try {
-            const chat = await this._chatRepository.getChatParticipants(chatId);
+            const chat = await this._chatRepository.getChatParticipants(chatId, businessOwnerId);
     
             if (!chat) {
                 throw new Error("Chat not found");
@@ -298,9 +306,9 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async getAllGroupMembers(groupId: string): Promise<IMembersDTO[]> {
+    async getAllGroupMembers(groupId: string , businessOwnerId: string): Promise<IMembersDTO[]> {
         try {
-            const groupDetails = await this._chatRepository.getAllGroupMembers(groupId);
+            const groupDetails = await this._chatRepository.getAllGroupMembers(groupId , businessOwnerId);
     
             const participants = groupDetails.participants;
     
@@ -334,9 +342,9 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async getGroupDetails(groupId: string): Promise<IGroupDTO> {
+    async getGroupDetails(groupId: string ,businessOwnerId: string): Promise<IGroupDTO> {
         try {
-            const groupDetails = await this._chatRepository.getGroupDetails(groupId);
+            const groupDetails = await this._chatRepository.getGroupDetails(groupId , businessOwnerId);
     
             if (!groupDetails) {
                 throw new Error("Group details not found");
@@ -379,6 +387,7 @@ export default  class ChatService implements IChatService {
                 participants: membersDTO,
                 chatType: groupDetails.chatType || 'Unknown',
                 groupAdmin: groupDetails.groupAdmin || 'Unknown',
+                businessOwnerId: businessOwnerId as string
             };
         } catch (error) {
             console.error("Error in service layer:", error);
@@ -386,22 +395,22 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async deleteGroup(groupId: string): Promise<void> {
+    async deleteGroup(groupId: string , businessOwnerId: string): Promise<void> {
         try {
-            await this._chatRepository.deleteGroup(groupId);
+            await this._chatRepository.deleteGroup(groupId , businessOwnerId);
         } catch (error) {
             console.error("Error in service layer:", error);
             throw new Error("Error deleting group");
         }
     }
-
     
-    async getAllUnAddedUsers(groupId: string, myId: string): Promise<IUnAddedUsersDTO[]> {
+
+    async getAllUnAddedUsers(groupId: string, myId: string , businessOwnerId: string): Promise<IUnAddedUsersDTO[]> {
         try {
-            const employees = await this._chatRepository.findAllEmployees();
-            const managers = await this._chatRepository.findAllManagers();
-            const businessOwners = await this._chatRepository.findAllBusinessOwners();
-            const chatData = await this._chatRepository.getChatParticipants(groupId);
+            const employees = await this._chatRepository.findAllEmployees(businessOwnerId) ;
+            const managers = await this._chatRepository.findAllManagers(businessOwnerId);
+            const businessOwners = await this._chatRepository.findAllBusinessOwners(businessOwnerId);
+            const chatData = await this._chatRepository.getChatParticipants(groupId ,businessOwnerId);
             const chatParticipants = (chatData.participants || []).map((p: any) => p.toString());
         
             const buisinessOwnereDTO: IUnAddedUsersDTO[] = businessOwners.map(businessOwner => ({
@@ -442,9 +451,9 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async updateGroup(groupId: string, data: any): Promise<IGroupDTO> {
+    async updateGroup(groupId: string, data: any ,businessOwnerId: string): Promise<IGroupDTO> {
         try {
-            const groupDetails = await this._chatRepository.updateGroup(groupId, data);
+            const groupDetails = await this._chatRepository.updateGroup(groupId, data ,businessOwnerId);
             if (!groupDetails) {
                 throw new Error("Group details not found");
             }
@@ -494,15 +503,14 @@ export default  class ChatService implements IChatService {
         }
     }
     
-    
-    async updateLastSeen(businessOwnerId: string): Promise<IResponseDTO> {
+    async updateLastSeen(userId: string ,businessOwnerId: string): Promise<IResponseDTO> {
         try {
-          const result = await this._chatRepository.updateLastSeenForChats(businessOwnerId);
+          const result = await this._chatRepository.updateLastSeenForChats( userId ,businessOwnerId);
           return { success: true, message: "Last seen updated successfully!", data: result };
         } catch (error:any) {
           throw new Error(error.message || "Error while updating last seen");
         }
-      }
+    }
     
     
     

@@ -18,11 +18,18 @@ export default class NotificationController implements INotificationController {
             ''
         );
     }
+    private getBusinessOwnerId(req: CustomRequest): string {
+        return req.user?.businessOwnerData?._id ||
+         req.user?.managerData?.businessOwnerId || 
+         req.user?.employeeData?.businessOwnerId || '';
+    }
     async getAllNotifications(req: CustomRequest, res: Response): Promise<Response> {
         
         try {
             const myId = this.getMyId(req);
-            const notifications = await this._notificationService.getAllNotifications(myId);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            
+            const notifications = await this._notificationService.getAllNotifications(myId ,businessOwnerId);
             return res.status(HttpStatusCode.OK).json(notifications);
         } catch (error) {
             console.error(error);
@@ -33,7 +40,8 @@ export default class NotificationController implements INotificationController {
     async clearAllNotifications(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const myId = this.getMyId(req);
-            const notifications = await this._notificationService.clearAllNotifications(myId);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const notifications = await this._notificationService.clearAllNotifications(myId ,businessOwnerId);
             return res.status(HttpStatusCode.OK).json(notifications);
         } catch (error) {
             console.error(error);
@@ -42,13 +50,10 @@ export default class NotificationController implements INotificationController {
     }
 
     async deleteNotification(req: CustomRequest, res: Response): Promise<Response> {
-        console.log("hitting deleteNotification =111111111111111111111111111");
         try {
             const notificationId = req.params.id;
-            console.log("notificationId 22222222222222222222222222", notificationId);
-            
-            const notifications = await this._notificationService.deleteNotification(notificationId);
-            console.log("notifications 3333333333333333333333333", notifications);
+            const businessOwnerId = this.getBusinessOwnerId(req);            
+            const notifications = await this._notificationService.deleteNotification(notificationId ,businessOwnerId);
             return res.status(HttpStatusCode.OK).json(notifications);
         } catch (error) {
             console.error(error);

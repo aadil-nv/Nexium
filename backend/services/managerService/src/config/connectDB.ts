@@ -1,34 +1,36 @@
-import mongoose, { Mongoose } from 'mongoose';
+import mongoose, { Connection } from 'mongoose';
 import 'colors';
 
-export let dbInstance: Mongoose;
-const cachedConnections: Record<string, Mongoose> = {}; // Cache for database connections
+const cachedConnections: Record<string, Connection> = {}; // Cache for database connections
 
-const connectDB = async (businessOwnerId: string): Promise<void> => {
-    const mongoUrl = process.env.MONGODB_URL; // Get the base URL from environment variables
-    if (!mongoUrl) {
-        throw new Error("MONGODB_URL not defined");
-    }
+const connectDB = async (businessOwnerId: string): Promise<Connection> => {
+    console.log("buisinessownerId is ==>",businessOwnerId);
+    
+    const mongoUrl = process.env.MONGODB_URL;
+    if (!mongoUrl) throw new Error("MONGODB_URL not defined");
 
-    // Check if a connection for this business owner already exists
     if (cachedConnections[businessOwnerId]) {
         console.log(`Reusing cached connection for Business Owner ID: ${businessOwnerId}`);
-        dbInstance = cachedConnections[businessOwnerId];
-        return;
+        return cachedConnections[businessOwnerId];
     }
 
     try {
-        // Dynamically create the database URL with businessOwnerId
-        const connectionString = `${mongoUrl}/${businessOwnerId}?retryWrites=true&w=majority&appName=Cluster0`;
+        const connectionString = `${mongoUrl}/${businessOwnerId}?retryWrites=true&w=majority`;
+        const connection = mongoose.createConnection(connectionString);
 
-        // Establish a new connection and cache it
-        const connection = await mongoose.connect(connectionString);
+        // Wait for connection to be ready before using it
+        await new Promise<void>((resolve, reject) => {
+            connection.once('open', () => {
+                console.log(`Database connected for Business Owner ID: ${businessOwnerId}`.bgYellow.bold);
+                resolve();
+            });
+            connection.on('error', reject);
+        });
+
         cachedConnections[businessOwnerId] = connection;
-        dbInstance = connection;
-
-        console.log(`Database connected successfully for Business Owner ID: ${businessOwnerId}`.bgYellow.bold);
+        return connection;
     } catch (error) {
-        console.error("DB connection failed: ".red + error);
+        console.error("DB connection failed: ", error);
         process.exit(1);
     }
 };

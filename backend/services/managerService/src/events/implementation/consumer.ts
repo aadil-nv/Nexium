@@ -34,7 +34,7 @@ export default class Consumer implements IConsumer {
         if (msg !== null) {
           try {
             const data = JSON.parse(msg.content.toString());
-            console.log("data ---------------QUEUE", data);
+            // console.log("data ---------------QUEUE", data);
 
 
             // Check for employeeData and send it to the employee service
@@ -42,9 +42,8 @@ export default class Consumer implements IConsumer {
             //   await this._employeeService.addEmployee(data.employeeData);
             // }
             if (data.managerIsActiveData) {
-              console.log(`employeeIsActive:2222222222222222222 ${data.managerIsActiveData._id}`.bgMagenta.bold);
               
-              await this._managerService.updateManagerIsActive(data.managerIsActiveData._id, true);
+              await this._managerService.updateManagerIsActive(data.managerIsActiveData._id, true ,data.managerIsActiveData.businessOwnerId);
             }
 
 

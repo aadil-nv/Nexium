@@ -3,6 +3,7 @@ import { Document, Types } from "mongoose";
 
 export interface ISubscription {
     subscriptionId: Types.ObjectId;
+    customerId: string;
     startDate: Date;
     endDate: Date;
     status: "Active" | "Expired" | "Pending";
@@ -58,5 +59,6 @@ export interface IBusinessOwnerDocument extends Document {  // <-- Ensure this e
   subscription: ISubscription;
   createdAt: Date;
   updatedAt: Date;
+  isActive: boolean;
 }
 

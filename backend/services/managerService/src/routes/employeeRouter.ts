@@ -3,6 +3,7 @@ import container from "../config/inversify";
 import IEmployeeController from "../controllers/interface/IEmployeeController"
 import authenticateToken from "../middlewares/tokenAuthenticate";
 import {uploadMiddleware} from "../middlewares/multer-s3"
+import checkSubscription from "../middlewares/checkSubscription";
 
 
 const employeeRouter = Router();

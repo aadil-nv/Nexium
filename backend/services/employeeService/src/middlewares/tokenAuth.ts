@@ -1,14 +1,14 @@
 import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import  connectDB  from '../config/connectDB'; 
-import { access } from 'fs';
-
+import employeeModel from '../models/employeeModel';
+import EmployeeRepository from '../repository/implementation/employeeRepository';
 
 export interface CustomRequest extends Request {
     user?: JwtPayload & {
       employeeData?: {
         _id: string;
         employeeId: string;
+        businessOwnerId: string;
       };
     };
   }
@@ -16,18 +16,13 @@ export interface CustomRequest extends Request {
 
 const authenticateToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
-
         const token = req.cookies?.accessToken; 
-       
-        
-
         if (!token) {
             return res.status(401).json({ message: "Access denied. No token provided" });
         }
 
         const secret = process.env.ACCESS_TOKEN_SECRET; 
  
-        
         if (!secret) {
             console.error('Access token secret is not defined');
             return res.status(500).json({ message: 'Internal server error' }); 
@@ -40,23 +35,20 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
                 return res.status(401).json({ message: 'Invalid token' });
             }
 
-            
-            
             req.user = decoded as JwtPayload;
             
-            
-            
             const employeeData = (req.user as JwtPayload).employeeData;
-            if (employeeData && employeeData.businessOwnerId) {
-                const businessOwnerId = employeeData.businessOwnerId.toString();
-
-             
-                await connectDB(businessOwnerId); 
-            } else {
-                return res.status(401).json({ message: "Business owner ID not found in manager data" });
+            const repository = new EmployeeRepository(employeeModel);
+            const isBusinessOwnerBlocked = await repository.findBusinessOwnerIsBlocked(employeeData._id,employeeData.businessOwnerId)
+            if(isBusinessOwnerBlocked){
+                return res.status(403).json({ message: "Your account is blocked. Please contact support" });
             }
-
-            next(); // Call the next middleware
+            const isEmployeeBlocked = await repository.findEmployeeIsBlocked(employeeData._id,employeeData.businessOwnerId)
+            if(isEmployeeBlocked){
+                return res.status(403).json({ message: "Your account is blocked. Please contact support" });
+            }
+ 
+            next(); 
         });
 
     } catch (error) {

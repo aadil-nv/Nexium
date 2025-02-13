@@ -20,16 +20,24 @@ export default class MeetingController implements IMeetingController {
             ''
         );
     }
+
+    private getBusinessOwnerId(req: CustomRequest): string {
+        return (
+            req.user?.businessOwnerData?._id ||
+            req.user?.managerData?.businessOwnerId ||
+            req.user?.employeeData?.businessOwnerId ||
+            ''
+        );
+    }
     async getAllMeetings(req: CustomRequest, res: Response): Promise<Response> {
-        // console.log("hitting getAllMeetings=========??");
         
         try {
             const myId = this.getMyId(req);
-            // console.log("myId", myId);
-            
+            const businessOwnerId = this.getBusinessOwnerId(req);
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
-            const response = await this._meetingService.getAllMeetings(myId);
-            console.log("response from getAllMeetings", response);
+
+            const response = await this._meetingService.getAllMeetings(myId , businessOwnerId);
+            // console.log(` responce ios ==>`.bgMagenta,response);
             
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error:any) {
@@ -40,15 +48,19 @@ export default class MeetingController implements IMeetingController {
 
     async createMeeting(req: CustomRequest, res: Response): Promise<Response> {
         
+        console.log("Touiching create meeting ======>" ,);
         
         try {
             const myId = this.getMyId(req);
             console.log("myId", myId);
-            console.log("req.body from cotroller", req.body);
             
+            const businessOwnerId = this.getBusinessOwnerId(req);   
+            console.log("businessOwnerId", businessOwnerId);
+            console.log("req.body", req.body);
+            
+                     
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
-            
-            const response = await this._meetingService.createMeeting(req.body, myId);
+            const response = await this._meetingService.createMeeting(req.body, myId ,businessOwnerId);
             return res.status(HttpStatusCode.CREATED).json(response);
         } catch (error:any) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });
@@ -56,14 +68,11 @@ export default class MeetingController implements IMeetingController {
     }
 
     async updateMeeting(req: CustomRequest, res: Response): Promise<Response> {
-        console.log("hitting updateMeeting");
         
         try {
             const meetingId = req.params.id;
-            console.log("meetingId", meetingId);
-            const response = await this._meetingService.updateMeeting(meetingId, req.body);
-            console.log("response from updateMeeting", response);
-            
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const response = await this._meetingService.updateMeeting(meetingId, req.body ,businessOwnerId);            
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error:any) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });
@@ -73,7 +82,8 @@ export default class MeetingController implements IMeetingController {
     async deleteMeeting(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const meetingId = req.params.id;
-            const response = await this._meetingService.deleteMeeting(meetingId);
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            const response = await this._meetingService.deleteMeeting(meetingId , businessOwnerId);
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error:any) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });
@@ -83,8 +93,9 @@ export default class MeetingController implements IMeetingController {
     async getAllParticipants(req: CustomRequest, res: Response): Promise<Response> {
         try{
             const myId = this.getMyId(req);
+            const businessOwnerId = this.getBusinessOwnerId(req);
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
-            const response = await this._meetingService.getAllParticipants(myId);
+            const response = await this._meetingService.getAllParticipants(myId , businessOwnerId);
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error:any) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });

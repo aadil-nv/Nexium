@@ -1,32 +1,35 @@
-import mongoose, { Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { IChat } from "../entities/chatEntities";
 
 const ChatSchema: Schema = new Schema<IChat>({
   chatType: {
     type: String,
-    enum: ["private", "group"]
+    enum: ["private", "group"],
   },
   participants: [
     {
-      type:  mongoose.Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "participantModel",
     },
   ],
   participantModel: {
     type: String,
-    enum: ['BusinessOwner', 'Manager', 'Employee'],
+    enum: ["BusinessOwner", "Manager", "Employee"],
   },
   groupName: {
     type: String,
     trim: true,
   },
   groupAdmin: {
-    type:  mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
   lastMessage: {
-    type:  mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: "Message",
+  },
+  lastMessageTime: {
+    type: Date, // Stores the timestamp of the last message
   },
   lastSeen: {
     type: Date,
@@ -40,6 +43,7 @@ const ChatSchema: Schema = new Schema<IChat>({
     default: Date.now,
   },
 });
+
 
 const Chat = mongoose.model<IChat>("Chat", ChatSchema);
 

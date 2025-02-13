@@ -1,8 +1,9 @@
 import { inject,injectable } from "inversify";
 import IProjectRepository from "../../repository/interface/IProjectRepository";
-import {IFile,IProject} from "../../entities/projectEntities"
-import { FilterQuery, Model } from "mongoose";
+import {IProject} from "../../entities/projectEntities"
+import { Model } from "mongoose";
 import BaseRepository from "./baseRepository";
+import connectDB from "../../config/connectDB";
 
 
 @injectable()
@@ -11,10 +12,10 @@ export default class ProjectRepository extends BaseRepository<IProject> implemen
         super(_projectModel)
     }
 
-    async findAllProjects(employeeId: string): Promise<IProject[]> {
+    async findAllProjects(employeeId: string ,businessOwnerId:string): Promise<IProject[]> {
         try {
-            // Find all projects where the assignedEmployee.employeeId matches the given employeeId
-            const projects = await this._projectModel.find({
+            const switchDB = connectDB(businessOwnerId)
+            const projects = await (await switchDB).model<IProject>('Project', this._projectModel.schema).find({
                 'assignedEmployee.employeeId': employeeId,
             }).exec();
     
@@ -25,9 +26,9 @@ export default class ProjectRepository extends BaseRepository<IProject> implemen
         }
     }
 
-    async updateProjectStatus(projectId: string, status: string): Promise<IProject> {
+    async updateProjectStatus(projectId: string, status: string ,businessOwnerId:string): Promise<IProject> {
         try {
-            const updatedProject = await this._projectModel.findOneAndUpdate(
+            const updatedProject = await (await connectDB(businessOwnerId)).model<IProject>('Project', this._projectModel.schema).findOneAndUpdate(
                 { _id: projectId },
                 { status },
                 { new: true }
@@ -44,9 +45,10 @@ export default class ProjectRepository extends BaseRepository<IProject> implemen
         }
     }
 
-    async updateEmployeeFiles(projectId: string, fileUrl: string): Promise<IProject> {
+    async updateEmployeeFiles(projectId: string, fileUrl: string ,businessOwnerId:string): Promise<IProject> {
         try {
-            const updatedProject = await this._projectModel.findOneAndUpdate(
+            const switchDB = connectDB(businessOwnerId)
+            const updatedProject = await (await switchDB).model<IProject>('Project', this._projectModel.schema).findOneAndUpdate(
                 { _id: projectId },
                 { $push: { 'assignedEmployee.employeeFiles': fileUrl } }, // Append the file URL
                 { new: true }
@@ -64,10 +66,10 @@ export default class ProjectRepository extends BaseRepository<IProject> implemen
     }
     
 
-    async getProjectDashboardData(employeeId: string): Promise<any> {
+    async getProjectDashboardData(employeeId: string ,businessOwnerId:string): Promise<any> {
         try {
-          // Fetch projects assigned to the employee
-          const projects = await this._projectModel.find({
+          const switchDB = connectDB(businessOwnerId)
+          const projects = await (await switchDB).model<IProject>('Project', this._projectModel.schema).find({
             'assignedEmployee.employeeId': employeeId,
           }).exec();
       

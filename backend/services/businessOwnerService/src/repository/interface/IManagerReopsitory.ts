@@ -13,7 +13,9 @@ export default interface IManagerRepository extends BaseRepository<IManager> {  
     updateProfessionalInfo(businessOwnerId: string, managerId: string, data: IManager): Promise<IManager | null>;
     updateAddressInfo(businessOwnerId: string, managerId: string, data: IManager): Promise<IManager | null>;
     getDetails(businessOwnerId: string ,managerId : string): Promise<IManager>;
+
     uploadProfilePic(businessOwnerId: string,managerId: string, filePath: string ): Promise<IManager>;
+    
     getDashboardData(companyId: string): Promise<any>
     updateResume(businessOwnerId: string, managerId: string,documentData: any): Promise<IManager>;
 

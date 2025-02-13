@@ -7,11 +7,11 @@ import { IAppliedLeave } from "entities/appliedLeaveEntities";
 
 
 export default interface ILeaveRepository extends BaseRepository<IEmployeeAttendance> {
-    updateLeaveApproval(employeeId: string, data:object): Promise<IEmployeeAttendance | null>;
-    getAllLeaveEmployees(): Promise<IEmployeeAttendance[]>
-    findAllLeaveTypes(): Promise<ILeaveType>
-    updateLeaveTypes(leaveTypeId: string, data: any): Promise<ILeaveType>
-    getEmployeeLeaves(employeeId: string): Promise<IEmployeeLeave>
-    fetchAllPreAppliedLeaves():Promise <IAppliedLeave[]>
-    updatePreAppliedLeaves(employeeId: string,managerName: string, data: any): Promise<IAppliedLeave | null>
+    updateLeaveApproval(employeeId: string, data:object, businessOwnerId: string): Promise<IEmployeeAttendance | null>;
+    getAllLeaveEmployees(buisinessownerId:string): Promise<IEmployeeAttendance[]>
+    findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType>
+    updateLeaveTypes(leaveTypeId: string, data: any , businessOwnerId: string): Promise<ILeaveType>
+    getEmployeeLeaves(employeeId: string, businessOwnerId: string): Promise<IEmployeeLeave>
+    fetchAllPreAppliedLeaves(businessOwnerId: string):Promise <IAppliedLeave[]>
+    updatePreAppliedLeaves(employeeId: string,managerName: string, data: any,businessOwnerId: string): Promise<IAppliedLeave | null>
 }
