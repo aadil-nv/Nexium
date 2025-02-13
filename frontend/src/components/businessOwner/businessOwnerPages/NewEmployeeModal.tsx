@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Button, Modal, Form, Input, Select, DatePicker, message } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 // import { z } from 'zod';
@@ -206,7 +206,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({
             ) : type === 'date' ? (
               <DatePicker 
                 style={{ width: '100%' }} 
-                onChange={(date, dateString) => 
+                onChange={(_date, dateString) => 
                   setFormData(prev => ({ ...prev, [id]: dateString }))
                 } 
               />
