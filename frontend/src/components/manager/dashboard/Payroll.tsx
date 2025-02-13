@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, List, Space, Switch } from 'antd';
+import { Button, Input, List, Space, Switch, message } from 'antd';
 import { MoneyCollectOutlined, SlidersOutlined } from '@ant-design/icons';
 import useTheme from '../../../hooks/useTheme';
 import { managerInstance } from '../../../services/managerInstance';
@@ -78,12 +78,12 @@ interface UpdatePayload {
   payDay?: number;
 }
 
-
 const PayrollSettings: React.FC = () => {
- const { themeColor } = useTheme();
+  const { themeColor } = useTheme();
   const [settings, setSettings] = useState<Setting[]>([]);
   const [data, setData] = useState<PayrollData[]>([]);
   const [incentiveSlabs, setIncentiveSlabs] = useState<IncentiveSlab[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     managerInstance.get<PayrollData[]>('/manager-service/api/payroll/get-all-payroll-crieteria')
@@ -126,17 +126,61 @@ const PayrollSettings: React.FC = () => {
         }
       })
       .catch((error: Error) => {
+        message.error("Error fetching payroll criteria");
         console.error("Error fetching payroll criteria:", error);
       });
   }, []);
   
+  const validateSettings = (): boolean => {
+    // Validate Pay Day
+    const payDay = settings.find(item => item.name === 'Pay Day')?.amount;
+    if (payDay === undefined || payDay < 1 || payDay > 29) {
+      message.error('Pay Day must be between 1 and 29');
+      return false;
+    }
+
+    // Validate Allowances, Deductions, and Overtime Incentive
+    const validationItems = [
+      'Bonus', 'Gratuity', 'Medical Allowance', 'HRA', 'DA', 
+      'Income Tax', 'Provident Fund', 'Professional Tax', 'ESI Fund',
+      'Overtime Incentive'
+    ];
+
+    for (const itemName of validationItems) {
+      const item = settings.find(s => s.name === itemName);
+      if (item?.amount !== undefined && item.amount > 100) {
+        message.error(`${itemName} cannot exceed 100%`);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const updateSetting = (id: number, key: keyof Setting, value: Setting[keyof Setting]) => {
     setSettings((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [key]: value } : item))
+      prev.map((item) => {
+        if (item.id === id) {
+          setHasChanges(true);
+          return { ...item, [key]: value };
+        }
+        return item;
+      })
     );
   };
 
   const saveSettings = () => {
+    // Check if there are any changes
+    if (!hasChanges) {
+      message.info('No changes to save');
+      return;
+    }
+
+    // Validate settings before saving
+    if (!validateSettings()) {
+      return;
+    }
+
     const overtimeIncentive = settings.find(item => item.name === 'Overtime Incentive');
     
     const payload: UpdatePayload = {
@@ -166,14 +210,17 @@ const PayrollSettings: React.FC = () => {
       })),
       payDay: settings.find(item => item.name === 'Pay Day')?.amount || 0
     };
+
     managerInstance.post<PayrollData>(`/manager-service/api/payroll/update-payroll-crieteria/${data[0]?._id}`, payload)
       .then((response: AxiosResponse<PayrollData>) => {
-        console.log('Payroll criteria updated:', response.data);
-        alert('Settings have been saved successfully!');
+        console.log(response);
+        
+        message.success('Settings saved successfully');
+        setHasChanges(false);
       })
       .catch((error: Error) => {
+        message.error('Error saving settings');
         console.error('Error updating payroll criteria:', error);
-        alert('There was an error saving the settings.');
       });
   };
 
@@ -187,13 +234,14 @@ const PayrollSettings: React.FC = () => {
       amount: 0,
     };
     setIncentiveSlabs([...incentiveSlabs, newSlab]);
+    setHasChanges(true);
   };
 
   const removeIncentiveSlab = (id: number, _id: string) => {
     const payrollCriteriaId = data[0]?._id;
   
     if (!payrollCriteriaId) {
-      alert('Payroll Criteria ID is missing!');
+      message.error('Payroll Criteria ID is missing');
       return;
     }
   
@@ -204,17 +252,24 @@ const PayrollSettings: React.FC = () => {
     managerInstance.patch(`/manager-service/api/payroll/delete-incentive/${_id}`, requestData)
       .then(() => {
         setIncentiveSlabs(incentiveSlabs.filter((slab) => slab.id !== id));
-        alert('Incentive Slab removed successfully!');
+        message.success('Incentive Slab removed successfully');
+        setHasChanges(true);
       })
       .catch((error: Error) => {
+        message.error('Error removing incentive slab');
         console.error("Error removing incentive slab:", error);
-        alert('There was an error removing the incentive slab.');
       });
   };
 
   const updateIncentiveSlab = (id: number, key: keyof IncentiveSlab, value: IncentiveSlab[keyof IncentiveSlab]) => {
     setIncentiveSlabs((prev) =>
-      prev.map((slab) => (slab.id === id ? { ...slab, [key]: value } : slab))
+      prev.map((slab) => {
+        if (slab.id === id) {
+          setHasChanges(true);
+          return { ...slab, [key]: value };
+        }
+        return slab;
+      })
     );
   };
 
@@ -230,10 +285,11 @@ const PayrollSettings: React.FC = () => {
               <Input
                 type="number"
                 min={0}
+                max={100}
                 value={item.amount}
                 onChange={(e) => updateSetting(item.id, 'amount', Number(e.target.value))}
                 style={{ width: '120px' }}
-                placeholder="Amount"
+                placeholder="Amount (%)"
               />,
               item.type === 'other' && (
                 <Space>
@@ -281,26 +337,26 @@ const PayrollSettings: React.FC = () => {
               <Input
                 value={slab.name}
                 onChange={(e) => updateIncentiveSlab(slab.id, 'name', e.target.value)}
-                placeholder="Slab Name"
+                placeholder="Incentive Slab Name"
               />
               <Space>
                 <Input
                   type="number"
                   value={slab.minTaskCount}
                   onChange={(e) => updateIncentiveSlab(slab.id, 'minTaskCount', Number(e.target.value))}
-                  placeholder="Min Task Count"
+                  placeholder="Min Tasks"
                 />
                 <Input
                   type="number"
                   value={slab.maxTaskCount}
                   onChange={(e) => updateIncentiveSlab(slab.id, 'maxTaskCount', Number(e.target.value))}
-                  placeholder="Max Task Count"
+                  placeholder="Max Tasks"
                 />
                 <Input
                   type="number"
                   value={slab.amount}
                   onChange={(e) => updateIncentiveSlab(slab.id, 'amount', Number(e.target.value))}
-                  placeholder="Amount"
+                  placeholder="Percentage (%)"
                 />
               </Space>
             </Space>
@@ -317,7 +373,11 @@ const PayrollSettings: React.FC = () => {
       </Button>
       
       <div className="mt-6">
-        <Button onClick={saveSettings} type="primary">
+        <Button 
+          onClick={saveSettings} 
+          type="primary"
+          disabled={!hasChanges}
+        >
           Save Settings
         </Button>
       </div>

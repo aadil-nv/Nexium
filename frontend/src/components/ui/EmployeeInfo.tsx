@@ -19,8 +19,7 @@ const tabConfigurations = [
   { key: "1", tab: "Personal Details", fields: ["profilePicture", "employeeName", "email", "phone", "aadharNumber", "panNumber", "gender", "bankAccountNumber", "ifscCode"] },
   { key: "2", tab: "Professional Details", fields: ["position", "workTime", "salary", "joiningDate", "department", "currentStatus", "companyName", "pfAccount", "esiAccount", "uanNumber"] },
   { key: "3", tab: "Address", fields: ["street", "city", "postalCode", "country", "state"] },
-  { key: "4", tab: "Documents", fields: ["uploadResume"] },
-  { key: "5", tab: "Security", fields: ["companyEmail", "companyPassword"] },
+
 ];
 
 const EmployeeInfoModal: React.FC<InfoModalProps> = ({ visible, onClose, onUpdate, employeeId }) => {

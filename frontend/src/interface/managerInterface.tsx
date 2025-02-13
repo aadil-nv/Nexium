@@ -33,7 +33,37 @@ export interface IDepartment {
     isVerified: boolean; // New prop for verification status
     isBlocked: boolean; // New prop to check if the manager is blocked
     managerId: string;
+    onUpdate?: (managerId: string) => void;
+
   }
+
+  export interface IManagerDetails {
+    personalDetails?: {
+      managerName?: string;
+      email?: string;
+      phone?: string;
+      personalWebsite?: string;
+      profilePicture?: string;
+    };
+    professionalDetails?: {
+      managerType?: string;
+      workTime?: string;
+      salary?: string;
+      joiningDate?: string;
+    };
+    address?: {
+      street?: string;
+      city?: string;
+      postalCode?: string;
+      country?: string;
+      state?: string;
+    };
+    managerCredentials?: {
+      companyEmail?: string;
+      companyPassword?: string;
+    };
+  }
+  
 
 
   export interface IEmployeeData {
@@ -88,4 +118,13 @@ export interface IDepartment {
       };
     };
   }
+  
+  export interface InfoModalProps {
+    visible: boolean;
+    onClose: () => void;
+    managerId: string;
+    managerDetails: IManagerDetails | null;
+    onUpdate?: (managerId: string) => void;
+  }
+
   

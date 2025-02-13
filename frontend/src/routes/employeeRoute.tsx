@@ -21,6 +21,7 @@ import Leaves from "../components/employees/employeeLeave";
 import Project from "../components/employees/Project";
 import JoinMeeting from "../components/meeting/JoinMeeting";
 import TeamLeadDashBoard from  "../components/employees/TeamLeadDashboard"
+import Dashboard404 from "../components/Error/Dashboard404";
 
 const BusinessOwnerRoutes = () => {
 
@@ -53,6 +54,7 @@ const BusinessOwnerRoutes = () => {
             <Route path="chat" element={<Chat />} />
             <Route path="meeting" element={<Meeting />} />
             <Route path="join-meeting" element={<JoinMeeting />} />
+            <Route path="*" element={<Dashboard404 />} />  
 
 
             

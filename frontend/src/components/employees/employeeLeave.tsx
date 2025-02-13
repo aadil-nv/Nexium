@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Select, DatePicker, Radio, Input, Button, Card, List, Drawer } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import type { RadioChangeEvent } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { employeeInstance } from '../../services/employeeInstance';
 
@@ -10,6 +11,22 @@ const { Search } = Input;
 interface LeaveType {
   type: string;
   available: number;
+}
+
+interface LeaveData {
+  leaveId: string;
+  employeeId: string;
+  leaveType: string;
+  reason: string;
+  startDate: string;
+  endDate: string;
+  duration: number;
+  message: string;
+  success: boolean;
+  appliedAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+  isFirstHalf: boolean;
+  isSecondHalf: boolean;
 }
 
 interface AppliedLeave {
@@ -24,12 +41,15 @@ interface AppliedLeave {
   rejectionReason?: string;
   leaveId: string;
   employeeId: string;
+  isFirstHalf: boolean;
+  isSecondHalf: boolean;
 }
 
 interface LeaveFormValues {
   leaveTypes: string;
   dates: [Dayjs, Dayjs];
   dayType: 'full' | 'half';
+  halfDayType: 'first' | 'second';
   reason: string;
 }
 
@@ -44,6 +64,7 @@ const EmployeeLeave: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDays, setSelectedDays] = useState<number>(0);
   const [currentLeave, setCurrentLeave] = useState<AppliedLeave | null>(null);
+  const [showHalfDayOptions, setShowHalfDayOptions] = useState(false);
   const pageSize = 5;
 
   useEffect(() => {
@@ -53,8 +74,8 @@ const EmployeeLeave: React.FC = () => {
   const fetchData = async () => {
     try {
       const [typesRes, leavesRes] = await Promise.all([
-        employeeInstance.get("/employee-service/api/attendance/get-approved-leaves"),
-        employeeInstance.get("/employee-service/api/leave/get-applied-leaves")
+        employeeInstance.get<Record<string, number>>("/employee-service/api/attendance/get-approved-leaves"),
+        employeeInstance.get<LeaveData[]>("/employee-service/api/leave/get-applied-leaves")
       ]);
 
       const types: LeaveType[] = Object.entries(typesRes.data).map(([type, available]) => ({ 
@@ -63,18 +84,20 @@ const EmployeeLeave: React.FC = () => {
       }));
       setLeaveTypes(types);
 
-      const formattedLeaves: AppliedLeave[] = leavesRes.data.map((leave: { leaveType: any; startDate: string | number | Date | dayjs.Dayjs | null | undefined; endDate: string | number | Date | dayjs.Dayjs | null | undefined; duration: any; reason: any; dayType: any; status: any; createdAt: string | number | Date | dayjs.Dayjs | null | undefined; rejectionReason: any; leaveId: any; employeeId: any; }) => ({
+      const formattedLeaves: AppliedLeave[] = leavesRes.data.map((leave) => ({
         leaveType: leave.leaveType,
         fromDate: dayjs(leave.startDate).format('YYYY-MM-DD'),
         toDate: dayjs(leave.endDate).format('YYYY-MM-DD'),
         duration: leave.duration,
         reason: leave.reason,
-        dayType: leave.dayType || 'full',
+        dayType: leave.duration >= 1 ? 'full' : 'half',
         status: leave.status,
-        appliedAt: dayjs(leave.createdAt).format('YYYY-MM-DD'),
-        rejectionReason: leave.rejectionReason,
+        appliedAt: dayjs(leave.appliedAt).format('YYYY-MM-DD'),
+        rejectionReason: '',
         leaveId: leave.leaveId,
         employeeId: leave.employeeId,
+        isFirstHalf: leave.isFirstHalf,
+        isSecondHalf: leave.isSecondHalf
       }));
       setLeaves(formattedLeaves);
       setFilteredLeaves(formattedLeaves);
@@ -94,7 +117,7 @@ const EmployeeLeave: React.FC = () => {
     }
 
     if (selectedType !== 'all') {
-      filtered = filtered.filter(leave => leave.leaveType.includes(selectedType));
+      filtered = filtered.filter(leave => leave.leaveType === selectedType);
     }
 
     setFilteredLeaves(filtered);
@@ -105,28 +128,35 @@ const EmployeeLeave: React.FC = () => {
     filterLeaves();
   }, [searchText, selectedType, leaves]);
 
-  const handleDateChange = (
-    dates: [Dayjs | null, Dayjs | null] | null, 
-    // dateStrings: [string, string]
-  ) => {
+  const handleDateChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
     if (dates && dates[0] && dates[1]) {
-      let duration = 0;
-      let currentDate = dates[0];
-  
-      while (currentDate.isBefore(dates[1], 'day') || currentDate.isSame(dates[1], 'day')) {
-        if (currentDate.day() !== 0) { // Check if it's not Sunday (0 represents Sunday)
-          duration++;
+      if (dates[0].isSame(dates[1], 'day')) {
+        setSelectedDays(1);
+        // For single day, allow both full and half day options
+        const currentDayType = form.getFieldValue('dayType');
+        if (currentDayType === 'half') {
+          setShowHalfDayOptions(true);
         }
-        currentDate = currentDate.add(1, 'day');
+      } else {
+        let duration = 0;
+        let currentDate = dates[0];
+    
+        while (currentDate.isBefore(dates[1], 'day') || currentDate.isSame(dates[1], 'day')) {
+          if (currentDate.day() !== 0) {
+            duration++;
+          }
+          currentDate = currentDate.add(1, 'day');
+        }
+    
+        setSelectedDays(duration);
+        form.setFieldValue('dayType', 'full');
+        setShowHalfDayOptions(false);
       }
   
-      setSelectedDays(duration);
-  
-      // Check if duration exceeds available leave for the selected leave type
       const selectedLeaveType = form.getFieldValue('leaveTypes');
       const leaveType = leaveTypes.find((type) => type.type === selectedLeaveType);
   
-      if (leaveType && duration > leaveType.available) {
+      if (leaveType && selectedDays > leaveType.available) {
         form.setFields([
           {
             name: 'dates',
@@ -138,26 +168,66 @@ const EmployeeLeave: React.FC = () => {
       }
     } else {
       setSelectedDays(0);
+      setShowHalfDayOptions(false);
       form.setFields([{ name: 'dates', errors: [] }]);
     }
   };
-  
+
+  const handleDayTypeChange = (e: RadioChangeEvent) => {
+    const newDayType = e.target.value as 'full' | 'half';
+    form.setFieldValue('dayType', newDayType);
+    
+    if (newDayType === 'half' && selectedDays === 1) {
+      setShowHalfDayOptions(true);
+      // Set default half day type if not already set
+      if (!form.getFieldValue('halfDayType')) {
+        form.setFieldValue('halfDayType', 'first');
+      }
+    } else {
+      setShowHalfDayOptions(false);
+      form.setFieldValue('halfDayType', undefined);
+    }
+  };
+
+  const handleEditClick = (leave: AppliedLeave) => {
+    setCurrentLeave(leave);
+    
+    const dates = [dayjs(leave.fromDate), dayjs(leave.toDate)];
+    const isHalfDay = leave.duration < 1;
+    
+    form.setFieldsValue({
+      leaveTypes: leave.leaveType,
+      dates: dates,
+      dayType: isHalfDay ? 'half' : 'full',
+      halfDayType: isHalfDay ? (leave.isFirstHalf ? 'first' : 'second') : undefined,
+      reason: leave.reason,
+    });
+    
+    if (dates[0].isSame(dates[1], 'day')) {
+      setSelectedDays(1);
+      setShowHalfDayOptions(isHalfDay);
+    } else {
+      let duration = 0;
+      let currentDate = dates[0];
+      while (currentDate.isBefore(dates[1], 'day') || currentDate.isSame(dates[1], 'day')) {
+        if (currentDate.day() !== 0) {
+          duration++;
+        }
+        currentDate = currentDate.add(1, 'day');
+      }
+      setSelectedDays(duration);
+      setShowHalfDayOptions(false);
+    }
+    
+    setDrawerVisible(true);
+  };
+
   const onFinish = async (values: LeaveFormValues) => {
     try {
-      // Check if 'Half Day' is selected and ensure duration is 1 day
-      if (values.dayType === 'half' && selectedDays !== 1) {
-        form.setFields([
-          {
-            name: 'dayType',
-            errors: ['Half Day can only be selected for a duration of 1 day.'],
-          },
-        ]);
-        return;
-      }
-  
-      // Check if the duration exceeds available leaves
       const selectedLeaveType = leaveTypes.find(type => type.type === values.leaveTypes);
-      if (selectedDays > (selectedLeaveType?.available || 0)) {
+      const calculatedDuration = values.dayType === 'half' ? 0.5 : selectedDays;
+      
+      if (calculatedDuration > (selectedLeaveType?.available || 0)) {
         form.setFields([
           {
             name: 'dates',
@@ -171,27 +241,27 @@ const EmployeeLeave: React.FC = () => {
         leaveType: values.leaveTypes,
         fromDate: values.dates[0].format('YYYY-MM-DD'),
         toDate: values.dates[1].format('YYYY-MM-DD'),
-        duration: values.dayType === 'half' ? 0.5 : selectedDays,
+        duration: calculatedDuration,
         dayType: values.dayType,
         reason: values.reason,
+        isFirstHalf: values.dayType === 'half' ? values.halfDayType === 'first' : false,
+        isSecondHalf: values.dayType === 'half' ? values.halfDayType === 'second' : false
       };
   
       if (currentLeave) {
         await employeeInstance.post(`/employee-service/api/leave/update-applied-leave/${currentLeave.leaveId}`, newLeave);
       } else {
-        // Apply new leave
         await employeeInstance.post("/employee-service/api/leave/pre-apply-leave", newLeave);
       }
   
       setDrawerVisible(false);
       form.resetFields();
+      setCurrentLeave(null);
       fetchData();
     } catch (error) {
       console.error("Error applying leave:", error);
     }
   };
-  
-  
 
   const cancelLeave = async (leaveId: string) => {
     try {
@@ -202,22 +272,7 @@ const EmployeeLeave: React.FC = () => {
     }
   };
 
-  const handleEditClick = (leave: AppliedLeave) => {
-    setCurrentLeave(leave);
-    form.setFieldsValue({
-      leaveTypes: leave.leaveType,
-      dates: [dayjs(leave.fromDate), dayjs(leave.toDate)],
-      dayType: leave.dayType,
-      reason: leave.reason,
-    });
-    setSelectedDays(leave.duration);
-    setDrawerVisible(true);
-  };
-
-  console.log("currentLeave:", currentLeave);
-  
-
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): string => {
     switch (status.toLowerCase()) {
       case 'approved':
         return 'bg-green-100 text-green-800 border-green-300';
@@ -228,7 +283,7 @@ const EmployeeLeave: React.FC = () => {
     }
   };
 
-  const getLeaveTypeColor = () => {
+  const getLeaveTypeColor = (): string => {
     return 'bg-blue-100 text-blue-800 border-blue-300';
   };
 
@@ -238,7 +293,11 @@ const EmployeeLeave: React.FC = () => {
         <Button 
           type="primary" 
           icon={<CalendarOutlined />} 
-          onClick={() => setDrawerVisible(true)}
+          onClick={() => {
+            setCurrentLeave(null);
+            form.resetFields();
+            setDrawerVisible(true);
+          }}
           className="hover:scale-105 transition-transform"
         >
           Apply Leave
@@ -297,7 +356,8 @@ const EmployeeLeave: React.FC = () => {
                     <div className="space-y-2">
                       <div className="text-gray-600">
                         <span className="font-medium">Duration: </span>
-                        {item.duration} day(s) ({item.dayType})
+                        {item.duration} day(s) ({item.duration >= 1 ? 'Full Day' : 'Half Day'})
+                        {item.duration < 1 && (item.isFirstHalf ? ' - First Half' : ' - Second Half')}
                       </div>
                       <div className="text-gray-600">
                         <span className="font-medium">Date Range: </span>
@@ -318,7 +378,6 @@ const EmployeeLeave: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Action buttons */}
                   {item.status === 'pending' && (
                     <div className="flex gap-2 mt-3">
                       <Button icon={<EditOutlined />} onClick={() => handleEditClick(item)} size="small">
@@ -336,64 +395,71 @@ const EmployeeLeave: React.FC = () => {
         />
       </Card>
 
-      {/* Drawer for Apply/Edit Leave */}
       <Drawer
-        title={currentLeave ? "Edit Leave" : "Apply Leave"}
-        visible={drawerVisible}
-        onClose={() => setDrawerVisible(false)}
-        width={400}
-        footer={null}
-      >
-        <Form form={form} onFinish={onFinish}>
-          <Form.Item name="leaveTypes" label="Leave Type" rules={[{ required: true }]}>
-            <Select placeholder="Select leave type">
-              {leaveTypes.map((type) => (
-                <Select.Option key={type.type} value={type.type}>
-                  {type.type}({type.available})days
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
+      title={currentLeave ? "Edit Leave" : "Apply Leave"}
+      open={drawerVisible}
+      onClose={() => {
+        setDrawerVisible(false);
+        setCurrentLeave(null);
+        form.resetFields();
+        setShowHalfDayOptions(false);
+      }}
+      width={400}
+      footer={null}
+    >
+      <Form form={form} onFinish={onFinish}>
+        <Form.Item name="leaveTypes" label="Leave Type" rules={[{ required: true }]}>
+          <Select placeholder="Select leave type">
+            {leaveTypes.map((type) => (
+              <Select.Option key={type.type} value={type.type}>
+                {type.type} ({type.available} days)
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
 
-          <Form.Item name="dates" label="Leave Duration" rules={[{ required: true }]}>
-            <RangePicker
-              onChange={handleDateChange}
-              format="YYYY-MM-DD"
-              defaultValue={[dayjs(currentLeave?.fromDate), dayjs(currentLeave?.toDate)]}
-            />
-          </Form.Item>
+        <Form.Item name="dates" label="Leave Duration" rules={[{ required: true }]}>
+          <RangePicker
+            onChange={handleDateChange}
+            format="YYYY-MM-DD"
+            disabledDate={(current) => current && current < dayjs().startOf('day')}
+          />
+        </Form.Item>
 
-          <Form.Item name="dayType" label="Day Type" rules={[{ required: true }]}>
-              <Radio.Group>
-              <Radio value="full">Full Day</Radio>
-              <Radio value="half">Half Day</Radio>
+        <Form.Item name="dayType" label="Day Type" rules={[{ required: true }]}>
+          <Radio.Group onChange={handleDayTypeChange}>
+            <Radio value="full" disabled={selectedDays === 0}>Full Day</Radio>
+            <Radio value="half" disabled={selectedDays !== 1}>Half Day</Radio>
+          </Radio.Group>
+        </Form.Item>
+
+        {showHalfDayOptions && (
+          <Form.Item 
+            name="halfDayType" 
+            label="Half Day Type" 
+            rules={[{ required: true, message: 'Please select half day type' }]}
+          >
+            <Radio.Group>
+              <Radio value="first">First Half</Radio>
+              <Radio value="second">Second Half</Radio>
             </Radio.Group>
-           </Form.Item>
-           {selectedDays === 1 && form.getFieldValue('dayType') === 'half' && (
-            <Form.Item 
-              name="halfDayType" 
-              label="Half Day Type" 
-              rules={[{ required: true, message: 'Please select half day type' }]}
-            >
-              <Radio.Group>
-                <Radio value="first half">First Half</Radio>
-                <Radio value="second half">Second Half</Radio>
-              </Radio.Group>
-            </Form.Item>
-          )}
-
-          <Form.Item name="reason" label="Reason" rules={[{ required: true }]}>
-            <Input.TextArea placeholder="Enter reason" />
           </Form.Item>
+        )}
 
-          <div className="flex justify-between">
-            <span className="text-gray-600">Duration: {selectedDays} day(s)</span>
-            <Button type="primary" htmlType="submit">
-              Submit
-            </Button>
-          </div>
-        </Form>
-      </Drawer>
+        <Form.Item name="reason" label="Reason" rules={[{ required: true }]}>
+          <Input.TextArea placeholder="Enter reason" />
+        </Form.Item>
+
+        <div className="flex justify-between">
+          <span className="text-gray-600">
+            Duration: {form.getFieldValue('dayType') === 'half' ? '0.5' : selectedDays} day(s)
+          </span>
+          <Button type="primary" htmlType="submit">
+            Submit
+          </Button>
+        </div>
+      </Form>
+    </Drawer>
     </div>
   );
 };

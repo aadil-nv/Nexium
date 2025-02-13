@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Drawer, Input, Typography, Pagination, message, Spin } from "antd";
+import { Button, Drawer, Input, Typography, Pagination, message, Spin,Empty  } from "antd";
 import { VideoCameraOutlined, SearchOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
@@ -15,7 +15,6 @@ import { Meeting, Participant, FormValues } from "../../interface/meetingInterfa
 const { Title } = Typography;
 
 export const MeetingScheduler: React.FC = () => {
-  // State management
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [editingMeeting, setEditingMeeting] = useState<string | null>(null);
@@ -47,7 +46,6 @@ export const MeetingScheduler: React.FC = () => {
     fetchParticipants();
   }, []);
 
-  // API calls
   const fetchMeetings = async () => {
     try {
       setLoading(true);
@@ -69,7 +67,6 @@ export const MeetingScheduler: React.FC = () => {
     }
   };
 
-  // Meeting handlers
   const handleCreateMeeting = async (values: FormValues) => {
     try {
       const meetingDate = values.meetingDate
@@ -82,7 +79,7 @@ export const MeetingScheduler: React.FC = () => {
         .minute(values.meetingTime.minute())
         .second(values.meetingTime.second())
         .toISOString();
-
+  
       const formattedMeeting = {
         meetingTitle: values.meetingTitle,
         meetingDate: meetingDate,
@@ -90,8 +87,11 @@ export const MeetingScheduler: React.FC = () => {
         participants: selectedParticipants,
         scheduledBy: values.scheduledBy,
         meetingLink: `hgsjdfa7453`,
+        isRecurring: values.isRecurring,
+        recurringType: values.recurringType,
+        recurringDay: values.recurringDay
       };
-
+  
       await communicationInstance.post("/communication-service/api/meeting/create-meeting", formattedMeeting);
       message.success("Meeting scheduled successfully");
       fetchMeetings();
@@ -125,7 +125,11 @@ export const MeetingScheduler: React.FC = () => {
         meetingDate: meetingDate,
         meetingTime: meetingTime,
         participants: selectedParticipants,
-        scheduledBy: values.scheduledBy
+        scheduledBy: values.scheduledBy,
+        meetingLink: `hgsjdfa7453`,
+        isRecurring: values.isRecurring,
+        recurringType: values.recurringType,
+        recurringDay: values.recurringDay
       };
 
       await communicationInstance.patch(
@@ -151,7 +155,6 @@ export const MeetingScheduler: React.FC = () => {
     }
   };
 
-  // UI handlers
   const handleCloseDrawer = () => {
     setIsDrawerOpen(false);
     setEditingMeeting(null);
@@ -167,11 +170,15 @@ export const MeetingScheduler: React.FC = () => {
     const meetingTime = dayjs(meeting.meetingTime);
     
     const formValues: FormValues = {
+      
       meetingTitle: meeting.meetingTitle,
       meetingDate: meetingDate,
       meetingTime: meetingTime,
       participants: meeting.participants.map(p => p.userId),
-      scheduledBy: meeting.scheduledBy
+      scheduledBy: meeting.scheduledBy,
+      isRecurring: meeting.isRecurring,
+      recurringType: meeting.recurringType,
+      recurringDay: meeting.recurringDay
     };
     
     form.setFieldsValue(formValues);
@@ -247,31 +254,43 @@ export const MeetingScheduler: React.FC = () => {
             </div>
           </div>
 
-          {/* Meeting Cards Grid */}
-          <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            <AnimatePresence>
-              {currentMeetings.map((meeting) => (
-                <MeetingCard
-                  key={meeting._id}
-                  meeting={meeting}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onCopyLink={handleCopyLink}
-                  onJoinMeeting={handleJoinMeeting}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
+          {/* Meeting Cards Grid or Empty State */}
+          {currentMeetings.length === 0 ? (
+            <div className="flex justify-center items-center mt-12">
+              <Empty 
+                description="No meetings found" 
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+            </div>
+          ) : (
+            <>
+              <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                <AnimatePresence>
+                  {currentMeetings.map((meeting) => (
+                    <MeetingCard
+                      key={meeting._id}
+                      meeting={meeting}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onCopyLink={handleCopyLink}
+                      onJoinMeeting={handleJoinMeeting}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
 
-          {/* Pagination */}
-          <div className="mt-6 flex justify-center">
-            <Pagination
-              current={currentPage}
-              pageSize={meetingsPerPage}
-              total={filteredMeetings.length}
-              onChange={(page) => setCurrentPage(page)}
-            />
-          </div>
+              {/* Pagination */}
+              <div className="mt-6 flex justify-center">
+                <Pagination
+                  current={currentPage}
+                  pageSize={meetingsPerPage}
+                  total={filteredMeetings.length}
+                  onChange={(page) => setCurrentPage(page)}
+                />
+              </div>
+            </>
+          )}
+
           <Drawer
             title={editingMeeting ? "Edit Meeting" : "Schedule New Meeting"}
             placement="right"

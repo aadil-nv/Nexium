@@ -20,10 +20,12 @@ interface IBusinessOwnerResponse {
 export const loginSuperAdmin = async (data: { email: string; password: string }) => {
   try {
     const response = await axios.post(
-      "https://backend.aadil.online/authentication-service/api/super-admin/superadmin-login",
+      "http://localhost:7000/api/super-admin/superadmin-login",
       data,
-      { withCredentials: true }
-      
+      {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      }
     );
     return response.data;
   } catch (error) {
@@ -45,7 +47,7 @@ export const fetchAllPlans = async () => {
     return [];
   }
 };
-//============================
+
 export const updatePlanStatus = async (planId: string, newStatus: boolean) => {
   try {
     await superAdminInstance.patch(`/superAdmin-service/api/subscription/update-status/${planId}`, { isActive: newStatus });

@@ -7,9 +7,9 @@ import ChatPeoples from './ChatPeople';
 import ChatWindow from './ChatWindow';
 import EditGroupModal from './EditGroup';
 import { Employee, Group } from '../../interface/ChatInterface';
-import { communicationInstance } from '../../services/communicationInstance';
 import GroupMembersModal from "../../components/chat/GroupMembersModal";
 import useAuth from '../../hooks/useAuth';
+import { deleteGroupAPI, fetchAllGroupsAPI, fetchAllChatsAPI, fetchGroupDetailsAPI, fetchGroupMembersAPI } from '../../api/communicationApi';
 
 const { Header, Content, Sider } = Layout;
 const { confirm } = Modal;
@@ -23,7 +23,10 @@ interface ChatTarget {
   avatar?: string;
   type: 'private' | 'group';
   status?: boolean;
-  lastSeen?: string
+  lastSeen?: string;
+  businessOwnerId?: string;
+  lastMessage?: string;
+  lastMessageTime?: Date;
 }
 
 interface GroupMember {
@@ -31,6 +34,7 @@ interface GroupMember {
   name: string;
   profilePicture?: string;
   position: string;
+  businessOwnerId?: string;
 }
 
 const MainLayout: React.FC = () => {
@@ -52,12 +56,9 @@ const MainLayout: React.FC = () => {
   const senderName = employee?.employeeName || businessOwner?.companyName || manager?.managerName
 
   const formatLastSeen = useCallback((date: string | Date) => {
-    console.log("Date from last seen function", date);
-    
-    // Check if the input is a valid date string or Date object
+
     const validDate = date instanceof Date ? date : new Date(date);
     
-    // If it's not a valid date, return "Invalid date"
     if (!(validDate instanceof Date) || isNaN(validDate.getTime())) return 'Invalid date';
     
     const now = new Date();
@@ -68,45 +69,45 @@ const MainLayout: React.FC = () => {
     return `${Math.floor(diff / 1440)} days ago`;
 }, []);
 
-  const handleDeleteGroup = async (groupId: string) => {    
-    confirm({
-      title: 'Are you sure you want to delete this group?',
-      content: 'This action cannot be undone.',
-      okText: 'Yes, delete',
-      okType: 'danger',
-      cancelText: 'No, cancel',
-      onOk: async () => {
-        try {
-          await communicationInstance.delete(`/communication-service/api/chat/delete-group/${groupId}`);
-          setGroups(prevGroups => prevGroups.filter(group => group.groupId !== groupId));
-          if (selectedTarget?.id === groupId) {
-            setSelectedTarget(null);
-          }
-          await fetchGroups();
-        } catch (error) {
-          console.error('Error deleting group:', error);
-          Modal.error({
-            title: 'Error',
-            content: 'Failed to delete the group. Please try again.',
-          });
-        }
-      },
-    });
-  };
+const handleDeleteGroup = async (groupId: string) => {    
+  confirm({
+    title: 'Are you sure you want to delete this group?',
+    content: 'This action cannot be undone.',
+    okText: 'Yes, delete',
+    okType: 'danger',
+    cancelText: 'No, cancel',
+    onOk: async () => {
+      try {
+        await deleteGroupAPI(groupId);
+        setGroups(prevGroups => prevGroups.filter(group => group.groupId !== groupId));
 
-  const fetchGroupMembers = async (groupId: string) => {
-    if (!groupId) return;
-    
-    setLoadingMembers(true);
-    try {
-      const response = await communicationInstance.get(`/communication-service/api/chat/get-all-groupmembers/${groupId}`);
-      setGroupMembers(response.data);
-    } catch (error) {
-      console.error('Error fetching group members:', error);
-    } finally {
-      setLoadingMembers(false);
-    }
-  };
+        if (selectedTarget?.id === groupId) {
+          setSelectedTarget(null);
+        }
+
+        await fetchGroups();
+      } catch (error) {
+        console.error('Error handling group deletion:', error);
+      }
+    },
+  });
+};
+
+
+const fetchGroupMembers = async (groupId: string) => {
+  if (!groupId) return;
+
+  setLoadingMembers(true);
+  try {
+    const members = await fetchGroupMembersAPI(groupId);
+    setGroupMembers(members);
+  } catch (error) {
+    console.error('Error handling group members fetch:', error);
+  } finally {
+    setLoadingMembers(false);
+  }
+};
+
 
   const handleViewMembers = () => {
     if (selectedTarget?.type === 'group' && selectedTarget.id) {
@@ -117,91 +118,93 @@ const MainLayout: React.FC = () => {
 
   const handleGroupUpdate = async () => {
     try {
-      // Fetch updated groups
-      const groupsResponse = await communicationInstance.get('/communication-service/api/chat/get-all-groups');
-      if (groupsResponse.data) {
-        setGroups(groupsResponse.data);
-      }
-
-      // Update selected target if it's the modified group
+      // Fetch and set groups
+      const groups = await fetchAllGroupsAPI();
+      setGroups(groups);
+  
+      // If selected target is a group, update details
       if (selectedTarget?.type === 'group' && selectedTarget?.id) {
-        const updatedGroupResponse = await communicationInstance.get(`/communication-service/api/chat/get-group-detailes/${selectedTarget.id}`);
-        const updatedGroup = updatedGroupResponse.data;
+        const updatedGroup = await fetchGroupDetailsAPI(selectedTarget.id);
         
         setSelectedTarget(prev => prev ? {
           ...prev,
           name: updatedGroup.groupName,
           receiverId: updatedGroup.participants.map((p: GroupMember) => p.id),
           chatId: updatedGroup._id,
-          id: updatedGroup._id
+          id: updatedGroup._id,
+          businessOwnerId: updatedGroup.businessOwnerId
         } : null);
       }
     } catch (error) {
       console.error('Error updating group details:', error);
     }
   };
+  
 
   const fetchGroups = async () => {
+  try {
+    const groups = await fetchAllGroupsAPI();
+    setGroups(groups);
+  } catch (error) {
+    console.error('Error in fetchGroups:', error);
+  }
+};
+
+
+useEffect(() => {
+  let isMounted = true;
+  const controller = new AbortController();
+
+  const fetchData = async () => {
     try {
-      const groupsResponse = await communicationInstance.get('/communication-service/api/chat/get-all-groups');
-      if (groupsResponse.data) {
-        setGroups(groupsResponse.data);
+      setLoading(true);
+
+      const employeesResponse = await fetchAllChatsAPI(controller.signal);
+      console.log("employeesResponse",employeesResponse);
+      
+
+      if (employeesResponse && isMounted) {
+        setEmployees(employeesResponse);
+        const firstEmployee = employeesResponse[0];
+
+        setSelectedTarget({
+          chatId: firstEmployee.chatId,
+          senderId: firstEmployee.senderId,
+          receiverId: [firstEmployee.receiverId],
+          name: firstEmployee.receiverName,
+          avatar: firstEmployee.receiverProfilePicture || 
+                  "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png",
+          status: firstEmployee.status,
+          id: firstEmployee.chatId,
+          type: 'private',
+          lastSeen: firstEmployee.lastSeen,
+          businessOwnerId: firstEmployee.businessOwnerId,
+          lastMessage: firstEmployee.lastMessage,
+          lastMessageTime: firstEmployee.lastMessageTime
+        });
       }
-    } catch (error) {
-      console.error('Error fetching groups:', error);
+
+      await fetchGroups();
+      
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Error fetching data:', error);
+      }
+    } finally {
+      if (isMounted) {
+        setLoading(false);
+      }
     }
   };
 
-  useEffect(() => {
-    let isMounted = true;
-    const controller = new AbortController();
-  
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-  
-        const employeesResponse = await communicationInstance.get('/communication-service/api/chat/get-all-chats', {
-          signal: controller.signal
-        });
-        console.log("employeesResponse(((((((((())))))))))))", employeesResponse);
-        
-        
-        if (employeesResponse.data && isMounted) {
-          setEmployees(employeesResponse.data);
-          const firstEmployee = employeesResponse.data[0];
-          setSelectedTarget({
-            chatId: firstEmployee.chatId,
-            senderId: firstEmployee.senderId,
-            receiverId: [firstEmployee.receiverId],
-            name: firstEmployee.receiverName,
-            avatar: firstEmployee.receiverProfilePicture || "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png",
-            status: firstEmployee.status,
-            id: firstEmployee.chatId,
-            type: 'private',
-            lastSeen: firstEmployee.lastSeen
-          });
-        }
-  
-        await fetchGroups();
-        
-      } catch (error: unknown) {
-        if (error instanceof Error && error.name !== 'AbortError') {
-          console.error('Error fetching data:', error);
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-  
-    fetchData();
-  
-    return () => {
-      isMounted = false;
-      controller.abort();
-    };
-  }, []);
+  fetchData();
+
+  return () => {
+    isMounted = false;
+    controller.abort();
+  };
+}, []);
+
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -287,6 +290,7 @@ const MainLayout: React.FC = () => {
                   setSiderVisible={setSiderVisible}
                   formatLastSeen={formatLastSeen}
                   refreshGroups={fetchGroups}
+                  businessOwnerId={selectedTarget?.businessOwnerId}
                 />
               </motion.div>
             )}
@@ -409,6 +413,7 @@ const MainLayout: React.FC = () => {
                   showEmojiPicker={showEmojiPicker}
                   setShowEmojiPicker={setShowEmojiPicker}
                   scrollToBottom={() => {}}
+                  businessOwnerId={selectedTarget.businessOwnerId}
                 />
               </motion.div>
             ) : (

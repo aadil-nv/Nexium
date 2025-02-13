@@ -3,24 +3,41 @@ import { motion, AnimatePresence } from 'framer-motion';
 import useTheme from '../../hooks/useTheme';
 import { FaEdit, FaRegCheckCircle, FaRegCircle } from 'react-icons/fa';
 import ModalForm from './Modal';
-import {ICardProps}  from "../../interface/GlobalInterface"
-
 
 type PlanType = 'Trial' | 'Premium' | 'Basic';
+
+interface ICardProps {
+  planId: string;
+  planName: string;
+  description: string;
+  price: number;
+  planType: PlanType;
+  durationInMonths: number;
+  features: string[];
+  employeeCount?: number | null;
+  managerCount?: number | null;
+  projectCount?: number | null;
+  serviceRequestCount?: number | null;
+  isActive: boolean;
+  onStatusChange: (isActive: boolean) => void;
+  onPlanUpdate: (updatedPlan: ICardProps) => void;
+}
 
 const planColors: Record<PlanType, string> = {
   Trial: 'bg-yellow-100 text-yellow-800',
   Premium: 'bg-blue-100 text-blue-800',
   Basic: 'bg-green-100 text-green-800',
-};;
+};
 
 const Card: React.FC<ICardProps> = ({
-  planId, planName, description, price, planType, durationInMonths, features, isActive, onStatusChange, onPlanUpdate
+  planId, planName, description, price, planType, durationInMonths, features,
+  employeeCount, managerCount, projectCount, serviceRequestCount,
+  isActive, onStatusChange, onPlanUpdate
 }) => {
   const { themeColor } = useTheme();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const planColor = planColors[planType as PlanType] || 'bg-gray-100 text-gray-800';
+  const planColor = planColors[planType] || 'bg-gray-100 text-gray-800';
   const featuresString = features.join(', ');
 
   const toggleStatus = () => onStatusChange(!isActive);
@@ -39,6 +56,23 @@ const Card: React.FC<ICardProps> = ({
           <span className="font-bold text-lg">{price === 0 ? 'Free' : `$${price}`}</span>
           <span className="text-gray-500 ml-2">/ {durationInMonths} Month(s)</span>
         </div>
+
+        {/* Resource Counts Section */}
+        <div className="mt-4 space-y-2">
+          {employeeCount !== null && employeeCount !== undefined && (
+            <p className="text-sm">Employees: {employeeCount}</p>
+          )}
+          {managerCount !== null && managerCount !== undefined && (
+            <p className="text-sm">Managers: {managerCount}</p>
+          )}
+          {projectCount !== null && projectCount !== undefined && (
+            <p className="text-sm">Projects: {projectCount}</p>
+          )}
+          {serviceRequestCount !== null && serviceRequestCount !== undefined && (
+            <p className="text-sm">Service Requests: {serviceRequestCount}</p>
+          )}
+        </div>
+
         <ul className="list-disc list-inside text-gray-600 mt-4 text-sm">
           {features.map((feature, index) => <li key={index}>{feature}</li>)}
         </ul>
@@ -64,41 +98,29 @@ const Card: React.FC<ICardProps> = ({
 
       <AnimatePresence>
         {isModalVisible && (
-          <motion.div
-            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <motion.div
-              className="bg-white dark:bg-gray-800 rounded-lg p-6 w-11/12 max-w-md"
-              initial={{ y: -10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 10, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ModalForm
-                onClose={() => setIsModalVisible(false)}
-                isVisible={isModalVisible}
-                planData={{
-                  planName, 
-                  description, 
-                  price, 
-                  planType, 
-                  durationInMonths, 
-                  featuresString, 
-                  planId,
-                  features, 
-                  isActive, 
-                  onStatusChange, 
-                  onPlanUpdate
-                }}
-                themeColor={themeColor}
-                onPlanUpdate={onPlanUpdate}
-              />
-            </motion.div>
-          </motion.div>
+          <ModalForm
+            onClose={() => setIsModalVisible(false)}
+            isVisible={isModalVisible}
+            planData={{
+              planId,
+              planName,
+              description,
+              price,
+              planType,
+              durationInMonths,
+              features,
+              employeeCount,
+              managerCount,
+              projectCount,
+              serviceRequestCount,
+              featuresString,
+              isActive,
+              onStatusChange,
+              onPlanUpdate
+            }}
+            themeColor={themeColor}
+            onPlanUpdate={onPlanUpdate}
+          />
         )}
       </AnimatePresence>
     </>

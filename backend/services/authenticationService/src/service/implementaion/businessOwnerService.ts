@@ -160,7 +160,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
           const businessOwnerName = `${businessOwner._id}`;
           const businessOwnerDB = mongoose.connection.useDb(businessOwnerName);
       
-          (await businessOwnerDB.createCollection("businessOwners")).insertOne(businessOwner)
+          (await businessOwnerDB.createCollection("businessowners")).insertOne(businessOwner)
       
           // Generate OTP and send it
           const otp = generateOtp();

@@ -3,8 +3,8 @@ import { List, Badge, Avatar, Button, Space, Typography, message, Modal, Input, 
 import { Employee, Group } from '../../interface/ChatInterface';
 import { UsergroupAddOutlined, TeamOutlined, UserOutlined, MessageOutlined, CheckOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import useTheme from '../../hooks/useTheme';
-import { communicationInstance } from '../../services/communicationInstance';
 import { motion } from 'framer-motion';
+import { createChatAPI, createGroupAPI, fetchAvailablePeopleAPI } from '../../api/communicationApi';
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -18,6 +18,10 @@ interface ChatTarget {
   avatar?: string;
   type: 'private' | 'group';
   status?: boolean;
+  businessOwnerId?: string
+  lastSeen?: string
+  lastMessage?: string
+  lastMessageTime?: Date
 }
 
 interface ChatPeoplesProps {
@@ -28,18 +32,11 @@ interface ChatPeoplesProps {
   formatLastSeen: (date: Date) => string;
   setSiderVisible: (visible: boolean) => void;
   refreshGroups: () => Promise<void>;
+  businessOwnerId?: string
 }
 
-const ChatPeoples: React.FC<ChatPeoplesProps> = ({
-  employees: initialEmployees,
-  groups,
-  setSelectedTarget,
-  isMobile,
-  formatLastSeen,
-  setSiderVisible,
-  refreshGroups
-}) => {
-  
+const ChatPeoples: React.FC<ChatPeoplesProps> = ({employees: initialEmployees,groups,setSelectedTarget,isMobile,formatLastSeen,setSiderVisible,refreshGroups,businessOwnerId}) => {
+
   const { themeColor } = useTheme();
   const [isGroupModalVisible, setIsGroupModalVisible] = useState(false);
   const [isStartChatModalVisible, setIsStartChatModalVisible] = useState(false);
@@ -59,50 +56,41 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
   }, [initialEmployees]);
 
   const fetchAvailablePeople = async () => {
-    try {
-      const response = await communicationInstance.get('/communication-service/api/chat/get-all-receiver');
-      console.log("Get all reciver is ==>", response);
-      
-      setAvailablePeople(response.data);
-    } catch (error) {
-      console.error('Error fetching available people:', error);
-      message.error('Failed to fetch available people');
-    }
+    const people = await fetchAvailablePeopleAPI();
+    setAvailablePeople(people);
   };
 
   const handleUserSelect = async (emp: Employee) => {
     try {
-      const response = await communicationInstance.post(`/communication-service/api/chat/create-chat/${emp.receiverId}`);
-
+      const chatData = await createChatAPI(emp.receiverId);
+  
       setExistingChats(prevChats => {
-
         if (!prevChats.some(chat => chat.receiverId === emp.receiverId)) {
           return [...prevChats, emp];
         }
         return prevChats;
       });
-
-      // Remove the selected person from available people
+  
       setAvailablePeople(prevPeople => 
         prevPeople.filter(person => person.receiverId !== emp.receiverId)
       );
       
       setSelectedTarget({
-        chatId: response.data.chatId,
+        chatId: chatData.chatId,
         senderId: emp.senderId,
         receiverId: [emp.receiverId],
         id: emp.receiverId,
         name: emp.receiverName,
         avatar: emp.receiverProfilePicture,
         type: 'private',
-        status: emp.status
+        status: emp.status,
+        businessOwnerId: emp.businessOwnerId
       });
-      
+  
       if (isMobile) setSiderVisible(false);
       setIsStartChatModalVisible(false);
     } catch (error) {
-      console.error('Error creating chat:', error);
-      message.error('Failed to create chat. Please try again.');
+      console.error('Error handling user select:', error);
     }
   };
 
@@ -114,7 +102,8 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
       id: group.groupId,
       name: group.groupName,
       avatar: group.avatar,
-      type: 'group'
+      type: 'group',
+      businessOwnerId: businessOwnerId
     });
     if (isMobile) setSiderVisible(false);
   };
@@ -126,26 +115,21 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
     if (selectedMembers.length < 2) {
       return message.error('Please select at least 2 members');
     }
-
+  
     setLoading(true);
     try {
-      await communicationInstance.post('/communication-service/api/chat/create-group', {
-        groupName: groupName,
-        members: selectedMembers
-      });
-      
+      await createGroupAPI(groupName, selectedMembers);
       await refreshGroups();
-      
       message.success('Group created successfully');
       setIsGroupModalVisible(false);
       setGroupName('');
       setSelectedMembers([]);
       setActiveTab('2');
     } catch (error) {
-      console.error('Error creating group:', error);
-      message.error('Failed to create group. Please try again.');
+      console.error('Error handling group creation:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const toggleMember = (memberId: string) => {
@@ -196,14 +180,22 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
                         title={
                           <Space direction="vertical" size={0}>
                             <span className="font-medium">{emp.receiverName}</span>
-                            <span className="text-xs text-gray-500">{emp.receiverPosition || 'Employee'}</span>
+                            {emp.status ? (
+                              <span className="text-xs text-green-500">
+                                <Space><CheckOutlined /> Active now</Space>
+                              </span>
+                            ) : (
+                              <span className="text-xs text-gray-500">
+                                <Space><ClockCircleOutlined /> Offline</Space>
+                              </span>
+                            )}
                           </Space>
                         }
                         description={
-                          emp.status == true ? (
-                            <Space><CheckOutlined className="text-green-500" /> Active now</Space>
-                          ) : (
-                            <Space><ClockCircleOutlined className="text-gray-400" /> Last seen {formatLastSeen(emp.lastSeen)}</Space>
+                          !emp.status && emp.lastMessageTime && (
+                            <span className="text-xs text-gray-400">Lats Messaged at :
+                              {formatLastSeen(emp.lastMessageTime)}
+                            </span>
                           )
                         }
                       />
@@ -289,7 +281,6 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
         </Tabs>
       </motion.div>
 
-      {/* Group Creation Modal */}
       <Modal
         title="Create New Group"
         open={isGroupModalVisible}
@@ -323,10 +314,7 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
                 >
                   <Space>
                     <Avatar src={emp.receiverProfilePicture} size={32} />
-                    <Space direction="vertical" size={0}>
-                      <span>{emp.receiverName}</span>
-                      <span className="text-xs text-gray-500">{emp.receiverPosition || 'Employee'}</span>
-                    </Space>
+                    <span>{emp.receiverName}</span>
                   </Space>
                 </Checkbox>
               </List.Item>
@@ -335,7 +323,6 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
         </Space>
       </Modal>
 
-      {/* Start Chat Modal */}
       <Modal
         title="Start New Chat"
         open={isStartChatModalVisible}
@@ -357,7 +344,15 @@ const ChatPeoples: React.FC<ChatPeoplesProps> = ({
                   </Badge>
                 }
                 title={person.receiverName}
-                description={person.receiverPosition}
+                description={
+                  person.status ? (
+                    <span className="text-green-500">
+                      <Space><CheckOutlined /> Active now</Space>
+                    </span>
+                  ) : (
+                    <span className="text-gray-500">{person.lastMessage || 'No messages yet'}</span>
+                  )
+                }
               />
             </List.Item>
           )}

@@ -14,6 +14,9 @@ export interface Participant {
     participants: Participant[];
     meetingLink: string;
     scheduledBy: ScheduledBy;
+    isRecurring: boolean;
+    recurringType?: 'daily' | 'weekly';
+    recurringDay?: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday"
   }
   
   export interface ScheduledBy {
@@ -29,4 +32,7 @@ export interface Participant {
     meetingTime: Dayjs;
     participants: string[];
     scheduledBy: ScheduledBy;
+    isRecurring: boolean;
+    recurringType?: 'daily' | 'weekly';
+    recurringDay?: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday"
   }

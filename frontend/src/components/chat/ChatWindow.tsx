@@ -4,6 +4,7 @@ import { SendOutlined, SmileOutlined, CheckOutlined, DeleteOutlined } from '@ant
 import useTheme from '../../hooks/useTheme';
 import socket from '../../config/socket';
 import { communicationInstance } from '../../services/communicationInstance';
+import { deleteMessageAPI } from '../../api/communicationApi';
 
 const { Text } = Typography;
 
@@ -38,6 +39,7 @@ interface Message {
   status: MessageStatus;
   readBy: string[];
   messageId?: string;
+  businessOwnerId?: string
 }
 
 interface ChatWindowProps {
@@ -50,7 +52,8 @@ interface ChatWindowProps {
   showEmojiPicker: boolean;
   setShowEmojiPicker: (show: boolean) => void;
   scrollToBottom: () => void;
-  senderName?: string
+  senderName?: string,
+  businessOwnerId?: string
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -64,6 +67,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   showEmojiPicker,
   setShowEmojiPicker,
   scrollToBottom,
+  businessOwnerId
 }) => {
   const { isActiveMenu, themeColor, themeMode } = useTheme();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -127,16 +131,24 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const handleDeleteMessage = async () => {
     try {
       if (!messageToDelete) return;
-      await communicationInstance.delete(`/communication-service/api/message/delete-message/${messageToDelete}`);
-      socket.emit('messageDeleted', {chatId,messageId: messageToDelete, senderId});
+  
+      await deleteMessageAPI(messageToDelete);
+      
+      socket.emit('messageDeleted', { chatId, messageId: messageToDelete, senderId, businessOwnerId });
+      
       setChatMessages(prev => prev.filter(msg => msg.messageId !== messageToDelete));
+  
       handleDeleteModalClose();
     } catch (error) {
       console.error('Error deleting message:', error);
     }
   };
+  
 
   const handleSendMessage = () => {
+
+    console.log("Handle send message *****",businessOwnerId);
+    
     if (!messageInput.trim()) return;    
 
     const newMessage: Message = {
@@ -147,9 +159,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       timestamp: new Date(),
       senderId: senderId,
       status: 'sending',
-      senderName: '',
+      senderName: "",
       readBy: [senderId],
-      messageId: `temp-${Date.now()}`
+      messageId: `temp-${Date.now()}`,
+      businessOwnerId:businessOwnerId
     };
 
     setChatMessages((prev) => [...prev, newMessage]);
@@ -164,8 +177,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       targetType: targetType,
       createdAt: new Date().toISOString(),
       status: 'sending' as MessageStatus,
-      senderName: senderName
+      senderName: senderName,
+      businessOwnerId : businessOwnerId
     };
+
+    console.log("apiMessage ---------------------------------",apiMessage);
+    
 
     socket.emit('sendMessage', apiMessage, () => {});
     socket.on('messageAcknowledgement', (acknowledgement: MessageAcknowledgement) => {
@@ -224,7 +241,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   }, [chatId, senderId, targetId, targetType]);
 
   useEffect(() => {
-    socket.emit('joinChat', senderId);
+    socket.emit('joinChat', senderId,businessOwnerId);
 
     socket.on('receiveMessage', (newMessage: ApiMessage) => {
       if (newMessage.chatId === chatId) {
@@ -308,10 +325,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                   </div>
                 )}
                <div
-  key={msg.messageId}
-  onClick={() => handleMessageClick(msg.messageId, isSender)}
-  style={getMessageStyle(isSender, msg.messageId === selectedMessageId)}
->
+                  key={msg.messageId}
+                       onClick={() => handleMessageClick(msg.messageId, isSender)}
+                style={getMessageStyle(isSender, msg.messageId === selectedMessageId)}
+                            >
                   <div style={{ fontSize: '14px', lineHeight: '1.5' }}>
                     {msg.text}
                   </div>

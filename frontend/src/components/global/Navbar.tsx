@@ -99,6 +99,9 @@ export default function Navbar(): JSX.Element {
   const defaultProfileImage = "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png";
 
   console.log("Manager is 000=========>", manager);
+
+  console.log("employee is ====>",employee);
+  
   
   
   const userName = businessOwner.isAuthenticated ? businessOwner?.companyName :

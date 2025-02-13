@@ -10,8 +10,6 @@ interface FormData {
 }
 
 const LeaveSettings: React.FC = () => {
-
-
   const [formData, setFormData] = useState<FormData>({});
   const [initialFormData, setInitialFormData] = useState<FormData>({});
   const [leaveId, setLeaveId] = useState<string>('');
@@ -41,10 +39,13 @@ const LeaveSettings: React.FC = () => {
     }
   };
 
-  const handleInputChange = (name: string, value: number) => {
+  const handleInputChange = (name: string, value: string) => {
+    // Convert to number, cap at 99, and prevent negative values
+    const numValue = Math.min(Math.max(parseInt(value) || 0, 0), 99);
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: numValue
     }));
   };
 
@@ -89,7 +90,7 @@ const LeaveSettings: React.FC = () => {
               Leave Settings
             </h2>
             <p className="mt-2 text-sm text-gray-500">
-              Configure maximum days allowed for each leave type
+              Configure maximum days allowed for each leave type (0-99 days)
             </p>
           </motion.div>
         </div>
@@ -121,11 +122,17 @@ const LeaveSettings: React.FC = () => {
                     <input
                       type="number"
                       min="0"
+                      max="99"
                       value={days}
-                      onChange={(e) => handleInputChange(name, Number(e.target.value))}
+                      onChange={(e) => handleInputChange(name, e.target.value)}
                       className="block w-full px-4 py-3 text-black rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-opacity-50 focus:ring-indigo-500 focus:border-indigo-500"
                       style={{ borderColor: themeColor }}
                     />
+                    {(days < 0 || days > 99) && (
+                      <p className="text-red-500 text-xs mt-1">
+                        Must be between 0 and 99 days
+                      </p>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -139,11 +146,11 @@ const LeaveSettings: React.FC = () => {
             >
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || Object.values(formData).some(val => val < 0 || val > 99)}
                 className={`
                   px-6 py-3 rounded-lg text-white font-medium shadow-sm
                   transition-all duration-200
-                  ${hasChanges()
+                  ${hasChanges() && !Object.values(formData).some(val => val < 0 || val > 99)
                     ? 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-md'
                     : 'bg-gray-400 cursor-not-allowed'
                   }

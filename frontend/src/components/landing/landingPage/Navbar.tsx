@@ -16,9 +16,9 @@ const Navbar = () => {
 
   const navItems = [
     { link: "Home", path: "/" },
-    { link: "About", path: "/about" },
-    { link: "Services", path: "/services" },
-    { link: "Contact", path: "/contact" },
+    { link: "About", path: "/" },
+    { link: "Services", path: "/" },
+    { link: "Contact", path: "/" },
   ];
 
   const isSignup = location.pathname === "/signup";

@@ -48,7 +48,7 @@ const Sidebar = () => {
       </button>
 
       {/* Sidebar */}
-      <div className={`fixed top-0 left-0 h-full transition-all duration-300 z-40 ${isActiveMenu ? 'w-64 bg-gray-100 shadow-lg' : 'w-0'} overflow-hidden`}>
+      <div className={`fixed top-0 left-0 h-full transition-all duration-300 z-40 ${isActiveMenu ? 'w-64 bg-white shadow-lg' : 'w-0'} overflow-hidden`}>
         {isActiveMenu && (
           <div className="h-full flex flex-col">
             <div className="flex justify-between items-center p-4">

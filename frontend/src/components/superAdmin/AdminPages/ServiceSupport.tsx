@@ -92,7 +92,8 @@ export default function CustomerCare() {
       const startIndex = (page - 1) * pageSize;
       const endIndex = startIndex + pageSize;
       const paginatedData = filteredData.slice(startIndex, endIndex);
-
+      console.log("Pagination data is ===>" ,paginatedData);
+      
       setServiceRequests(paginatedData);
       setPagination({
         ...pagination,
@@ -175,12 +176,22 @@ export default function CustomerCare() {
   };
 
   const columns = [
-   
     {
-      title: 'Company Name',
+      title: 'Company',
       dataIndex: 'companyName',
-      key: 'companyName',
-      filterable: true,
+      key: 'company',
+      render: (text: string, record: { companyLogo: string; companyName: string }) => (
+        <div className="flex items-center space-x-2">
+          <img
+            src={record.companyLogo ? record.companyLogo : "https://cdn.pixabay.com/photo/2012/04/23/15/57/copyright-38672_640.png"}
+            alt="Company Logo"
+            width={40}
+            height={40}
+            className="rounded-full object-cover"
+          />
+          <span>{text}</span>
+        </div>
+      ),
     },
     {
       title: 'Request ID',
@@ -218,7 +229,7 @@ export default function CustomerCare() {
       title: 'Created At',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      render: (date: string) => new Date(date).toLocaleDateString()
+      render: (date: string) => new Date(date).toLocaleDateString(),
     },
     {
       title: 'Status',
@@ -227,7 +238,7 @@ export default function CustomerCare() {
       render: (text: string, record: ServiceRequest) => (
         <>
           {getStatusIcon(record.status)}
-           <span style={{display: 'none' }}>{text}</span>
+          <span style={{ display: 'none' }}>{text}</span>
           <span style={{ marginLeft: 8, color: getStatusColor(record.status) }}>
             {record.status}
           </span>
@@ -244,6 +255,7 @@ export default function CustomerCare() {
       ),
     },
   ];
+  
 
   // Removed unused parameters to fix ESLint warnings
   const handleTableChange = (newPagination: TablePaginationConfig) => {

@@ -11,7 +11,7 @@ import Login from "../components/manager/authentication/Login";
 import  OtpValidation from "../components/manager/authentication/OtpValidation";
 import EmployeeLogin from "../components/auth/EmployeeLogin";
 import EmployeeOtp from "../components/auth/EmployeeeOtp";
-import LandingAboutPage from "../pages/landingPages/LandingAboutPage";
+import Page404 from "../components/Error/Page404";
 
 const LocalRoutes = () => {
   const routes = [
@@ -26,7 +26,7 @@ const LocalRoutes = () => {
     { path: "/manager-otpvalidation", element: <OtpValidation /> },
     { path: "/employee-login", element: <EmployeeLogin /> },
     { path: "/employee-otpvalidation", element: <EmployeeOtp /> },
-    { path: "/about", element: <LandingAboutPage /> },
+    { path: "*", element: <Page404 /> },
 
 
 

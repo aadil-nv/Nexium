@@ -19,6 +19,7 @@ import Meeting from "../components/meeting/Meeting";
 import PreAppliedLeaves from "../components/manager/dashboard/PreAppliedLeaves";
 import Projects from "../components/manager/dashboard/Projects";
 import JoinMeeting from "../components/meeting/JoinMeeting";
+import Dashboard404 from "../components/Error/Dashboard404";
 
 const MangerRoutes = () => {
 
@@ -50,11 +51,8 @@ const MangerRoutes = () => {
           <Route path="join-meeting" element={<JoinMeeting />} />
 
         <Route path="settings" element={<Notifications />} />
-
-        {/* <Route path="onboarding-employee-list" element={<OnBordingEmployeeList />} /> */}
-        {/* <Route path="pre-boarding" element={<PreBoarding />} /> */}
-        {/* <Route path="interview" element={<Interview />} /> */}
         <Route path="manager-profile" element={<Profile />} />
+        <Route path="*" element={<Dashboard404 />} />  
       </Route>
      </Route>
     </Routes>

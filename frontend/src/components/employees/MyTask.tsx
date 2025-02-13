@@ -3,15 +3,18 @@ import { Input, Button, List, Checkbox, Tag, Typography, Select } from 'antd';
 import {
   PlusCircleOutlined,
   CloseCircleOutlined,
-  FireOutlined,
-  ClockCircleOutlined,
-  CheckCircleOutlined,
-  SaveOutlined,
+  FireFilled,
+  ClockCircleFilled,
+  CheckCircleFilled,
+  SaveFilled,
+  CalendarFilled,
+  UserOutlined
 } from '@ant-design/icons';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { employeeInstance } from '../../services/employeeInstance';
 import { toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
+import useTheme from "../../hooks/useTheme"
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -40,6 +43,7 @@ const TodoList = () => {
   const [isInputVisible, setIsInputVisible] = useState<boolean>(false);
   const [responses, setResponses] = useState<Record<string, string>>({});
   const { id } = useParams<{ id: string }>();
+  const {themeColor} = useTheme();
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -109,10 +113,10 @@ const TodoList = () => {
 
   const getPriority = (priority: string) =>
     ({
-      low: { color: 'blue', icon: <ClockCircleOutlined /> },
-      medium: { color: 'orange', icon: <CheckCircleOutlined /> },
-      high: { color: 'red', icon: <FireOutlined /> },
-    }[priority] || { color: 'gray', icon: <CheckCircleOutlined /> });
+      low: { color: 'blue', icon: <ClockCircleFilled /> },
+      medium: { color: 'orange', icon: <CheckCircleFilled /> },
+      high: { color: 'red', icon: <FireFilled /> },
+    }[priority] || { color: 'gray', icon: <CheckCircleFilled /> });
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -123,114 +127,135 @@ const TodoList = () => {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-xl shadow-lg overflow-hidden"
         >
-          <div className="px-6 py-4 bg-gray-50 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">Task: {todos.taskName}</h1>
-              <div className="mt-2 space-y-1">
-                <span className="block font-medium text-red-600">Date of Assigning: {todos.assignedDate || 'Not Set'}</span>
-                <span className="block font-medium text-red-600">Due Date: {todos.dueDate || 'Not Set'}</span>
-                <span className="block font-medium text-red-600">Assigned By: {todos.assignedBy || 'Not Set'}</span>
+          <div className="px-6 py-6" style={{ background: `linear-gradient(to right, ${themeColor}, ${themeColor})` }}>
+
+            <div className="text-white">
+              <h1 className="text-2xl font-bold text-white">Task: {todos.taskName}</h1>
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center gap-2">
+                  <CalendarFilled />
+                  <span>Assigned: {todos.assignedDate ? todos.assignedDate.split('T')[0] : 'Not Set'}</span>
+
+                </div>
+                <div className="flex items-center gap-2">
+                  <CalendarFilled />
+                  <span>Due at: {todos.dueDate ? todos.dueDate.split('T')[0] : 'Not Set'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <UserOutlined />
+                  <span>Assigned By: {todos.assignedBy || 'Not Set'}</span>
+                </div>
               </div>
             </div>
           </div>
 
           <div className="divide-y divide-gray-200">
-            <List
-              itemLayout="vertical"
-              dataSource={todos.tasks}
-              renderItem={(task: SubTask) => (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
-                  <List.Item className="px-6 py-4 hover:bg-gray-50">
-                    <div className="flex flex-col gap-4">
-                      <div className="flex items-start gap-4 p-3 border-l-4 border-blue-500 bg-gray-50 rounded-lg hover:shadow-md transition-shadow duration-300 ease-in-out">
-                        <Checkbox
-                          checked={task.isCompleted}
-                          onChange={() => toggleComplete(task._id)}
-                          className="text-blue-600"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-center mb-2">
-                            <Text
-                              delete={task.isCompleted}
-                              className={`text-lg font-semibold ${task.isCompleted ? 'text-gray-400 line-through' : 'text-gray-800'}`}
-                            >
-                              {task.title}
-                            </Text>
-                            <Tag
-                              color={getPriority(task.priority).color}
-                              icon={getPriority(task.priority).icon}
-                              className="text-xs"
-                            >
-                              {task.priority}
-                            </Tag>
-                          </div>
-                          <div className="text-xs text-gray-700 space-y-1 mb-3">
-                            <div>
-                              <strong className="font-medium">Sub Task:</strong> {task.title}
+            <AnimatePresence>
+              <List
+                itemLayout="vertical"
+                dataSource={todos.tasks}
+                renderItem={(task: SubTask) => (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <List.Item className="px-6 py-4 hover:bg-gray-50">
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-start gap-4 p-4 border-l-4 border-blue-500 bg-gray-50 rounded-lg">
+                          <Checkbox
+                            checked={task.isCompleted}
+                            onChange={() => toggleComplete(task._id)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-center mb-2">
+                              <Text
+                                delete={task.isCompleted}
+                                className={`text-lg font-semibold ${task.isCompleted ? 'text-gray-400 line-through' : 'text-gray-800'}`}
+                              >
+                                {task.title}
+                              </Text>
+                              <Tag
+                                color={getPriority(task.priority).color}
+                                icon={getPriority(task.priority).icon}
+                                className="text-xs"
+                              >
+                                {task.priority}
+                              </Tag>
                             </div>
-                            <div>
-                              <strong className="font-medium">Description:</strong> {task.description}
+                            
+                            <div className="text-sm text-gray-700 space-y-2 mb-3">
+                              <div>
+                                <strong>Sub Task:</strong> {task.title}
+                              </div>
+                              <div>
+                                <strong>Description:</strong> {task.description}
+                              </div>
+                              {/* <div>
+                                <strong>Assigned Date:</strong> {task.assignedDate}
+                              </div> */}
+                              <div>
+                                <strong>SubTask status:</strong>
+                                <Tag color={task.taskStatus === 'completed' ? 'green' : 'orange'} className="ml-2">
+                                  {task.taskStatus}
+                                </Tag>
+                              </div>
                             </div>
-                            <div>
-                              <strong className="font-medium">Assigned Date:</strong> {task.assignedDate}
-                            </div>
-                            <div>
-                              <strong className="font-medium">SubTask status:</strong>
-                              <Tag color={task.taskStatus === 'completed' ? 'green' : 'orange'}>{task.taskStatus}</Tag>
-                            </div>
-                          </div>
 
-                          {/* Status Change Select */}
-                          <div className="mb-3">
-                            <Select
-                              value={task.taskStatus}
-                              onChange={(value) => handleUpdateTask(task._id, { taskStatus: value })}
-                              className="w-40"
-                              placeholder={task.taskStatus}
-                            >
-                              <Option value="backlog">Backlog</Option>
-                              <Option value="inProgress">In Progress</Option>
-                              <Option value="codeReview">Code Review</Option>
-                              <Option value="qaTesting">QA Testing</Option>
-                              <Option value="completed">Completed</Option>
-                              <Option value="deployed">Deployed</Option>
-                            </Select>
-                          </div>
+                            <div className="mb-3">
+                              <Select
+                                value={task.taskStatus}
+                                onChange={(value) => handleUpdateTask(task._id, { taskStatus: value })}
+                                className="w-40"
+                                placeholder={task.taskStatus}
+                              >
+                                <Option value="backlog">📋 Backlog</Option>
+                                <Option value="inProgress">🚀 In Progress</Option>
+                                <Option value="codeReview">👀 Code Review</Option>
+                                <Option value="qaTesting">🔍 QA Testing</Option>
+                                <Option value="completed">✅ Completed</Option>
+                                <Option value="deployed">🚀 Deployed</Option>
+                              </Select>
+                            </div>
 
-                          {/* Response Section */}
-                          <div className="flex items-center gap-4">
-                            <Input
-                              placeholder={task.response ? task.response : 'Enter your response'} 
-                              value={responses[task._id] || ''}
-                              onChange={(e) => updateResponse(task._id, e.target.value)}
-                              className="flex-1 p-1 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <Button
-                              type="primary"
-                              icon={<SaveOutlined />}
-                              onClick={() =>
-                                handleUpdateTask(task._id, {
-                                  taskStatus: task.taskStatus,
-                                  isCompleted: task.isCompleted,
-                                  response: responses[task._id],
-                                })
-                              }
-                              className="px-5 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            >
-                              Save
-                            </Button>
+                            <div className="flex items-center gap-3">
+                              <Input
+                                placeholder={task.response ? task.response : 'Enter your response'}
+                                value={responses[task._id] || ''}
+                                onChange={(e) => updateResponse(task._id, e.target.value)}
+                                className="flex-1"
+                              />
+                              <Button
+                                type="primary"
+                                icon={<SaveFilled />}
+                                onClick={() =>
+                                  handleUpdateTask(task._id, {
+                                    taskStatus: task.taskStatus,
+                                    isCompleted: task.isCompleted,
+                                    response: responses[task._id],
+                                  })
+                                }
+                              >
+                                Save
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </List.Item>
-                </motion.div>
-              )}
-            />
+                    </List.Item>
+                  </motion.div>
+                )}
+              />
+            </AnimatePresence>
           </div>
         </motion.div>
 
-        <motion.div className="fixed bottom-8 right-8" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+        <motion.div
+          className="fixed bottom-8 right-8"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
           <Button
             type="primary"
             shape="circle"

@@ -8,7 +8,6 @@ import { FaPlus } from 'react-icons/fa';
 import { fetchManagers } from '../../../api/businessOwnerApi';
 import { Manager } from '../../../interface/BusinessOwnerInterface';
 
-
 export default function EmployeeList() {
   const [managers, setManagers] = useState<Manager[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,6 +15,10 @@ export default function EmployeeList() {
   const [loading, setLoading] = useState(true);
   const { themeColor } = useTheme();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8; // Show 8 cards per page (2x4 grid)
 
   useEffect(() => {
     const loadManagers = async () => {
@@ -37,6 +40,12 @@ export default function EmployeeList() {
     (roleFilter === 'All' || manager.role === roleFilter)
   );
 
+  // Calculate pagination values
+  const totalPages = Math.ceil(filteredManagers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentManagers = filteredManagers.slice(startIndex, endIndex);
+
   const handleManagerAdded = async () => {
     setLoading(true);
     try {
@@ -49,6 +58,25 @@ export default function EmployeeList() {
     }
   };
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, roleFilter]);
+
+  const PaginationButton = ({ page, isActive }: { page: number, isActive: boolean }) => (
+    <button
+      onClick={() => setCurrentPage(page)}
+      className={`px-3 py-1 rounded-md mx-1 ${
+        isActive 
+          ? 'text-white' 
+          : 'text-gray-600 hover:bg-gray-100'
+      }`}
+      style={{ backgroundColor: isActive ? themeColor : 'transparent' }}
+    >
+      {page}
+    </button>
+  );
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6 flex-wrap">
@@ -57,7 +85,8 @@ export default function EmployeeList() {
           onClick={() => setIsModalVisible(true)}
           style={{ backgroundColor: themeColor }}
           className="flex items-center text-white px-4 py-2 rounded-md transition duration-300"
-          whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.05 }} 
+          whileTap={{ scale: 0.95 }}
         >
           <FaPlus className="mr-2" />Manager
         </motion.button>
@@ -91,10 +120,12 @@ export default function EmployeeList() {
               <Skeleton active avatar paragraph={{ rows: 3 }} />
             </div>
           ))
-        ) : filteredManagers.length === 0 ? (
-          <div className="flex justify-center items-center"><Empty description="No employees found" /></div>
+        ) : currentManagers.length === 0 ? (
+          <div className="col-span-full flex justify-center items-center">
+            <Empty description="No employees found" />
+          </div>
         ) : (
-          filteredManagers.map((manager, index) => (
+          currentManagers.map((manager, index) => (
             <motion.div 
               key={manager._id} 
               initial={{ opacity: 0 }} 
@@ -103,7 +134,7 @@ export default function EmployeeList() {
               className="flex justify-center"
             >
               <ManagerCard
-                image={manager.personalDetails.profilePicture || "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png"}
+                image={manager.personalDetails.profilePicture || ""}
                 name={manager.personalDetails.managerName}
                 email={manager.personalDetails.email}
                 onViewDetails={() => alert(`Viewing details for ${manager.personalDetails.managerName}`)}
@@ -117,6 +148,35 @@ export default function EmployeeList() {
           ))
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {!loading && filteredManagers.length > 0 && (
+        <div className="mt-6 flex justify-center items-center space-x-2">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+            <PaginationButton 
+              key={page} 
+              page={page} 
+              isActive={currentPage === page} 
+            />
+          ))}
+          
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       <AddManagerModal
         isVisible={isModalVisible}

@@ -6,6 +6,7 @@ export interface Group {
   lastMessage: string;
   timestamp: Date;
   avatar?: string;
+  businessOwnerId?: string
 
 }
 
@@ -44,6 +45,9 @@ export interface  Employee {
   receiverProfilePicture?: string;
   status: boolean;
   lastSeen: Date;
+  businessOwnerId: string;
+  lastMessage: string;
+  lastMessageTime: Date
 }
 
 export interface ChatWindowProps {

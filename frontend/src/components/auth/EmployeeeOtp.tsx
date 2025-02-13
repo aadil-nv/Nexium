@@ -4,14 +4,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store/store";
 import { setTimer, decrementTimer } from "../../redux/slices/otpSlice";
 import image from "../../images/images";
-import { login } from "../../redux/slices/employeeSlice";
-import axios from "axios";
-//fskaduhiusdagfjgsdjkayfgj sdajhfg ds
+import { login, setEmployeeData } from "../../redux/slices/employeeSlice";
+import axios,{ AxiosError } from "axios";
+import { employeeResendOtp, employeeValidateOtp } from "../../api/authApi";
+
 const EmployeeOtp: React.FC = () => {
   const [otp, setOtp] = React.useState<string>("");
   const [errorMessage, setErrorMessage] = React.useState<string>("");
   const [successMessage, setSuccessMessage] = React.useState<string>("");
-  const [loading, setLoading] = React.useState<boolean>(false); // Loading state
+  const [loading, setLoading] = React.useState<boolean>(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -19,6 +20,7 @@ const EmployeeOtp: React.FC = () => {
   const email = (useLocation().state as { email: string })?.email;
   const timer = useSelector((state: RootState) => state.otp.timer);
 
+  // Rest of the handlers remain the same...
   const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const value = e.target.value;
 
@@ -56,14 +58,12 @@ const EmployeeOtp: React.FC = () => {
   const handleResendOtp = async () => {
     if (timer === 0) {
       console.log("Resending OTP...");
-      dispatch(setTimer(90)); // Reset timer to 90 seconds
+      dispatch(setTimer(90));
 
       try {
-        setLoading(true); // Start loading
-        const response = await axios.post("https://backend.aadil.online/authentication-service/api/employee/employee-resendotp", {
-          email,
-        });
-        setLoading(false); // Stop loading
+        setLoading(true);
+        const response = await employeeResendOtp(email);
+        setLoading(false);
 
         if (response.data.success) {
           setSuccessMessage("OTP resent successfully.");
@@ -71,41 +71,69 @@ const EmployeeOtp: React.FC = () => {
           setErrorMessage(response.data.message || "Failed to resend OTP.");
         }
       } catch (error) {
-        setLoading(false); // Stop loading
+        setLoading(false);
         console.error("Error resending OTP:", error);
         setErrorMessage("An error occurred while resending OTP.");
       }
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (otp.length !== 6) {
-      setErrorMessage("Please enter a 6-digit OTP.");
-      return;
+        setErrorMessage("Please enter a 6-digit OTP.");
+        return;
     }
 
     try {
-      setLoading(true); // Start loading
-      const response = await axios.post("https://backend.aadil.online/authentication-service/api/employee/employee-validateotp", 
-        {email,otp},{ withCredentials: true });
-      setLoading(false); // Stop loading
-      console.log("Response data:", response.data);
-      if (response.data.success) {
-        setSuccessMessage(response.data.message || "OTP validated successfully.");
-        dispatch(login({ role: "employee", isAuthenticated: true , position: response.data.position, workTime: response.data.workTime,workTimer: response.data.workTimer }));
-        dispatch(setTimer(0)); // Clear the timer from Redux
-        navigate("/employee/dashboard");
-      } else {
-        setErrorMessage(response.data.message || "Failed to validate OTP. Please try again.");
-      }
+        setLoading(true);
+        const response = await employeeValidateOtp(email, otp);
+        console.log("response.data222222222222222", response);
+        
+        setLoading(false);
+
+        if (response.data.success) {
+            setSuccessMessage(response.data.message || "OTP validated successfully.");
+            dispatch(
+                login({
+                    role: "employee",
+                    isAuthenticated: true,
+                    position: response.data.response.position,
+                    workTime: response.data.response.workTime,
+                    workTimer: response.data.response.workTimer,
+                })
+            );
+
+            dispatch(
+                setEmployeeData({
+                    employeeName: response.data.response.data.personalDetails.employeeName,
+                    employeeProfilePicture: response.data.response.employeeProfilePicture,
+                    companyLogo: response.data.response.companyLogo,
+                    employeeType: response.data.response.data.professionalDetails.employeePosition,
+                    companyName: response.data.response.companyName,
+                })
+            );
+
+            dispatch(setTimer(0));
+            navigate("/employee/dashboard");
+        } else {
+            setErrorMessage(response.data.message || "Failed to validate OTP. Please try again.");
+        }
     } catch (error) {
-      setLoading(false); // Stop loading
-      console.error("Error validating OTP:", error);
-      setErrorMessage("An error occurred while validating OTP. Please try again.");
+        setLoading(false);
+        console.error("Error validating OTP:", error);
+
+        if (axios.isAxiosError(error)) {
+            const axiosError = error as AxiosError<{ message: string }>;
+            setErrorMessage(axiosError.response?.data?.message || "An error occurred while validating OTP. Please try again.");
+        } else {
+            setErrorMessage("An unexpected error occurred. Please try again.");
+        }
     }
-  };
+};
+
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-gray-200">
@@ -136,17 +164,30 @@ const EmployeeOtp: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white py-2 rounded-full font-semibold"
-                disabled={loading} // Disable button when loading
+                className="w-full bg-blue-500 text-white py-2 rounded-full font-semibold relative"
+                disabled={loading}
               >
-                {loading ? "Loading..." : "Validate OTP"}
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  "Validate OTP"
+                )}
               </button>
               <div className="text-center mt-4">
                 <span
                   onClick={handleResendOtp}
                   className={`text-sm ${timer > 0 ? "text-gray-500" : "text-blue-500 cursor-pointer hover:underline"}`}
                 >
-                  {loading ? "Loading..." : `Resend OTP ${timer > 0 ? `(Available in ${timer}s)` : ""}`}
+                  {loading && timer === 0 ? (
+                    <div className="flex items-center justify-center">
+                      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Sending...
+                    </div>
+                  ) : (
+                    `Resend OTP ${timer > 0 ? `(Available in ${timer}s)` : ""}`
+                  )}
                 </span>
               </div>
             </form>

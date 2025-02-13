@@ -1,7 +1,6 @@
 import { businessOwnerInstance } from "../services/businessOwnerInstance";
 import { message } from "antd";
 import toast from "react-hot-toast";
-import axios from "axios";
 
 
 interface CommonInfo {
@@ -76,6 +75,7 @@ export const fetchBusinessOwnerAddress = async () => {
   }
 };
 
+import axios from "axios";
 
 export const updateBusinessOwnerAddress = async (values: AddressData) => {
   try {

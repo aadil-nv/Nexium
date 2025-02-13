@@ -1,4 +1,4 @@
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 import { LoginFormData } from "../utils/interfaces"
 import { managerInstance } from "../services/managerInstance";
 import { IEmployee } from "../interface/managerInterface";
@@ -6,73 +6,35 @@ import { toast } from 'react-toastify';
 import { message } from 'antd';
 import { fetchLeaveEmployeesRequest ,fetchLeaveEmployeesFailure,fetchLeaveEmployeesSuccess} from "../redux/slices/leaveSlice";
 import { Dispatch } from 'redux';
+import {AddressData,CommonInfo,LeaveData,LeaveEmployee,UpdateDepartmentResponse} from "../interface/managerApiInterface"
 
 
-interface Attendance {
-  leaveType: string;
-  date: string;
-  leaveStatus: string;
-  reason: string;
-}
-
-interface LeaveEmployee {
-  _id: string;
-  attendance: Attendance[];
-}
-
-interface LeaveData {
-  employeeName: string;
-  leaveType: string;
-  leaveDate: string;
-  status: string;
-  reason: string;
-}
-
-interface AddressData {
-  street: string;
-  city: string;
-  state: string;
-  country: string;
-  postalCode: string;
-}
-
-interface CommonInfo {
-  email: string;
-  phone: string;
-  profilePicture?: string;
-  personalWebsite?: string;
-}
+const API_URL = import.meta.env.VITE_API_KEY as string
 
 
 export const managerLogin = async (formData: LoginFormData) => {
-        const response = await axios.post('https://backend.aadil.online/authentication-service/api/manager/manager-login', formData, {
+        const response = await axios.post(`${API_URL}/authentication-service/api/manager/manager-login`, formData, {
             withCredentials: true, 
         });
         return response.data;
 };
 
-export const resendOtp = async (email: string, url: string): Promise<{ success: boolean }> => {
+export const resendOtp = async (email: string): Promise<{ success: boolean }> => {
   try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    });
-    return await response.json();
+    const { data } = await axios.post(`${API_URL}/authentication-service/api/manager/resend-otp`, { email });
+    return data;
   } catch {
     return { success: false };
   }
 };
-
 
 export const getAllManagers = async () => {
         const response = await managerInstance.get('/manager-service/api/manager/get-managers', {withCredentials: true, });
         return response.data;
 };
 
-export const validateOtp = async (otp: string ,email: string) => {
-   
-    const response = await axios.post('https://backend.aadil.online/authentication-service/api/manager/validate-otp', { otp, email }, {withCredentials: true,});
+export const validateOtp = async (otp: string ,email: string) => { 
+    const response = await axios.post(`${API_URL}/authentication-service/api/manager/validate-otp`, { otp, email }, {withCredentials: true,});
     return response.data;
 };
 
@@ -292,8 +254,6 @@ export const updateManagerAddress = async (address:AddressData ) => {
     }
   };
   
-  
-
   export const fetchLeaveEmployeesOne = () => async (dispatch: Dispatch) => {
     try {
       dispatch(fetchLeaveEmployeesRequest()); // Set loading state before fetching
@@ -329,8 +289,6 @@ export const updateManagerAddress = async (address:AddressData ) => {
       }
     }
   };
-
- 
 
   export const fetchManagerDocument = async () => {
     try {
@@ -375,5 +333,29 @@ export const updateManagerAddress = async (address:AddressData ) => {
       } else {
         toast.error('An unexpected error occurred while fetching manager credentials.');
       }
+    }
+
+  };
+
+  export const updateDepartmentName = async (
+    departmentId: string,
+    newDepartmentName: string
+  ): Promise<UpdateDepartmentResponse> => {
+    try {
+      const response = await managerInstance.patch<UpdateDepartmentResponse>(
+        `/manager-service/api/department/update-department-name/${departmentId}`,
+        { newDepartmentName }
+      );
+      return response.data;
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      
+      if (axiosError.response?.data?.message) {
+        message.error(axiosError.response.data.message);
+        throw new Error(axiosError.response.data.message);
+      }
+  
+      console.error("Error updating department name:", axiosError.message);
+      throw new Error("Failed to update department name");
     }
   };

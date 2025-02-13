@@ -9,6 +9,7 @@ import Notifications from "../components/global/Notifications";
 import SuperAdminPrivateRoute from "../routes/SuperAdminPrivateRoute"; // Import the private route
 import Profile from "../components/global/Profile";
 import Settings from "../components/global/Settings";
+import Dashboard404 from "../components/Error/Dashboard404";
 
 const SuperAdminRoutes = () => {
   return (
@@ -21,6 +22,9 @@ const SuperAdminRoutes = () => {
         <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<Profile />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="*" element={<Dashboard404 />} />  
+        
+
       </Route>
     </Routes>
   );

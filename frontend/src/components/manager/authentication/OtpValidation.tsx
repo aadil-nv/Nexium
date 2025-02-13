@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Spin } from "antd"; // Import Ant Design's Spin component
-import images from "../../../images/images";
 import { validateOtp, resendOtp } from "../../../api/managerApi";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store/store"; // Adjust path based on project structure
 import { setTimer, decrementTimer } from "../../../redux/slices/otpSlice";
-import { login } from "../../../redux/slices/managerSlice";
+import { login, setManagerData } from "../../../redux/slices/managerSlice";
+import axios,{ AxiosError } from "axios";
+
 
 export default function OtpValidation() {
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
@@ -50,35 +51,50 @@ export default function OtpValidation() {
     }
   };
 
+
   const handleOtpValidation = async () => {
-    const otpString = otp.join("");
-    if (!otpString) {
-        setOtpError("OTP cannot be empty.");
-        return;
-    }
-
-    setLoading(true);
-    setOtpError(null);
-
-    try {
-        const response = await validateOtp(otpString, email);
-        console.log("API Response: ", response);
-
-        if (response && response.success === true) {
-            console.log("OTP validation successful. Navigating to dashboard...");
-            dispatch(login({ role: "manager", isAuthenticated: true }));
-            navigate("/manager/dashboard");
-        } else {
-            console.error("OTP validation failed. Response: ", response);
-            setOtpError("Invalid OTP. Please try again.");
-        }
-    } catch (error) {
-        console.error("Error during OTP validation: ", error);
-        setOtpError("Error validating OTP. Please try again.");
-    } finally {
-        setLoading(false);
-    }
-};
+      const otpString = otp.join("");
+      if (!otpString) {
+          setOtpError("OTP cannot be empty.");
+          return;
+      }
+  
+      setLoading(true);
+      setOtpError(null);
+  
+      try {
+          const response = await validateOtp(otpString, email);
+          console.log("API Response: ", response);
+  
+          if (response?.success) {
+              console.log("OTP validation successful. Navigating to dashboard...");
+              dispatch(login({ role: "manager", isAuthenticated: true }));
+              dispatch(setManagerData({
+                        managerName: response.data.managerName,
+                        managerProfilePicture: response.data.managerProfilePicture,
+                        companyLogo: response.data.companyLogo,
+                        companyName: response.data.companyName,
+                        managerType: response.data.managerType,
+                      }));
+              navigate("/manager/dashboard");
+          } else {
+              console.error("OTP validation failed. Response: ", response);
+              setOtpError(response?.message || "Invalid OTP. Please try again.");
+          }
+      } catch (error) {
+          console.error("Error during OTP validation: ", error);
+  
+          if (axios.isAxiosError(error)) {
+              const axiosError = error as AxiosError<{ message: string }>;
+              setOtpError(axiosError.response?.data?.message || "Error validating OTP. Please try again.");
+          } else {
+              setOtpError("An unexpected error occurred. Please try again.");
+          }
+      } finally {
+          setLoading(false);
+      }
+  };
+  
 
 
   const handleResendOtp = async () => {
@@ -88,7 +104,7 @@ export default function OtpValidation() {
     setOtpError(null);
 
     try {
-      const response = await resendOtp(email, "https://backend.aadil.online/authentication-service/api/manager/resend-otp");
+      const response = await resendOtp(email);
       if (response.success) {
         dispatch(setTimer(90)); // Start the timer for 90 seconds
       } else {
@@ -115,9 +131,6 @@ export default function OtpValidation() {
         transition={{ duration: 0.5 }}
       >
         <div className="w-full md:w-3/5 p-6">
-          <div className="text-left font-bold">
-            <img src={images.nexuimLogoWithName} alt="Logo" className="w-20 h-auto" />
-          </div>
           <div className="py-8">
             <div className="text-center">
               <h2 className="text-4xl font-bold text-green-500">Enter OTP</h2>

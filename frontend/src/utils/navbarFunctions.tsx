@@ -16,10 +16,10 @@ import { Dispatch, UnknownAction } from "redux";
 
 
 
-export const handleLogout = ({isBusinessOwner,isSuperAdmin,isManager,isEmployee,dispatch,navigate,}: NavbarFunctionsProps) => {
+export const handleLogout = async({isBusinessOwner,isSuperAdmin,isManager,isEmployee,dispatch,navigate,}: NavbarFunctionsProps) => {
   if (isBusinessOwner.isAuthenticated) {    
     businessOwnerInstance.post("/businessOwner-service/api/business-owner/update-isactive");
-    communicationInstance.post("/communication-service/api/chat/logout");
+   communicationInstance.post("/communication-service/api/chat/logout");
     dispatch(businessOwnerLogout());
     navigate("/login");
   } else if (isSuperAdmin.isAuthenticated) {

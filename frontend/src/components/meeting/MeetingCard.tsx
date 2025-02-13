@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Space, Avatar, Tag, Button, Popconfirm, Typography, Tooltip } from 'antd';
-import { VideoCameraOutlined, CalendarOutlined, TeamOutlined, UserOutlined, EditOutlined, DeleteOutlined, CopyOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { VideoCameraOutlined, CalendarOutlined, TeamOutlined, UserOutlined, EditOutlined, DeleteOutlined, CopyOutlined, ClockCircleOutlined, RedoOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
-import dayjs from 'dayjs';
 import { Meeting } from '../../interface/meetingInterface';
-import useAuth from '../../hooks/useAuth';
-
-const { Text } = Typography;
 
 interface MeetingCardProps {
   meeting: Meeting;
@@ -16,6 +12,8 @@ interface MeetingCardProps {
   onJoinMeeting: (link: string) => void;
 }
 
+const { Text } = Typography;
+
 export const MeetingCard: React.FC<MeetingCardProps> = ({
   meeting,
   onEdit,
@@ -23,44 +21,66 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
   onCopyLink,
   onJoinMeeting,
 }) => {
+  console.log("Meeting =================>", meeting);
+  
   const [timeUntilMeeting, setTimeUntilMeeting] = useState<string>('');
-  const { businessOwner, manager, employee } = useAuth();
-  const [canJoin, setCanJoin] = useState(false);
+  const [canJoin, setCanJoin] = useState<boolean>(false);
 
-  // Separate permissions for edit and delete
-  const hasEditPermission = 
-    businessOwner.isAuthenticated || 
-    manager.isAuthenticated || 
-    (employee.isAuthenticated && employee.position === 'Team Lead');
+  const formatTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  };
 
-  const hasDeletePermission = 
-    businessOwner.isAuthenticated || 
-    manager.isAuthenticated;
+  const checkMeetingAvailability = (): boolean => {
+    const now = new Date();
+    const meetingDateTime = new Date(meeting.meetingTime);
 
-  const getRandomColor = () => {
-    const colors = ['blue', 'green', 'cyan', 'purple', 'magenta'];
-    return colors[Math.floor(Math.random() * colors.length)];
+    if (meeting.isRecurring) {
+      const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      const meetingTimeToday = new Date(now);
+      meetingTimeToday.setHours(meetingDateTime.getHours(), meetingDateTime.getMinutes(), 0);
+      
+      if (meeting.recurringType === 'daily') {
+        const diffMinutes = (now.getTime() - meetingTimeToday.getTime()) / (1000 * 60);
+        return diffMinutes >= -30 && diffMinutes <= 120;
+      } else if (meeting.recurringType === 'weekly' && meeting.recurringDay === currentDay) {
+        const diffMinutes = (now.getTime() - meetingTimeToday.getTime()) / (1000 * 60);
+        return diffMinutes >= -30 && diffMinutes <= 120;
+      }
+      return false;
+    }
+
+    const diffMinutes = (meetingDateTime.getTime() - now.getTime()) / (1000 * 60);
+    return diffMinutes >= -30 && diffMinutes <= 120;
   };
 
   const updateMeetingStatus = () => {
-    const meetingTime = dayjs(meeting.meetingTime);
-    const now = dayjs();
-    const diffMinutes = meetingTime.diff(now, 'minute');
+    const now = new Date();
+    const meetingDateTime = new Date(meeting.meetingTime);
     
-    setCanJoin(diffMinutes >= -30 && diffMinutes <= 120);
+    setCanJoin(checkMeetingAvailability());
 
-    if (diffMinutes > 0) {
-      const hours = Math.floor(diffMinutes / 60);
-      const minutes = diffMinutes % 60;
-      setTimeUntilMeeting(
-        hours > 0 
-          ? `Starts in ${hours}h ${minutes}m`
-          : `Starts in ${minutes}m`
-      );
-    } else if (diffMinutes >= -30) {
-      setTimeUntilMeeting('Meeting in progress');
+    if (meeting.isRecurring) {
+      if (meeting.recurringType === 'daily') {
+        setTimeUntilMeeting(`Daily at ${formatTime(meeting.meetingTime)}`);
+      } else if (meeting.recurringType === 'weekly' && meeting.recurringDay) {
+        setTimeUntilMeeting(`Weekly on ${meeting.recurringDay}s at ${formatTime(meeting.meetingTime)}`);
+      }
     } else {
-      setTimeUntilMeeting('Meeting ended');
+      const diffMinutes = Math.floor((meetingDateTime.getTime() - now.getTime()) / (1000 * 60));
+      if (diffMinutes > 0) {
+        const hours = Math.floor(diffMinutes / 60);
+        const minutes = diffMinutes % 60;
+        setTimeUntilMeeting(
+          hours > 0 
+            ? `Starts in ${hours}h ${minutes}m`
+            : `Starts in ${minutes}m`
+        );
+      } else if (diffMinutes >= -30) {
+        setTimeUntilMeeting('Meeting in progress');
+      } else {
+        setTimeUntilMeeting('Meeting ended');
+      }
     }
   };
 
@@ -68,7 +88,12 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
     updateMeetingStatus();
     const timer = setInterval(updateMeetingStatus, 60000);
     return () => clearInterval(timer);
-  }, [meeting.meetingTime]);
+  }, [meeting]);
+
+  const getRandomColor = () => {
+    const colors = ['blue', 'green', 'cyan', 'purple', 'magenta'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  };
 
   const renderParticipants = () => {
     const maxDisplay = 4;
@@ -103,39 +128,23 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
     );
   };
 
-  // Generate card actions based on permissions
   const getCardActions = (): React.ReactNode[] => {
-    const actions: React.ReactNode[] = [];
-
-    // Add edit button for authorized users (including Team Lead)
-    if (hasEditPermission) {
-      actions.push(
-        <Tooltip key="edit" title="Edit Meeting">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => onEdit(meeting)}
-          />
-        </Tooltip>
-      );
-    }
-
-    // Add delete button only for business owners and managers
-    if (hasDeletePermission) {
-      actions.push(
-        <Tooltip key="delete" title="Delete Meeting">
-          <Popconfirm
-            title="Are you sure you want to delete this meeting?"
-            onConfirm={() => onDelete(meeting._id)}
-          >
-            <Button type="text" icon={<DeleteOutlined />} danger />
-          </Popconfirm>
-        </Tooltip>
-      );
-    }
-
-    // Copy link button is available for all users
-    actions.push(
+    return [
+      <Tooltip key="edit" title="Edit Meeting">
+        <Button
+          type="text"
+          icon={<EditOutlined />}
+          onClick={() => onEdit(meeting)}
+        />
+      </Tooltip>,
+      <Tooltip key="delete" title="Delete Meeting">
+        <Popconfirm
+          title="Are you sure you want to delete this meeting?"
+          onConfirm={() => onDelete(meeting._id)}
+        >
+          <Button type="text" icon={<DeleteOutlined />} danger />
+        </Popconfirm>
+      </Tooltip>,
       <Tooltip key="copy" title="Copy Meeting Link">
         <Button
           type="text"
@@ -143,9 +152,12 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
           onClick={() => onCopyLink(meeting.meetingLink)}
         />
       </Tooltip>
-    );
+    ];
+  };
 
-    return actions;
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   };
 
   return (
@@ -158,9 +170,16 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
         className="rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
         actions={getCardActions()}
         extra={
-          <Tag color={getRandomColor()}>
-            {dayjs(meeting.meetingTime).format("hh:mm A")}
-          </Tag>
+          <Space>
+            {meeting.isRecurring && (
+              <Tag color="purple" icon={<RedoOutlined />}>
+                {meeting.recurringType === 'daily' ? 'Daily' : 'Weekly'}
+              </Tag>
+            )}
+            <Tag color={getRandomColor()}>
+              {formatTime(meeting.meetingTime)}
+            </Tag>
+          </Space>
         }
       >
         <Space direction="vertical" className="w-full">
@@ -172,7 +191,7 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
             <div>
               <Text strong>{meeting.meetingTitle}</Text>
               <div className="text-gray-500 flex items-center gap-2">
-                <CalendarOutlined /> {dayjs(meeting.meetingTime).format("YYYY-MM-DD")}
+                <CalendarOutlined /> {formatDate(meeting.meetingDate)}
               </div>
             </div>
           </Space>
@@ -219,3 +238,5 @@ export const MeetingCard: React.FC<MeetingCardProps> = ({
     </motion.div>
   );
 };
+
+export default MeetingCard;

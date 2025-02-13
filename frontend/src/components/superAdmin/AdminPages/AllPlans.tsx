@@ -8,9 +8,13 @@ interface Plan {
   planName: string;
   description: string;
   price: number;
-  planType: string;
+  planType: "Trial" | "Basic" | "Premium";
   durationInMonths: number;
   features: string[];
+  employeeCount?: number | null;
+  managerCount?: number | null;
+  projectCount?: number | null;
+  serviceRequestCount?: number | null;
   isActive: boolean;
 }
 
@@ -34,8 +38,8 @@ const AllPlans: React.FC = () => {
   }, []);
 
   const handleStatusChange = (planId: string, newStatus: boolean) => {
-    setPlansData((prev) => 
-      prev.map((plan) => 
+    setPlansData((prev) =>
+      prev.map((plan) =>
         plan._id === planId ? { ...plan, isActive: newStatus } : plan
       )
     );
@@ -62,13 +66,17 @@ const AllPlans: React.FC = () => {
             planType={plan.planType}
             durationInMonths={plan.durationInMonths}
             features={plan.features}
+            employeeCount={plan.employeeCount}
+            managerCount={plan.managerCount}
+            projectCount={plan.projectCount}
+            serviceRequestCount={plan.serviceRequestCount}
             isActive={plan.isActive}
             onStatusChange={(newStatus) => handleStatusChange(plan._id, newStatus)}
-            onPlanUpdate={(updatedPlan) => 
-              setPlansData((prev) => 
-                prev.map((plan) => 
-                  plan._id === updatedPlan.planId 
-                    ? { ...plan, ...updatedPlan } 
+            onPlanUpdate={(updatedPlan) =>
+              setPlansData((prev) =>
+                prev.map((plan) =>
+                  plan._id === updatedPlan.planId
+                    ? { ...plan, ...updatedPlan }
                     : plan
                 )
               )

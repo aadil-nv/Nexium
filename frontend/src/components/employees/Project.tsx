@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Input, Select, Button, Card, Badge, Pagination, Modal, Upload, message, Spin } from "antd";
+import { Input, Select, Button, Card, Badge, Pagination, Modal, Upload, message, Spin, Empty } from "antd";
 import { SearchOutlined, EyeOutlined, UploadOutlined } from "@ant-design/icons";
 import { employeeInstance } from "../../services/employeeInstance";
 
@@ -60,13 +60,11 @@ const ProjectDashboard: React.FC = () => {
       const response = await employeeInstance.get('/employee-service/api/project/get-all-projects');
       setProjects(response.data);
     } catch (error: unknown) {
-      // Ensure error is an instance of Error before accessing the 'message' property
       if (error instanceof Error) {
         setError(error.message || 'Failed to fetch projects. Please try again later.');
       } else {
         setError('Failed to fetch projects. Please try again later.');
       }
-      
       message.error('Error loading projects');
     } finally {
       setLoading(false);
@@ -116,8 +114,8 @@ const ProjectDashboard: React.FC = () => {
 
       if (response.data) {
         message.success(`File ${file.name} uploaded successfully`);
-        await fetchProjects(); // Refresh projects to get updated file list
-        setSelectedProject(null); // Close the modal
+        await fetchProjects();
+        setSelectedProject(null);
       } else {
         throw new Error('Failed to upload file');
       }
@@ -184,77 +182,95 @@ const ProjectDashboard: React.FC = () => {
         </Select>
       </div>
 
-      <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <AnimatePresence>
-          {paginatedProjects.map((project) => (
-            <motion.div
-              key={project.projectId}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              whileHover={{ y: -5 }}
-            >
-              <Card
-                className="hover:shadow-xl transition-shadow duration-300"
-                style={{
-                  background: 'linear-gradient(to bottom right, #ffffff, #f0f2f5)',
-                  borderRadius: '12px',
-                  border: '1px solid #e8e8e8'
-                }}
-              >
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-semibold truncate max-w-[60%]">
-                      {project.projectName}
-                    </h3>
-                    <Badge color={getStatusColor(project.managerStatus)} text={project.managerStatus} />
-                  </div>
+      {projects.length === 0 ? (
+        <div className="flex justify-center items-center min-h-[400px]">
+          <Empty
+            description="No projects yet added"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        </div>
+      ) : filteredProjects.length === 0 ? (
+        <div className="flex justify-center items-center min-h-[400px]">
+          <Empty
+            description="No projects match your search criteria"
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+          />
+        </div>
+      ) : (
+        <>
+          <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence>
+              {paginatedProjects.map((project) => (
+                <motion.div
+                  key={project.projectId}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                  whileHover={{ y: -5 }}
+                >
+                  <Card
+                    className="hover:shadow-xl transition-shadow duration-300"
+                    style={{
+                      background: 'linear-gradient(to bottom right, #ffffff, #f0f2f5)',
+                      borderRadius: '12px',
+                      border: '1px solid #e8e8e8'
+                    }}
+                  >
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-lg font-semibold truncate max-w-[60%]">
+                          {project.projectName}
+                        </h3>
+                        <Badge color={getStatusColor(project.managerStatus)} text={project.managerStatus} />
+                      </div>
 
-                  <p className="text-gray-600 line-clamp-2">{project.description}</p>
+                      <p className="text-gray-600 line-clamp-2">{project.description}</p>
 
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span>Start: {new Date(project.startDate).toLocaleDateString()}</span>
-                    <span>End: {new Date(project.endDate).toLocaleDateString()}</span>
-                  </div>
+                      <div className="flex justify-between text-sm text-gray-500">
+                        <span>Start: {new Date(project.startDate).toLocaleDateString()}</span>
+                        <span>End: {new Date(project.endDate).toLocaleDateString()}</span>
+                      </div>
 
-                  <div className="flex justify-between items-center gap-2 pt-2">
-                    <Select
-                      value={project.status}
-                      style={{ width: 130 }}
-                      onChange={(value) => handleStatusChange(project.projectId, value)}
-                    >
-                      <Option value="notStarted">Not Started</Option>
-                      <Option value="inProgress">In Progress</Option>
-                      <Option value="completed">Completed</Option>
-                      <Option value="onHold">On Hold</Option>
-                      <Option value="cancelled">Cancelled</Option>
-                    </Select>
+                      <div className="flex justify-between items-center gap-2 pt-2">
+                        <Select
+                          value={project.status}
+                          style={{ width: 130 }}
+                          onChange={(value) => handleStatusChange(project.projectId, value)}
+                        >
+                          <Option value="notStarted">Not Started</Option>
+                          <Option value="inProgress">In Progress</Option>
+                          <Option value="completed">Completed</Option>
+                          <Option value="onHold">On Hold</Option>
+                          <Option value="cancelled">Cancelled</Option>
+                        </Select>
 
-                    <Button
-                      type="primary"
-                      icon={<EyeOutlined />}
-                      onClick={() => setSelectedProject(project)}
-                    >
-                      Details
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </motion.div>
+                        <Button
+                          type="primary"
+                          icon={<EyeOutlined />}
+                          onClick={() => setSelectedProject(project)}
+                        >
+                          Details
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
 
-      {filteredProjects.length > pageSize && (
-        <Pagination
-          current={currentPage}
-          total={filteredProjects.length}
-          pageSize={pageSize}
-          onChange={setCurrentPage}
-          showSizeChanger={false}
-          className="mt-8 flex justify-center"
-        />
+          {filteredProjects.length > pageSize && (
+            <Pagination
+              current={currentPage}
+              total={filteredProjects.length}
+              pageSize={pageSize}
+              onChange={setCurrentPage}
+              showSizeChanger={false}
+              className="mt-8 flex justify-center"
+            />
+          )}
+        </>
       )}
 
       <Modal
