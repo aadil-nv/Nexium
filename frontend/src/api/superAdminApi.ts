@@ -16,11 +16,12 @@ interface IBusinessOwnerResponse {
   };
   isBlocked: boolean;
 }
+const API_URL = import.meta.env.VITE_API_KEY
 
 export const loginSuperAdmin = async (data: { email: string; password: string }) => {
   try {
     const response = await axios.post(
-      "http://localhost:7000/api/super-admin/superadmin-login",
+      `${API_URL}/api/super-admin/superadmin-login`,
       data,
       {
         headers: { "Content-Type": "application/json" },
