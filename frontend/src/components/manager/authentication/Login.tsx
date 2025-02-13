@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { AxiosError } from "axios";
-import images from "../../../images/images";
 import { login, setManagerData } from "../../../redux/slices/managerSlice";
 import { motion } from "framer-motion";
 import { managerLogin } from "../../../api/managerApi";
@@ -95,9 +94,7 @@ export default function ManagerLogin() {
       >
         {/* Left Section (Login Form) */}
         <div className="w-full md:w-3/5 p-6 md:p-8">
-          <div className="text-left font-bold">
-            <img src={images.nexuimLogoWithName} alt="Logo" className="w-16 md:w-20 h-auto" />
-          </div>
+
           <div className="py-6 md:py-10">
             <div className="text-center">
               <h2 className="text-3xl md:text-4xl font-bold text-green-600">Login to your account</h2>
