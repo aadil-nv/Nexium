@@ -3,13 +3,31 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { loadStripe } from '@stripe/stripe-js';
 import { useLocation } from 'react-router-dom';
 import { fetchPlans, createCheckoutSession } from '../../../api/authApi';
-import { Check, Sparkles, ArrowRight, Shield } from 'lucide-react';
+import { 
+  Check, 
+  Sparkles, 
+  ArrowRight, 
+  Shield, 
+  Users, 
+  Briefcase, 
+  UserCog, 
+  FileText,
+  ChevronRight,
+  Zap 
+} from 'lucide-react';
 
 type Plan = {
   _id: string;
   planName: string;
+  description: string;
   price: number;
+  planType: "Trial" | "Basic" | "Premium";
+  durationInMonths: number;
   features: string[];
+  employeeCount?: number | null;
+  managerCount?: number | null;
+  projectCount?: number | null;
+  serviceRequestCount?: number | null;
   isActive: boolean;
 };
 
@@ -55,7 +73,6 @@ const PlanSelection: React.FC = () => {
   const email = (useLocation().state as { email: string })?.email;
  
   const stripePromise = loadStripe('pk_test_51QA84MG0KgrlY5FBKX5uMqGIPF0QRwCB52FMUeaO4mMIqlaHjWaellTk26kdZYqYgM1USvDyz7jwfoAIL5Wovdpw00AYg8dWct');
-
  
   useEffect(() => {
     const fetchData = async () => {
@@ -89,15 +106,37 @@ const PlanSelection: React.FC = () => {
     }
   };
 
-  const getCardColors = (planName: string) => {
+  const getCardColors = (planType: string) => {
     const colors = {
       'Basic': 'from-blue-400 to-indigo-500',
       'Premium': 'from-purple-400 to-pink-500',
-      'Enterprise': 'from-amber-400 to-orange-500',
+      'Trial': 'from-green-400 to-emerald-500',
       'default': 'from-gray-400 to-gray-500'
     };
-    return colors[planName as keyof typeof colors] || colors.default;
+    return colors[planType as keyof typeof colors] || colors.default;
   };
+
+  const formatCount = (count: number | null | undefined) => {
+    if (!count) return '0';
+    return count > 900 ? 'Unlimited' : `Up to ${count}`;
+  };
+
+  const ButtonIcon = ({ isSelected }: { isSelected: boolean }) => (
+    <motion.div
+      className="flex items-center space-x-1"
+      animate={isSelected ? {
+        x: [0, 5, 0],
+      } : {}}
+      transition={{
+        duration: 1.5,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+    >
+      <Zap className="w-5 h-5" />
+      <ChevronRight className="w-4 h-4" />
+    </motion.div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black pt-0 pb-32">
@@ -116,77 +155,110 @@ const PlanSelection: React.FC = () => {
             Choose Your Perfect Plan
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Select the plan that best fits your business needs
+            {selectedPlan ? selectedPlan.description : "Select the plan that best fits your business needs"}
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 h-100">
-  <AnimatePresence>
-    {plans.map((plan) => (
-      <motion.div
-        key={plan._id}
-        variants={cardVariants}
-        whileHover="hover"
-        layout
-        className={`relative overflow-hidden rounded-2xl ${
-          selectedPlan?._id === plan._id ? 'ring-4 ring-blue-500 ring-opacity-50' : ''
-        }`}
-      >
-        <motion.div
-          className={`h-full p-8 bg-gradient-to-br ${getCardColors(plan.planName)} ${
-            selectedPlan?._id === plan._id ? 'opacity-100' : 'opacity-90'
-          }`}
-          whileHover={{ opacity: 1 }}
-        >
-          {selectedPlan?._id === plan._id && (
-            <motion.div
-              className="absolute top-4 right-4"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 500 }}
-            >
-              <Shield className="w-6 h-6 text-white" />
-            </motion.div>
-          )}
-
-          <div className="text-white">
-            <h2 className="text-3xl font-bold mb-2">{plan.planName}</h2>
-            <div className="text-4xl font-bold mb-6">
-              ${plan.price}
-              <span className="text-lg font-normal opacity-80">/month</span>
-            </div>
-
-            <ul className="space-y-4 mb-16"> {/* Adds margin to make space for the button */}
-              {plan.features.map((feature, idx) => (
-                <motion.li
-                  key={idx}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="flex items-center space-x-3"
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <AnimatePresence>
+            {plans.map((plan) => (
+              <motion.div
+                key={plan._id}
+                variants={cardVariants}
+                whileHover="hover"
+                layout
+                className={`relative overflow-hidden rounded-2xl ${
+                  selectedPlan?._id === plan._id ? 'ring-4 ring-blue-500 ring-opacity-50' : ''
+                }`}
+              >
+                <motion.div
+                  className={`relative h-full p-8 pb-24 bg-gradient-to-br ${getCardColors(plan.planType)} ${
+                    selectedPlan?._id === plan._id ? 'opacity-100' : 'opacity-90'
+                  }`}
+                  whileHover={{ opacity: 1 }}
                 >
-                  <Check className="w-5 h-5 text-white" />
-                  <span className="opacity-90">{feature}</span>
-                </motion.li>
-              ))}
-            </ul>
+                  {selectedPlan?._id === plan._id && (
+                    <motion.div
+                      className="absolute top-4 right-4"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 500 }}
+                    >
+                      <Shield className="w-6 h-6 text-white" />
+                    </motion.div>
+                  )}
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedPlan(plan)}
-              className="absolute bottom-4 left-4 right-4 py-3 px-6 rounded-xl bg-white text-gray-900 font-semibold
-                         hover:bg-opacity-90 transition-colors duration-200"
-            >
-              Select Plan
-            </motion.button>
-          </div>
-        </motion.div>
-      </motion.div>
-    ))}
-  </AnimatePresence>
-</div>
+                  <div className="text-white">
+                    <h2 className="text-3xl font-bold mb-2">{plan.planName}</h2>
+                    <div className="text-4xl font-bold mb-6">
+                      ${plan.price}
+                      <span className="text-lg font-normal opacity-80">/month</span>
+                    </div>
 
+                    {/* Updated Resource Limits Section */}
+                    <div className="mb-6 space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <Users className="w-5 h-5" />
+                        <span>{formatCount(plan.employeeCount)} employees</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <UserCog className="w-5 h-5" />
+                        <span>{formatCount(plan.managerCount)} managers</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Briefcase className="w-5 h-5" />
+                        <span>{formatCount(plan.projectCount)} projects</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <FileText className="w-5 h-5" />
+                        <span>{formatCount(plan.serviceRequestCount)} service requests</span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-white border-opacity-20 pt-6">
+                      <h3 className="text-lg font-semibold mb-4">Features</h3>
+                      <ul className="space-y-4">
+                        {plan.features.map((feature, idx) => (
+                          <motion.li
+                            key={idx}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            className="flex items-center space-x-3"
+                          >
+                            <Check className="w-5 h-5 text-white flex-shrink-0" />
+                            <span className="opacity-90">{feature}</span>
+                          </motion.li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <motion.div
+                      className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/20 to-transparent"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setSelectedPlan(plan)}
+                        className="w-full py-4 px-6 rounded-xl bg-white text-gray-900 font-semibold
+                                 hover:bg-opacity-90 transition-colors duration-200
+                                 flex items-center justify-center space-x-2"
+                      >
+                        <span>
+                          {selectedPlan?._id === plan._id ? 'Selected Plan' : 'Select Plan'}
+                        </span>
+                        <ButtonIcon isSelected={selectedPlan?._id === plan._id} />
+                      </motion.button>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       </motion.div>
 
       <motion.div
