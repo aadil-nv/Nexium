@@ -149,8 +149,13 @@ export default class PayrollService implements IPayrollService {
     try {
       const currentDate = new Date();
   
-      // Check if it's the 2nd of the month, update payroll if true
-      if (currentDate.getDate() === 2) {
+      const payrollDate = await this._payrollRepository.getPayrollCriteria(businessOwnerId);
+      if(!payrollDate){
+        throw new Error("Payroll date not found");
+      }
+      const payDay = payrollDate.payDay;
+      console.log("pay day is -=====>",payDay);
+      if (currentDate.getDate() === payDay) {
         await this.updatePayroll(employeeId , businessOwnerId);
       }
   

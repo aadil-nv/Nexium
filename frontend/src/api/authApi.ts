@@ -223,7 +223,7 @@ export const employeeValidateOtp = async (email: string, otp: string) => {
 export const employeeLogin = async (email: string, password: string) => {
   try {
     const response = await axios.post(
-      "http://localhost:3000/authentication-service/api/employee/employee-login",
+      `${API_URL}/authentication-service/api/employee/employee-login`,
       { email, password },
       { withCredentials: true }
     );

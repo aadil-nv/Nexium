@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaInfoCircle, FaUserLock, FaUnlock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { message, Modal } from 'antd';
 import useTheme from "../../hooks/useTheme";
 import { IManagerCardProps, IManagerDetails } from "../../interface/managerInterface";
 import { businessOwnerInstance } from "../../services/businessOwnerInstance";
@@ -23,7 +24,6 @@ const ManagerCard: React.FC<IManagerCardProps> = ({
   const [currentImage, setCurrentImage] = useState(image);
   console.log("CURRENT IMAGE IS ==>",currentImage);
   
-
   const fetchManagerDetails = async () => {
     try {
       const response = await businessOwnerInstance.get<IManagerDetails>(
@@ -31,20 +31,35 @@ const ManagerCard: React.FC<IManagerCardProps> = ({
       );
       if (response.data) {
         setManagerDetails(response.data);
-        // Update the image if profile picture has changed
         if (response.data.personalDetails?.profilePicture) {
           setCurrentImage(response.data.personalDetails.profilePicture);
         }
       }
     } catch (error) {
       console.error("Error fetching manager details:", error);
-      alert("Failed to load manager details.");
+      message.error("Failed to load manager details.");
     }
   };
 
   const handleViewDetails = async () => {
     await fetchManagerDetails();
     setIsInfoModalVisible(true);
+  };
+
+  const showConfirmationModal = () => {
+    Modal.confirm({
+      title: isBlocked ? 'Unblock Manager' : 'Block Manager',
+      content: isBlocked 
+        ? 'Are you sure you want to unblock this manager? They will regain access to the system.'
+        : 'Are you sure you want to block this manager? They will lose access to the system.',
+      okText: isBlocked ? 'Unblock' : 'Block',
+      cancelText: 'Cancel',
+      okButtonProps: {
+        danger: !isBlocked,
+        type: 'primary',
+      },
+      onOk: handleToggleStatus,
+    });
   };
 
   const handleToggleStatus = async () => {
@@ -58,13 +73,13 @@ const ManagerCard: React.FC<IManagerCardProps> = ({
       );
       if (response.data.success) {
         setIsBlocked((prev) => !prev);
-        alert(`Manager successfully ${isBlocked ? "unblocked" : "blocked"}!`);
+        message.success(`Manager successfully ${isBlocked ? "unblocked" : "blocked"}!`);
       } else {
-        alert("Failed to update manager status.");
+        message.error("Failed to update manager status.");
       }
     } catch (error) {
       console.error("Error toggling manager status:", error);
-      alert("An error occurred while updating the manager status.");
+      message.error("An error occurred while updating the manager status.");
     }
   };
 
@@ -118,7 +133,7 @@ const ManagerCard: React.FC<IManagerCardProps> = ({
           </motion.button>
 
           <motion.button
-            onClick={handleToggleStatus}
+            onClick={showConfirmationModal}
             className={`text-white px-4 py-2 rounded transition duration-300 w-full sm:w-auto flex items-center justify-center gap-2 text-sm ${
               isBlocked ? "bg-red-500 hover:bg-red-600" : "bg-green-500 hover:bg-green-600"
             }`}

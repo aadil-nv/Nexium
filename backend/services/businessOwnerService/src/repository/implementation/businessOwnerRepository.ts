@@ -13,8 +13,10 @@ import chatModel from "../../models/chatModel";
 import businessOwnerModel from "../../models/businessOwnerModel";
 import subscriptionModel from "../../models/subscriptionModel";
 import ISubscription from "../../entities/subscriptionEntity";
-import ILeaveType from "../../entities/leaveTypeEntity";
-import {IPayrollCriteria} from "../../entities/payrollCriteriaEntities"
+import { ILeaveType } from "../../entities/leaveTypeEntities";
+import leaveTypeModel from "../../models/leaveTypeModel";
+import { IPayrollCriteria } from "../../entities/payrollCriteriaEntities";
+import payrollCriteriaModel from "../../models/payrollCriteriaModel";
 
 @injectable()
 export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwnerDocument> implements IBusinessOwnerRepository {
