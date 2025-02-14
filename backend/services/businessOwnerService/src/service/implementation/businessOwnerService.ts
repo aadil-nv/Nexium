@@ -2,7 +2,7 @@ import IBusinessOwnerService from "service/interface/IBusinessOwnerService";
 import IBusinessOwnerRepository from "../../repository/interface/IBusinessOwnerRepository";
 import { inject, injectable } from "inversify";
 import { verifyRefreshToken, generateAccessToken } from "../../utils/jwt";
-import { IPersonalDetailsDTO, ICompanyDetailsDTO, IAddressDTO, IResponseDTO, IDocumentDTO } from '../../dto/businessOwnerDTO';
+import { IPersonalDetailsDTO, ICompanyDetailsDTO, IAddressDTO, IResponseDTO, IDocumentDTO, ILeaveTypesDTO, ILeaveResonseDTO } from '../../dto/businessOwnerDTO';
 import { uploadTosS3 } from '../../middlewares/multer-s3';
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { ID } from "aws-sdk/clients/s3";
@@ -321,5 +321,47 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       throw new Error(error.message || "Error while updating is active");
     }
   }
+
+  async getAllLeaveTypes(businessOwnerId: string): Promise<ILeaveTypesDTO[]> {
+    try {
+        const result = await this._businessOwnerRepository.findAllLeaveTypes(businessOwnerId);
+
+        if (!result) {
+            throw new Error("No leave types found");
+        }
+
+        const leaveTypesDTO: ILeaveTypesDTO = {
+            _id: result._id,
+            sickLeave: result.sickLeave,
+            casualLeave: result.casualLeave,
+            maternityLeave: result.maternityLeave,
+            paternityLeave: result.paternityLeave,
+            paidLeave: result.paidLeave,
+            unpaidLeave: result.unpaidLeave,
+            compensatoryLeave: result.compensatoryLeave,
+            bereavementLeave: result.bereavementLeave,
+            marriageLeave: result.marriageLeave,
+            studyLeave: result.studyLeave,
+        };
+
+        return [leaveTypesDTO];
+    } catch (error) {
+        console.error("Error in getAllLeaveTypes service:", error);
+        throw new Error("Failed to fetch leave types");
+    }
+}
+
+async  updateLeaveTypes( leaveTypeId: string,businessOwnerId: string, data: ILeaveTypesDTO ): Promise<ILeaveResonseDTO> {
+  try {
+      const result = await this._businessOwnerRepository.updateLeaveTypes(leaveTypeId, data ,businessOwnerId);
+      return {
+          message: "Leave approval updated successfully",
+          success: true
+      }
+  } catch (error) {
+      console.error("Error in updateLeaveTypes service:", error);
+      throw new Error("Failed to update leave types");
+  }
+}
   
 }

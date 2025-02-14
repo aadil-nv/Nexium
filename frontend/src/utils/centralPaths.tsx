@@ -24,6 +24,8 @@ export const businessOwnerLinks: LinkItem[] = [
   { title: 'Chat', route: '/business-owner/chat', icon: 'fi fi-tr-messages' },
   { title: 'Meetings', route: '/business-owner/meeting', icon: 'fi fi-tr-circle-video' },
   { title: 'Service Requests', route: '/business-owner/service-requests', icon: 'fi fi-tr-user-headset' },
+  { title: 'Leave policy', route: '/business-owner/leave-policy', icon: 'fi fi-tr-spring-calendar' },
+  { title: 'Payroll policy', route: '/business-owner/payroll-policy', icon: 'fi fi-tr-calendar-salary' },
 
 ];
 

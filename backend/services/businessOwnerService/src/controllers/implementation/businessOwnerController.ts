@@ -245,5 +245,31 @@ export default class BusinessOwnerController implements IBusinessOwnerController
       return this.handleResponse(res, 500, false, 'Failed to update service request');
     }
   }
+
+
+  async getAllLeaveTypes(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.getAllLeaveTypes(businessOwnerId);
+      return this.handleResponse(res, 200, true, 'Leave types fetched', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to fetch leave types');
+    }
+  }
+
+   
+  async updateLeaveTypes(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      const leaveTypeId = req.params.id;
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');    
+      const result = await this._businessOwnerService.updateLeaveTypes(leaveTypeId,businessOwnerId, req.body);
+      return this.handleResponse(res, 200, true, 'Leave types updated', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to update leave types');
+    }
+  }
+  
   
 }

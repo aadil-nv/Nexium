@@ -13,6 +13,7 @@ import chatModel from "../../models/chatModel";
 import businessOwnerModel from "../../models/businessOwnerModel";
 import subscriptionModel from "../../models/subscriptionModel";
 import ISubscription from "../../entities/subscriptionEntity";
+import ILeaveType from "../../entities/leaveTypeEntity";
 
 @injectable()
 export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwnerDocument> implements IBusinessOwnerRepository {
@@ -479,6 +480,86 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     }
 }
 
+
+async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType> { 
+  try {
+    const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+    const switchedLeaveTypeModel = _switchDb.model<ILeaveType>("leavetypes", leaveTypeModel.schema);
+
+    let leaveTypesDoc = await switchedLeaveTypeModel.findOne(); 
+
+    if (!leaveTypesDoc) {
+
+      leaveTypesDoc = await switchedLeaveTypeModel.create({
+        sickLeave: 0,      
+        casualLeave: 0,     
+        maternityLeave: 0,
+        paternityLeave: 0,   
+        paidLeave: 0,    
+        unpaidLeave: 0,   
+        compensatoryLeave: 0,
+        bereavementLeave: 0,  
+        marriageLeave: 0,  
+        studyLeave: 0,        
+      });
+      const normalDoc =await leaveTypeModel.create({
+        sickLeave: 0,      
+        casualLeave: 0,     
+        maternityLeave: 0,
+        paternityLeave: 0,   
+        paidLeave: 0,    
+        unpaidLeave: 0,   
+        compensatoryLeave: 0,
+        bereavementLeave: 0,  
+        marriageLeave: 0,  
+        studyLeave: 0,
+      })
+
+    }
+
+    console.log("leaveTypesDoc", leaveTypesDoc);
+    
+
+    return leaveTypesDoc;
+  } catch (error) {
+    console.error("Error in findAllLeaveTypes repository:", error);
+    throw new Error("Failed to fetch leave types");
+  }
+}
+
+
+async updateLeaveTypes(leaveTypeId: string, data: Partial<ILeaveType> , businessOwnerId: string): Promise<ILeaveType> {
+  try {
+    const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+
+      const leaveTypesDoc = await _switchDb.model<ILeaveType>("leavetypes", leaveTypeModel.schema).findOne(); 
+
+      if (!leaveTypesDoc) {
+          throw new Error('Leave types document not found');
+      }
+
+      // Update the corresponding leave type field with new data
+      if (data.sickLeave !== undefined) leaveTypesDoc.sickLeave = data.sickLeave;
+      if (data.casualLeave !== undefined) leaveTypesDoc.casualLeave = data.casualLeave;
+      if (data.maternityLeave !== undefined) leaveTypesDoc.maternityLeave = data.maternityLeave;
+      if (data.paternityLeave !== undefined) leaveTypesDoc.paternityLeave = data.paternityLeave;
+      if (data.paidLeave !== undefined) leaveTypesDoc.paidLeave = data.paidLeave;
+      if (data.unpaidLeave !== undefined) leaveTypesDoc.unpaidLeave = data.unpaidLeave;
+      if (data.compensatoryLeave !== undefined) leaveTypesDoc.compensatoryLeave = data.compensatoryLeave;
+      if (data.bereavementLeave !== undefined) leaveTypesDoc.bereavementLeave = data.bereavementLeave;
+      if (data.marriageLeave !== undefined) leaveTypesDoc.marriageLeave = data.marriageLeave;
+      if (data.studyLeave !== undefined) leaveTypesDoc.studyLeave = data.studyLeave;
+
+      // Save the updated document
+      const updatedResult = await leaveTypesDoc.save();
+
+      // Return the updated leave type document
+      return updatedResult;
+  } catch (error: any) {
+      console.error("Error in updateLeaveTypes repository:", error);
+      throw new Error("Failed to update leave types");
+  }
+}
 
 
   

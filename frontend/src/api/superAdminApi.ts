@@ -16,7 +16,7 @@ interface IBusinessOwnerResponse {
   };
   isBlocked: boolean;
 }
-const API_URL = import.meta.env.VITE_API_KEY
+const API_URL = import.meta.env.VITE_API_KEY as string
 
 export const loginSuperAdmin = async (data: { email: string; password: string }) => {
   try {

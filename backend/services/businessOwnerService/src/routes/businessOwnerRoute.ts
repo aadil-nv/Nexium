@@ -30,6 +30,7 @@ businessOwnerRouter.post('/add-service-request', authenticateToken,checkSubscrip
 businessOwnerRouter.get('/service-requests', authenticateToken, (req, res, next) => businessOwnerController.getAllServiceRequests(req, res));
 businessOwnerRouter.post('/updated-service-request/:id', authenticateToken, (req, res, next) => businessOwnerController.updateServiceRequest(req, res));
 
-
+businessOwnerRouter.get('/get-all-leavetypes',authenticateToken,(req, res) => businessOwnerController.getAllLeaveTypes(req, res))
+businessOwnerRouter.post("/update-leavetypes/:id", authenticateToken, (req, res, next) => businessOwnerController.updateLeaveTypes(req, res));
 
 export default businessOwnerRouter;

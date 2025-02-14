@@ -21,6 +21,8 @@ import MeetingScheduler from "../components/meeting/Meeting";
 import JoinMeeting from "../components/meeting/JoinMeeting";
 import EmployeesList from "../components/businessOwner/businessOwnerPages/EmployeesList";
 import Dashboard404 from "../components/Error/Dashboard404";
+import BusinessOwnerLeavePolicy from "../components/businessOwner/businessOwnerPages/BusinessOwnerLeavePolicy";
+import BusinessOwnerPayrollPolicy from "../components/businessOwner/businessOwnerPages/BusinessOwnerPayrollPolicy";
 
 const BusinessOwnerRoutes = () => {
   const navigate = useNavigate(); // Initialize navigate
@@ -49,9 +51,14 @@ const BusinessOwnerRoutes = () => {
           <Route path="settings" element={<Settings />} />
           <Route path="chat" element={<Chat />} />
           <Route path="meeting" element={<MeetingScheduler />} />
-          <Route path="join-meeting" element={<JoinMeeting />} />          
+          <Route path="join-meeting" element={<JoinMeeting />} />  
+
+          <Route path="leave-policy" element={<BusinessOwnerLeavePolicy />} />   
+          <Route path="payroll-policy" element={<BusinessOwnerPayrollPolicy />} />   
+
           <Route path="success"element={<SuccessPage message="Success" onClose={handleSuccessClose} />}/>
-          <Route path="*" element={<Dashboard404 />} />          
+          <Route path="*" element={<Dashboard404 />} /> 
+
 
         </Route>
       </Route>

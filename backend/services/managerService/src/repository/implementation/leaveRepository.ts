@@ -133,10 +133,12 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
     async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType> {
         try {
             const db = await connectDB(businessOwnerId);
-            let leaveTypesDoc = await db.model<ILeaveType>("LeaveTypes", leaveTypeModel.schema).findOne(); 
+            const LeaveModel = db.model<ILeaveType>("LeaveTypes", leaveTypeModel.schema);
+    
+            let leaveTypesDoc = await LeaveModel.findOne(); 
     
             if (!leaveTypesDoc) {
-                const newLeaveTypesDoc = await leaveTypeModel.create({
+                const newLeaveTypesDoc = new LeaveModel({
                     sickLeave: 0,      
                     casualLeave: 0,     
                     maternityLeave: 0,
@@ -146,9 +148,10 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
                     compensatoryLeave: 0,
                     bereavementLeave: 0,  
                     marriageLeave: 0,  
-                    studyLeave: 0,        
+                    studyLeave: 0        
                 });
     
+                await newLeaveTypesDoc.save(); // Save the document
                 return newLeaveTypesDoc;
             }
     
@@ -159,11 +162,12 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
         }
     }
     
+    
 
     async updateLeaveTypes(leaveTypeId: string, data: Partial<ILeaveType> , businessOwnerId: string): Promise<ILeaveType> {
         try {
             const db = await connectDB(businessOwnerId);
-            const leaveTypesDoc = await db.model<ILeaveType>("LeaveTypes", leaveTypeModel.schema).findOne(); 
+            const leaveTypesDoc = await db.model<ILeaveType>("LeaveTypes", leaveTypeModel.schema).findById(leaveTypeId); 
     
             if (!leaveTypesDoc) {
                 throw new Error('Leave types document not found');

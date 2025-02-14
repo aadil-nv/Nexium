@@ -19,5 +19,7 @@ export default interface IBusinessOwnerController {
     updateServiceRequest(req:CustomRequest ,res:Response):Promise<Response>
     updateIsActive(req: CustomRequest, res: Response): Promise<Response> 
     updateLastSeen(req:CustomRequest ,res:Response):Promise<Response>   
+    getAllLeaveTypes(req:CustomRequest ,res:Response):Promise<Response> 
+    updateLeaveTypes(req:CustomRequest ,res:Response):Promise<Response> 
 
 }

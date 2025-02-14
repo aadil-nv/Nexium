@@ -49,3 +49,23 @@ export interface IPersonalDetailsDTO {
 
 
  
+  export interface ILeaveTypesDTO {
+    _id: any;
+    sickLeave: number;
+    casualLeave: number;
+    maternityLeave: number;
+    paternityLeave: number;
+    paidLeave: number;
+    unpaidLeave: number;
+    compensatoryLeave: number;
+    bereavementLeave: number;
+    marriageLeave: number;
+    studyLeave: number;
+}
+
+export interface ILeaveResonseDTO{
+   
+  leaveStatus?: string | null
+  message?: string
+  success?: boolean
+}
