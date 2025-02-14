@@ -142,7 +142,7 @@ const Modal: React.FC<ModalProps> = ({ onClose, isVisible, planData, themeColor,
       onClick={onClose}
     >
       <motion.div
-        className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative overflow-y-auto max-h-[90vh]"
+        className="bg-white rounded-lg shadow-lg w-full max-w-xl p-6 relative overflow-y-auto max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
