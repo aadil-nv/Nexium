@@ -22,4 +22,9 @@ export default interface IBusinessOwnerController {
     getAllLeaveTypes(req:CustomRequest ,res:Response):Promise<Response> 
     updateLeaveTypes(req:CustomRequest ,res:Response):Promise<Response> 
 
+    
+    getAllPayrollCriteria(req:CustomRequest ,res:Response):Promise<Response>
+    updatePayrollCriteria(req:CustomRequest ,res:Response):Promise<Response>
+    deleteIncentive(req:CustomRequest ,res:Response):Promise<Response>
+
 }

@@ -14,6 +14,7 @@ import businessOwnerModel from "../../models/businessOwnerModel";
 import subscriptionModel from "../../models/subscriptionModel";
 import ISubscription from "../../entities/subscriptionEntity";
 import ILeaveType from "../../entities/leaveTypeEntity";
+import {IPayrollCriteria} from "../../entities/payrollCriteriaEntities"
 
 @injectable()
 export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwnerDocument> implements IBusinessOwnerRepository {
@@ -561,6 +562,91 @@ async updateLeaveTypes(leaveTypeId: string, data: Partial<ILeaveType> , business
   }
 }
 
+async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]> {
+  try {
+    const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
 
+      const PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("PayrollCriteria", payrollCriteriaModel.schema);
+
+      const payrollCriteria = await PayrollCriteriaModel.find({}).exec();
+
+      if (payrollCriteria.length === 0) {
+          const defaultPayrollCriteria = new PayrollCriteriaModel({
+              allowances: {
+                  bonus: 0, // Keep these 0
+                  gratuity: 5,
+                  medicalAllowance: 5,
+                  hra: 5,
+                  da: 5,
+                  ta: 5,
+                  overTime: { // Keep these as per your default model
+                      type: 0,
+                      overtimeEnabled: false
+                  }
+              },
+              deductions: {
+                  incomeTax: 5,
+                  providentFund: 5,
+                  professionalTax: 5,
+                  esiFund: 5
+              },
+              incentives: [], // No incentives
+              payDay: 5, // Default payDay to 5
+              createdAt: new Date()
+          });
+
+          await defaultPayrollCriteria.save();
+          return [defaultPayrollCriteria]; // Return the newly created default
+      }
+
+      return payrollCriteria;
+  } catch (error) {
+      console.error("Error fetching or creating payroll criteria:", error);
+      throw new Error("Failed to fetch or create payroll criteria");
+  }
+}
+
+async updatePayrollCriteria(payrollData: any, payrollId: string, businessOwnerId: string): Promise<IPayrollCriteria> {
+  try {
+    const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+
+      // Correct model usage to access the payrollCriteria collection
+      const updatedPayroll = await _switchDb.model<IPayrollCriteria>("PayrollCriteria",payrollCriteriaModel.schema)
+          .findByIdAndUpdate(payrollId, payrollData, { new: true })
+          .exec();
+
+      if (!updatedPayroll) {
+          throw new Error("Payroll criteria not found");
+      }
+
+      return updatedPayroll;
+  } catch (error) {
+      console.error("Error updating payroll criteria:", error);
+      throw new Error("Failed to update payroll criteria");
+  }
+}
+
+async deleteIncentive(incentiveId: string, payrollCriteriaId: string, businessOwnerId: string): Promise<IPayrollCriteria> {
+  try {
+    const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+
+      const updatedPayroll = await _switchDb.model<IPayrollCriteria>("PayrollCriteria", payrollCriteriaModel.schema)
+          .findByIdAndUpdate(
+              payrollCriteriaId, 
+              { $pull: { incentives: { _id: incentiveId } } }, 
+              { new: true } 
+          )
+          .exec();
+
+      if (!updatedPayroll) {
+          throw new Error("Payroll criteria not found");
+      }
+
+      return updatedPayroll;
+  } catch (error) {
+      console.error("Error deleting incentive:", error);
+      throw new Error("Failed to delete incentive");
+  }
+}
   
 }

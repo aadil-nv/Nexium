@@ -271,5 +271,41 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     }
   }
   
+
+  async getAllPayrollCriteria(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');
+      const result = await this._businessOwnerService.getAllPayrollCriteria(businessOwnerId);
+      console.log("Payroll Criteria Result:", result);
+      
+      return this.handleResponse(res, 200, true, 'Payroll criteria fetched', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to fetch payroll criteria');
+    }
+  }
+  async updatePayrollCriteria(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      const payrollCriteriaId = req.params.id;
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');    
+      const result = await this._businessOwnerService.updatePayrollCriteria(req.body,payrollCriteriaId,businessOwnerId);
+      return this.handleResponse(res, 200, true, 'Payroll criteria updated', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to update payroll criteria');
+    }
+  }
+  async deleteIncentive(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = this.getBusinessOwnerId(req);
+      const incentiveId = req.params.id;
+      const data = req.body;
+      if (!businessOwnerId) return this.handleResponse(res, 400, false, 'Business Owner ID not found.');    
+      const result = await this._businessOwnerService.deleteIncentive(incentiveId,data ,businessOwnerId);
+      return this.handleResponse(res, 200, true, 'Incentive deleted', result);
+    } catch {
+      return this.handleResponse(res, 500, false, 'Failed to delete incentive');
+    }
+  }
   
 }

@@ -1,4 +1,4 @@
-import {IPersonalDetailsDTO ,ICompanyDetailsDTO,IAddressDTO,IResponseDTO, IDocumentDTO ,ILeaveResonseDTO ,ILeaveTypesDTO} from '../../dto/businessOwnerDTO'
+import {IPersonalDetailsDTO ,ICompanyDetailsDTO,IAddressDTO,IResponseDTO, IDocumentDTO ,ILeaveResonseDTO ,ILeaveTypesDTO, IPayrollCriteriaDTO} from '../../dto/businessOwnerDTO'
 
 
 export default interface IBusinessOwnerService {
@@ -21,5 +21,9 @@ export default interface IBusinessOwnerService {
     updateIsActive(businessOwnerId: string , isActive: boolean): Promise<IResponseDTO>
     getAllLeaveTypes(businessOwnerId: string): Promise<any[]>
     updateLeaveTypes( leaveTypeId: string,businessOwnerId: string, data: ILeaveTypesDTO ): Promise<ILeaveResonseDTO>
+
+    getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteriaDTO[]>
+    updatePayrollCriteria(payrollData: any, payrollId: string,businessOwnerId: string): Promise<IPayrollCriteriaDTO>
+    deleteIncentive(incentiveId: string, data: any,businessOwnerId: string): Promise<IPayrollCriteriaDTO>
 
 }
