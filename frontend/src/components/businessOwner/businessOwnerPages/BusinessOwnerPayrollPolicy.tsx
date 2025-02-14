@@ -2,27 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button, Input, List, Space, Switch, message } from 'antd';
 import { MoneyCollectOutlined, SlidersOutlined } from '@ant-design/icons';
 import useTheme from '../../../hooks/useTheme';
-import {businessOwnerInstance } from '../../../services/businessOwnerInstance';
+import { businessOwnerInstance } from '../../../services/businessOwnerInstance';
 import { AxiosResponse } from 'axios';
-
-type SettingType = 'allowance' | 'deduction' | 'other' | 'incentive' | 'payDay';
-
-interface Setting {
-  id: number;
-  name: string;
-  type: SettingType;
-  amount?: number;
-  overtimeEnabled?: boolean;
-}
-
-interface IncentiveSlab {
-  id: number;
-  _id: string;
-  name: string;
-  minTaskCount: number;
-  maxTaskCount: number;
-  amount: number;
-}
 
 interface Allowances {
   bonus: number;
@@ -30,6 +11,7 @@ interface Allowances {
   medicalAllowance: number;
   hra: number;
   da: number;
+  ta: number;
   overTime: {
     type: number;
     overtimeEnabled: boolean;
@@ -60,22 +42,21 @@ interface PayrollData {
   createdAt: string;
 }
 
-interface UpdatePayload {
-  _id?: string;
-  allowances: {
-    bonus?: number;
-    gratuity?: number;
-    medicalAllowance?: number;
-    hra?: number;
-    da?: number;
-    overTime: {
-      type: number;
-      overtimeEnabled: boolean;
-    };
-  };
-  deductions: Partial<Deductions>;
-  incentives: Array<Omit<PayrollIncentive, '_id'>>;
-  payDay?: number;
+interface Setting {
+  id: number;
+  name: string;
+  type: 'allowance' | 'deduction' | 'other' | 'payDay';
+  amount?: number;
+  overtimeEnabled?: boolean;
+}
+
+interface IncentiveSlab {
+  id: number;
+  _id: string;
+  name: string;
+  minTaskCount: number;
+  maxTaskCount: number;
+  amount: number;
 }
 
 const BusinessOwnerPayrollPolicy: React.FC = () => {
@@ -86,10 +67,10 @@ const BusinessOwnerPayrollPolicy: React.FC = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    businessOwnerInstance.get<PayrollData[]>('/businessOwner-service/api/payroll/get-all-payroll-crieteria')
-      .then((response: AxiosResponse<PayrollData[]>) => {
-        const payrollData = response.data[0];
-        setData(response.data);
+    businessOwnerInstance.get<{ success: boolean; data: PayrollData[] }>('/businessOwner-service/api/business-owner/get-all-payroll-crieteria')
+      .then((response: AxiosResponse<{ success: boolean; data: PayrollData[] }>) => {
+        const payrollData = response.data.data[0];
+        setData(response.data.data);
 
         if (payrollData) {
           const mappedSettings: Setting[] = [
@@ -99,12 +80,13 @@ const BusinessOwnerPayrollPolicy: React.FC = () => {
             { id: 4, name: 'Medical Allowance', type: 'allowance', amount: payrollData.allowances?.medicalAllowance },
             { id: 5, name: 'HRA', type: 'allowance', amount: payrollData.allowances?.hra },
             { id: 6, name: 'DA', type: 'allowance', amount: payrollData.allowances?.da },
-            { id: 7, name: 'Income Tax', type: 'deduction', amount: payrollData.deductions?.incomeTax },
-            { id: 8, name: 'Provident Fund', type: 'deduction', amount: payrollData.deductions?.providentFund },
-            { id: 9, name: 'Professional Tax', type: 'deduction', amount: payrollData.deductions?.professionalTax },
-            { id: 10, name: 'ESI Fund', type: 'deduction', amount: payrollData.deductions?.esiFund },
+            { id: 7, name: 'TA', type: 'allowance', amount: payrollData.allowances?.ta },
+            { id: 8, name: 'Income Tax', type: 'deduction', amount: payrollData.deductions?.incomeTax },
+            { id: 9, name: 'Provident Fund', type: 'deduction', amount: payrollData.deductions?.providentFund },
+            { id: 10, name: 'Professional Tax', type: 'deduction', amount: payrollData.deductions?.professionalTax },
+            { id: 11, name: 'ESI Fund', type: 'deduction', amount: payrollData.deductions?.esiFund },
             { 
-              id: 11, 
+              id: 12, 
               name: 'Overtime Incentive', 
               type: 'other', 
               amount: payrollData.allowances?.overTime.type, 
@@ -132,16 +114,14 @@ const BusinessOwnerPayrollPolicy: React.FC = () => {
   }, []);
   
   const validateSettings = (): boolean => {
-    // Validate Pay Day
     const payDay = settings.find(item => item.name === 'Pay Day')?.amount;
     if (payDay === undefined || payDay < 1 || payDay > 29) {
       message.error('Pay Day must be between 1 and 29');
       return false;
     }
 
-    // Validate Allowances, Deductions, and Overtime Incentive
     const validationItems = [
-      'Bonus', 'Gratuity', 'Medical Allowance', 'HRA', 'DA', 
+      'Bonus', 'Gratuity', 'Medical Allowance', 'HRA', 'DA', 'TA',
       'Income Tax', 'Provident Fund', 'Professional Tax', 'ESI Fund',
       'Overtime Incentive'
     ];
@@ -169,61 +149,6 @@ const BusinessOwnerPayrollPolicy: React.FC = () => {
     );
   };
 
-  const saveSettings = () => {
-    // Check if there are any changes
-    if (!hasChanges) {
-      message.info('No changes to save');
-      return;
-    }
-
-    // Validate settings before saving
-    if (!validateSettings()) {
-      return;
-    }
-
-    const overtimeIncentive = settings.find(item => item.name === 'Overtime Incentive');
-    
-    const payload: UpdatePayload = {
-      _id: data[0]?._id,
-      allowances: {
-        bonus: settings.find(item => item.name === 'Bonus')?.amount || 0,
-        gratuity: settings.find(item => item.name === 'Gratuity')?.amount || 0,
-        medicalAllowance: settings.find(item => item.name === 'Medical Allowance')?.amount || 0,
-        hra: settings.find(item => item.name === 'HRA')?.amount || 0,
-        da: settings.find(item => item.name === 'DA')?.amount || 0,
-        overTime: {
-          type: overtimeIncentive?.amount || 0,
-          overtimeEnabled: overtimeIncentive?.overtimeEnabled || false,
-        },
-      },
-      deductions: {
-        incomeTax: settings.find(item => item.name === 'Income Tax')?.amount || 0,
-        providentFund: settings.find(item => item.name === 'Provident Fund')?.amount || 0,
-        professionalTax: settings.find(item => item.name === 'Professional Tax')?.amount || 0,
-        esiFund: settings.find(item => item.name === 'ESI Fund')?.amount || 0,
-      },
-      incentives: incentiveSlabs.map(slab => ({
-        incentiveName: slab.name,
-        minTaskCount: slab.minTaskCount,
-        maxTaskCount: slab.maxTaskCount,
-        percentage: slab.amount,
-      })),
-      payDay: settings.find(item => item.name === 'Pay Day')?.amount || 0
-    };
-
-    businessOwnerInstance.post<PayrollData>(`/businessOwner-service/api/payroll/update-payroll-crieteria/${data[0]?._id}`, payload)
-      .then((response: AxiosResponse<PayrollData>) => {
-        console.log(response);
-        
-        message.success('Settings saved successfully');
-        setHasChanges(false);
-      })
-      .catch((error: Error) => {
-        message.error('Error saving settings');
-        console.error('Error updating payroll criteria:', error);
-      });
-  };
-
   const addIncentiveSlab = () => {
     const newSlab: IncentiveSlab = {
       id: incentiveSlabs.length + 1,
@@ -249,16 +174,22 @@ const BusinessOwnerPayrollPolicy: React.FC = () => {
       payrollCriteriaId,
     };
   
-    businessOwnerInstance.patch(`/businessOwner-service/api/payroll/delete-incentive/${_id}`, requestData)
-      .then(() => {
-        setIncentiveSlabs(incentiveSlabs.filter((slab) => slab.id !== id));
-        message.success('Incentive Slab removed successfully');
-        setHasChanges(true);
-      })
-      .catch((error: Error) => {
-        message.error('Error removing incentive slab');
-        console.error("Error removing incentive slab:", error);
-      });
+    if (_id) {
+      businessOwnerInstance.patch(`/businessOwner-service/api/business-owner/delete-incentive/${_id}`, requestData)
+        .then(() => {
+          setIncentiveSlabs(incentiveSlabs.filter((slab) => slab.id !== id));
+          message.success('Incentive Slab removed successfully');
+          setHasChanges(true);
+        })
+        .catch((error: Error) => {
+          message.error('Error removing incentive slab');
+          console.error("Error removing incentive slab:", error);
+        });
+    } else {
+      // If the slab doesn't have an _id, it's a new unsaved slab
+      setIncentiveSlabs(incentiveSlabs.filter((slab) => slab.id !== id));
+      setHasChanges(true);
+    }
   };
 
   const updateIncentiveSlab = (id: number, key: keyof IncentiveSlab, value: IncentiveSlab[keyof IncentiveSlab]) => {
@@ -273,7 +204,59 @@ const BusinessOwnerPayrollPolicy: React.FC = () => {
     );
   };
 
-  const renderList = (type: SettingType, title: string) => (
+  const saveSettings = () => {
+    if (!hasChanges) {
+      message.info('No changes to save');
+      return;
+    }
+
+    if (!validateSettings()) {
+      return;
+    }
+
+    const overtimeIncentive = settings.find(item => item.name === 'Overtime Incentive');
+    
+    const payload = {
+      _id: data[0]?._id,
+      allowances: {
+        bonus: settings.find(item => item.name === 'Bonus')?.amount || 0,
+        gratuity: settings.find(item => item.name === 'Gratuity')?.amount || 0,
+        medicalAllowance: settings.find(item => item.name === 'Medical Allowance')?.amount || 0,
+        hra: settings.find(item => item.name === 'HRA')?.amount || 0,
+        da: settings.find(item => item.name === 'DA')?.amount || 0,
+        ta: settings.find(item => item.name === 'TA')?.amount || 0,
+        overTime: {
+          type: overtimeIncentive?.amount || 0,
+          overtimeEnabled: overtimeIncentive?.overtimeEnabled || false,
+        },
+      },
+      deductions: {
+        incomeTax: settings.find(item => item.name === 'Income Tax')?.amount || 0,
+        providentFund: settings.find(item => item.name === 'Provident Fund')?.amount || 0,
+        professionalTax: settings.find(item => item.name === 'Professional Tax')?.amount || 0,
+        esiFund: settings.find(item => item.name === 'ESI Fund')?.amount || 0,
+      },
+      incentives: incentiveSlabs.map(slab => ({
+        incentiveName: slab.name,
+        minTaskCount: slab.minTaskCount,
+        maxTaskCount: slab.maxTaskCount,
+        percentage: slab.amount,
+      })),
+      payDay: settings.find(item => item.name === 'Pay Day')?.amount || 0
+    };
+
+    businessOwnerInstance.post<PayrollData>(`/businessOwner-service/api/business-owner/update-payroll-crieteria/${data[0]?._id}`, payload)
+      .then(() => {
+        message.success('Settings saved successfully');
+        setHasChanges(false);
+      })
+      .catch((error: Error) => {
+        message.error('Error saving settings');
+        console.error('Error updating payroll criteria:', error);
+      });
+  };
+
+  const renderList = (type: Setting['type'], title: string) => (
     <>
       <h2 className="text-2xl font-semibold mb-4" style={{ color: themeColor }}>{title}</h2>
       <List
@@ -283,6 +266,7 @@ const BusinessOwnerPayrollPolicy: React.FC = () => {
           <List.Item
             actions={[ 
               <Input
+                key="amount"
                 type="number"
                 min={0}
                 max={100}
@@ -292,7 +276,7 @@ const BusinessOwnerPayrollPolicy: React.FC = () => {
                 placeholder="Amount (%)"
               />,
               item.type === 'other' && (
-                <Space>
+                <Space key="overtime">
                   <span>Overtime Incentive:</span>
                   <Switch
                     checked={item.overtimeEnabled}
@@ -325,6 +309,7 @@ const BusinessOwnerPayrollPolicy: React.FC = () => {
           <List.Item
             actions={[
               <Button
+                key="remove"
                 style={{color:"red"}}
                 onClick={() => removeIncentiveSlab(slab.id, slab._id)}
                 icon={<SlidersOutlined />}
