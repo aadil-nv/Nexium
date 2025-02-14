@@ -27,7 +27,7 @@ export default class DashboardService implements IDashboardService {
       console.log("employees ========================",employees);
       console.log("employees ========================",employees);
       
-      return {businessOwners , employees} 
+      return {businessOwners , employees , manager}; 
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       throw new Error("Could not fetch dashboard data.");

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { Button, Input, List, Space, Switch, message } from 'antd';
 import { MoneyCollectOutlined, SlidersOutlined } from '@ant-design/icons';
 import useTheme from '../../../hooks/useTheme';

@@ -143,6 +143,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
               email: businessOwnerData.email,
               password: businessOwnerData.password,
               phone: businessOwnerData.phone,
+              
             },
             companyDetails: {
               companyName: businessOwnerData.companyName,

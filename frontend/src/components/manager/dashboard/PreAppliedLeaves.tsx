@@ -74,7 +74,8 @@ export default function PreAppliedLeaves() {
       
       message.success(`Leave ${action}ed successfully`);
     } catch {
-      message.error(`Failed to ${action} leave`);
+      console.log('Failed to update leave');
+      
     } finally {
       if (action === 'rejected') {
         setRejectModalVisible(false);
