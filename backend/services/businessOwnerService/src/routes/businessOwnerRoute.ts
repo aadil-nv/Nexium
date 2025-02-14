@@ -33,7 +33,6 @@ businessOwnerRouter.post('/updated-service-request/:id', authenticateToken, (req
 businessOwnerRouter.get('/get-all-leavetypes',authenticateToken,(req, res) => businessOwnerController.getAllLeaveTypes(req, res))
 businessOwnerRouter.post("/update-leavetypes/:id", authenticateToken, (req, res, next) => businessOwnerController.updateLeaveTypes(req, res));
 
-
 businessOwnerRouter.get('/get-all-payroll-crieteria',authenticateToken,(req, res) => businessOwnerController.getAllPayrollCriteria(req, res))
 businessOwnerRouter.post('/update-payroll-crieteria/:id', authenticateToken, (req, res, next) => businessOwnerController.updatePayrollCriteria(req, res));
 businessOwnerRouter.patch('/delete-incentive/:id', authenticateToken,(req, res, next) => businessOwnerController.deleteIncentive(req, res))

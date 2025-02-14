@@ -505,18 +505,6 @@ async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType> {
         marriageLeave: 0,  
         studyLeave: 0,        
       });
-      const normalDoc =await leaveTypeModel.create({
-        sickLeave: 0,      
-        casualLeave: 0,     
-        maternityLeave: 0,
-        paternityLeave: 0,   
-        paidLeave: 0,    
-        unpaidLeave: 0,   
-        compensatoryLeave: 0,
-        bereavementLeave: 0,  
-        marriageLeave: 0,  
-        studyLeave: 0,
-      })
 
     }
 
@@ -568,7 +556,7 @@ async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]
   try {
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
 
-      const PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("PayrollCriteria", payrollCriteriaModel.schema);
+      const PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("payrollcriterias", payrollCriteriaModel.schema);
 
       const payrollCriteria = await PayrollCriteriaModel.find({}).exec();
 
@@ -613,7 +601,7 @@ async updatePayrollCriteria(payrollData: any, payrollId: string, businessOwnerId
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
 
       // Correct model usage to access the payrollCriteria collection
-      const updatedPayroll = await _switchDb.model<IPayrollCriteria>("PayrollCriteria",payrollCriteriaModel.schema)
+      const updatedPayroll = await _switchDb.model<IPayrollCriteria>("payrollcriterias",payrollCriteriaModel.schema)
           .findByIdAndUpdate(payrollId, payrollData, { new: true })
           .exec();
 
@@ -632,7 +620,7 @@ async deleteIncentive(incentiveId: string, payrollCriteriaId: string, businessOw
   try {
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
 
-      const updatedPayroll = await _switchDb.model<IPayrollCriteria>("PayrollCriteria", payrollCriteriaModel.schema)
+      const updatedPayroll = await _switchDb.model<IPayrollCriteria>("payrollcriterias", payrollCriteriaModel.schema)
           .findByIdAndUpdate(
               payrollCriteriaId, 
               { $pull: { incentives: { _id: incentiveId } } }, 
