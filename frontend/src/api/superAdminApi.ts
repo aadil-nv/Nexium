@@ -21,7 +21,7 @@ const API_URL = import.meta.env.VITE_API_KEY as string
 export const loginSuperAdmin = async (data: { email: string; password: string }) => {
   try {
     const response = await axios.post(
-      `${API_URL}/superAdmin-service/api/super-admin/superadmin-login`,
+      `${API_URL}/authentication-service/api/super-admin/superadmin-login`,
       data,
       {
         headers: { "Content-Type": "application/json" },
