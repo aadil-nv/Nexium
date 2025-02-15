@@ -4,6 +4,7 @@ import OtpModel from "../../model/otpModel";
 import IBusinessOwnerRepository from "../interfaces/IBusinessOwnerRepository";
 
 import { IBusinessOwnerDocument,ISubscription } from "../../entities/businessOwnerEntities";
+import mongoose from "mongoose";
 
 
 @injectable()
@@ -140,11 +141,18 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
 
 async updateisActive(id: any, isActive: boolean): Promise<IBusinessOwnerDocument | null> {
   try {
+    const _switchDb = mongoose.connection.useDb(id.toString(), { useCache: true });
+    const switchedDB = _switchDb.model('businessowners', businessOwnerModel.schema);
     const businessOwner = await businessOwnerModel.findOneAndUpdate(
       { _id: id },
       { $set: { isActive } },
       { new: true }
     ).exec();
+    await switchedDB.findOneAndUpdate(
+      { _id: id },
+      { $set: { isActive } },
+      { new: true }
+    )
     return businessOwner;
   } catch (error) {
     console.error("Error updating business owner:", error);

@@ -32,25 +32,20 @@ export default class BusinessOwnerConsumer implements IConsumer {
           try {
             const data = JSON.parse(msg.content.toString());
             console.log("data from rabbit mq------------------------------",data);
-            if(data.businessOwnerisActiveData){
-              await this._businessOwnerService.updateIsActive(data.businessOwnerisActiveData._id, true )
-            }
-            
+          
             if (Array.isArray(data)) {
               // Process each item if it's an array
               for (const businessOwnerData of data) {
                 await this._processBusinessOwnerData(businessOwnerData);
               }
             } else {
-              // Process a single item
               await this._processBusinessOwnerData(data);
             }
 
-            // Acknowledge the message
             channel.ack(msg);
           } catch (err) {
             console.error('Error processing message:', err);
-            channel.nack(msg);  // Negative acknowledge on error
+            channel.nack(msg); 
           }
         }
       });

@@ -14,12 +14,12 @@ businessOwnerRouter.post("/register", (req, res,next) => businessOwnerController
 
 businessOwnerRouter.post("/otp-validation", (req, res,next) => businessOwnerController.validateOtp(req, res,next));
 
-// businessOwnerRouter.post("/create-checkout-session", (req, res) => businessOwnerController.createCheckoutSession(req, res));
 
 businessOwnerRouter.post("/forgot-password", (req, res) => businessOwnerController.forgotPassword(req, res));
 
 businessOwnerRouter.post("/resend-otp", (req, res) => businessOwnerController.resendOtp(req, res));
 
 businessOwnerRouter.patch("/add-newpassword", (req, res) => businessOwnerController.addNewPassword(req, res));
+businessOwnerRouter.post('/google-login', (req, res) => businessOwnerController.googleLogin(req, res));
 
 export default businessOwnerRouter;

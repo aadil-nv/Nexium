@@ -1,4 +1,4 @@
-import { IEmoloyeeLoginDTO, IValidateOtpDTO } from "dto/employeeDTO";
+import {  IValidateOtpDTO } from "dto/employeeDTO";
 
 
 export default interface IEmployeeService {

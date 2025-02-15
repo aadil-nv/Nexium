@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import IEmployeeController from "../interface/IEmployeeController";
 import IEmployeeService from "../../service/interfaces/IEmployeeService";
 import { inject, injectable } from "inversify";
-import { HttpStatusCode } from "../../utils/statusCodes";
+import { HttpStatusCode } from "../../utils/enums";
 
 
 @injectable()
@@ -13,17 +13,14 @@ export default class EmployeeController implements IEmployeeController {
     }
 
     async employeeLogin(req: Request, res: Response): Promise<Response> {
-        console.log("huitting employeeLogin==================.====>");
         console.log("email, passowrd fro controller",req.body);
-        
-        
        try {
         const { email, password } = req.body;
         const result = await this._employeeService.employeeLogin(email, password);
-        res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge:7 * 24 * 3600 * 1000 });
-        res.cookie('refreshToken', result.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 3600 * 1000 }); // 7 days
-
-
+        res.cookie('accessToken', result.accessToken, 
+            { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge:7 * 24 * 3600 * 1000 });
+        res.cookie('refreshToken', result.refreshToken, 
+            { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 3600 * 1000 }); // 7 days
         return res.status(HttpStatusCode.OK).json(result);
         
        } catch (error:any) {
@@ -35,7 +32,6 @@ export default class EmployeeController implements IEmployeeController {
 
     async validateOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
         console.log("Validating OTP...");
-
         try {
             const { email, otp } = req.body;
             console.log("Email:", email, "OTP:", otp);
@@ -44,7 +40,6 @@ export default class EmployeeController implements IEmployeeController {
             if (response.success) {
                 res.cookie('accessToken', response.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge:7 * 24 * 3600 * 1000 });
                 res.cookie('refreshToken', response.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 3600 * 1000 }); // 7 days
-
                 res.status(HttpStatusCode.OK).json({
                     success: true,
                     message: response.message,

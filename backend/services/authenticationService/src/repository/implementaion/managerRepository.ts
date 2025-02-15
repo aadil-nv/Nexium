@@ -17,7 +17,6 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
 
     async findByCredentialEmail(email: string): Promise<IManager | null> {
        
-        
         try {
 
             const manager = await this._managerModel.findOne({ 'managerCredentials.companyEmail': email });
@@ -135,13 +134,20 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         }
     }
 
-    async updateIsActive (id: any, isActive: boolean): Promise<IManager | null> {
+    async updateIsActive (businessOwnerId: string ,id: any, isActive: boolean): Promise<IManager | null> {
       try {
+        const _switchDb = mongoose.connection.useDb(id.toString(), { useCache: true });
+        const switchedDB = _switchDb.model('managers', this._managerModel.schema);
         const manager = await this._managerModel.findOneAndUpdate(
           { _id: id },
           { $set: { isActive } },
           { new: true }
         ).exec();
+        await switchedDB.findOneAndUpdate(
+          { _id: id },
+          { $set: { isActive } },
+          { new: true }
+        )
         return manager;
       } catch (error) {
         console.error("Error updating manager:", error);

@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import IManagerController from "../interface/IManagerController";
 import IManagerService from "../../service/interfaces/IManagerService";
 import { inject, injectable } from "inversify";
-import { HttpStatusCode } from "../../utils/statusCodes";
+import { HttpStatusCode } from "../../utils/enums";
 
 @injectable()
 export default class ManagerController implements IManagerController {
@@ -73,7 +73,7 @@ export default class ManagerController implements IManagerController {
                     httpOnly: true, 
                     secure: process.env.NODE_ENV === 'production', 
                     maxAge: 7 * 24 * 3600 * 1000 
-                }); // 7 days
+                }); 
 
                 res.status(HttpStatusCode.OK).json({
                     success: true,

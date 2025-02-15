@@ -1,12 +1,11 @@
 import { injectable, inject } from "inversify";
 import IManagerService from "../interfaces/IManagerService";
 import IManagerRepository from "../../repository/interfaces/IManagerRepository";
-import { generateAccessToken, generateRefreshToken } from "../../utils/businessOwnerJWT";
+import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
 import generateOtp from "../../utils/otp";
 import nodemailer from "nodemailer";
 import OtpModel from "../../model/otpModel";
 import { ILoginDTO, IResponseDTO, IValidateOtpDTO } from "../../dto/managerDTO";
-import RabbitMQMessager from "../../events/rabbitmq/producers/producer";
 import IBusinessOwnerRepository from "repository/interfaces/IBusinessOwnerRepository";
 import { ObjectId } from "mongoose";
 
@@ -33,12 +32,13 @@ export default class ManagerService implements IManagerService {
     console.log("email",email ,"passwor",password);
     
     try {
-      const rabbitMQMessager = new RabbitMQMessager();
-      await rabbitMQMessager.init();
       if (!email || !password) throw new Error('Email and password are required');
 
       const managerData = await this._managerRepository.findByCredentialEmail(email);
       const businessOwnerData = await this._businessOwnerRepository.findBusinessOwnerById(managerData?.businessOwnerId);
+      if (!businessOwnerData) {
+        return {  message: "Business owner not found", success:false};
+      }
           
       if (!managerData ) {
         return {  message: "Invalid email or password", success:false};
@@ -69,8 +69,7 @@ export default class ManagerService implements IManagerService {
       const accessToken = generateAccessToken({  managerData });
       const refreshToken = generateRefreshToken({ managerData });
 
-      const managerIsActiveData = await this._managerRepository.updateIsActive(managerData._id, true);
-      await rabbitMQMessager.sendToMultipleQueues({ managerIsActiveData});
+      await this._managerRepository.updateIsActive(businessOwnerData._id.toString(), managerData._id, true);
 
 
       const managerName = managerData.personalDetails.managerName;
@@ -87,11 +86,7 @@ export default class ManagerService implements IManagerService {
   }
 
   async sendOtp(email: string, otp: string): Promise<void> {
-    const otpRecord = new OtpModel({
-      email,
-      otp,
-      createdAt: new Date(),
-    });
+  const otpRecord = new OtpModel({email,otp,createdAt: new Date(),});
 
     await otpRecord.save();
 
@@ -181,7 +176,6 @@ export default class ManagerService implements IManagerService {
 }
 
   async addManager(data: any): Promise<any> {
-    console.log("data derpppppppppppppppppppppppppppppppp",data);
     
     try {
       return this._managerRepository.create(data);
@@ -245,13 +239,9 @@ export default class ManagerService implements IManagerService {
   }
     }
 
-    async updateManger(managerData: any): Promise<any> {
-      console.log("employee data---------------to rabbbbbbbb", managerData);
-      
+    async updateManger(managerData: any): Promise<any> {      
       try {
           const maangerId = managerData._id;
-          console.log("employeeId", maangerId);
-          
         return this._managerRepository.update(maangerId, managerData);
       } catch (error) {
         console.error('Error in updateEmployee service:', error);

@@ -1,15 +1,11 @@
-import {generateAccessToken,generateRefreshToken,} from "../../utils/businessOwnerJWT";
+import {generateAccessToken,generateRefreshToken,} from "../../utils/jwt";
 import { inject, injectable } from "inversify";
 import  IEmployeeRepository  from "../../repository/interfaces/IEmployeeRepository";
 import  IEmployeeService from "../interfaces/IEmployeeService";
-import { IEmoloyeeLoginDTO } from "../../dto/employeeDTO";
 import nodemailer from "nodemailer";
 import OtpModel from "../../model/otpModel";
 import generateOtp from "../../utils/otp";
-import { IValidateOtpDTO } from "../../dto/employeeDTO";
-import { log } from "console";
 import IBusinessOwnerRepository from "repository/interfaces/IBusinessOwnerRepository";
-import RabbitMQMessager from "../../events/rabbitmq/producers/producer";
 
 
 const transporter = nodemailer.createTransport({
@@ -32,20 +28,16 @@ export default class EmployeeService implements IEmployeeService {
 
     async employeeLogin(email: string, password: string): Promise<any> {
       try {
-          // Fetch employee data using email and password
           const employeeData = await this._employeeRepository.findByCredentialEmail(email, password);
           if (!employeeData) {
               return { message: "Invalid email or password. Please try again.", success: false };
           }
   
-          // Fetch business owner data
           const businessOwnerData = await this._businessOwnerRepository.findBusinessOwnerById(employeeData.businessOwnerId);
-  
-          // Initialize RabbitMQ messenger
-          const rabbitMQMessager = new RabbitMQMessager();
-          await rabbitMQMessager.init();
-  
-          // Check if the employee is verified
+          if (!businessOwnerData) {
+              return { message: "Business owner not found. Please contact support.", success: false };
+          }
+   
           if (!employeeData.isVerified) {
               const otp = generateOtp();
               await this.sendOtp(employeeData.personalDetails.email, otp);
@@ -57,18 +49,15 @@ export default class EmployeeService implements IEmployeeService {
               };
           }
   
-          // Validate password
           const isPasswordValid = password === employeeData.employeeCredentials.companyPassword;
           if (!isPasswordValid) {
               return { success: false, message: "Invalid email or password. Please try again." };
           }
   
-          // Check if the business owner is blocked
           if (businessOwnerData?.isBlocked) {
               return { message: "Company is blocked. Please contact admin.", isBusinessOwnerBlocked: true };
           }
   
-          // Check if the employee account is blocked
           if (employeeData.isBlocked) {
               return { message: "Account is blocked. Please contact admin.", isBlocked: true };
           }
@@ -77,11 +66,8 @@ export default class EmployeeService implements IEmployeeService {
           const accessToken = generateAccessToken({ employeeData });
           const refreshToken = generateRefreshToken({ employeeData });
   
-          // Update employee active status
-          const employeeIsActiveData = await this._employeeRepository.updateIsActive(employeeData._id, true);
-          await rabbitMQMessager.sendToMultipleQueues({ employeeIsActiveData });
+           await this._employeeRepository.updateIsActive(businessOwnerData._id.toString(), employeeData._id, true );
   
-          // Construct response with necessary employee and company details
           return {
               success: true,
               isVerified: true,

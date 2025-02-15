@@ -1,7 +1,7 @@
-import {ITokenResponse,IPaymentIntentResponse,IOtpValidationResult} from "../interfaces/IBusinessOwnerService";
-import {IBusinessOwnerDocument,ISubscription} from "../../entities/businessOwnerEntities";
+import {ITokenResponse} from "../../dto/businessOwnerDTO";
+import {IBusinessOwnerDocument} from "../../entities/businessOwnerEntities";
 import bcrypt from "bcryptjs";
-import {generateAccessToken,generateRefreshToken,} from "../../utils/businessOwnerJWT";
+import {generateAccessToken,generateRefreshToken,} from "../../utils/jwt";
 import mongoose from "mongoose";
 import generateOtp from "../../utils/otp";
 import nodemailer from "nodemailer";
@@ -11,11 +11,10 @@ import IBusinessOwnerService from "../interfaces/IBusinessOwnerService";
 import IBusinessOwnerRepository from "repository/interfaces/IBusinessOwnerRepository";
 import { inject, injectable } from "inversify";
 import RabbitMQMessager from "../../events/rabbitmq/producers/producer";
-import { IBusinessOwner } from "controllers/interface/IBusinessOwnerController";
+import { IBusinessOwner } from "../../dto/businessOwnerDTO";
 import { generateOtpMail } from "../../utils/generateOtpMail";
 import businessOwnerModel from "../../model/businessOwnerModel";
-import { IGoogleResponseDTO, IResponseDTO } from "dto/managerDTO";
-import { log } from "console";
+import { IGoogleResponseDTO } from "dto/managerDTO";
 
 
 
@@ -107,7 +106,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
               companyName:businessOwnerData.companyDetails.companyName,
               profilePicture:businessOwnerData.personalDetails.profilePicture,
               companyLogo:businessOwnerData.companyDetails.companyLogo,
-
             };
         
           } catch (error) {
@@ -143,6 +141,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
               email: businessOwnerData.email,
               password: businessOwnerData.password,
               phone: businessOwnerData.phone,
+              businessOwnerName: businessOwnerData.businessOwnerName,
               
             },
             companyDetails: {
@@ -287,62 +286,80 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
 
     async googleLogin(email: string, password: string, phone: string, companyName: string): Promise<IGoogleResponseDTO> {
       try {
-        // Check if the user already exists
-        const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+        let businessOwnerData: IBusinessOwnerDocument | undefined =
+          (await this.businessOwnerRepository.findByEmail(email)) || undefined;
     
         if (businessOwnerData) {
-          // If the user exists, generate access and refresh tokens
-          const accessToken = generateAccessToken({businessOwnerData}); // Custom token generation function
-          const refreshToken = generateRefreshToken({businessOwnerData});
+          const accessToken = generateAccessToken({ businessOwnerData });
+          const refreshToken = generateRefreshToken({ businessOwnerData });
     
-          return {
-            success: true, 
-            message: "Login successful", 
-            accessToken, 
-            refreshToken, 
-            isVerified: true,
-            businessOwnerData, 
-            email: businessOwnerData.personalDetails.email ,
-            companyName:businessOwnerData.companyDetails.companyName,
-            profilePicture:businessOwnerData.personalDetails.profilePicture,
-            companyLogo:businessOwnerData.companyDetails.companyLogo,
-          };
-        } else {
-          // If the user doesn't exist, handle as a new registration
-          if (!email || !companyName) {
-            throw new Error("Email and company name are required for registration.");
-          }
-    
-          const newBusinessOwnerData: IBusinessOwnerDocument = new businessOwnerModel({
-            _id: new mongoose.Types.ObjectId(),
-            personalDetails: {
-              email,
-              password: password ? await bcrypt.hash(password, 10) : undefined},
-            companyDetails: {
-              companyName,
-            },
-            isVerified: true,
-            isBlocked: false,
-            role: "BusinessOwner", 
-          });
-    
-          const businessOwner = await this.businessOwnerRepository.create(newBusinessOwnerData);
-          const businessOwnerName = `${businessOwner._id}`;
-          const businessOwnerDB = mongoose.connection.useDb(businessOwnerName);
-          (await businessOwnerDB.createCollection("businessOwners")).insertOne(businessOwner)
-    
+          await this.businessOwnerRepository.updateisActive(businessOwnerData._id, true);
     
           return {
             success: true,
-            message: "New business owner registered. OTP sent for verification.",
-            email,
+            message: "Login successful",
+            accessToken,
+            refreshToken,
+            isVerified: true,
+            businessOwnerData,
+            email: businessOwnerData.personalDetails.email,
+            companyName: businessOwnerData.companyDetails.companyName,
+            profilePicture: businessOwnerData.personalDetails.profilePicture ?? "",
+            companyLogo: businessOwnerData.companyDetails.companyLogo ?? "",
           };
         }
+    
+        if (!email || !companyName) {
+          throw new Error("Email and company name are required for registration.");
+        }
+    
+        const newBusinessOwnerData: IBusinessOwnerDocument = new businessOwnerModel({
+          _id: new mongoose.Types.ObjectId(),
+          personalDetails: {
+            email,
+            password: password ? await bcrypt.hash(password, 10) : undefined,
+          },
+          businessOwnerName: companyName,
+          companyDetails: {
+            companyName,
+          },
+          isVerified: true,
+          isBlocked: false,
+          role: "BusinessOwner",
+        });
+    
+        const businessOwner = await this.businessOwnerRepository.create(newBusinessOwnerData);
+        const businessOwnerName = `${businessOwner._id}`;
+        const businessOwnerDB = mongoose.connection.useDb(businessOwnerName);
+    
+        await businessOwnerDB.createCollection("businessOwners");
+        await businessOwnerDB.collection("businessOwners").insertOne(businessOwner);
+    
+        await this.businessOwnerRepository.updateisActive(newBusinessOwnerData._id.toString(), true);
+    
+        const accessToken = generateAccessToken({ businessOwnerData: newBusinessOwnerData });
+        const refreshToken = generateRefreshToken({ businessOwnerData: newBusinessOwnerData });
+    
+        return {
+          success: true,
+          message: "New business owner registered. OTP sent for verification.",
+          email,
+          accessToken,
+          refreshToken,
+          isVerified: true,
+          businessOwnerData: newBusinessOwnerData,
+          companyName: newBusinessOwnerData.companyDetails.companyName ?? "",
+          profilePicture: newBusinessOwnerData.personalDetails.profilePicture ?? "",
+          companyLogo: newBusinessOwnerData.companyDetails.companyLogo ?? "",
+        };
       } catch (error) {
         console.error("Error during Google login:", error);
         return {
           success: false,
-          message: error instanceof Error ? error.message : "Failed to login or register. Please try again later.",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to login or register. Please try again later.",
         };
       }
     }

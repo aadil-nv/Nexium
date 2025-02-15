@@ -9,5 +9,5 @@ export default interface IEmployeeRepository extends BaseRepository<IEmployeeDoc
     updateVerificationStatus(email: string ,businessOwnerId: ObjectId): Promise<any>
     findByEmail(email: string): Promise<IEmployeeDocument | null>
     updateOtp(email: string, otp: string): Promise<void>
-     updateIsActive(id: any, isActive: boolean): Promise<IEmployeeDocument | null>
+     updateIsActive(bsuinessOwnerId:string ,id: any, isActive: boolean): Promise<IEmployeeDocument | null>
 }

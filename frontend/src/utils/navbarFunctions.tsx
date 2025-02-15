@@ -19,7 +19,7 @@ import { Dispatch, UnknownAction } from "redux";
 export const handleLogout = async({isBusinessOwner,isSuperAdmin,isManager,isEmployee,dispatch,navigate,}: NavbarFunctionsProps) => {
   if (isBusinessOwner.isAuthenticated) {    
     businessOwnerInstance.post("/businessOwner-service/api/business-owner/update-isactive");
-   communicationInstance.post("/communication-service/api/chat/logout");
+    communicationInstance.post("/communication-service/api/chat/logout");
     dispatch(businessOwnerLogout());
     navigate("/login");
   } else if (isSuperAdmin.isAuthenticated) {
@@ -43,7 +43,6 @@ export const handleLogout = async({isBusinessOwner,isSuperAdmin,isManager,isEmpl
 
 
 export const handleProfileClick = ({ isBusinessOwner, isSuperAdmin, isManager, isEmployee, navigate }: NavbarFunctionsProps) => {
-
   if (isBusinessOwner.isAuthenticated) {
     navigate("/business-owner/profile");
   } else if (isSuperAdmin.isAuthenticated) {

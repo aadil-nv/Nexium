@@ -13,7 +13,7 @@ const connectDB = async (): Promise<void> => {
         }
     } catch (error) {
         console.error("DB connection failed: ".red + error);
-        process.exit(1); // Exit the process if the DB connection fails
+        process.exit(1); 
     }
 };
 

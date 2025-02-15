@@ -82,14 +82,20 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
         }
     }
 
-    async updateIsActive(id: any, isActive: boolean): Promise<IEmployeeDocument | null> {      
+    async updateIsActive(bsuinessOwnerId:string , id: any, isActive: boolean): Promise<IEmployeeDocument | null> {      
         try {
-
+          const _switchDb = mongoose.connection.useDb(bsuinessOwnerId, { useCache: true });
+          const switchedDB = _switchDb.model('employees', this._employeeModel.schema);
           const employee = await this._employeeModel.findOneAndUpdate(
             { _id: id },
             { $set: { isActive } },
             { new: true }
           ).exec();
+          await switchedDB.findOneAndUpdate(
+            { _id: id },
+            { $set: { isActive } },
+            { new: true }
+          );
           return employee;
         } catch (error) {
           console.error("Error updating employee:", error);

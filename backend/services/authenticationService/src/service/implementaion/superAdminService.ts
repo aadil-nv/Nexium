@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { ISuperAdmin } from "../../entities/superAdminEntities";
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../../utils/businessOwnerJWT";
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../../utils/jwt";
 import ISuperAdminService from "../interfaces/ISuperAdminService";
 import ISuperAdminRepository from "../../repository/interfaces/ISuperAdminRepository";
 import { inject, injectable } from "inversify";

@@ -1,12 +1,13 @@
-import React from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';
 import { useGoogleLogin, TokenResponse } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login, setBusinessOwnerData } from '../../../redux/slices/businessOwnerSlice';
 
+const API_URL = import.meta.env.VITE_API_KEY
 
 interface GoogleUserData {
   id: string;
@@ -60,6 +61,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse: TokenResponse) => {
@@ -86,7 +88,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         };
         
         const response = await axios.post<LoginResponse>(
-          "httsp://backend.aadil.online/authentication-service/api/business-owner/google-login", 
+          `${API_URL}/authentication-service/api/business-owner/google-login`, 
           { 
             userData: googleUserData 
           },
@@ -118,6 +120,12 @@ const LoginForm: React.FC<LoginFormProps> = ({
     }
   });
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setIsLoading(true);
+    await handleLogin(e);
+    setIsLoading(false);
+  };
+
   return (
     <motion.div
       className="w-full max-w-md"
@@ -134,7 +142,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         </p>
       </div>
 
-      <form onSubmit={handleLogin} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-700'}`}>
             Email Address
@@ -180,9 +188,18 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
         <button
           type="submit"
-          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition duration-200 transform hover:scale-[1.02]"
+          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition duration-200 transform hover:scale-[1.02] relative"
+          disabled={isLoading}
         >
-          Sign In
+          <div className="flex items-center justify-center">
+            {isLoading && (
+              <div className="absolute left-4">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+              </div>
+            )}
+            <span>Sign In</span>
+            <FaArrowRight className="ml-2" />
+          </div>
         </button>
 
         <div className="relative my-8">
@@ -209,7 +226,6 @@ const LoginForm: React.FC<LoginFormProps> = ({
             <img src="https://img.icons8.com/color/16/000000/google-logo.png" alt="Google" className="w-5 h-5 mr-2" />
             <span className={theme === 'dark' ? 'text-white' : 'text-gray-700'}>Continue with Google</span>
           </button>
-
         </div>
 
         <div className="text-center space-y-4 mt-8">

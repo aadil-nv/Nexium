@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
-import { generateAccessToken, generateRefreshToken } from '../../utils/businessOwnerJWT';
+import { generateAccessToken, generateRefreshToken } from '../../utils/jwt';
 import ISuperAdminController from '../interface/ISuperAdminController';
 import ISuperAdminService from '../../service/interfaces/ISuperAdminService';
 import { inject, injectable } from "inversify";
-import { HttpStatusCode } from '../../utils/statusCodes';
+import { HttpStatusCode } from '../../utils/enums';
 
 @injectable()
 export default class SuperAdminController implements ISuperAdminController {
