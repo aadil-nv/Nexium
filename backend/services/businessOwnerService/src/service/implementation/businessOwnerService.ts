@@ -365,6 +365,7 @@ async  updateLeaveTypes( leaveTypeId: string,businessOwnerId: string, data: ILea
   }
 }
 
+
 async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteriaDTO[]> {
   try {
       // Fetch payroll criteria from the repository (this could be an array)

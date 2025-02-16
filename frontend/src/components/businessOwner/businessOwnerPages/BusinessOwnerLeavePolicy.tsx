@@ -1,27 +1,12 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { message } from 'antd';
 import { businessOwnerInstance } from '../../../services/businessOwnerInstance';
 const themeColor = '#4f46e5';
 
-interface LeaveType {
-  _id: string;
-  sickLeave: number;
-  casualLeave: number;
-  maternityLeave: number;
-  paternityLeave: number;
-  paidLeave: number;
-  unpaidLeave: number;
-  compensatoryLeave: number;
-  bereavementLeave: number;
-  marriageLeave: number;
-  studyLeave: number;
-}
 
-interface ApiResponse {
-  success: boolean;
-  data: LeaveType[];
-}
+
+
 
 interface FormData {
   [key: string]: number;
@@ -40,7 +25,7 @@ const BusinessOwnerLeavePolicy: React.FC = () => {
 
   const fetchLeaveTypes = async (): Promise<void> => {
     try {
-      const response = await businessOwnerInstance.get<ApiResponse>('/businessOwner-service/api/business-owner/get-all-leavetypes');
+      const response = await businessOwnerInstance.get('/businessOwner-service/api/business-owner/get-all-leavetypes');
       console.log('response.data', response.data);
       
       if (response.data.success && response.data.data.length > 0) {

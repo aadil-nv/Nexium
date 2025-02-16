@@ -554,44 +554,43 @@ async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]
   try {
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
 
-      const PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("payrollcriterias", payrollCriteriaModel.schema);
+    const PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("payrollcriteria", payrollCriteriaModel.schema);
 
-      const payrollCriteria = await PayrollCriteriaModel.find({businessOwnerId}).exec();
+    let payrollCriteria = await PayrollCriteriaModel.findOne({ businessOwnerId }).exec();
 
-      if (payrollCriteria.length === 0) {
-          const defaultPayrollCriteria = new PayrollCriteriaModel({
-              businessOwnerId,
-              allowances: {
-                  bonus: 0, // Keep these 0
-                  gratuity: 5,
-                  medicalAllowance: 5,
-                  hra: 5,
-                  da: 5,
-                  ta: 5,
-                  overTime: { // Keep these as per your default model
-                      type: 0,
-                      overtimeEnabled: false
-                  }
-              },
-              deductions: {
-                  incomeTax: 5,
-                  providentFund: 5,
-                  professionalTax: 5,
-                  esiFund: 5
-              },
-              incentives: [], // No incentives
-              payDay: 5, // Default payDay to 5
-              createdAt: new Date()
-          });
+    if (!payrollCriteria) {
+      payrollCriteria = new PayrollCriteriaModel({
+        businessOwnerId,
+        allowances: {
+          bonus: 0,
+          gratuity: 5,
+          medicalAllowance: 5,
+          hra: 5,
+          da: 5,
+          ta: 5,
+          overTime: {
+            type: 0,
+            overtimeEnabled: false,
+          },
+        },
+        deductions: {
+          incomeTax: 5,
+          providentFund: 5,
+          professionalTax: 5,
+          esiFund: 5,
+        },
+        incentives: [],
+        payDay: 5,
+        createdAt: new Date(),
+      });
 
-          await defaultPayrollCriteria.save();
-          return [defaultPayrollCriteria]; // Return the newly created default
-      }
+      await payrollCriteria.save();
+    }
 
-      return payrollCriteria;
+    return [payrollCriteria]; // Returning as an array
   } catch (error) {
-      console.error("Error fetching or creating payroll criteria:", error);
-      throw new Error("Failed to fetch or create payroll criteria");
+    console.error("Error fetching or creating payroll criteria:", error);
+    throw new Error("Failed to fetch or create payroll criteria");
   }
 }
 
@@ -600,7 +599,7 @@ async updatePayrollCriteria(payrollData: any, payrollId: string, businessOwnerId
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
 
       // Correct model usage to access the payrollCriteria collection
-      const updatedPayroll = await _switchDb.model<IPayrollCriteria>("payrollcriterias",payrollCriteriaModel.schema)
+      const updatedPayroll = await _switchDb.model<IPayrollCriteria>("PayrollCriteria",payrollCriteriaModel.schema)
           .findByIdAndUpdate(payrollId, payrollData, { new: true })
           .exec();
 
@@ -619,7 +618,7 @@ async deleteIncentive(incentiveId: string, payrollCriteriaId: string, businessOw
   try {
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
 
-      const updatedPayroll = await _switchDb.model<IPayrollCriteria>("payrollcriterias", payrollCriteriaModel.schema)
+      const updatedPayroll = await _switchDb.model<IPayrollCriteria>("PayrollCriteria", payrollCriteriaModel.schema)
           .findByIdAndUpdate(
               payrollCriteriaId, 
               { $pull: { incentives: { _id: incentiveId } } }, 
