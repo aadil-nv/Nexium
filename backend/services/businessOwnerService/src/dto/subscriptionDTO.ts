@@ -9,4 +9,8 @@ export interface ISubscriptionDTO {
     durationInMonths: number;
     features: string[]; 
     isActive: boolean; 
+    employeeCount?: number | null;
+  managerCount?: number | null;
+  projectCount?: number | null;
+  serviceRequestCount?: number | null;
 }

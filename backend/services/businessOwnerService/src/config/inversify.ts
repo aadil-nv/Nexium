@@ -45,6 +45,7 @@ import IDashboardController from "../controllers/interface/IDashBoardController"
 import IDashboardService from "../service/interface/IDashboardService";
 import DashboardController from "../controllers/implementation/dashboardController";
 import DashboardService from "../service/implementation/dashboardService";
+import employeeModel from "../models/employeeModel";
 
 
 
@@ -57,6 +58,7 @@ container.bind<IBusinessOwnerRepository>("IBusinessOwnerRepository").to(Business
 container.bind<typeof businessOwnerModel>("BusinessOwnerModel").toConstantValue(businessOwnerModel);
 container.bind<typeof managerModel>("managerModel").toConstantValue(managerModel);
 container.bind<typeof subscriptionModel>("subscriptionModel").toConstantValue(subscriptionModel);
+container.bind<typeof employeeModel>("employeeModel").toConstantValue(employeeModel);
 
 
 

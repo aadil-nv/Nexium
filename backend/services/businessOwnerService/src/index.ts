@@ -42,5 +42,5 @@ app.use('/api/dashboard', dashboardRoutes);
 connectConsumer();
 
 app.listen(PORT, () => {
-  console.log(`businessOwnerService on http://localhost:${PORT}`.bgBlue.bold);
+  console.log(`businessOwnerService on http://localhost:${PORT}vv22222`.bgBlue.bold);
 });

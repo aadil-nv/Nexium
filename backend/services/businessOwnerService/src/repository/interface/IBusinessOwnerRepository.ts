@@ -3,6 +3,9 @@ import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntity";
 import BaseRepository from "../implementation/baseRepository";
 import { ILeaveType } from "../../entities/leaveTypeEntities";
 import { IPayrollCriteria } from "../../entities/payrollCriteriaEntities";
+
+
+
 export default interface IBusinessOwnerRepository extends BaseRepository<IBusinessOwnerDocument>{
     addSubscription(subscriptionData: any): Promise<any>
     getDetails(businessOwnerId: string): Promise<IBusinessOwnerDocument>
@@ -19,7 +22,8 @@ export default interface IBusinessOwnerRepository extends BaseRepository<IBusine
     updateServiceRequest(serviceRequestId: string, data: any): Promise<any>
     updateLastSeenForChats(businessOwnerId: string): Promise<any>
     updateIsActive(businessOwnerId: string , isActive: boolean): Promise<any>
-    findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType>
+    
+    findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType | null>
     updateLeaveTypes(leaveTypeId: string, data: Partial<ILeaveType> , businessOwnerId: string): Promise<ILeaveType>
 
     getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]>; // Changed to match the class method

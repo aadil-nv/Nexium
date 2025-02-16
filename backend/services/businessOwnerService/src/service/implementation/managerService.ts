@@ -31,8 +31,6 @@ export default class ManagerService implements IManagerService {
   async addManagers(businessOwnerId: string, data: any): Promise<IResponseDTO> {
 
     try {
-        const rabbitMQMessager = new RabbitMQMessager();
-        await rabbitMQMessager.init();
 
 
         this.validateManagerData(data);
@@ -92,7 +90,7 @@ export default class ManagerService implements IManagerService {
 
         const managerData = await this._managerRepository.addManagers(businessOwnerId, newManagerData);
 
-        rabbitMQMessager.sendToMultipleQueues({ managerData });
+        // rabbitMQMessager.sendToMultipleQueues({ managerData });
 
         return {
           success:true,

@@ -274,8 +274,8 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     try {
       const _switchDb = mongoose.connection.useDb(companyId, { useCache: true });
   
-      const Employee = _switchDb.model('Employees', EmployeeModel.schema);
-      const Manager = _switchDb.model('Managers', ManagerModel.schema);
+      const Employee = _switchDb.model('employees', EmployeeModel.schema);
+      const Manager = _switchDb.model('managers', ManagerModel.schema);
   
       const totalEmployees = await Employee.countDocuments();
   
@@ -484,16 +484,19 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
 }
 
 
-async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType> { 
+async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType | null> {
   try {
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
     const switchedLeaveTypeModel = _switchDb.model<ILeaveType>("leavetypes", leaveTypeModel.schema);
 
-    let leaveTypesDoc = await switchedLeaveTypeModel.findOne({ businessOwnerId });
+    // Convert businessOwnerId to ObjectId
+    const ownerId = new mongoose.Types.ObjectId(businessOwnerId);
+
+    let leaveTypesDoc = await switchedLeaveTypeModel.findOne({ businessOwnerId: ownerId });
 
     if (!leaveTypesDoc) {
       leaveTypesDoc = await switchedLeaveTypeModel.create({
-        businessOwnerId,
+        businessOwnerId: ownerId, // Ensure correct type
         sickLeave: 0,      
         casualLeave: 0,     
         maternityLeave: 0,
@@ -512,7 +515,7 @@ async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType> {
     return leaveTypesDoc;
   } catch (error) {
     console.error("Error in findAllLeaveTypes repository:", error);
-    throw new Error("Failed to fetch leave types");
+    return null; // Return null instead of throwing an error
   }
 }
 
@@ -550,17 +553,22 @@ async updateLeaveTypes(leaveTypeId: string, data: Partial<ILeaveType> , business
   }
 }
 
+
+
 async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]> {
   try {
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
 
-    const PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("payrollcriteria", payrollCriteriaModel.schema);
+    const PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("payrollcriterias", payrollCriteriaModel.schema);
 
-    let payrollCriteria = await PayrollCriteriaModel.findOne({ businessOwnerId }).exec();
+    // Convert businessOwnerId to ObjectId
+    const ownerId = new mongoose.Types.ObjectId(businessOwnerId);
+
+    let payrollCriteria = await PayrollCriteriaModel.findOne({ businessOwnerId: ownerId }).exec();
 
     if (!payrollCriteria) {
       payrollCriteria = new PayrollCriteriaModel({
-        businessOwnerId,
+        businessOwnerId: ownerId,  // Ensure correct type
         allowances: {
           bonus: 0,
           gratuity: 5,
@@ -593,6 +601,7 @@ async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]
     throw new Error("Failed to fetch or create payroll criteria");
   }
 }
+
 
 async updatePayrollCriteria(payrollData: any, payrollId: string, businessOwnerId: string): Promise<IPayrollCriteria> {
   try {

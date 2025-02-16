@@ -30,15 +30,24 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
 
   async addManagers(businessOwnerId: string, managerData: IManager): Promise<IManager> {
     try {
-      const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-      const manager = _switchDb.model<IManager>('Manager', managerModel.schema);
-      const newManager = new manager(managerData);
-      return await newManager.save();
+        // Connect to the business owner's specific database
+        const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+        const ManagerModel = _switchDb.model<IManager>('Manager', managerModel.schema);
+
+        // Create manager with a consistent _id
+        const managerId = new mongoose.Types.ObjectId(); // Generate a shared _id
+
+        const switchedNewManager = new ManagerModel({ ...managerData, _id: managerId });
+        const newManager = new this._managerModel({ ...managerData, _id: managerId });
+
+        // Save in both databases
+        await switchedNewManager.save();
+        return await newManager.save();
     } catch (error) {
-      console.error("Error adding manager:", error);
-      throw error;
+        console.error("Error adding manager:", error);
+        throw error;
     }
-  }
+}
 
   async findById(id: string): Promise<IBusinessOwnerDocument> {
     try {

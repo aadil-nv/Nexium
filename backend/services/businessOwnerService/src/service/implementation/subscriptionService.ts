@@ -52,6 +52,10 @@ export default class SubscriptionService implements ISubscriptionService {
                 durationInMonths: subscription.durationInMonths,
                 features: subscription.features,
                 isActive: subscription.isActive,
+                employeeCount:subscription.employeeCount,
+                 managerCount: subscription.managerCount,
+                projectCount:subscription.projectCount,
+                 serviceRequestCount: subscription.serviceRequestCount
             };
         } catch (error) {
             console.error("Error fetching subscription:", error);
