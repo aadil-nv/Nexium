@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 
 export interface ILeaveType extends Document {
+  businessOwnerId: mongoose.Schema.Types.ObjectId;
     sickLeave: number;
     casualLeave: number;
     maternityLeave: number;

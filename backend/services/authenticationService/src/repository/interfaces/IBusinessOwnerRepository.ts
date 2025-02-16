@@ -7,10 +7,6 @@ export interface IPaymentIntentResponse {
     clientSecret: string;
   }
 
-
-
-
-
   export default interface IBusinessOwnerRepository {
     findByEmail(email: string): Promise<IBusinessOwnerDocument | null>;
     create(businessOwnerData: IBusinessOwnerDocument): Promise<IBusinessOwnerDocument>;

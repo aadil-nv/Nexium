@@ -19,9 +19,7 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
     async findByCredentialEmail(email: string): Promise<IEmployeeDocument> {
         try {
           const employee = await this._employeeModel.findOne({ 'employeeCredentials.companyEmail': email });
-          
-    
-          return employee; // Return the employee data
+          return employee; 
         } catch (error) {
           console.error("Error finding employee by email:", error);
           throw new Error("Failed to find employee by email");

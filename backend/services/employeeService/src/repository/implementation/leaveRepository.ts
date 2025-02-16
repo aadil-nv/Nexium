@@ -15,27 +15,41 @@ export default class LeaveRepository extends BaseRepository<IAppliedLeave> imple
     }
 
     async applyLeave(employeeId: string, leaveData: any, businessOwnerId: string): Promise<IAppliedLeave> {
+       
+    
         try {
             if (!employeeId || !businessOwnerId) {
                 throw new Error("Employee ID and Business Owner ID are required");
             }
-
+    
             const switchDB = await connectDB(businessOwnerId);
             const employeeLeave = await switchDB.model<IEmployeeLeave>('EmployeeLeave', employeeLeaveModel.schema)
                 .findOne({ employeeId });
-
+    
             if (!employeeLeave) {
                 throw new Error("Employee not found");
             }
-
-            const { leaveType, fromDate, toDate, duration, reason ,isFirstHalf ,isSecondHalf} = leaveData;
-
+    
+            const { leaveType, fromDate, toDate, duration, reason, isFirstHalf, isSecondHalf } = leaveData;
+    
             if (!leaveType || !fromDate || !toDate || duration == undefined || !reason) {
                 throw new Error("Missing required fields: leaveType, fromDate, toDate, duration, or reason");
             }
-
+    
             const AppliedLeaveModel = switchDB.model<IAppliedLeave>("AppliedLeave", this.appliedLeaveModel.schema);
-
+    
+            // **Check if leave is already applied for the given date range**
+            const existingLeave = await AppliedLeaveModel.findOne({
+                employeeId,
+                $or: [
+                    { startDate: { $lte: new Date(toDate) }, endDate: { $gte: new Date(fromDate) } }
+                ]
+            });
+    
+            if (existingLeave) {
+                throw new Error("Leave for the selected date range has already been applied");
+            }
+    
             const leave = new AppliedLeaveModel({
                 employeeId,
                 leaveType,
@@ -43,17 +57,17 @@ export default class LeaveRepository extends BaseRepository<IAppliedLeave> imple
                 startDate: new Date(fromDate),
                 endDate: new Date(toDate),
                 duration,
-                daysCount: duration,  
+                daysCount: duration,
                 status: 'pending',
                 appliedAt: new Date(),
                 isFirstHalf,
                 isSecondHalf
             });
-
+    
             return await leave.save();
-        } catch (error :any) {
+        } catch (error: any) {
             console.error("Error applying leave:", error.message || error);
-            throw new Error("Failed to apply leave");
+            throw new Error(error.message || "Failed to apply leave");
         }
     }
 
@@ -69,13 +83,31 @@ export default class LeaveRepository extends BaseRepository<IAppliedLeave> imple
         }
     }
 
-    async updateAppliedLeave(employeeId: string, leaveId: string, leaveData: any ,businessOwnerId: string): Promise<IAppliedLeave> {
+    async updateAppliedLeave(employeeId: string, leaveId: string, leaveData: any, businessOwnerId: string): Promise<IAppliedLeave> {
         try {
             const switchDB = await connectDB(businessOwnerId);
-            const leave = await switchDB.model<IAppliedLeave>("AppliedLeave", this.appliedLeaveModel.schema).findById(leaveId);
+            const AppliedLeaveModel = switchDB.model<IAppliedLeave>("AppliedLeave", this.appliedLeaveModel.schema);
     
+            const leave = await AppliedLeaveModel.findById(leaveId);
             if (!leave) {
                 throw new Error("Leave not found");
+            }
+    
+            const { fromDate, toDate } = leaveData;
+    
+            if (fromDate && toDate) {
+                // **Check if updated leave dates overlap with existing leaves**
+                const existingLeave = await AppliedLeaveModel.findOne({
+                    employeeId,
+                    _id: { $ne: leaveId }, // Exclude the current leave being updated
+                    $or: [
+                        { startDate: { $lte: new Date(toDate) }, endDate: { $gte: new Date(fromDate) } }
+                    ]
+                });
+    
+                if (existingLeave) {
+                    throw new Error("Updated leave dates conflict with an already applied leave");
+                }
             }
     
             leave.set(leaveData);
@@ -83,9 +115,9 @@ export default class LeaveRepository extends BaseRepository<IAppliedLeave> imple
             const updatedLeave = await leave.save();
     
             return updatedLeave;
-        } catch (error) {
-            console.error("Error updating applied leave:", error);
-            throw new Error("Error updating applied leave");
+        } catch (error: any) {
+            console.error("Error updating applied leave:", error.message || error);
+            throw new Error(error.message || "Error updating applied leave");
         }
     }
 

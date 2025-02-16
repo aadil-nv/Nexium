@@ -16,10 +16,11 @@ export default class PayrollRepository extends BaseRepository<IPayrollCriteria> 
         try {
             const db = await connectDB(businessOwnerId);
 
-            const payrollCriteria = await db.model<IPayrollCriteria>("PayrollCriteria", this.payrollCriteriaModel.schema).find({}).exec();
+            const payrollCriteria = await db.model<IPayrollCriteria>("PayrollCriteria", this.payrollCriteriaModel.schema).find({businessOwnerId}).exec();
 
             if (payrollCriteria.length === 0) {
                 const defaultPayrollCriteria = new this.payrollCriteriaModel({
+                    businessOwnerId,
                     allowances: {
                         bonus: 0,
                         gratuity: 0,

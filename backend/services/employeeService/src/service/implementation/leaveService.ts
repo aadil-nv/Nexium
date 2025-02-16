@@ -39,7 +39,7 @@ export default class LeaveService implements ILeaveService {
     } catch (error: any) {
         console.error("Error applying leave service layer:", error.message);
         return {
-            message: "An error occurred while applying leave",
+            message: error.message,
             success: false,
         };
     }
@@ -99,10 +99,12 @@ async updateAppliedLeave(employeeId: string, leaveId: string, leaveData: any ,bu
         };
 
         return leaveDTO;
-    } catch (error) {
-        console.error("Error updating applied leave:", error);
-        throw new Error("Error updating applied leave");
-    }
+    } catch (error:any) {
+        console.error("Error updating applied leave:", error.message);
+        return {
+            message: error.message,
+            success: false,}
+        }
 }
 
 async deleteAppliedLeave(employeeId: string, leaveId: string ,businessOwnerId: string): Promise<ILeaveDTO> {

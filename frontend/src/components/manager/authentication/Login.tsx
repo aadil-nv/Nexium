@@ -97,7 +97,7 @@ export default function ManagerLogin() {
 
           <div className="py-6 md:py-10">
             <div className="text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-green-600">Login to your account</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-green-600">Manager Portal</h2>
               <div className="w-24 h-1 bg-green-600 mx-auto mt-4 mb-6"></div>
             </div>
 
@@ -132,7 +132,7 @@ export default function ManagerLogin() {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
-                  className="bg-transparent outline-none text-sm flex-1"
+                  className="bg-transparent outline-none text-sm flex-1 text-black"
                   {...register("password", { required: "Password is required" })}
                 />
                 <button
@@ -178,10 +178,10 @@ export default function ManagerLogin() {
           transition={{ duration: 0.5 }}
         >
           <div className="text-center">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">Hello, 👋 Admin</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-2">Hello, 👋 Manager</h2>
             <div className="w-24 h-1 bg-white mx-auto mb-4"></div>
           </div>
-          <p className="mb-6 text-center">Welcome back Admin, show your skill</p>
+          <p className="mb-6 text-center text-white">Welcome back Admin, show your skill</p>
           <a
             href="/"
             className="border-2 border-white rounded-full px-8 md:px-12 py-2 inline-block font-semibold

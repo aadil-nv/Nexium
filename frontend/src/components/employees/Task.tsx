@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Table, message, Input, Select } from 'antd';
-import { PlusCircleOutlined, EditOutlined, DeleteOutlined, SearchOutlined, CheckCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { useState, useEffect } from 'react';
+import { Button, Table, message, Input, Select, Modal } from 'antd';  // Added Modal import
+import { PlusCircleOutlined, EditOutlined, DeleteOutlined, SearchOutlined, CheckCircleOutlined, ClockCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import TaskModal from './TaskModal';
 import EditTaskModal from './EditTaskModal';
@@ -10,6 +10,7 @@ import { setTasks, addTask, updateTask, removeTask } from '../../redux/slices/ta
 import { RootState } from '../../redux/store/store';
 import { Progress } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
+import useTheme from '../../hooks/useTheme';
 
 interface SubTask {
   title: string;
@@ -42,14 +43,13 @@ const Task: React.FC = () => {
   const [filterPriority, setFilterPriority] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
-  
+  const {themeColor} = useTheme();
   const dispatch = useDispatch();
   const tasks = useSelector((state: RootState) => state.task.tasks);
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        dispatch(setTasks([]));
         const response = await employeeInstance.get('/employee-service/api/task/get-all-tasks');
         dispatch(setTasks(response.data));
       } catch (error) {
@@ -60,13 +60,35 @@ const Task: React.FC = () => {
     fetchTasks();
   }, [dispatch]);
 
-  const handleAddTask = (task: Task) => {
-    dispatch(addTask(task));
+  const handleAddTask = async (task: Task) => {
+    try {
+      const response = await employeeInstance.post('/employee-service/api/task/create-task', task);
+      if (response.status === 200 || response.status === 201) {
+        dispatch(addTask(response.data));
+        setIsModalVisible(false);
+        message.success('Task added successfully!');
+      }
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
   };
-
   const handleSaveTaskChanges = (updatedTask: Task) => {
     dispatch(updateTask(updatedTask));
     setTaskModalVisible(false);
+  };
+
+  const showDeleteConfirm = (taskId: string, taskName: string) => {
+    Modal.confirm({
+      title: 'Are you sure you want to delete this task?',
+      icon: <ExclamationCircleOutlined />,
+      content: `Task: ${taskName} will be permanently removed.`,
+      okText: 'Yes, Delete',
+      okType: 'danger',
+      cancelText: 'No, Cancel',
+      onOk() {
+        handleRemoveTask(taskId);
+      },
+    });
   };
 
   const handleRemoveTask = async (taskId: string) => {
@@ -80,7 +102,7 @@ const Task: React.FC = () => {
       console.error('Error removing task:', error);
       message.error('Failed to remove task.');
     }
-  };
+  };;
 
   const handleApproval = async (taskId: string, currentApprovalStatus?: boolean) => {
     const newApprovalStatus = currentApprovalStatus === true ? false : true;
@@ -254,7 +276,7 @@ const Task: React.FC = () => {
           <Button
             type="primary"
             icon={<EditOutlined />}
-            style={{ width: 120 }}
+            style={{ width: 120 , backgroundColor: themeColor }}
             onClick={() => {
               setSelectedTask(record);
               setTaskModalVisible(true);
@@ -270,7 +292,7 @@ const Task: React.FC = () => {
               backgroundColor: 'red',
               color: 'white',
             }}
-            onClick={() => handleRemoveTask(record._id!)}
+            onClick={() => showDeleteConfirm(record._id!, record.taskName)}
           >
             Remove
           </Button>
@@ -285,7 +307,7 @@ const Task: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#4A90E2' }}
+        style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: themeColor }}
       >
         Task Management
       </motion.div>
@@ -293,49 +315,66 @@ const Task: React.FC = () => {
       <Button
         type="primary"
         onClick={() => setIsModalVisible(true)}
-        style={{ position: 'absolute', top: 20, right: 20 }}
+        style={{ position: 'absolute', top: 20, right: 20 , backgroundColor: themeColor }}
         icon={<PlusCircleOutlined />}
       >
         Assign New Task
       </Button>
 
-      <div style={{ marginTop: 50, marginBottom: 16, display: 'flex', gap: 16 }}>
-        <Input
-          placeholder="Search by employee name or task title"
-          prefix={<SearchOutlined />}
-          value={searchText}
-          onChange={e => setSearchText(e.target.value)}
-          style={{ width: 300 }}
-        />
-        <Select
-          placeholder="Filter by priority"
-          style={{ width: 200 }}
-          value={filterPriority}
-          onChange={value => setFilterPriority(value)}
-          allowClear
-        >
-          <Select.Option value="high">High</Select.Option>
-          <Select.Option value="medium">Medium</Select.Option>
-          <Select.Option value="low">Low</Select.Option>
-        </Select>
-      </div>
+      <div style={{ marginTop: 50, marginBottom: 16, display: 'flex', gap: 16, color: "black" }}>
+  <Input
+    placeholder="Search by employee name or task title"
+    prefix={<SearchOutlined />}
+    value={searchText}
+    onChange={e => setSearchText(e.target.value)}
+    style={{ width: 300 }}
+  />
+  <Select
+    placeholder="Filter by priority"
+    style={{ width: 200 }}
+    value={filterPriority || "medium"} // Default to "medium"
+    onChange={value => setFilterPriority(value)}
+    allowClear
+  >
+    <Select.Option value="high">High</Select.Option>
+    <Select.Option value="medium">Medium</Select.Option>
+    <Select.Option value="low">Low</Select.Option>
+  </Select>
+</div>
 
-      <Table 
-        columns={columns} 
-        dataSource={filteredTasks}
-        rowKey="_id"
-        pagination={{
-          current: currentPage,
-          pageSize: pageSize,
-          total: filteredTasks.length,
-          onChange: (page, size) => {
-            setCurrentPage(page);
-            setPageSize(size || 10);
-          },
-          showSizeChanger: true,
-          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
-        }}
-      />
+
+
+<Table
+  columns={columns}
+  dataSource={filteredTasks}
+  rowKey="_id"
+  pagination={{
+    current: currentPage,
+    pageSize: pageSize,
+    total: filteredTasks.length,
+    onChange: (page, size) => {
+      setCurrentPage(page);
+      setPageSize(size || 10);
+    },
+    showSizeChanger: true,
+    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+  }}
+  components={{
+    header: {
+      cell: (props: React.HTMLAttributes<HTMLElement>) => (
+        <th
+          {...props}
+          style={{
+            backgroundColor: themeColor,
+            color: "white",
+            textAlign: "center",
+          }}
+        />
+      ),
+    },
+  }}
+/>
+
 
       <TaskModal
         visible={isModalVisible}

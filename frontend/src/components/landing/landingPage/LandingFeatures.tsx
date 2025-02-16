@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-// import FeaturesLeave from '../../../assets/landingPageAssets/leavemgmt.png';
 import FeaturesDatabase from '../../../assets/landingPageAssets/Human-Resources-square-ezgif.com-webp-to-png-converter.png';
 import FeaturesOnboarding from '../../../assets/landingPageAssets/Onboarding-ezgif.com-webp-to-png-converter.png';
 import leavemanagement from '../../../assets/landingPageAssets/leavemenegement-Photoroom.png';
@@ -114,7 +113,7 @@ export default function Features() {
             className="text-4xl font-bold text-primary dark:text-white"
             whileHover={{ scale: 1.02 }}
           >
-            Key Features of HRMS
+            Key Features of NEXIUM
           </motion.h3>
           <motion.div 
             className="space-y-4"

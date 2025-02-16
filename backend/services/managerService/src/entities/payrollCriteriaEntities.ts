@@ -1,8 +1,9 @@
-import { Document } from "mongoose";
+import mongoose, { Document } from "mongoose";
 
 // Update the IPayrollCriteria interface to extend Document
 export interface IPayrollCriteria extends Document {
   _id: any;
+  businessOwnerId: mongoose.Schema.Types.ObjectId;
   allowances: {
     bonus: number;
     gratuity: number;

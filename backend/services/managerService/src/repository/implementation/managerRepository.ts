@@ -215,8 +215,10 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
     async getDashboardData(managerId: string ,businessOwnerId: string): Promise<any> {
       try {
         const db = await connectDB(businessOwnerId); 
-         db.model<IManager>("managers", managerModel.schema)
-        const employees = await db.model<IEmployee>("employees", employeeModel.schema).find({ managerId }).select('_id').lean();
+        const manager =  await db.model<IManager>("managers", managerModel.schema)
+        const employees = await db.model<IEmployee>("employees", employeeModel.schema).find().lean();
+        console.log("employees ====================>",employees);
+        
         const departments = await db.model<IDepartment>("departments", departmentModel.schema).find().lean();
         const tasks = await db.model<ITask>("tasks", taskModel.schema).find({ employeeId: { $in: employees.map((e) => e._id) } }).lean();
     
@@ -258,7 +260,7 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
           completedTasks: tasksByMonth[month],
         }));
     
-        // Return dashboard data
+        // Return the dashboard data
         return {
           employeeCount,
           departmentCount,

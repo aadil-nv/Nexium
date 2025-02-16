@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Form, Select, DatePicker, Radio, Input, Button, Card, List, Drawer } from 'antd';
+import { useState, useEffect } from 'react';
+import { Form, Select, DatePicker, Radio, Input, Button, Card, List, Drawer, message } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { RadioChangeEvent } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
@@ -249,9 +249,22 @@ const EmployeeLeave: React.FC = () => {
       };
   
       if (currentLeave) {
-        await employeeInstance.post(`/employee-service/api/leave/update-applied-leave/${currentLeave.leaveId}`, newLeave);
+        const  response = await employeeInstance.post(`/employee-service/api/leave/update-applied-leave/${currentLeave.leaveId}`, newLeave);
+        if(response.data.success == false ){
+          message.error(response.data.message);
+          console.log('response.data', response.data);
+        }else if(response.data.success == true){
+          message.success('Leave updated successfully!');
+        }
       } else {
-        await employeeInstance.post("/employee-service/api/leave/pre-apply-leave", newLeave);
+        const response = await employeeInstance.post("/employee-service/api/leave/pre-apply-leave", newLeave);
+        if(response.data.success == false ){
+          message.error(response.data.message);
+          console.log('response.data', response.data);
+        }else if(response.data.success == true){
+          message.success('Leave applied successfully!');
+        }
+        
       }
   
       setDrawerVisible(false);

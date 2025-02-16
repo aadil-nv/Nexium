@@ -111,45 +111,49 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
       
 
     
-    async assignTaskToEmployee(taskData: ITask, teamLeadId: string,businessOwnerId:string): Promise<ITask> {
-    try {
-        const switchDB = await connectDB(businessOwnerId);
-        const teamLeadData = await switchDB.model<IEmployee>("Employee", employeeModel.schema).findById({ _id: teamLeadId });
-
-        if (!teamLeadData) {
+      async assignTaskToEmployee(taskData: ITask, teamLeadId: string,businessOwnerId:string): Promise<ITask> {
+        try {
+          const switchDB = await connectDB(businessOwnerId);
+              const EmployeeModel = switchDB.model<IEmployee>("Employee", employeeModel.schema);
+          const TaskModel = switchDB.model<ITask>("Task", this.taskModel.schema);
+      
+          const teamLeadData = await EmployeeModel.findById(teamLeadId);
+          console.log(`Assigning task `.bgYellow, teamLeadData);
+      
+          if (!teamLeadData) {
             throw new Error("Team Lead not found with the provided ID");
-        }
-
-        if (!taskData.employeeId) {
+          }
+      
+          if (!taskData.employeeId) {
             throw new Error("Employee ID is required in task data");
-        }
-
-        const employee = await switchDB.model<IEmployee>("Employee", employeeModel.schema).findById(taskData.employeeId);
-        if (!employee) {
+          }
+      
+          const employee = await EmployeeModel.findById(taskData.employeeId);
+          if (!employee) {
             throw new Error(`Employee not found with ID: ${taskData.employeeId}`);
-        }
-
-        const enrichedTaskData = {
+          }
+      
+          const enrichedTaskData = {
             ...taskData,
             employeeName: employee.personalDetails.employeeName,
             employeeProfilePicture: employee.personalDetails.profilePicture,
             assignedBy: teamLeadData.personalDetails.employeeName,
-            assignedDate: new Date(), 
-        };
-
-        const task = new this.taskModel(enrichedTaskData);
-        const result = await task.save();
-
-        if (!result) {
+            assignedDate: new Date(),
+          };
+      
+          const task = new TaskModel(enrichedTaskData);
+          const result = await task.save();
+      
+          if (!result) {
             throw new Error("Error assigning task to employee");
+          }
+      
+          return result;
+        } catch (error: any) {
+          console.error("Error assigning task to employee:", error);
+          throw new Error(error.message || "Error assigning task to employee");
         }
-
-        return result;
-    } catch (error: any) {
-        console.error("Error assigning task to employee:", error);
-        throw new Error(error.message || "Error assigning task to employee");
-    }
-    }
+      }
 
     async updateTask(taskId: string, taskData: ITask,businessOwnerId:string): Promise<ITask> {
     

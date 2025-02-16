@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store/store";
 import { setTimer, decrementTimer } from "../../redux/slices/otpSlice";
-import image from "../../images/images";
 import { login, setEmployeeData } from "../../redux/slices/employeeSlice";
 import axios,{ AxiosError } from "axios";
 import { employeeResendOtp, employeeValidateOtp } from "../../api/authApi";
@@ -139,9 +138,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     <div className="flex flex-col items-center justify-center min-h-screen py-2 bg-gray-200">
       <div className="bg-white shadow-md rounded-2xl flex flex-col md:flex-row w-full max-w-4xl">
         <div className="w-full md:w-3/5 p-5 md:px-16 sm:px-8">
-          <div className="text-left font-bold mb-8">
-            <img src={image.navBarLogo} alt="Logo" className="w-20 h-auto" />
-          </div>
+
           <div className="py-6 text-center px-4">
             <h2 className="text-3xl sm:text-4xl font-bold text-blue-500">Verify OTP</h2>
             <div className="w-24 h-1 bg-blue-500 mx-auto mt-4 mb-4"></div>

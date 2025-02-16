@@ -489,11 +489,11 @@ async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType> {
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
     const switchedLeaveTypeModel = _switchDb.model<ILeaveType>("leavetypes", leaveTypeModel.schema);
 
-    let leaveTypesDoc = await switchedLeaveTypeModel.findOne(); 
+    let leaveTypesDoc = await switchedLeaveTypeModel.findOne({ businessOwnerId });
 
     if (!leaveTypesDoc) {
-
       leaveTypesDoc = await switchedLeaveTypeModel.create({
+        businessOwnerId,
         sickLeave: 0,      
         casualLeave: 0,     
         maternityLeave: 0,
@@ -505,12 +505,10 @@ async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType> {
         marriageLeave: 0,  
         studyLeave: 0,        
       });
-
     }
 
     console.log("leaveTypesDoc", leaveTypesDoc);
     
-
     return leaveTypesDoc;
   } catch (error) {
     console.error("Error in findAllLeaveTypes repository:", error);
@@ -558,10 +556,11 @@ async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]
 
       const PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("payrollcriterias", payrollCriteriaModel.schema);
 
-      const payrollCriteria = await PayrollCriteriaModel.find({}).exec();
+      const payrollCriteria = await PayrollCriteriaModel.find({businessOwnerId}).exec();
 
       if (payrollCriteria.length === 0) {
           const defaultPayrollCriteria = new PayrollCriteriaModel({
+              businessOwnerId,
               allowances: {
                   bonus: 0, // Keep these 0
                   gratuity: 5,

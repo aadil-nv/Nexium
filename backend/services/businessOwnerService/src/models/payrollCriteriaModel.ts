@@ -3,6 +3,8 @@ import { IPayrollCriteria } from '../entities/payrollCriteriaEntities';
 
 // Define the schema for PayrollCriteria
 const PayrollCriteriaSchema: Schema<IPayrollCriteria> = new Schema<IPayrollCriteria>({
+  businessOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessOwner', required: true },
+
   allowances: {
     bonus: { type: Number, default: 0 },
     gratuity: { type: Number, default: 0 },

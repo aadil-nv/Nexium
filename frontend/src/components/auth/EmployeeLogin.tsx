@@ -91,12 +91,10 @@ const EmployeeLogin: React.FC = () => {
   return (
     <div className="min-h-screen w-full bg-gray-200 flex items-center justify-center px-4">
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md overflow-hidden flex flex-col md:flex-row">
-        {/* Left Section */}
         <div className="w-full md:w-3/5 p-6 md:p-12">
-          
           <div className="text-center mb-8">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-blue-500">
-              Employee Login
+              Employee Portal
             </h2>
             <div className="w-20 h-1 bg-blue-500 mx-auto mt-3"></div>
           </div>
@@ -171,7 +169,7 @@ const EmployeeLogin: React.FC = () => {
 
         {/* Right Section */}
         <div className="w-full md:w-2/5 bg-blue-500 text-white p-8 flex flex-col justify-center items-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">Hello, 👋 Employee</h2>
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Hello,👋</h2>
           <div className="w-20 h-1 bg-white mb-6"></div>
           <p className="text-center text-sm md:text-base mb-8">
             Welcome back, please log in to your account

@@ -133,12 +133,13 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
     async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType> {
         try {
             const db = await connectDB(businessOwnerId);
-            const LeaveModel = db.model<ILeaveType>("LeaveTypes", leaveTypeModel.schema);
+            const LeaveModel = db.model<ILeaveType>("leavetypes", leaveTypeModel.schema);
     
-            let leaveTypesDoc = await LeaveModel.findOne(); 
+            let leaveTypesDoc = await LeaveModel.findOne({ businessOwnerId }); 
     
             if (!leaveTypesDoc) {
                 const newLeaveTypesDoc = new LeaveModel({
+                    businessOwnerId,
                     sickLeave: 0,      
                     casualLeave: 0,     
                     maternityLeave: 0,

@@ -6,7 +6,6 @@ import mongoose from "mongoose";
 import generateOtp from "../../utils/otp";
 import nodemailer from "nodemailer";
 import otpModel from "../../model/otpModel";
-import Stripe from "stripe"
 import IBusinessOwnerService from "../interfaces/IBusinessOwnerService";
 import IBusinessOwnerRepository from "repository/interfaces/IBusinessOwnerRepository";
 import { inject, injectable } from "inversify";
@@ -19,7 +18,6 @@ import { IGoogleResponseDTO } from "dto/managerDTO";
 
 
 
-const stripe = new Stripe(process.env.STRIP_SECRET_KEY as string);
 
 const transporter = nodemailer.createTransport({
     service: "Gmail",

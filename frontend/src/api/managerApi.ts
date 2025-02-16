@@ -2,7 +2,6 @@ import axios, { AxiosError } from "axios"
 import { LoginFormData } from "../utils/interfaces"
 import { managerInstance } from "../services/managerInstance";
 import { IEmployee } from "../interface/managerInterface";
-import { toast } from 'react-toastify';
 import { message } from 'antd';
 import { fetchLeaveEmployeesRequest ,fetchLeaveEmployeesFailure,fetchLeaveEmployeesSuccess} from "../redux/slices/leaveSlice";
 import { Dispatch } from 'redux';
@@ -112,7 +111,7 @@ export const fetchDepartments = async () => {
       }
       throw new Error('Failed to fetch departments!');
     } catch (error) {
-      toast.error('An error occurred while fetching departments!');
+      message.error('An error occurred while fetching departments!');
       console.error('Error:', error);
       throw error;
     }
@@ -123,18 +122,24 @@ export const addEmployee = async (employeeData :IEmployee) => {
       const response = await managerInstance.post('/manager-service/api/employee/add-employees', { employeedata: employeeData }, {
         withCredentials: true,
       });
+      console.log("Added employeed",response);
+      
 
       if (response.status === 200) {
-        toast.success('Employee added successfully!');
+        message.success('Employee added successfully!');
         return true;
       } else {
-        toast.error('Failed to add the employee!');
+        message.error('Failed to add the employee!');
         return false;
       }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'An error occurred!');
-    return false;
-    }
+    }catch (error) {
+        if (axios.isAxiosError(error)) {
+          message.error(error.response?.data?.message || 'An error occurred!');
+        } else {
+          message.error('An unexpected error occurred!');
+        }
+        return false;
+      }
 };
 
 export const addEmployeeToDepartment = async (employeeData:IEmployee  ,departmentId : string) => {
@@ -142,18 +147,17 @@ export const addEmployeeToDepartment = async (employeeData:IEmployee  ,departmen
         const response = await managerInstance.post('/manager-service/api/department/add-employee', { employeeData , departmentId }, {
           withCredentials: true,
         });
-        console.log("Added employeed to department",response.data);
         
     
         if (response.status === 200) {
-          toast.success('Employee added successfully!');
+          message.success('Employee added successfully!');
           return true;
         } else {
-          toast.error('Failed to add the employee!');
+          message.error('Failed to add the employee!');
           return false;
         }
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'An error occurred!');
+        message.error(error instanceof Error ? error.message : 'An error occurred!');
         return false;
       }
 };
@@ -200,12 +204,12 @@ export async function updateManagerProfilePicture (file: File) {
       );
   
       if (response.status === 200) {
-        toast.success('Manager profile picture updated successfully!');
+        message.success('Manager profile picture updated successfully!');
         return response.data.data.imageUrl;
       }
     } catch (error) {
       console.log("Error updating manager profile picture:", error);
-      toast.error('Failed to update manager profile picture.');
+      message.error('Failed to update manager profile picture.');
     }
 };
 
@@ -305,19 +309,19 @@ export const updateManagerAddress = async (address:AddressData ) => {
   
   export const updateManagerOwnerDocument   = async (file: File) => {
     try {
-      if (!file) {toast.error('No file selected.') ;return;}
+      if (!file) {message.error('No file selected.') ;return;}
       const formData = new FormData();
       formData.append('file', file);
       const response = await managerInstance.post('/manager-service/api/manager/update-documents', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      toast.success('Document uploaded successfully!');
+      message.success('Document uploaded successfully!');
       return response.data.result;
     } catch (error: unknown) {
       if (error instanceof Error) {
-        toast.error(error.message || 'Failed to upload document.');
+        message.error(error.message || 'Failed to upload document.');
       } else {
-        toast.error('An unexpected error occurred while uploading the document.');
+        message.error('An unexpected error occurred while uploading the document.');
       }
     }
   };
@@ -329,18 +333,15 @@ export const updateManagerAddress = async (address:AddressData ) => {
       return response.data;
     } catch (error: unknown) {
       if (error instanceof Error) {
-        toast.error(error.message || 'Failed to fetch manager credentials.');
+        message.error(error.message || 'Failed to fetch manager credentials.');
       } else {
-        toast.error('An unexpected error occurred while fetching manager credentials.');
+        message.error('An unexpected error occurred while fetching manager credentials.');
       }
     }
 
   };
 
-  export const updateDepartmentName = async (
-    departmentId: string,
-    newDepartmentName: string
-  ): Promise<UpdateDepartmentResponse> => {
+  export const updateDepartmentName = async (departmentId: string,newDepartmentName: string): Promise<UpdateDepartmentResponse> => {
     try {
       const response = await managerInstance.patch<UpdateDepartmentResponse>(
         `/manager-service/api/department/update-department-name/${departmentId}`,
