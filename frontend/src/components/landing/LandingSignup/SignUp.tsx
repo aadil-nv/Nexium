@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTheme } from '../landingPage/theme-provider';
 import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { signUpSchema } from '../../../config/validationSchema';
 import { signUpBusinessOwner } from '../../../api/authApi';
-import images from "../../../images/images"
+import image from "../../../assets/landingPageAssets/signupbackground-removebg.png"
 
 interface FormErrors {
   [key: string]: string;
@@ -95,7 +95,7 @@ const SignUp: React.FC = () => {
       {/* Left side - Image */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <img 
-          src={images.homePicture}
+          src={image}
           alt="Signup"
           className="object-cover w-full h-full"
         />

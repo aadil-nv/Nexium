@@ -126,6 +126,18 @@ export default class EmployeeController implements IEmployeeController {
       return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal Server Error" });
     }
   }
+  async updateEmployeeLeaveInfo(req: CustomRequest, res: Response): Promise<Response> {
+    try {
+      const businessOwnerId = req.user?.businessOwnerData?._id;
+      const employeeId = req.params.id;
+      console.log("updateEmployeeLeaveInfo called",req.body);
+      
+      const employee = await this._employeeService.updateEmployeeLeaveInfo(employeeId, businessOwnerId as string, req.body);
+      return res.status(HttpStatusCode.OK).json(employee);
+    } catch (error) {
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal Server Error" });
+    }
+  }
 
 
 }

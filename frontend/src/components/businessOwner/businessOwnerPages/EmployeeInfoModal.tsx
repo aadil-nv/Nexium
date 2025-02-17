@@ -75,6 +75,22 @@ const tabConfigurations = [
         { label: "Company Password", name: "companyPassword", placeholder: "Enter company password", type: "password" },
       ],
     },
+    {
+      key: "5",
+      tab: "Leaves",
+      fields: [
+        { label: "Sick Leave", name: "sickLeave", placeholder: "Enter sick leave count", type: "number" },
+        { label: "Casual Leave", name: "casualLeave", placeholder: "Enter casual leave count", type: "number" },
+        { label: "Maternity Leave", name: "maternityLeave", placeholder: "Enter maternity leave count", type: "number" },
+        { label: "Paternity Leave", name: "paternityLeave", placeholder: "Enter paternity leave count", type: "number" },
+        { label: "Paid Leave", name: "paidLeave", placeholder: "Enter paid leave count", type: "number" },
+        { label: "Unpaid Leave", name: "unpaidLeave", placeholder: "Enter unpaid leave count", type: "number" },
+        { label: "Compensatory Leave", name: "compensatoryLeave", placeholder: "Enter compensatory leave count", type: "number" },
+        { label: "Bereavement Leave", name: "bereavementLeave", placeholder: "Enter bereavement leave count", type: "number" },
+        { label: "Marriage Leave", name: "marriageLeave", placeholder: "Enter marriage leave count", type: "number" },
+        { label: "Study Leave", name: "studyLeave", placeholder: "Enter study leave count", type: "number" },
+      ],
+    },
   ];
 
 const EmployeeInfoModal: React.FC<EmployeeInfoModalProps> = ({ 
@@ -127,6 +143,18 @@ const EmployeeInfoModal: React.FC<EmployeeInfoModalProps> = ({
         // Security
         companyEmail: employee.employeeCredentials?.companyEmail,
         companyPassword: employee.employeeCredentials?.companyPassword,
+
+         // Leave
+         sickLeave: employee.employeeLeaves?.sickLeave,
+         casualLeave: employee.employeeLeaves?.casualLeave,
+         maternityLeave: employee.employeeLeaves?.maternityLeave,
+         paternityLeave: employee.employeeLeaves?.paternityLeave,
+         paidLeave: employee.employeeLeaves?.paidLeave,
+         unpaidLeave: employee.employeeLeaves?.unpaidLeave,
+         compensatoryLeave: employee.employeeLeaves?.compensatoryLeave,
+         bereavementLeave: employee.employeeLeaves?.bereavementLeave,
+         marriageLeave: employee.employeeLeaves?.marriageLeave,
+         studyLeave: employee.employeeLeaves?.studyLeave,
       });
     }
   }, [employee, form]);
@@ -205,6 +233,15 @@ const EmployeeInfoModal: React.FC<EmployeeInfoModalProps> = ({
           );
           message.success("Security details updated successfully!");
           break;
+
+          case '5': // Leave Details
+          response = await businessOwnerInstance.put(
+            `/businessOwner-service/api/employee/update-leave-info/${employee._id}`,
+            values
+          );
+          message.success("Leave details updated successfully!");
+          break;
+          
       }
 
       if (response?.data) {

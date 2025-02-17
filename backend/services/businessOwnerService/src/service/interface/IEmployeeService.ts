@@ -12,4 +12,5 @@ export default interface IEmployeeService {
     updateSecurityInfo(employeeId: string, businessOwnerId: string, data: any): Promise<any>;
     updatePersonalInfo(employeeId: string, businessOwnerId: string, data: any): Promise<IEmployeeDTO>;
     uploadProfilePic(businessOwnerId:string ,employeeId :string, file:any):Promise<any>
+    updateEmployeeLeaveInfo(employeeId: string, businessOwnerId: string, data: any): Promise<any>;
 }

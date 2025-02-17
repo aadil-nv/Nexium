@@ -11,5 +11,6 @@ export default interface IEmployeeController {
     updateAddressInfo(req:CustomRequest, res:Response): Promise<Response>;
     updateSecurityInfo(req:CustomRequest, res:Response): Promise<Response>;
     uploadProfilePic(req:CustomRequest, res:Response): Promise<Response>;
-    
+    updateEmployeeLeaveInfo(req:CustomRequest, res:Response): Promise<Response>;
+
 }

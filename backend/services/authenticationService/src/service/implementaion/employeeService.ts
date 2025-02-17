@@ -62,11 +62,12 @@ export default class EmployeeService implements IEmployeeService {
               return { message: "Account is blocked. Please contact admin.", isBlocked: true };
           }
   
+          if(employeeData.isActive == false){
+            await this._employeeRepository.updateIsActive(businessOwnerData._id.toString(), employeeData._id, true );
+           }  
           // Generate authentication tokens
           const accessToken = generateAccessToken({ employeeData });
           const refreshToken = generateRefreshToken({ employeeData });
-  
-           await this._employeeRepository.updateIsActive(businessOwnerData._id.toString(), employeeData._id, true );
   
           return {
               success: true,
@@ -95,7 +96,6 @@ export default class EmployeeService implements IEmployeeService {
   }
   
   
-
    async  addEmployee(employeeData: any):Promise<any>{
     console.log("employee data",employeeData);
     
@@ -161,10 +161,9 @@ export default class EmployeeService implements IEmployeeService {
                 return { success: false, message: "Invalid OTP provided. Please try again." };
             }
     
-            // Update verification status
-            const verification = await this._employeeRepository.updateVerificationStatus(email ,employeeData.businessOwnerId);
-            if (!verification) {
-                return { success: false, message: "Failed to update verification status. Please try again." };
+            if(employeeData.isVerified == false){
+              
+              const verification = await this._employeeRepository.updateVerificationStatus(email ,employeeData.businessOwnerId);
             }
     
             // Retrieve employee data
@@ -173,7 +172,10 @@ export default class EmployeeService implements IEmployeeService {
             if (!businessOwnerData) {
                 return { success: false, message: "Business owner not found after verification. Please contact support." };
             }
-    
+
+            if(employeeData.isActive == false){
+              await this._employeeRepository.updateIsActive(businessOwnerData._id.toString(), employeeData._id, true );
+             } 
              
             const accessToken = generateAccessToken({employeeData });
             const refreshToken = generateRefreshToken({ employeeData });
@@ -228,6 +230,5 @@ export default class EmployeeService implements IEmployeeService {
     }
   }
 
-  
 
 }

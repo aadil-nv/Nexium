@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Select, Tag, Pagination, Button } from 'antd';
+import { Input, Select, Tag, Pagination, Button, Empty } from 'antd';
 import { motion } from 'framer-motion';
 import { CheckCircleOutlined, CloseCircleOutlined, CalendarOutlined, UserOutlined, SearchOutlined, FilterOutlined, EyeOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -42,7 +42,7 @@ const MyTaskList: React.FC = () => {
         const response = await employeeInstance.get('/employee-service/api/task/employee-tasklist');
         console.log('response.data', response.data);
         
-        dispatch(setTasks(response.data)); // Populate Redux state with fetched tasks
+        dispatch(setTasks(response.data));
       } catch (error) {
         console.error('Error fetching tasks:', error);
       } finally {
@@ -64,7 +64,6 @@ const MyTaskList: React.FC = () => {
   );
 
   const TaskCard = ({ task }: { task: Task }) => {
-    // Calculate completed tasks count
     const completedCount = task.tasks.filter((subTask: SubTask) => subTask.isCompleted).length;
     const totalCount = task.tasks.length;
   
@@ -108,7 +107,7 @@ const MyTaskList: React.FC = () => {
               type="primary"
               icon={<EyeOutlined />}
               className="w-full bg-blue-500 hover:bg-blue-600"
-              onClick={() => navigate(`/employee/task/${task._id}`)} // Navigate to MyTask page
+              onClick={() => navigate(`/employee/task/${task._id}`)}
             >
               View Details
             </Button>
@@ -117,7 +116,55 @@ const MyTaskList: React.FC = () => {
       </motion.div>
     );
   };
-  
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-64">Loading...</div>
+      );
+    }
+
+    if (filteredTasks.length === 0) {
+      return (
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              <div className="space-y-2">
+                <p className="text-gray-600 text-lg">No tasks found</p>
+                <p className="text-gray-400">
+                  {searchTerm || statusFilter 
+                    ? "Try adjusting your filters or search terms"
+                    : "You don't have any tasks assigned yet"}
+                </p>
+              </div>
+            }
+          />
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {displayedTasks.map((task: Task) => (
+            <TaskCard key={task._id} task={task} />
+          ))}
+        </div>
+
+        <div className="mt-8 flex justify-center">
+          <Pagination
+            current={currentPage}
+            total={filteredTasks.length}
+            pageSize={tasksPerPage}
+            onChange={setCurrentPage}
+            showSizeChanger={false}
+            className="bg-white px-4 py-2 rounded-lg shadow-md"
+          />
+        </div>
+      </>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-8">
@@ -148,28 +195,7 @@ const MyTaskList: React.FC = () => {
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-64">Loading...</div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedTasks.map((task: Task) => (
-                <TaskCard key={task._id} task={task} />
-              ))}
-            </div>
-
-            <div className="mt-8 flex justify-center">
-              <Pagination
-                current={currentPage}
-                total={filteredTasks.length}
-                pageSize={tasksPerPage}
-                onChange={setCurrentPage}
-                showSizeChanger={false}
-                className="bg-white px-4 py-2 rounded-lg shadow-md"
-              />
-            </div>
-          </>
-        )}
+        {renderContent()}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import EmployeeModel from "../../models/employeeModel";
 import businessOwnerModel from "../../models/businessOwnerModel";
 import { IBusinessOwnerDocument } from "../../entities/businessOwnerEntity";
 import leaveTypeModel from "../../models/leaveTypeModel";
+import employeeLeaveModel from "../../models/employeeLeaveModel";
 
 @injectable()
 export default class EmployeeRepository implements IEmployeeRepository {
@@ -92,6 +93,7 @@ async addEmployee(employeeData: any, businessOwnerId: string): Promise<any> {
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
     const Employee = _switchDb.model('employees', EmployeeModel.schema);
     const LeaveType = _switchDb.model('leavetypes', leaveTypeModel.schema);
+    const EmployeeLeaveModel = _switchDb.model('employeeleaves', employeeLeaveModel.schema);
 
     // Generate a shared _id
     const employeeId = new mongoose.Types.ObjectId();
@@ -101,7 +103,7 @@ async addEmployee(employeeData: any, businessOwnerId: string): Promise<any> {
     await EmployeeModel.create({ ...employeeData, _id: employeeId });
 
     // Fetch existing leave types
-    const existingLeaves = await LeaveType.findOne();
+    const existingLeaves = await LeaveType.findOne({businessOwnerId: businessOwnerId});
     if (!existingLeaves) throw new Error("No leave types found");
 
     // Assign leave types to the employee
@@ -119,7 +121,7 @@ async addEmployee(employeeData: any, businessOwnerId: string): Promise<any> {
       studyLeave: existingLeaves.studyLeave,
     };
 
-    await LeaveType.create(employeeLeaveData);
+    await EmployeeLeaveModel.create(employeeLeaveData);
 
     return savedEmployee;
   } catch (error) {
@@ -362,5 +364,62 @@ async uploadProfilePic(employeeId: string, businessOwnerId: string, fileUrl: str
 }
 
 
+async getEmployeeLeave(businessOwnerId: string): Promise<any> {
+  try {
+    const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+    const EmployeeLeaveModel = _switchDb.model('EmployeeLeave',   employeeLeaveModel.schema);
 
+    const employeeLeaves = await EmployeeLeaveModel.find().exec();
+    
+    return employeeLeaves;
+  } catch (error) {
+    console.error("Error fetching employee leaves:", error);
+    throw new Error(error instanceof Error ? error.message : "Unknown error occurred.");
+  }
+}
+
+async updateEmployeeLeaveInfo(employeeId: string, businessOwnerId: string, data: any): Promise<any> {
+  console.log("updateEmployeeLeaveInfo called");
+  console.log("Data:", data);
+  console.log("Business Owner ID:", businessOwnerId);
+  console.log("Employee ID:", employeeId);
+  
+  try {
+    const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+    const EmployeeLeaveModel = _switchDb.model('EmployeeLeave', employeeLeaveModel.schema);
+
+    // Construct update data based on leave fields in the schema
+    const updateData = {
+      $set: {
+        sickLeave: data.sickLeave,
+        casualLeave: data.casualLeave,
+        maternityLeave: data.maternityLeave,
+        paternityLeave: data.paternityLeave,
+        paidLeave: data.paidLeave,
+        unpaidLeave: data.unpaidLeave,
+        compensatoryLeave: data.compensatoryLeave,
+        bereavementLeave: data.bereavementLeave,
+        marriageLeave: data.marriageLeave,
+        studyLeave: data.studyLeave,
+      },
+    };
+
+    // Find the employee leave record and update
+    const result = await EmployeeLeaveModel.findOneAndUpdate(
+      { employeeId },
+      updateData,
+      { new: true, upsert: true } // Returns the updated document or creates a new one if none exists
+    );
+
+    if (!result) {
+      throw new Error("Employee leave record not found or couldn't be updated.");
+    }
+
+    console.log("Employee leave info updated successfully:", result);
+    return result;
+  } catch (error) {
+    console.error("Error updating employee leave info: ", error);
+    throw new Error("Failed to update employee leave info.");
+  }
+}
 }

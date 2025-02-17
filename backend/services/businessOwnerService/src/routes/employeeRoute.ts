@@ -19,6 +19,7 @@ employeeRouter.put('/update-professional-info/:id',authenticateToken, (req, res,
 employeeRouter.put('/update-address-info/:id',authenticateToken, (req, res, next) => employeeController.updateAddressInfo(req, res));
 employeeRouter.put('/update-security-info/:id',authenticateToken, (req, res, next) => employeeController.updateSecurityInfo(req, res));
 employeeRouter.post('/update-profile-picture/:id',authenticateToken,uploadMiddleware, (req, res, next) => employeeController.uploadProfilePic(req, res));
+employeeRouter.put('/update-leave-info/:id',authenticateToken, (req, res, next) => employeeController.updateEmployeeLeaveInfo(req, res));
 
 
 export default employeeRouter

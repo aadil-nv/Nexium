@@ -48,7 +48,7 @@ const managerSchema: Schema<IManager> = new Schema(
       companyEmail: { type: String },
       companyPassword: { type: String },
     },
-    isActive: { type: Boolean, default: true },
+    isActive: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
     role: { type: String, default: "manager" },

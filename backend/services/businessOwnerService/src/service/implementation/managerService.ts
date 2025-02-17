@@ -300,6 +300,7 @@ export default class ManagerService implements IManagerService {
         ...(result.managerCredentials && {
           managerCredentials: {
             companyEmail: result.managerCredentials.companyEmail,
+            companyPassword: result.managerCredentials.companyPassword,
           },
         }),
         ...(result.isActive !== undefined && { isActive: result.isActive }),

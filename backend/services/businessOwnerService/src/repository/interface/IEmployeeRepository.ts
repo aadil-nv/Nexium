@@ -16,4 +16,7 @@ export default interface IEmployeeRepository {
     updateSecurityInfo(employeeId: string, businessOwnerId: string, data: any): Promise<any>
     updatePersonalInfo(employeeId: string, businessOwnerId: string, data: any): Promise<any>
     uploadProfilePic(employeeId: string, businessOwnerId: string, fileUrl:string): Promise<any>
+
+    getEmployeeLeave(businessOwnerId: string): Promise<any>
+    updateEmployeeLeaveInfo(employeeId: string, businessOwnerId: string, data: any): Promise<any>
 }

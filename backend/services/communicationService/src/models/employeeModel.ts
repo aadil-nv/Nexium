@@ -6,7 +6,7 @@ const employeeSchema = new Schema<IEmployee>({
   managerId: { type: mongoose.Schema.Types.ObjectId, ref: 'manager' }, // Corrected reference type
   businessOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'BusinessOwner' },
 
-  isActive: { type: Boolean, default: true },
+  isActive: { type: Boolean, default: false },
   isVerified: { type: Boolean, default: false },
   isBlocked: { type: Boolean, default: false },
   role: { type: String, default: 'employee' },

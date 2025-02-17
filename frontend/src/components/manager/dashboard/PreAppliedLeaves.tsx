@@ -45,7 +45,7 @@ export default function PreAppliedLeaves() {
       const { data } = await managerInstance.get('/manager-service/api/leave/pre-applied-leaves');
       setLeaves(data);
     } catch {
-      message.error('Failed to fetch leaves');
+      console.log('Failed to fetch leaves');
     } finally {
       setLoading(false);
     }

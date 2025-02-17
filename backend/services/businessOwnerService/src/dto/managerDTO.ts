@@ -36,6 +36,7 @@ export interface ManagerDTO {
   };
   managerCredentials?: {
     companyEmail: string;
+    companyPassword: string;
   };
   isActive?: boolean;
   isVerified?: boolean;

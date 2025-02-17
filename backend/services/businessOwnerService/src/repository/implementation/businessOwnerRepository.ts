@@ -108,7 +108,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     
     try {
       const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-      const businessOwner = _switchDb.model('businessowners', this._businessOwnerModel.schema)
+      const businessOwner = _switchDb.model('businessowners', businessOwnerModel.schema)
       await businessOwner.findByIdAndUpdate(
         businessOwnerId,
         { $set: { 'personalDetails.profilePicture': filePath } }, // Save the file path
@@ -485,14 +485,27 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
 
 
 async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType | null> {
+  console.log("businessOwnerId from leave types", businessOwnerId);
+
   try {
+    if (!mongoose.Types.ObjectId.isValid(businessOwnerId)) {
+      throw new Error("Invalid business owner ID");
+    }
+
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-    const switchedLeaveTypeModel = _switchDb.model<ILeaveType>("leavetypes", leaveTypeModel.schema);
+    let switchedLeaveTypeModel: mongoose.Model<ILeaveType>;
+
+    if (!_switchDb.models["LeaveTypes"]) {
+      switchedLeaveTypeModel = _switchDb.model<ILeaveType>("LeaveTypes", leaveTypeModel.schema);
+      console.log("LeaveTypes collection created!");
+    } else {
+      switchedLeaveTypeModel = _switchDb.models["LeaveTypes"] as mongoose.Model<ILeaveType>;
+    }
 
     // Convert businessOwnerId to ObjectId
     const ownerId = new mongoose.Types.ObjectId(businessOwnerId);
 
-    let leaveTypesDoc = await switchedLeaveTypeModel.findOne({ businessOwnerId: ownerId });
+    let leaveTypesDoc = await switchedLeaveTypeModel.findOne({ businessOwnerId: ownerId }).exec();
 
     if (!leaveTypesDoc) {
       leaveTypesDoc = await switchedLeaveTypeModel.create({
@@ -508,16 +521,18 @@ async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType | null> {
         marriageLeave: 0,  
         studyLeave: 0,        
       });
+      console.log("New leaveTypes collection created and document inserted.");
     }
 
     console.log("leaveTypesDoc", leaveTypesDoc);
-    
     return leaveTypesDoc;
-  } catch (error) {
-    console.error("Error in findAllLeaveTypes repository:", error);
+  } catch (error: any) {
+    console.error("Error in findAllLeaveTypes repository:", error.message);
     return null; // Return null instead of throwing an error
   }
 }
+
+
 
 
 async updateLeaveTypes(leaveTypeId: string, data: Partial<ILeaveType> , businessOwnerId: string): Promise<ILeaveType> {
@@ -557,9 +572,19 @@ async updateLeaveTypes(leaveTypeId: string, data: Partial<ILeaveType> , business
 
 async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]> {
   try {
-    const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+    if (!mongoose.Types.ObjectId.isValid(businessOwnerId)) {
+      throw new Error("Invalid business owner ID");
+    }
 
-    const PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("payrollcriterias", payrollCriteriaModel.schema);
+    const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+    let PayrollCriteriaModel: mongoose.Model<IPayrollCriteria>;
+
+    if (!_switchDb.models["payrollCriteria"]) {
+      PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("payrollCriteria", payrollCriteriaModel.schema);
+      console.log("PayrollCriteria collection created!");
+    } else {
+      PayrollCriteriaModel = _switchDb.models["PayrollCriteria"] as mongoose.Model<IPayrollCriteria>;
+    }
 
     // Convert businessOwnerId to ObjectId
     const ownerId = new mongoose.Types.ObjectId(businessOwnerId);
@@ -567,8 +592,8 @@ async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]
     let payrollCriteria = await PayrollCriteriaModel.findOne({ businessOwnerId: ownerId }).exec();
 
     if (!payrollCriteria) {
-      payrollCriteria = new PayrollCriteriaModel({
-        businessOwnerId: ownerId,  // Ensure correct type
+      payrollCriteria = await PayrollCriteriaModel.create({
+        businessOwnerId: ownerId, // Ensure correct type
         allowances: {
           bonus: 0,
           gratuity: 5,
@@ -591,13 +616,12 @@ async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]
         payDay: 5,
         createdAt: new Date(),
       });
-
-      await payrollCriteria.save();
+      console.log("New payroll criteria document inserted.");
     }
 
     return [payrollCriteria]; // Returning as an array
-  } catch (error) {
-    console.error("Error fetching or creating payroll criteria:", error);
+  } catch (error: any) {
+    console.error("Error fetching or creating payroll criteria:", error.message);
     throw new Error("Failed to fetch or create payroll criteria");
   }
 }

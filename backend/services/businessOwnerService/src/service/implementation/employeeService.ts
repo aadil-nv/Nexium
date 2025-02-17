@@ -12,6 +12,7 @@ import { generateOfferLetter } from "../../utils/generateOfferLetter copy";
 import nodemailer from "nodemailer";
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedImageURL, uploadTosS3 } from "../../middlewares/multer-s3";
+import { IEmployeeLeave } from "../../entities/employeeLeaveEntities";
 
 
 const transporter = nodemailer.createTransport({
@@ -43,51 +44,70 @@ export default class EmployeeService implements IEmployeeService {
   async getAllEmployees(businessOwnerId: string): Promise<IEmployeeDTO[]> {
     try {
       const employees = await this._employeeRepository.getAllEmployees(businessOwnerId);
+      const employeeLeaves = await this._employeeRepository.getEmployeeLeave(businessOwnerId);
   
-      return employees.map((employee): IEmployeeDTO => ({
-        _id: String(employee._id),
-        managerId: employee.managerId ? String(employee.managerId) : "",
-        businessOwnerId: employee.businessOwnerId ? String(employee.businessOwnerId) : "",
-        personalDetails: {
-          employeeName: employee.personalDetails.employeeName,
-          email: employee.personalDetails.email,
-          phone: employee.personalDetails.phone,
-          profilePicture: employee.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}` : "",
-          personalWebsite: employee.personalDetails.personalWebsite,
-          bankAccountNumber: employee.personalDetails.bankAccountNumber,
-          ifscCode: employee.personalDetails.ifscCode,
-          aadharNumber: employee.personalDetails.aadharNumber,
-          panNumber: employee.personalDetails.panNumber,
-          gender: employee.personalDetails.gender,
-        },
-        address: {
-          street: employee.address.street as string,
-          city: employee.address.city as string,
-          state: employee.address.state as string,
-          country: employee.address.country as string,
-          postalCode: employee.address.postalCode as string,
-        },
-        professionalDetails: {
-          position: employee.professionalDetails.position,
-          workTime: employee.professionalDetails.workTime,
-          department: employee.professionalDetails.department,
-          joiningDate: employee.professionalDetails.joiningDate,
-          currentStatus: employee.professionalDetails.currentStatus,
-          salary: employee.professionalDetails.salary,
-          uanNumber: employee.professionalDetails.uanNumber,
-          pfAccount: employee.professionalDetails.pfAccount,
-          esiAccount: employee.professionalDetails.esiAccount,
-        },
-        employeeCredentials: {
-          companyEmail: employee.employeeCredentials.companyEmail,
-          companyPassword: employee.employeeCredentials.companyPassword,
-        },
-        isActive: employee.isActive,
-        isBlocked: employee.isBlocked,
-
-      }));
+      return employees.map((employee): IEmployeeDTO => {
+        const leaveData = employeeLeaves.find((leave:IEmployeeLeave) => String(leave.employeeId) === String(employee._id)) || {};
+  
+        return {
+          _id: String(employee._id),
+          managerId: employee.managerId ? String(employee.managerId) : "",
+          businessOwnerId: employee.businessOwnerId ? String(employee.businessOwnerId) : "",
+          personalDetails: {
+            employeeName: employee.personalDetails.employeeName,
+            email: employee.personalDetails.email,
+            phone: employee.personalDetails.phone,
+            profilePicture: employee.personalDetails.profilePicture
+              ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
+              : "",
+            personalWebsite: employee.personalDetails.personalWebsite,
+            bankAccountNumber: employee.personalDetails.bankAccountNumber,
+            ifscCode: employee.personalDetails.ifscCode,
+            aadharNumber: employee.personalDetails.aadharNumber,
+            panNumber: employee.personalDetails.panNumber,
+            gender: employee.personalDetails.gender,
+          },
+          address: {
+            street: employee.address.street as string,
+            city: employee.address.city as string,
+            state: employee.address.state as string,
+            country: employee.address.country as string,
+            postalCode: employee.address.postalCode as string,
+          },
+          professionalDetails: {
+            position: employee.professionalDetails.position,
+            workTime: employee.professionalDetails.workTime,
+            department: employee.professionalDetails.department,
+            joiningDate: employee.professionalDetails.joiningDate,
+            currentStatus: employee.professionalDetails.currentStatus,
+            salary: employee.professionalDetails.salary,
+            uanNumber: employee.professionalDetails.uanNumber,
+            pfAccount: employee.professionalDetails.pfAccount,
+            esiAccount: employee.professionalDetails.esiAccount,
+          },
+          employeeCredentials: {
+            companyEmail: employee.employeeCredentials.companyEmail,
+            companyPassword: employee.employeeCredentials.companyPassword,
+          },
+          isActive: employee.isActive,
+          isBlocked: employee.isBlocked,
+          employeeLeaves: {
+            sickLeave: leaveData.sickLeave || 0,
+            casualLeave: leaveData.casualLeave || 0,
+            maternityLeave: leaveData.maternityLeave || 0,
+            paternityLeave: leaveData.paternityLeave || 0,
+            paidLeave: leaveData.paidLeave || 0,
+            unpaidLeave: leaveData.unpaidLeave || 0,
+            compensatoryLeave: leaveData.compensatoryLeave || 0,
+            bereavementLeave: leaveData.bereavementLeave || 0,
+            marriageLeave: leaveData.marriageLeave || 0,
+            studyLeave: leaveData.studyLeave || 0,
+          },
+        };
+      });
     } catch (error) {
-      throw new Error("Error retrieving employees: " + error);
+      console.error("Error retrieving employees:", error);
+      throw new Error("Error retrieving employees: " + (error instanceof Error ? error.message : "Unknown error"));
     }
   }
 
@@ -268,5 +288,14 @@ const existingFile = result.personalDetails.profilePicture;
       return fileUrl;
     }
 
+
+
+    async updateEmployeeLeaveInfo(employeeId: string, businessOwnerId: string, data: any): Promise<any> {
+      try {
+        return await this._employeeRepository.updateEmployeeLeaveInfo(employeeId, businessOwnerId, data);
+      } catch (error) {
+        throw new Error("Error updating employee leave info: " + error);
+      }
+    } 
 
 }

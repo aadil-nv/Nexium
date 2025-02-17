@@ -7,12 +7,11 @@ export default interface IManagerService extends BaseRepository<IManager> {
     findByCredentialEmail(email: string): Promise<IManager | null>;
     findOtpByEmail(email: string): Promise<any | null>;
     updateVerificationStatus(email: string , businessOwnerId :ObjectId): Promise<any>;
-    updateOtp(email: string, otp: string): Promise<IUpdateOtpResult>;
+    updateOtp(email: string, otp: string): Promise<IUpdateOtpResult>
     blockManager( managerData: any): Promise<any>;
     updateManager(managerId: any, managerData: any): Promise<any>
-    updateIsActive (businessOwnerId: string ,id: any, isActive: boolean): Promise<IManager | null>
+    updateIsActive (businessOwnerId: ObjectId ,id: any, isActive: boolean): Promise<IManager | null>
 }
-
 export interface IUpdateOtpResult {
     success: boolean;
     message: string;
