@@ -59,6 +59,8 @@ export default function PersonalDetails() {
         data = await fetchManagerPersonalInfo();
       } else if (businessOwner?.isAuthenticated) {
         data = await fetchBusinessOwnerPersonalInfo();
+        console.log("data@@@@@@@@@@@@@@@",data);
+        
       } else if (employee?.isAuthenticated) {
         data = await fetchEmployeePersonalInfo();
       }
@@ -107,6 +109,8 @@ export default function PersonalDetails() {
           employeeType: employee.employeeType
         }));
       }
+      console.log("responsejjjjjjjjjjjj",response);
+      
       setProfileImage(response);
     } catch (error) {
       console.error('Error uploading profile image:', error);

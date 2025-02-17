@@ -34,7 +34,7 @@ export default class EmployeeRepository extends BaseRepository<IEmployeeDocument
       async updateVerificationStatus(email: string ,businessOwnerId: ObjectId): Promise<any> {
         try {
           const _switchDb = mongoose.connection.useDb(businessOwnerId.toString(), { useCache: true });
-           const employee = _switchDb.model('Employee', employeeModel.schema)
+           const employee = _switchDb.model('Employee', this._employeeModel.schema)
            await employee.updateOne({"personalDetails.email": email }, { isVerified: true });
             return await this._employeeModel.updateOne({"personalDetails.email": email }, { isVerified: true }).exec();
         } catch (error) {

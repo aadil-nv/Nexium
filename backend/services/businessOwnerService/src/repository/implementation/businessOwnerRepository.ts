@@ -108,7 +108,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
     
     try {
       const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-      const businessOwner = _switchDb.model('businessowners', businessOwnerModel.schema)
+      const businessOwner = _switchDb.model('businessowners', this._businessOwnerModel.schema)
       await businessOwner.findByIdAndUpdate(
         businessOwnerId,
         { $set: { 'personalDetails.profilePicture': filePath } }, // Save the file path
@@ -175,7 +175,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
   async updateAddress(businessOwnerId: string, data: any): Promise<IBusinessOwnerDocument> {
     try {
       const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-      const businessOwner = _switchDb.model('businessowners', businessOwnerModel.schema)
+      const businessOwner = _switchDb.model('businessowners', this._businessOwnerModel.schema)
       const result = await this._businessOwnerModel.findByIdAndUpdate(
         businessOwnerId,
         { $set: { 'address': data } }, // Save the file path
@@ -240,7 +240,7 @@ export default class BusinessOwnerRepository extends BaseRepository<IBusinessOwn
   async uploadDocuments(businessOwnerId: string, documentType: string, documentData: Object): Promise<IBusinessOwnerDocument> {
     try {
       const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-      const businessOwner = _switchDb.model('businessowners', businessOwnerModel.schema)
+      const businessOwner = _switchDb.model('businessowners', this._businessOwnerModel.schema)
 
       if (documentType !== 'companyCertificate') {
         throw new Error(`Invalid document type: ${documentType}`);

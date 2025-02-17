@@ -53,11 +53,17 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
     }
 
     async updateVerificationStatus(email: string ,businessOwnerId : ObjectId): Promise<any> {
+      console.log("email",email);
+      
         try {
           const _switchDb = mongoose.connection.useDb(businessOwnerId.toString(), { useCache: true });
-          const manager = _switchDb.model('Manager', managerModel.schema)
-          await manager.updateOne({"personalDetails.email": email }, { isVerified: true }).exec();
-            return await this._managerModel.updateOne({"personalDetails.email": email }, { isVerified: true }).exec();
+
+          const manager = _switchDb.model('managers', this._managerModel.schema)
+          const result = await manager.updateOne({"personalDetails.email": email }, { isVerified: true }).exec();
+
+            const result2= await this._managerModel.updateOne({"personalDetails.email": email }, { isVerified: true }).exec();
+
+            return result2;
         } catch (error) {
             console.error("Error updating verification status:", error);
             throw new Error("Failed to update verification status");
