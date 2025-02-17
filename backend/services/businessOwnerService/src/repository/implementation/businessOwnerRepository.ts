@@ -505,7 +505,7 @@ async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType | null> {
     // Convert businessOwnerId to ObjectId
     const ownerId = new mongoose.Types.ObjectId(businessOwnerId);
 
-    let leaveTypesDoc = await switchedLeaveTypeModel.findOne({ businessOwnerId: ownerId }).exec();
+    let leaveTypesDoc = await switchedLeaveTypeModel.findOne().exec();
 
     if (!leaveTypesDoc) {
       leaveTypesDoc = await switchedLeaveTypeModel.create({
@@ -572,26 +572,31 @@ async updateLeaveTypes(leaveTypeId: string, data: Partial<ILeaveType> , business
 
 async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]> {
   try {
+    // Validate businessOwnerId
     if (!mongoose.Types.ObjectId.isValid(businessOwnerId)) {
       throw new Error("Invalid business owner ID");
     }
 
+    // Switch to the correct business owner's DB
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-    let PayrollCriteriaModel: mongoose.Model<IPayrollCriteria>;
 
-    if (!_switchDb.models["payrollCriteria"]) {
-      PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("payrollCriteria", payrollCriteriaModel.schema);
+    // Check if the model already exists in the database context
+    let PayrollCriteriaModel = _switchDb.models["payrollcriterias"];
+
+    if (!PayrollCriteriaModel) {
+      // If the model doesn't exist, create it
+      PayrollCriteriaModel = _switchDb.model<IPayrollCriteria>("payrollcriterias", payrollCriteriaModel.schema);
       console.log("PayrollCriteria collection created!");
-    } else {
-      PayrollCriteriaModel = _switchDb.models["PayrollCriteria"] as mongoose.Model<IPayrollCriteria>;
     }
 
     // Convert businessOwnerId to ObjectId
     const ownerId = new mongoose.Types.ObjectId(businessOwnerId);
 
-    let payrollCriteria = await PayrollCriteriaModel.findOne({ businessOwnerId: ownerId }).exec();
+    // Fetch the payroll criteria or create it if not found
+    let payrollCriteria = await PayrollCriteriaModel.findOne().exec();
 
     if (!payrollCriteria) {
+      // If not found, create the payroll criteria
       payrollCriteria = await PayrollCriteriaModel.create({
         businessOwnerId: ownerId, // Ensure correct type
         allowances: {
@@ -625,6 +630,7 @@ async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteria[]
     throw new Error("Failed to fetch or create payroll criteria");
   }
 }
+
 
 
 async updatePayrollCriteria(payrollData: any, payrollId: string, businessOwnerId: string): Promise<IPayrollCriteria> {
