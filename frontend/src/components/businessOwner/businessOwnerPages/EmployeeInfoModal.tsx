@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Modal, Tabs, Form, Input, Button, message, Spin, Select, Upload } from "antd";
 import { EditOutlined, UserOutlined, LoadingOutlined } from "@ant-design/icons";
 import { businessOwnerInstance } from "../../../services/businessOwnerInstance";
@@ -11,8 +11,8 @@ interface EmployeeInfoModalProps {
     isVisible: boolean;
     onClose: () => void;
     employee: Employee | null;
-    onUpdate: (updatedEmployee: Employee) => void;  // Add this line
-  }
+    onUpdate: (updatedEmployee: Employee) => void;
+}
 
 const tabConfigurations = [
     {
@@ -159,6 +159,28 @@ const EmployeeInfoModal: React.FC<EmployeeInfoModalProps> = ({
     }
   }, [employee, form]);
 
+  const validateLeaveField = (_: unknown, value: number | string): Promise<void> => {
+    if (value === undefined || value === null || value === '') {
+      return Promise.reject(new Error('Leave count is required'));
+    }
+    
+    const numValue = Number(value);
+    
+    if (isNaN(numValue)) {
+      return Promise.reject(new Error('Please enter a valid number'));
+    }
+    
+    if (numValue < 0) {
+      return Promise.reject(new Error('Leave count cannot be negative'));
+    }
+    
+    if (numValue > 100) {
+      return Promise.reject(new Error('Leave count cannot exceed 100 days'));
+    }
+    
+    return Promise.resolve();
+  };
+
   const handleProfilePictureUpdate = async (file: File) => {
     setUploadingPhoto(true);
     try {
@@ -174,13 +196,10 @@ const EmployeeInfoModal: React.FC<EmployeeInfoModalProps> = ({
           }
         }
       );
-      console.log("updated profile pictre update is ",response);
       
-
       if (response.status === 200) {
         setProfilePicture(response.data);
         onUpdate({...employee!, personalDetails: {...employee!.personalDetails, profilePicture: response.data}});
-
         message.success("Profile picture updated successfully!");
       } else {
         message.error("Failed to update profile picture.");
@@ -194,13 +213,51 @@ const EmployeeInfoModal: React.FC<EmployeeInfoModalProps> = ({
   };
 
   const handleSubmit = async (values: Record<string, string | number>) => {
-    if (!employee?._id) return;
-    let response;
+    console.log("values",values);
     
-    setLoading(true);
+    if (!employee?._id) return;
+    const currentTab = form.getFieldValue('currentTab');
+    
     try {
-      const currentTab = form.getFieldValue('currentTab');
-
+      setLoading(true);
+      
+      // For leave tab, validate all leave fields before proceeding
+      if (currentTab === '5') {
+        const leaveFields = ['sickLeave', 'casualLeave', 'maternityLeave', 'paternityLeave',
+          'paidLeave', 'unpaidLeave', 'compensatoryLeave', 'bereavementLeave',
+          'marriageLeave', 'studyLeave'];
+        
+        // Extra validation to catch any potential issues
+        const leaveErrors: string[] = [];
+        leaveFields.forEach(field => {
+          const value = values[field];
+          console.log("value",value);
+          
+          console.log("field",field);
+          
+          if (value === undefined || value === null || value === '') {
+            leaveErrors.push(`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} is required`);
+          } else {
+            const numValue = Number(value);
+            if (isNaN(numValue)) {
+              leaveErrors.push(`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} must be a valid number`);
+            } else if (numValue < 0) {
+              leaveErrors.push(`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} cannot be negative`);
+            } else if (numValue > 100) {
+              leaveErrors.push(`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} cannot exceed 100 days`);
+            }
+          }
+        });
+        
+        if (leaveErrors.length > 0) {
+          leaveErrors.forEach(err => message.error(err));
+          setLoading(false);
+          return;
+        }
+      }
+      
+      let response;
+      
       switch (currentTab) {
         case '1': // Personal Details
            response = await businessOwnerInstance.put(
@@ -227,21 +284,20 @@ const EmployeeInfoModal: React.FC<EmployeeInfoModalProps> = ({
           break;
 
         case '4': // Security
-        response =await businessOwnerInstance.put(
+        response = await businessOwnerInstance.put(
             `/businessOwner-service/api/employee/update-security-info/${employee._id}`,
             values
           );
           message.success("Security details updated successfully!");
           break;
 
-          case '5': // Leave Details
-          response = await businessOwnerInstance.put(
+        case '5': // Leave Details
+        response = await businessOwnerInstance.put(
             `/businessOwner-service/api/employee/update-leave-info/${employee._id}`,
             values
           );
           message.success("Leave details updated successfully!");
           break;
-          
       }
 
       if (response?.data) {
@@ -251,7 +307,7 @@ const EmployeeInfoModal: React.FC<EmployeeInfoModalProps> = ({
       onClose();
     } catch (error) {
       console.error("Error updating employee details:", error);      
-      message.error("Failed to update employee details.");
+      message.error("Failed to update employee details. Please check your input and try again.");
     } finally {
       setLoading(false);
     }
@@ -294,75 +350,89 @@ const EmployeeInfoModal: React.FC<EmployeeInfoModalProps> = ({
   );
 
   return (
-  <Modal
-  title="Employee Information"
-  open={isVisible}
-  onCancel={onClose}
-  footer={null}
-  width={600}
-  bodyStyle={{ maxHeight: "70vh", overflowY: "auto" }}
->
-  {renderProfilePicture()}
-  <div className="text-sm mb-4">Employee ID: {employee?._id}</div>
-  <Spin spinning={loading}>
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={handleSubmit}
-      onValuesChange={(_, values) => {
-        form.setFieldValue('currentTab', values.currentTab);
-      }}
+    <Modal
+      title="Employee Information"
+      open={isVisible}
+      onCancel={onClose}
+      footer={null}
+      width={600}
+      bodyStyle={{ maxHeight: "70vh", overflowY: "auto" }}
     >
-      <Form.Item name="currentTab" hidden initialValue="1" />
-      <Tabs 
-        defaultActiveKey="1"
-        onChange={(key) => form.setFieldValue('currentTab', key)}
-        className="overflow-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
-      >
-        {tabConfigurations.map((tab) => (
-          <TabPane tab={tab.tab} key={tab.key} className="scrollbar-thin scrollbar-thumb-gray-400">
-            {tab.fields.map((field) => (
-              <Form.Item 
-                key={field.name} 
-                label={field.label} 
-                name={field.name}
-                className="lg-3"
-              >
-                {field.type === "text" && (
-                  <Input placeholder={field.placeholder} className="max-w-lg" />
-                )}
-                {field.type === "number" && (
-                  <Input type="number" placeholder={field.placeholder} className="max-w-lg" />
-                )}
-                {field.type === "password" && (
-                  <Input.Password placeholder={field.placeholder} className="max-w-lg" />
-                )}
-                {field.type === "select" && (
-                  <Select 
-                    placeholder={`Select ${field.label.toLowerCase()}`}
-                    className="max-w-lg"
+      {renderProfilePicture()}
+      <div className="text-sm mb-4">Employee ID: {employee?._id}</div>
+      <Spin spinning={loading}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          onValuesChange={(_, values) => {
+            form.setFieldValue('currentTab', values.currentTab);
+          }}
+        >
+          <Form.Item name="currentTab" hidden initialValue="1" />
+          <Tabs 
+            defaultActiveKey="1"
+            onChange={(key) => form.setFieldValue('currentTab', key)}
+            className="overflow-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
+          >
+            {tabConfigurations.map((tab) => (
+              <TabPane tab={tab.tab} key={tab.key} className="scrollbar-thin scrollbar-thumb-gray-400">
+                {tab.fields.map((field) => (
+                  <Form.Item 
+                    key={field.name} 
+                    label={field.label} 
+                    name={field.name}
+                    className="lg-3"
+                    rules={[
+                      // Apply special validation rules for leave fields
+                      tab.key === "5" ? {
+                        validator: validateLeaveField
+                      } : (
+                        field.type === "number" ? {
+                          type: 'number',
+                          required: true,
+                          message: `Please enter a valid ${field.label.toLowerCase()}`
+                        } : {
+                          required: tab.key === "1" && ['employeeName', 'email'].includes(field.name),
+                          message: `Please enter ${field.label.toLowerCase()}`
+                        }
+                      )
+                    ]}
                   >
-                    {field.options?.map((option) => (
-                      <Option key={option} value={option}>
-                        {option}
-                      </Option>
-                    ))}
-                  </Select>
-                )}
-              </Form.Item>
+                    {field.type === "text" && (
+                      <Input placeholder={field.placeholder} className="max-w-lg" />
+                    )}
+                    {field.type === "number" && (
+                      <Input type="number" placeholder={field.placeholder} className="max-w-lg" />
+                    )}
+                    {field.type === "password" && (
+                      <Input.Password placeholder={field.placeholder} className="max-w-lg" />
+                    )}
+                    {field.type === "select" && (
+                      <Select 
+                        placeholder={`Select ${field.label.toLowerCase()}`}
+                        className="max-w-lg"
+                      >
+                        {field.options?.map((option) => (
+                          <Option key={option} value={option}>
+                            {option}
+                          </Option>
+                        ))}
+                      </Select>
+                    )}
+                  </Form.Item>
+                ))}
+                <Form.Item>
+                  <Button type="primary" htmlType="submit" loading={loading}>
+                    Update {tab.tab}
+                  </Button>
+                </Form.Item>
+              </TabPane>
             ))}
-            <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading}>
-                Update {tab.tab}
-              </Button>
-            </Form.Item>
-          </TabPane>
-        ))}
-      </Tabs>
-    </Form>
-  </Spin>
-</Modal>
-
+          </Tabs>
+        </Form>
+      </Spin>
+    </Modal>
   );
 };
 
