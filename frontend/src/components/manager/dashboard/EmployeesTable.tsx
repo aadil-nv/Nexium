@@ -16,7 +16,7 @@ const EmployeesTable = ({ data, loading, error, onUpdate }: { data: IEmployee[];
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 1;
   const dispatch = useDispatch();
 
   const exportToExcel = () => {
