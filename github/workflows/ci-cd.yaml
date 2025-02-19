@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:  # Optional: Triggers on PRs to main
+    branches:
+      - main
+
+env:
+  REGISTRY: docker.io
+  IMAGE_PREFIX: aadilnv/nexium
+  KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push images
+        run: |
+          services=("authenticationservice" "businessownerservice" "superadminservice" "managerservice" "employeeservice" "paymentservice" "communicationservice")
+          for service in "${services[@]}"; do
+            docker build -t $REGISTRY/$IMAGE_PREFIX-$service:latest ./services/${service}Service/src
+            docker push $REGISTRY/$IMAGE_PREFIX-$service:latest
+          done
+
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "latest"
+
+      - name: Configure Kubernetes
+        run: |
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Apply Kubernetes Manifests
+        run: |
+          kubectl apply -f k8s/
