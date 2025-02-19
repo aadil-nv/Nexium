@@ -19,7 +19,7 @@ const EmployeeOtp: React.FC = () => {
   const email = (useLocation().state as { email: string })?.email;
   const timer = useSelector((state: RootState) => state.otp.timer);
 
-  // Rest oukyyiyuiuyif the handlers remain the same...
+  // Rest oukyyiyuiuyif the handlerssadsadasd remain the same...
   const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const value = e.target.value;
 
