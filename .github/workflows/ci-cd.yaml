@@ -45,7 +45,7 @@ jobs:
 
       - name: Build and push
         run: |
-          docker build -t $REGISTRY/$IMAGE_PREFIX-businessownerservice:latest ./backend/services/businessownerService/src
+          docker build -t $REGISTRY/$IMAGE_PREFIX-businessownerservice:latest ./backend/services/businessOwnerService/src
           docker push $REGISTRY/$IMAGE_PREFIX-businessownerservice:latest
 
   superadminservice:
@@ -62,7 +62,7 @@ jobs:
 
       - name: Build and push
         run: |
-          docker build -t $REGISTRY/$IMAGE_PREFIX-superadminservice:latest ./backend/services/superadminService/src
+          docker build -t $REGISTRY/$IMAGE_PREFIX-superadminservice:latest ./backend/services/superAdminService/src
           docker push $REGISTRY/$IMAGE_PREFIX-superadminservice:latest
 
   managerservice:
