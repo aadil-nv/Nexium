@@ -34,18 +34,11 @@ const notificationService = container.get<INotificationService>("INotificationSe
 const activeUsers = new Set<{ userId: string; socketId: string }>();
 
 export const initializeChatSocket = (chatNamespace: Namespace) => {
-// console.log(`activeUsers====================`.bgMagenta ,activeUsers);
 
   chatNamespace.on("connection", (socket: Socket) => {
     console.log(`Socket ${socket.id} connected`.bgGreen);
     
     socket.on("joinChat", (userId: string ,businessOwnerId: string) => {
-      // console.log(`User ${userId} joined chat`.bgBlue);
-      // console.log(`activeUsers====================`.bgMagenta ,activeUsers);
-      // console.log(`businessOwnerId====================`.bgMagenta,businessOwnerId);
-      
-      
-      
       for (const user of activeUsers) {
         if (user.userId === userId) {
           activeUsers.delete(user);
