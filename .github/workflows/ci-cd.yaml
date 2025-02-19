@@ -28,7 +28,7 @@ jobs:
 
       - name: Build and push
         run: |
-          docker build -t $REGISTRY/$IMAGE_PREFIX-authenticationservice:latest ./services/authenticationService/src
+          docker build -t $REGISTRY/$IMAGE_PREFIX-authenticationservice:latest ../../backend/services/authenticationService/src
           docker push $REGISTRY/$IMAGE_PREFIX-authenticationservice:latest
 
   businessownerservice:
@@ -45,7 +45,7 @@ jobs:
 
       - name: Build and push
         run: |
-          docker build -t $REGISTRY/$IMAGE_PREFIX-businessownerservice:latest ./services/businessownerService/src
+          docker build -t $REGISTRY/$IMAGE_PREFIX-businessownerservice:latest ../../backend/services/businessownerService/src
           docker push $REGISTRY/$IMAGE_PREFIX-businessownerservice:latest
 
   superadminservice:
@@ -62,7 +62,7 @@ jobs:
 
       - name: Build and push
         run: |
-          docker build -t $REGISTRY/$IMAGE_PREFIX-superadminservice:latest ./services/superadminService/src
+          docker build -t $REGISTRY/$IMAGE_PREFIX-superadminservice:latest ../../backend/services/superadminService/src
           docker push $REGISTRY/$IMAGE_PREFIX-superadminservice:latest
 
   managerservice:
@@ -79,7 +79,7 @@ jobs:
 
       - name: Build and push
         run: |
-          docker build -t $REGISTRY/$IMAGE_PREFIX-managerservice:latest ./services/managerService/src
+          docker build -t $REGISTRY/$IMAGE_PREFIX-managerservice:latest ../../backend/services/managerService/src
           docker push $REGISTRY/$IMAGE_PREFIX-managerservice:latest
 
   employeeservice:
@@ -96,7 +96,7 @@ jobs:
 
       - name: Build and push
         run: |
-          docker build -t $REGISTRY/$IMAGE_PREFIX-employeeservice:latest ./services/employeeService/src
+          docker build -t $REGISTRY/$IMAGE_PREFIX-employeeservice:latest ../../backend/services/employeeService/src 
           docker push $REGISTRY/$IMAGE_PREFIX-employeeservice:latest
 
   paymentservice:
@@ -113,7 +113,7 @@ jobs:
 
       - name: Build and push
         run: |
-          docker build -t $REGISTRY/$IMAGE_PREFIX-paymentservice:latest ./services/paymentService/src
+          docker build -t $REGISTRY/$IMAGE_PREFIX-paymentservice:latest  ../../backend/services/paymentService/src 
           docker push $REGISTRY/$IMAGE_PREFIX-paymentservice:latest
 
   communicationservice:
@@ -130,7 +130,7 @@ jobs:
 
       - name: Build and push
         run: |
-          docker build -t $REGISTRY/$IMAGE_PREFIX-communicationservice:latest ./services/communicationService/src
+          docker build -t $REGISTRY/$IMAGE_PREFIX-communicationservice:latest ../../backend/services/communicationService/src 
           docker push $REGISTRY/$IMAGE_PREFIX-communicationservice:latest
 
   deploy:
