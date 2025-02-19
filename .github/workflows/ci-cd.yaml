@@ -1,11 +1,10 @@
-
 name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
-  pull_request:  # Optional: Triggers on PRs to main
+  pull_request:
     branches:
       - main
 
@@ -15,13 +14,11 @@ env:
   KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
 
 jobs:
-  build-and-push:
-    name: Build and Push Docker Images
+  authenticationservice:
+    name: Build and Push Authentication Service
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -29,22 +26,127 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push images
+      - name: Build and push
         run: |
-          services=("authenticationservice" "businessownerservice" "superadminservice" "managerservice" "employeeservice" "paymentservice" "communicationservice")
-          for service in "${services[@]}"; do
-            docker build -t $REGISTRY/$IMAGE_PREFIX-$service:latest ./services/${service}Service/src
-            docker push $REGISTRY/$IMAGE_PREFIX-$service:latest
-          done
+          docker build -t $REGISTRY/$IMAGE_PREFIX-authenticationservice:latest ./services/authenticationService/src
+          docker push $REGISTRY/$IMAGE_PREFIX-authenticationservice:latest
+
+  businessownerservice:
+    name: Build and Push Business Owner Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        run: |
+          docker build -t $REGISTRY/$IMAGE_PREFIX-businessownerservice:latest ./services/businessownerService/src
+          docker push $REGISTRY/$IMAGE_PREFIX-businessownerservice:latest
+
+  superadminservice:
+    name: Build and Push Super Admin Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        run: |
+          docker build -t $REGISTRY/$IMAGE_PREFIX-superadminservice:latest ./services/superadminService/src
+          docker push $REGISTRY/$IMAGE_PREFIX-superadminservice:latest
+
+  managerservice:
+    name: Build and Push Manager Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        run: |
+          docker build -t $REGISTRY/$IMAGE_PREFIX-managerservice:latest ./services/managerService/src
+          docker push $REGISTRY/$IMAGE_PREFIX-managerservice:latest
+
+  employeeservice:
+    name: Build and Push Employee Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        run: |
+          docker build -t $REGISTRY/$IMAGE_PREFIX-employeeservice:latest ./services/employeeService/src
+          docker push $REGISTRY/$IMAGE_PREFIX-employeeservice:latest
+
+  paymentservice:
+    name: Build and Push Payment Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        run: |
+          docker build -t $REGISTRY/$IMAGE_PREFIX-paymentservice:latest ./services/paymentService/src
+          docker push $REGISTRY/$IMAGE_PREFIX-paymentservice:latest
+
+  communicationservice:
+    name: Build and Push Communication Service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push
+        run: |
+          docker build -t $REGISTRY/$IMAGE_PREFIX-communicationservice:latest ./services/communicationService/src
+          docker push $REGISTRY/$IMAGE_PREFIX-communicationservice:latest
 
   deploy:
     name: Deploy to Kubernetes
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs:
+      - authenticationservice
+      - businessownerservice
+      - superadminservice
+      - managerservice
+      - employeeservice
+      - paymentservice
+      - communicationservice
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
