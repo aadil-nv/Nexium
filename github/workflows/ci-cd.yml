@@ -4,11 +4,14 @@ on:
   push:
     branches:
       - main
+  pull_request:  # Optional: Triggers on PRs to main
+    branches:
+      - main
 
 env:
   REGISTRY: docker.io
   IMAGE_PREFIX: aadilnv/nexium
-  KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}  # Store Kubernetes config as a secret
+  KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
 
 jobs:
   build-and-push:
