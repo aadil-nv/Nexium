@@ -1,6 +1,5 @@
 import  { useState } from 'react';
 import { motion } from 'framer-motion';
-// import ContactImage from "../../../assets/landingPageAssets/Agent2.png";
 import { useTheme } from './theme-provider';
 import contactimage from "../../../assets/landingPageAssets/contactimage.png"
 

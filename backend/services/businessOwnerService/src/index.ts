@@ -22,7 +22,7 @@ connectDB();
 app.use(logger);
 
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN, 
+  origin: process.env.CLIENT_ORIGIN , 
   credentials: true, 
 }));
 

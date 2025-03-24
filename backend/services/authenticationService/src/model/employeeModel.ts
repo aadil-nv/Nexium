@@ -46,7 +46,7 @@ const employeeSchema = new Schema<IEmployee>({
   },
   
   employeeCredentials: {
-    companyEmail: { type: String, required: true, unique: true }, // Ensure uniqueness
+    companyEmail: { type: String, required: true}, // Ensure uniqueness
     companyPassword: { type: String },
   },
 

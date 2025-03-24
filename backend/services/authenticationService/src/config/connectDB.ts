@@ -4,6 +4,8 @@ import 'colors';
 export let dbInstance: Mongoose; // Mongoose type
 
 const connectDB = async (): Promise<void> => {
+    console.log("satating nerwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww");
+    
     try {
         if (process.env.MONGODB_URL) {
             dbInstance = await mongoose.connect(process.env.MONGODB_URL);

@@ -72,7 +72,6 @@ export default function AttendanceCard() {
   const handleCheckOut = () => setShowCheckoutAlert(true);
 
   const handleConfirmCheckIn = async () => {
-    // setIsCheckedIn(true);
     setShowAlert(false);
     const checkInData = {
       date: new Date().toISOString().split("T")[0],
@@ -80,7 +79,7 @@ export default function AttendanceCard() {
     };
     try {
       await markCheckIn(checkInData);
-      setReloadData((prev) => !prev); // Trigger data refresh
+      setReloadData((prev) => !prev); 
     } catch (error) {
       console.error("Error during check-in:", error);
     }

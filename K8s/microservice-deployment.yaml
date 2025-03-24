@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: authentication-service
-        image: aadilnv/nexium-authenticationservice:latest
+        image: aadilnv/nexium-authenticationservice:v2
         imagePullPolicy: Always
         ports:
         - containerPort: 7000
@@ -51,7 +51,7 @@ spec:
     spec:
       containers:
       - name: business-owner-service
-        image: aadilnv/nexium-businessownerservice:v1
+        image: aadilnv/nexium-businessownerservice:v7
         imagePullPolicy: Always
         ports:
         - containerPort: 7001

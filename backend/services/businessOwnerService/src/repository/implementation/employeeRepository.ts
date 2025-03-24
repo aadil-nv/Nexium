@@ -47,9 +47,8 @@ async getDashboardData(businessOwnerId: string): Promise<any> {
 
 async getAllEmployees(businessOwnerId: string): Promise<any> {
   try {
-    const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
-    const Employee = _switchDb.model('employees', EmployeeModel.schema);
-    return await Employee.find();
+
+    return await EmployeeModel.find({ businessOwnerId });
   } catch (error) {
     console.error("Error retrieving employees: ", error);
     throw new Error("Failed to fetch employees.");
@@ -75,11 +74,11 @@ async findByEmail(businessOwnerId: string, emailId: string): Promise<any> {
   try {
       const safeBusinessOwnerId = businessOwnerId.replace(/\./g, '_');
 
-      const _switchDb = mongoose.connection.useDb(safeBusinessOwnerId, { useCache: true });
+      // const _switchDb = mongoose.connection.useDb(safeBusinessOwnerId, { useCache: true });
 
-      const Employee = _switchDb.model('employees', EmployeeModel.schema);
+      // const Employee = _switchDb.model('employees', EmployeeModel.schema);
 
-      return await Employee.findOne({ 'personalDetails.email': emailId });
+      return await EmployeeModel.findOne({ 'personalDetails.email': emailId, safeBusinessOwnerId });
   } catch (error) {
       console.error("Error finding employee by email:", error);
       throw error;
@@ -89,36 +88,38 @@ async findByEmail(businessOwnerId: string, emailId: string): Promise<any> {
 
 async addEmployee(employeeData: any, businessOwnerId: string): Promise<any> {
   try {
-    // Connect to the specific business database
+    // Ensure MongoDB connection before switching DB
+    if (mongoose.connection.readyState !== 1) {
+      console.error("MongoDB not connected. Retrying...");
+      await mongoose.connect(process.env.MONGODB_URL as string);
+    }
+
+    // Switch to the business-specific database
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
+
     const Employee = _switchDb.model('employees', EmployeeModel.schema);
-    const LeaveType = _switchDb.model('leavetypes', leaveTypeModel.schema);
     const EmployeeLeaveModel = _switchDb.model('employeeleaves', employeeLeaveModel.schema);
 
     // Generate a shared _id
     const employeeId = new mongoose.Types.ObjectId();
 
-    // Create employee with the same _id in both databases
+    // Create employee in both databases
     const savedEmployee = await Employee.create({ ...employeeData, _id: employeeId });
     await EmployeeModel.create({ ...employeeData, _id: employeeId });
 
-    // Fetch existing leave types
-    const existingLeaves = await LeaveType.findOne({businessOwnerId: businessOwnerId});
-    if (!existingLeaves) throw new Error("No leave types found");
-
-    // Assign leave types to the employee
+    // Assign default leave types (all set to 5)
     const employeeLeaveData = {
       employeeId,
-      sickLeave: existingLeaves.sickLeave,
-      casualLeave: existingLeaves.casualLeave,
-      maternityLeave: existingLeaves.maternityLeave,
-      paternityLeave: existingLeaves.paternityLeave,
-      paidLeave: existingLeaves.paidLeave,
-      unpaidLeave: existingLeaves.unpaidLeave,
-      compensatoryLeave: existingLeaves.compensatoryLeave,
-      bereavementLeave: existingLeaves.bereavementLeave,
-      marriageLeave: existingLeaves.marriageLeave,
-      studyLeave: existingLeaves.studyLeave,
+      sickLeave: 5,
+      casualLeave: 5,
+      maternityLeave: 5,
+      paternityLeave: 5,
+      paidLeave: 5,
+      unpaidLeave: 5,
+      compensatoryLeave: 5,
+      bereavementLeave: 5,
+      marriageLeave: 5,
+      studyLeave: 5,
     };
 
     await EmployeeLeaveModel.create(employeeLeaveData);
@@ -133,14 +134,15 @@ async addEmployee(employeeData: any, businessOwnerId: string): Promise<any> {
 
 
 
+
 async removeEmployee(employeeId: string, businessOwnerId: string): Promise<any> {
   try {
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
     const Employee = _switchDb.model('employees', EmployeeModel.schema);
    
     const deletedEmployee = await Employee.findByIdAndDelete(employeeId);
-    await EmployeeModel.findByIdAndDelete(employeeId);
-    return deletedEmployee;
+    const deletedEmployee2 =await EmployeeModel.findByIdAndDelete(employeeId);
+    return deletedEmployee2;
   } catch (error) {
     console.error("Error removing employee: ", error);
     throw new Error("Failed to remove employee.");
@@ -164,13 +166,13 @@ async blockEmployee(employeeId: string, businessOwnerId: string): Promise<any> {
       { new: true } 
     );
 
-    await EmployeeModel.findByIdAndUpdate(
+    const updatedEmployee2 = await EmployeeModel.findByIdAndUpdate(
       employeeId,
       { isBlocked: !employee.isBlocked }, 
       { new: true } 
     );
 
-    return updatedEmployee;
+    return updatedEmployee2;
   } catch (error) {
     console.error("Error toggling employee block status: ", error);
     throw new Error("Failed to update employee block status.");
@@ -183,7 +185,6 @@ async updateProfessionalInfo(employeeId: string, businessOwnerId: string, data: 
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
     const Employee = _switchDb.model('employees', EmployeeModel.schema);
 
-    // Construct update data
     const updateData = {
       $set: {
         "professionalDetails.position": data.position,
@@ -205,16 +206,20 @@ async updateProfessionalInfo(employeeId: string, businessOwnerId: string, data: 
       updateData,
       { new: true }
     );
+    const updatedEmployee2 = await EmployeeModel.findByIdAndUpdate(
+      employeeId,
+      updateData,
+      { new: true }
+    );
 
     if (!updatedEmployee) throw new Error("Employee not found");
 
-    return updatedEmployee;
+    return updatedEmployee2;
   } catch (error) {
     console.error("Error updating employee professional info: ", error);
     throw new Error("Failed to update employee professional info.");
   }
 }
-
 
 
 async updateAddressInfo(employeeId: string, businessOwnerId: string, data: any): Promise<any> {
@@ -240,7 +245,7 @@ async updateAddressInfo(employeeId: string, businessOwnerId: string, data: any):
       { new: true }
     );
 
-    await EmployeeModel.findByIdAndUpdate(
+    const updatedEmployee2 =await EmployeeModel.findByIdAndUpdate(
       employeeId,
       updateData,
       { new: true }
@@ -248,13 +253,13 @@ async updateAddressInfo(employeeId: string, businessOwnerId: string, data: any):
 
     if (!updatedEmployee) throw new Error("Employee not found");
 
-    return updatedEmployee;
+
+    return updatedEmployee2;
   } catch (error) {
     console.error("Error updating employee address info: ", error);
     throw new Error("Failed to update employee address info.");
   }
 }
-
 
 
 async updateSecurityInfo(employeeId: string, businessOwnerId: string, data: any): Promise<any> {
@@ -275,7 +280,7 @@ async updateSecurityInfo(employeeId: string, businessOwnerId: string, data: any)
       updateData,
       { new: true }
     );
-    await EmployeeModel.findByIdAndUpdate(
+    const updatedEmployee2 =await EmployeeModel.findByIdAndUpdate(
       employeeId,
       updateData,
       { new: true }
@@ -283,13 +288,12 @@ async updateSecurityInfo(employeeId: string, businessOwnerId: string, data: any)
 
     if (!updatedEmployee) throw new Error("Employee not found");
 
-    return updatedEmployee;
+    return updatedEmployee2;
   } catch (error) {
     console.error("Error updating employee security info: ", error);
     throw new Error("Failed to update employee security info.");
   }
 }
-
 
 
 async updatePersonalInfo(employeeId: string, businessOwnerId: string, data: any): Promise<any> { 
@@ -318,7 +322,7 @@ async updatePersonalInfo(employeeId: string, businessOwnerId: string, data: any)
       updateData,
       { new: true }
     );
-    await EmployeeModel.findByIdAndUpdate(
+    const updatedEmployee2= await EmployeeModel.findByIdAndUpdate(
       employeeId,
       updateData,
       { new: true }
@@ -326,7 +330,7 @@ async updatePersonalInfo(employeeId: string, businessOwnerId: string, data: any)
 
     if (!updatedEmployee) throw new Error("Employee not found");
 
-    return updatedEmployee;
+    return updatedEmployee2;
   } catch (error) {
     console.error("Error updating employee personal info: ", error);
     throw new Error("Failed to update employee personal info.");
@@ -336,6 +340,10 @@ async updatePersonalInfo(employeeId: string, businessOwnerId: string, data: any)
 async uploadProfilePic(employeeId: string, businessOwnerId: string, fileUrl: string): Promise<any> {
   try {
     // Switch to the correct database for the business owner
+    if (mongoose.connection.readyState !== 1) { 
+      console.error("MongoDB not connected. Retrying...");
+      await mongoose.connect(process.env.MONGODB_URL as string); // Ensure connection
+    }
     const _switchDb = mongoose.connection.useDb(businessOwnerId, { useCache: true });
     const Employee = _switchDb.model('employees', EmployeeModel.schema);
 
@@ -346,7 +354,7 @@ async uploadProfilePic(employeeId: string, businessOwnerId: string, fileUrl: str
       { new: true }
     );
 
-    EmployeeModel.findByIdAndUpdate(
+    const updatedEmployee2=EmployeeModel.findByIdAndUpdate(
       employeeId,
       { $set: { "personalDetails.profilePicture": fileUrl } },
       { new: true }
@@ -356,7 +364,7 @@ async uploadProfilePic(employeeId: string, businessOwnerId: string, fileUrl: str
       throw new Error('Employee not found');
     }
 
-    return updatedEmployee
+    return updatedEmployee2
   } catch (error) {
     console.error('Error updating profile picture:', error);
     throw new Error('Error updating profile picture');
