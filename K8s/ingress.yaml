@@ -8,7 +8,7 @@ metadata:
     nginx.ingress.kubernetes.io/use-regex: "true"
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "https://www.aadil.online"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://www.aadilnv.online"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
@@ -19,13 +19,13 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - backend.aadil.online
+        - backend.aadilnv.online
       secretName: backend-aadil-tls  # Cert Manager will create this
     - hosts:
-        - aadil.online
+        - aadilnv.online
       secretName: aadil-online-tls  # New TLS entry for aadil.online
   rules:
-    - host: backend.aadil.online
+    - host: backend.aadilnv.online
       http:
         paths:
           - path: /socket.io
@@ -42,7 +42,7 @@ spec:
                 name: apigateway
                 port:
                   number: 3000
-    - host: www.aadil.online
+    - host: www.aadilnv.online
       http:
         paths:
           - path: /(.*)

@@ -6,7 +6,6 @@ import { uploadMiddleware } from "../middlewares/multer-s3";
 import checkSubscription from "../middlewares/checkSubscription";
 
 const employeeRouter = Router();
-
 const employeeController = container.get<IEmployeeController>("IEmployeeController");
 
 employeeRouter.get("/get-profile",authenticateToken, (req, res ,next) =>employeeController.getProfile(req, res));
