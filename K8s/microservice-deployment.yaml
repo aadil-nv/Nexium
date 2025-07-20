@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: authentication-service
-        image: aadilnv/nexium-authenticationservice:latest
+        image: aadilnv/nexium-authenticationservice:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 7000
@@ -51,7 +51,7 @@ spec:
     spec:
       containers:
       - name: business-owner-service
-        image: aadilnv/nexium-businessownerservice:latest
+        image: aadilnv/nexium-businessownerservice:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 7001
@@ -128,7 +128,7 @@ spec:
     spec:
       containers:
       - name: super-admin-service
-        image: aadilnv/nexium-superadminservice:latest
+        image: aadilnv/nexium-superadminservice:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 7002
@@ -164,7 +164,7 @@ spec:
     spec:
       containers:
       - name: manager-service
-        image: aadilnv/nexium-managerservice:latest
+        image: aadilnv/nexium-managerservice:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 7003
@@ -200,7 +200,7 @@ spec:
     spec:
       containers:
       - name: employee-service
-        image: aadilnv/nexium-employeeservice:latest
+        image: aadilnv/nexium-employeeservice:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 7004
@@ -236,7 +236,7 @@ spec:
     spec:
       containers:
       - name: payment-service
-        image: aadilnv/nexium-paymentservice:latest
+        image: aadilnv/nexium-paymentservice:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 7005
@@ -272,7 +272,7 @@ spec:
     spec:
       containers:
       - name: communication-service
-        image: aadilnv/nexium-communicationservice:latest
+        image: aadilnv/nexium-communicationservice:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 7006
