@@ -56,16 +56,12 @@ export default class BusinessOwnerPaymentController
   }
 
   async handleWebhook(req: CustomRequest, res: Response): Promise<Response> {
-    console.log(`HItting handleWebhook======CONTROLLER============`.bgMagenta);
     
     const signature = req.headers["stripe-signature"];
-    console.log(`signature: ${signature}`.bgRed);
     
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    console.log(`webhookSecret: ${webhookSecret}`.bgRed);
 
     if (!webhookSecret || !req.body) {
-      console.log("Missing webhook secret or body".red);
       
       return res.status(HttpStatusCode.BAD_REQUEST).send({ message: "Missing webhook secret or body" });
     }
@@ -73,11 +69,9 @@ export default class BusinessOwnerPaymentController
     try {
       const event = Stripe.webhooks.constructEvent(req.body as any, signature as string, webhookSecret);
 
-      console.log(`event: is==>}`.bgRed, event);
       
 
       if (event.type ==='invoice.payment_succeeded') {
-        console.log("Received charge.updated event".green);
         const session = event.data.object;
         await this._businessOwnerPaymentService.handleWebhook(session);
         return res.status(HttpStatusCode.OK).json({ message: "Webhook processed successfully" });
@@ -92,7 +86,6 @@ export default class BusinessOwnerPaymentController
 
   async createCheckoutSession(req: Request, res: Response): Promise<Response> {
 
-    console.log(`HItting createCheckoutSession==================`.bgMagenta);
     
     const { plan, amount, currency, email } = req.body;
 
@@ -100,13 +93,13 @@ export default class BusinessOwnerPaymentController
       const result = await this._businessOwnerPaymentService.createCheckoutSession(plan, amount, currency, email);
 
      if (!result) {
-        return res.status(400).json({ message: 'Failed to create checkout session' });
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Failed to create checkout session' });
       }
 
-      return res.status(200).json(result);
+      return res.status(HttpStatusCode.OK).json(result);
     } catch (error) {
       console.error('Error creating checkout session:', error);
-      return res.status(500).json({ message: 'Failed to create checkout session', error });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Failed to create checkout session', error });
     }
   }
 }

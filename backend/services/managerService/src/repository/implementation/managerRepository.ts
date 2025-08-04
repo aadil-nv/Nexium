@@ -88,7 +88,7 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
             return null;
           }
       
-          return businessOwner.isBlocked ?? null; // Cast to `any` to avoid TypeScript errors
+          return businessOwner.isBlocked ?? null; 
         } catch (error) {
           console.error("Error finding manager by ID:", error);
           return null;
@@ -192,7 +192,6 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
           throw new Error(`Invalid document type: ${documentType}`);
         }
     
-        // Construct the update data based on documentType
         const updateData = {
           [`documents.${documentType}`]: documentData
         };
@@ -217,12 +216,10 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
         const db = await connectDB(businessOwnerId); 
         const manager =  await db.model<IManager>("managers", managerModel.schema)
         const employees = await db.model<IEmployee>("employees", employeeModel.schema).find().lean();
-        console.log("employees ====================>",employees);
         
         const departments = await db.model<IDepartment>("departments", departmentModel.schema).find().lean();
         const tasks = await db.model<ITask>("tasks", taskModel.schema).find({ employeeId: { $in: employees.map((e) => e._id) } }).lean();
     
-        // Counts
         const employeeCount = employees.length;
         const departmentCount = departments.length;
         const taskCount = tasks.reduce((acc, task) => acc + task.tasks.length, 0);
@@ -231,7 +228,6 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
           0
         );
     
-        // Area chart data: Number of completed tasks by department
         const departmentTaskData = departments.map((department) => {
           const taskCount = department.employees.reduce((count, employee) => {
             const employeeTasks = tasks.filter((task) => String(task.employeeId) === String(employee.employeeId));
@@ -244,7 +240,6 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
           return { department: department.departmentName, completedTasks: taskCount };
         });
     
-        // Area chart data: Tasks by month with full month name
         const tasksByMonth = tasks.reduce<{ [key: string]: number }>((acc, task) => {
           task.tasks.forEach((t) => {
             if (t.isCompleted) {
@@ -260,7 +255,6 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
           completedTasks: tasksByMonth[month],
         }));
     
-        // Return the dashboard data
         return {
           employeeCount,
           departmentCount,
@@ -324,7 +318,6 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
             const businessOwner = db.model<IBusinessOwnerDocument>("BusinessOwner", businessOwnerModel.schema);
             const subscription = db.model<ISubscription>("Subscription", SubscriptionNodel.schema);
             const subscriptionData = await subscription.find();
-            console.log("subscriptionData================>",subscriptionData);
             
             const businessOwnerData = await businessOwner
             .findOne({ _id: businessOwnerId })
@@ -338,27 +331,13 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
       if (!businessOwnerData) {
         throw new Error(`No business owner found with ID: ${businessOwnerId}`);
       }
-  
-      // const subscription = businessOwnerData.subscription?.subscriptionId as ISubscription;
-      // console.log(`subscription: ${subscription}`.bgWhite.bold);
-      
-  
-      // if (!subscription) {
-      //   throw new Error(`Subscription not found for business owner: ${businessOwnerId}`);
-      // }
+
   
       const employeeCount = await employee.countDocuments({ businessOwnerId });
       console.log(`Employee count: ${employeeCount}`.bgWhite.bold);
       
-      
   
-      // const allowedEmployees= subscription.serviceRequestCount ?? null;
-  
-      // if (allowedEmployees !== null && employeeCount >= allowedEmployees) {
-      //   return false;
-      // }
-  
-      return true; // Business owner is within the limit
+      return true; 
     } catch (error) {
       console.error("Error checking subscription repo:", error);
       throw new Error("Failed to check subscription repo.");

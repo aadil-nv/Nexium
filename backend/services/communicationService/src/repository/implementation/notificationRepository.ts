@@ -42,7 +42,7 @@ export default class NotificationRepository extends BaseRepository<INotification
         try {
           const switchDB = await connectDB(businessOwnerId);
           const notification = await switchDB.model("notifications", this._notificationModel.schema).findByIdAndDelete(notificationId);
-          return notification; // Returns the deleted notification or null if not found
+          return notification; 
         } catch (error) {
           console.error("Error deleting notification:", error);
           throw error;

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import ISuperAdminService from "../../service/interface/ISuperAdminService";  
 import { inject, injectable } from "inversify";
 import ISuperAdminController from "../../controllers/interface/ISuperAdminController";
+import { HttpStatusCode } from "../../utils/httpStatusCodes";
 
 @injectable()
 export default class SuperAdminController implements ISuperAdminController {
@@ -10,14 +11,13 @@ export default class SuperAdminController implements ISuperAdminController {
   constructor(@inject("ISuperAdminService") private _superAdminService: ISuperAdminService) {} 
 
   async setNewAccessToken(req: Request, res: Response): Promise<Response> {
-    console.log("set new access token is callling ===>", req.cookies.refreshToken);
     
     try {
       const refreshToken = req.cookies.refreshToken;
-      if (!refreshToken) return res.status(400).json({ message: 'Refresh token missing.' });
+      if (!refreshToken) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'Refresh token missing.' });
 
       const newAccessToken = await this._superAdminService.setNewAccessToken(refreshToken);
-      if (!newAccessToken) return res.status(403).json({ message: 'Failed to generate new access token.' });
+      if (!newAccessToken) return res.status(HttpStatusCode.FORBIDDEN).json({ message: 'Failed to generate new access token.' });
 
       res.cookie('accessToken', newAccessToken, {
         httpOnly: true,
@@ -26,10 +26,10 @@ export default class SuperAdminController implements ISuperAdminController {
         sameSite: 'strict',
       });
 
-      return res.status(200).json({ accessToken: newAccessToken });
+      return res.status(HttpStatusCode.OK).json({ accessToken: newAccessToken });
 
     } catch {
-      return res.status(500).json({ message: 'An unexpected error occurred.' });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'An unexpected error occurred.' });
     }
   }
 
@@ -37,23 +37,21 @@ export default class SuperAdminController implements ISuperAdminController {
     try {
       res.clearCookie('accessToken');
       res.clearCookie('refreshToken');
-      return res.status(200).json({ message: 'Logout successful' });
+      return res.status(HttpStatusCode.OK).json({ message: 'Logout successful' });
     } catch (error) {
       console.error('Logout error:', error);
-      return res.status(500).json({ error: 'Logout failed' });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: 'Logout failed' });
     }
   }
 
   async getAllServiceRequest(req: Request, res: Response): Promise<Response> {
     
     try {
-      const  serviceRequests = await this._superAdminService.getAllServiceRequest();
-      console.log("serviceRequests",serviceRequests);
-      
-      return res.status(200).json({ serviceRequests });
+      const  serviceRequests = await this._superAdminService.getAllServiceRequest();      
+      return res.status(HttpStatusCode.OK).json({ serviceRequests });
     } catch (error) {
       console.error('Error fetching super admins:', error);
-      return res.status(500).json({ error: 'Failed to fetch super admins' });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: 'Failed to fetch super admins' });
     }
   }
 
@@ -62,10 +60,10 @@ export default class SuperAdminController implements ISuperAdminController {
     const { status } = req.body;
     try {
       const updatedServiceRequest = await this._superAdminService.updateServiceRequestStatus(id, status);
-      return res.status(200).json({ updatedServiceRequest });
+      return res.status(HttpStatusCode.OK).json({ updatedServiceRequest });
     } catch (error) {
       console.error('Error updating service request status:', error);
-      return res.status(500).json({ error: 'Failed to update service request status' });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: 'Failed to update service request status' });
     }
   }
 }

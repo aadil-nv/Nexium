@@ -14,9 +14,7 @@ export default class MeetingService implements IMeetingService {
     async getAllMeetings(myId: string , businessOwnerId: string): Promise<IGetAllMeetingsDTO[]> {
       try {
         const meetings: IMeetingDetails[] = await this._meetingRepository.getAllMeetings(myId , businessOwnerId);
-        // console.log("meetings ======>", meetings);
-        
-
+      
         const meetingDTOs: IGetAllMeetingsDTO[] = meetings
             .map((meeting) => {
                 try {
@@ -31,7 +29,7 @@ export default class MeetingService implements IMeetingService {
                     return null;
                 }
             })
-            .filter((meeting): meeting is IGetAllMeetingsDTO => meeting !== null); // Filter out null results
+            .filter((meeting): meeting is IGetAllMeetingsDTO => meeting !== null); 
 
         return meetingDTOs;
     } catch (error: any) {
@@ -71,7 +69,6 @@ export default class MeetingService implements IMeetingService {
         recurringDay: meeting.recurringDay
     };
 
-    // console.log(`Mapped DTO:`, dto);
     return dto;
     }
 
@@ -106,13 +103,13 @@ async createMeeting(meeting: any, myId: string ,businessOwnerId: string): Promis
       const createdMeeting = await this._meetingRepository.createMeeting(meeting, myId ,businessOwnerId);
 
       const mappedMeeting: IMeetingsDTO = {
-        _id: createdMeeting._id, // Convert ObjectId to string
+        _id: createdMeeting._id, 
         meetingTitle: createdMeeting.meetingTitle,
         meetingDate: new Date(createdMeeting.meetingDate),
         meetingTime: createdMeeting.meetingTime,
-        participants: createdMeeting.participants.map((p: any) => p.toString()), // Convert ObjectId[] to string[]
+        participants: createdMeeting.participants.map((p: any) => p.toString()), 
         meetingLink: createdMeeting.meetingLink,
-        scheduledBy: createdMeeting.scheduledBy.toString(), // Convert ObjectId to string
+        scheduledBy: createdMeeting.scheduledBy.toString(),
         isRecurring: createdMeeting.isRecurring,
         recurringType: createdMeeting.recurringType as "daily" | "weekly" | undefined,
         recurringDay: createdMeeting.recurringDay as "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday" | undefined
@@ -127,18 +124,16 @@ async createMeeting(meeting: any, myId: string ,businessOwnerId: string): Promis
 
       async updateMeeting(meetingId: string, meeting: any ,businessOwnerId: string): Promise<IMeetingsDTO> {
     try {
-      // Call repository method to update the meeting
       const updatedMeeting = await this._meetingRepository.updateMeeting(meetingId, meeting ,businessOwnerId);
 
-      // Map the returned data to ensure it matches IMeetingsDTO
       const mappedMeeting: IMeetingsDTO = {
-        _id: updatedMeeting._id, // Convert ObjectId to string
+        _id: updatedMeeting._id, 
         meetingTitle: updatedMeeting.meetingTitle,
         meetingDate: new Date(updatedMeeting.meetingDate),
         meetingTime: updatedMeeting.meetingTime,
-        participants: updatedMeeting.participants.map((p: any) => p.toString()), // Convert ObjectId[] to string[]
+        participants: updatedMeeting.participants.map((p: any) => p.toString()), 
         meetingLink: updatedMeeting.meetingLink,
-        scheduledBy: updatedMeeting.scheduledBy.toString(), // Convert ObjectId to string
+        scheduledBy: updatedMeeting.scheduledBy.toString(), 
         isRecurring: updatedMeeting.isRecurring,
         recurringType: updatedMeeting.recurringType as "daily" | "weekly" | undefined,
         recurringDay: updatedMeeting.recurringDay as "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday" | undefined
@@ -153,18 +148,16 @@ async createMeeting(meeting: any, myId: string ,businessOwnerId: string): Promis
 
       async deleteMeeting(meetingId: string ,businessOwnerId: string): Promise<IMeetingsDTO> {
         try {
-          // Call repository method to delete the meeting
           const deletedMeeting = await this._meetingRepository.deleteMeeting(meetingId , businessOwnerId);
   
-          // Map the returned data to ensure it matches IMeetingsDTO
           const mappedMeeting: IMeetingsDTO = {
-            _id: deletedMeeting._id, // Convert ObjectId to string
+            _id: deletedMeeting._id, 
             meetingTitle: deletedMeeting.meetingTitle,
             meetingDate: new Date(deletedMeeting.meetingDate),
             meetingTime: deletedMeeting.meetingTime,
-            participants: deletedMeeting.participants.map((p: any) => p.toString()), // Convert ObjectId[] to string[]
+            participants: deletedMeeting.participants.map((p: any) => p.toString()), 
             meetingLink: deletedMeeting.meetingLink,
-            scheduledBy: deletedMeeting.scheduledBy.toString(), // Convert ObjectId to string
+            scheduledBy: deletedMeeting.scheduledBy.toString(),
             isRecurring: deletedMeeting.isRecurring,
             recurringType: deletedMeeting.recurringType as "daily" | "weekly" | undefined,
             recurringDay: deletedMeeting.recurringDay as "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday" | undefined
@@ -179,12 +172,10 @@ async createMeeting(meeting: any, myId: string ,businessOwnerId: string): Promis
 
       async getAllParticipants(myId: string ,businessOwnerId: string): Promise<IParticipantsDTO[]> {
         try {
-          // Call repository method to get all participants
           const employees = await this._chatRepository.findAllEmployees(businessOwnerId);
           const managers = await this._chatRepository.findAllManagers(businessOwnerId);
           const businessOwners = await this._chatRepository.findAllBusinessOwners(businessOwnerId);
   
-          // Map the returned data to ensure it matches IParticipantsDTO
           const buisinessOwner: IParticipantsDTO[] = businessOwners.map(businessOner => ({
                          userId: businessOner._id,
                          userName: businessOner.personalDetails.businessOwnerName,
@@ -196,7 +187,6 @@ async createMeeting(meeting: any, myId: string ,businessOwnerId: string): Promis
                      }));
          
              
-                     // Map employee data
                      const employee: IParticipantsDTO[] = employees.map(employee => ({
                          userId: employee._id,
                          userName: employee.personalDetails.employeeName,
@@ -207,7 +197,6 @@ async createMeeting(meeting: any, myId: string ,businessOwnerId: string): Promis
                              : employee.personalDetails.profilePicture,
                      }));
              
-                     // Map manager data
                      const manager: IParticipantsDTO[] = managers.map(manager => ({
                          userId: manager._id,
                          userName: manager.personalDetails.managerName,

@@ -129,9 +129,7 @@ export default class EmployeeController implements IEmployeeController {
   async updateEmployeeLeaveInfo(req: CustomRequest, res: Response): Promise<Response> {
     try {
       const businessOwnerId = req.user?.businessOwnerData?._id;
-      const employeeId = req.params.id;
-      console.log("updateEmployeeLeaveInfo called",req.body);
-      
+      const employeeId = req.params.id;      
       const employee = await this._employeeService.updateEmployeeLeaveInfo(employeeId, businessOwnerId as string, req.body);
       return res.status(HttpStatusCode.OK).json(employee);
     } catch (error) {

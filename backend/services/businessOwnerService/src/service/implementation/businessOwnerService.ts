@@ -36,13 +36,11 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     if (existingFile) {
       const s3Client = new S3Client({ region: 'eu-north-1' });
   
-      // Handle case where `existingFile` is not a string
       let existingFileKey: string | undefined;
   
       if (typeof existingFile === "string") {
-        existingFileKey = existingFile; // Use as-is if it's a string
+        existingFileKey = existingFile; 
       } else if (typeof existingFile === "object") {
-        // Map `existingFile` to a string identifier
         existingFileKey = (existingFile as any).fileName || (existingFile as any).url || undefined;
       }
   
@@ -57,7 +55,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
   
     const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
-    console.log("==============fileUrl======================", fileUrl);
   
     return fileUrl;
   }
@@ -140,18 +137,9 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
 
   async getDocuments(businessOwnerId: string): Promise<IDocumentDTO> {
     try {
- 
 
-     
-      
-  
-      // Fetch document details from the repository
       const documentData = await this._businessOwnerRepository.getDetails(businessOwnerId);
 
- 
- 
-  
-      // Ensure that documentData and documents are valid
       if (!documentData || !documentData.documents || !documentData.documents.companyCertificate) {
  
     
@@ -168,7 +156,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
 
       }
     } catch (error: any) {
-      // Log the error and throw a new error with a detailed message
       console.error("Error while fetching documents:", error);
       throw new Error("Error while getting documents: " + error.message);
     }
@@ -182,7 +169,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       const rabbitMQMessager = new RabbitMQMessager();
       await rabbitMQMessager.init();
       const updatedBusinessOwnerData = await this._businessOwnerRepository.updateDetails(businessOwnerId, data);
-      console.log("updatedBusinessOwnerData", updatedBusinessOwnerData);
       
       await rabbitMQMessager.sendToMultipleQueues({ updatedBusinessOwnerData });
       return { success: true, message: "Personal details updated successfully!" };
@@ -269,18 +255,14 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
   }
 
-  async  addServiceRequest(businessOwnerId: string, data: any): Promise<IResponseDTO> {
-    console.log("addServiceRequest===============================from service request",data);
-    
+  async  addServiceRequest(businessOwnerId: string, data: any): Promise<IResponseDTO> {    
     try {
       const businessOwnerData = await this._businessOwnerRepository.findOne({ _id: businessOwnerId });
-      console.log("Business Owner Data:v from service", businessOwnerData);
       
       if (!businessOwnerData) {
         throw new Error("Business owner not found");
       }
       const result = await this._businessOwnerRepository.addServiceRequest(businessOwnerId,businessOwnerData, data);
-      console.log("Service Request Result:", result);
       
       return { success: true, message: "Service request added successfully!", data: result };
     } catch (error:any) {
@@ -368,15 +350,12 @@ async  updateLeaveTypes( leaveTypeId: string,businessOwnerId: string, data: ILea
 
 async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteriaDTO[]> {
   try {
-      // Fetch payroll criteria from the repository (this could be an array)
       const payrollCriteriaList = await this._businessOwnerRepository.getAllPayrollCriteria(businessOwnerId);
 
-      // If not found, throw an error
       if (!payrollCriteriaList || payrollCriteriaList.length === 0) {
           throw new Error("Payroll criteria not found");
       }
 
-      // Map each payroll criteria item to the DTO
       const payrollCriteriaDTOList: IPayrollCriteriaDTO[] = payrollCriteriaList.map(payrollCriteria => {
           return {
               _id: payrollCriteria._id,

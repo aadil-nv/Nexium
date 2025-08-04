@@ -184,7 +184,7 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
                 taskId,
                 taskData,
             });
-            throw new Error(error.message); // Pass original error message for debugging
+            throw new Error(error.message);
         }
     }
 
@@ -357,7 +357,6 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
           const twelveMonthsAgo = new Date();
           twelveMonthsAgo.setMonth(currentDate.getMonth() - 12);
       
-          // Get monthly stats with completed tasks
           const monthlyStats = await switchDB.model<ITask>("Task", this.taskModel.schema).aggregate<MonthlyAggregationResult>([
             {
               $match: {
@@ -407,7 +406,6 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
             }
           ]);
       
-          // Get current status counts
           const currentStats = await switchDB.model<ITask>("Task", this.taskModel.schema).aggregate<StatusAggregationResult>([
             {
               $match: {
@@ -430,7 +428,6 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
             }
           ]);
       
-          // Get priority stats
           const priorityStats = await switchDB.model<ITask>("Task", this.taskModel.schema).aggregate<TaskStatusCount>([
             {
               $match: {
@@ -453,7 +450,6 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
           ];
       
-          // Transform monthly data with completed tasks
           const monthlyData: MonthlyTaskData[] = monthlyStats.map(stat => ({
             month: `${monthNames[stat._id.month - 1]} ${stat._id.year}`,
             completed: stat.statusCounts.find(s => s.status === "completed")?.count || 0,
@@ -464,7 +460,6 @@ export default class TaskRepository extends BaseRepository<ITask> implements ITa
             totalCompleted: stat.totalCompletedTasks
           }));
       
-          // Calculate current task stats with completed tasks
           const currentTaskStats: TaskStats = {
             completed: currentStats.find(s => s._id === "completed")?.count || 0,
             inProgress: currentStats.find(s => s._id === "inProgress")?.count || 0,

@@ -120,10 +120,7 @@ export default class EmployeeService implements IEmployeeService {
             throw new Error("Email already exists");
         }
     
-        
-
-        // Initialize newEmployeeData
-        const newEmployeeData: any = {
+                const newEmployeeData: any = {
              businessOwnerId: businessOwnerId,
             isActive: false,
             isBlocked: false,
@@ -234,11 +231,7 @@ export default class EmployeeService implements IEmployeeService {
     try {
       const imageUrl= await this.uploadFileToS3(businessOwnerId,employeeId, file , "profilePicture");
       const result =  await this._employeeRepository.uploadProfilePic(employeeId ,businessOwnerId, imageUrl);
-      console.log("result is ===>",result);
-      
-      const prfilePicture = getSignedImageURL(result.personalDetails.profilePicture)
-      console.log("Sigend ur is ",prfilePicture);
-       
+      const prfilePicture = getSignedImageURL(result.personalDetails.profilePicture)       
       return prfilePicture 
     } catch (error) {
       throw new Error("Error updating personal info: " + error);
@@ -262,13 +255,11 @@ const existingFile = result.personalDetails.profilePicture;
       if (existingFile) {
         const s3Client = new S3Client({ region: 'eu-north-1' });
     
-        // Handle case where `existingFile` is not a string
         let existingFileKey: string | undefined;
     
         if (typeof existingFile === "string") {
-          existingFileKey = existingFile; // Use as-is if it's a string
+          existingFileKey = existingFile; 
         } else if (typeof existingFile === "object") {
-          // Map `existingFile` to a string identifier
           existingFileKey = (existingFile as any).fileName || (existingFile as any).url || undefined;
         }
     
@@ -282,9 +273,7 @@ const existingFile = result.personalDetails.profilePicture;
         }
       }
     
-      const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
-      console.log("==============fileUrl======================", fileUrl);
-    
+      const fileUrl = await uploadTosS3(file.buffer, file.mimetype);    
       return fileUrl;
     }
 

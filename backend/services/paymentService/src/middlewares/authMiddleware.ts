@@ -3,6 +3,7 @@ import e, { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "../utils/jwt";
 import BaseRepository from "../repository/implementation/baseRepository"; // Adjust the import path if needed
 import BusinessOwnerModel from "../models/businessOwnerModel"; // Import the business owner model
+import { HttpStatusCode } from "../utils/enums";
 
 // Update the CustomRequest interface to include the employee data
 export interface CustomRequest extends Request {
@@ -18,23 +19,20 @@ export interface CustomRequest extends Request {
 }
 
 const authenticateToken = async (req: CustomRequest, res: Response, next: NextFunction) => {
-  console.log("Inside authenticateToken middleware");
 
   const token = req.cookies.accessToken;
 
   if (!token) {
-    return res.status(401).json({ message: "Access denied. No token provided" });
+    return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
   }
 
   try {
-    // Verify and decode the token
     const decoded = verifyAccessToken(token);
 
     if (!decoded) {
-      return res.status(401).json({ message: "Invalid token" });
+      return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Invalid token" });
     }
 
-    // Attach the decoded user data to the request
     req.user = {
       ...decoded,
       employeeData: decoded.employeeData || { _id: "", employeeId: "" ,email:""}, // Ensure employeeData exists
@@ -43,34 +41,30 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
     const businessOwnerId = decoded.businessOwnerData?._id;
 
     if (!businessOwnerId) {
-      return res.status(400).json({ message: "Business owner ID not found in token." });
+      return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Business owner ID not found in token." });
     }
 
     try {
-      // Create an instance of the base repository for the business owner model
       const businessOwnerRepository = new BaseRepository(BusinessOwnerModel);
 
-      // Find the business owner by ID
       const businessOwner = await businessOwnerRepository.findOne({ _id: businessOwnerId });
-
-      console.log("Business owner found:=======from middleware", businessOwner);
       
 
       if (!businessOwner) {
-        return res.status(404).json({ message: "Business owner not found." });
+        return res.status(HttpStatusCode.NOT_FOUND).json({ message: "Business owner not found." });
       }
 
-      if (businessOwner.isBlocked) { // Assuming `isBlocked` is a field in the business owner model
-        return res.status(403).json({ message: "Access denied. Business owner is blocked." });
+      if (businessOwner.isBlocked) { 
+        return res.status(HttpStatusCode.FORBIDDEN).json({ message: "Access denied. Business owner is blocked." });
       }
 
       next(); // Proceed to the next middleware if not blocked
     } catch (error) {
       console.error("Error finding business owner:", error);
-      return res.status(500).json({ message: "Error checking business owner status." });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error checking business owner status." });
     }
   } catch (error) {
-    return res.status(401).json({ message: "Invalid token" });
+    return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Invalid token" });
   }
 };
 

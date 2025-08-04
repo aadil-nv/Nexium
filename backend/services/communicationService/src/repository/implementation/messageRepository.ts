@@ -32,11 +32,10 @@ export default class MessageRepository extends BaseRepository<IMessage> implemen
                 }
             );
     
-            // Use an aggregation pipeline to fetch the complete message details
             const pipeline = [
                 {
                     $match: {
-                        _id: createdMessage._id // Match the newly created message by ID
+                        _id: createdMessage._id 
                     }
                 },
                 {

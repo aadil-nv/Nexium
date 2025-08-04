@@ -2,7 +2,6 @@ import { Router, } from "express";
 import container from "../config/inversify";
 import IBusinessOwnerController from "controllers/interface/IBusinessOwnerController";
 import authenticateToken from "../middlewares/authMiddleware";
-// import authenticateToken from "../middlewares/authMiddleware";
 
 const businessOwnerRouter = Router();
 const businessOwnerController = container.get<IBusinessOwnerController>("IBusinessOwnerController")

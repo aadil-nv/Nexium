@@ -118,10 +118,8 @@ export default class DepartmentController implements IDepartmentController {
                 return;
             }
     
-            // Call service to update department name
             const updatedDepartment = await this._departmentService.updateDepartmentName(departmentId, newDepartmentName, businessOwnerId as string);
     
-            // Return success response
             res.status(HttpStatusCode.OK).json({
                 message: "Department name updated successfully.",
                 department: updatedDepartment
@@ -146,7 +144,6 @@ export default class DepartmentController implements IDepartmentController {
                 return res.status(HttpStatusCode.BAD_REQUEST).json({ message: 'Employee ID and Department ID are required.' });
             }
     
-            // Call the service layer
             const result = await this._departmentService.addEmployeesToDepartment(employeeData ,departmentId ,businessOwnerId as string); ;
     
             return res.status(HttpStatusCode.OK).json({ 
@@ -156,20 +153,18 @@ export default class DepartmentController implements IDepartmentController {
         } catch (error: any) {
             console.error('Error adding employee to department:', error.message);
     
-            // Return appropriate status codes for different error types
             if (error.message === 'Department not found.') {
-                return res.status(404).json({ message: 'Department not found.' });
+                return res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Department not found.' });
             }
     
             if (error.message === 'Employee not found.') {
-                return res.status(404).json({ message: 'Employee not found.' });
+                return res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Employee not found.' });
             }
     
             if (error.message === 'Employee is already in the department.') {
                 return res.status(HttpStatusCode.BAD_REQUEST).json({ message: 'Employee is already in the department.' });
             }
     
-            // Generic error message for internal server errors
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error.', error: error.message });
         }
     }

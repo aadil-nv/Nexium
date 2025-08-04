@@ -57,7 +57,6 @@ services:
     networks:
       - nexium-network      
 
-  # SuperAdmin Service
   super-admin-service:
     image: aadilnv/nexium-superadminservice
     build:
@@ -74,7 +73,6 @@ services:
       - nexium-network
 
 
-  # Manager Service
   manager-service:
     image: aadilnv/nexium-managerservice
     build:

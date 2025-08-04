@@ -51,24 +51,23 @@ export default class LeaveService implements ILeaveService {
                     attendanceEntry?.status === "Marked" ? "null" :
                     "null"; 
 
-                // Ensure that leaveStatus is one of the expected values
                 const leaveStatus: "Pending" | "Approved" | "Rejected" | "null" = 
                     attendanceEntry?.leaveStatus === "Pending" ? "Pending" :
                     attendanceEntry?.leaveStatus === "Approved" ? "Approved" :
                     attendanceEntry?.leaveStatus === "Rejected" ? "Rejected" :
-                    "null";  // Default to "null" if no valid value exists
+                    "null";  
 
                 return {
-                    employeeId: result.employeeId.toString(), // Convert ObjectId to string
-                    leaveType: attendanceEntry?.leaveType || '', // If leaveType exists, use it, otherwise default to ''
-                    date: attendanceEntry?.date ? new Date(attendanceEntry.date) : null, // Convert string date to Date
-                    reason: attendanceEntry?.reason || null, // If reason exists, use it, otherwise null
-                    leaveStatus, // Use the mapped leaveStatus value
-                    status: mappedStatus, // Use the mapped status
-                    minutes: attendanceEntry?.minutes || 0, // Ensure minutes is always provided
-                    duration: attendanceEntry?.duration || null, // If duration exists, use it, otherwise null
+                    employeeId: result.employeeId.toString(), 
+                    leaveType: attendanceEntry?.leaveType || '', 
+                    date: attendanceEntry?.date ? new Date(attendanceEntry.date) : null, 
+                    reason: attendanceEntry?.reason || null,
+                    leaveStatus,
+                    status: mappedStatus, 
+                    minutes: attendanceEntry?.minutes || 0, 
+                    duration: attendanceEntry?.duration || null,
                 };
-            }) || []; // Handle cases where attendance might be null/undefined
+            }) || []; 
         });
 
         return leaveDTOs;
@@ -154,16 +153,11 @@ export default class LeaveService implements ILeaveService {
 
     async updatePreAppliedLeaves(employeeId: string, managerId: string, data: any ,businessOwnerId: string): Promise<IAppliedLeaveResponce> {
         try {
-          // Fetch manager details
           const managerData = await this._managerRepository.getDetails(managerId , businessOwnerId);
-          console.log("Manager data is:", managerData);
       
-          const managerName = managerData.personalDetails.managerName;
-          console.log("Manager name is:", managerName);
-    
+          const managerName = managerData.personalDetails.managerName;    
       
           const result = await this._leaveRepository.updatePreAppliedLeaves(employeeId,managerName, data ,businessOwnerId);
-          console.log("Result of update:", result);
       
           if (!result) {
             throw new Error('Error occurred in updateLeaveApproval');

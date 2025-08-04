@@ -38,7 +38,6 @@ export default class LeaveRepository extends BaseRepository<IAppliedLeave> imple
     
             const AppliedLeaveModel = switchDB.model<IAppliedLeave>("AppliedLeave", this.appliedLeaveModel.schema);
     
-            // **Check if leave is already applied for the given date range**
             const existingLeave = await AppliedLeaveModel.findOne({
                 employeeId,
                 $or: [
@@ -96,10 +95,9 @@ export default class LeaveRepository extends BaseRepository<IAppliedLeave> imple
             const { fromDate, toDate } = leaveData;
     
             if (fromDate && toDate) {
-                // **Check if updated leave dates overlap with existing leaves**
                 const existingLeave = await AppliedLeaveModel.findOne({
                     employeeId,
-                    _id: { $ne: leaveId }, // Exclude the current leave being updated
+                    _id: { $ne: leaveId }, 
                     $or: [
                         { startDate: { $lte: new Date(toDate) }, endDate: { $gte: new Date(fromDate) } }
                     ]
@@ -136,7 +134,7 @@ export default class LeaveRepository extends BaseRepository<IAppliedLeave> imple
         try {
             const lastMonthStart = new Date();
             lastMonthStart.setMonth(lastMonthStart.getMonth() - 1);
-            lastMonthStart.setDate(1);  // Start of the last month
+            lastMonthStart.setDate(1); 
     
             const lastMonthEnd = new Date();
             lastMonthEnd.setDate(0);  
@@ -178,7 +176,7 @@ export default class LeaveRepository extends BaseRepository<IAppliedLeave> imple
             const employeeLeave = await switchDB.model<IEmployeeLeave>('EmployeeLeave', employeeLeaveModel.schema)
             const leave = await employeeLeave.findOne({ employeeId });
     
-            return leave; // Returning the found document
+            return leave; 
         } catch (error) {
             console.error('Error fetching employee leaves:', error);
             throw error;

@@ -12,14 +12,13 @@ export default class NotificationService implements INotificationService {
     try {
       const notifications: INotification[] = await this._notificationRepository.getAllNotifications(myId ,businessOwnerId);
 
-      // Map database model data to the DTO format
       const mappedNotificationsDTO: INotificationsDTO[] = notifications.map((notification: INotification) => {
         return {
-          _id: notification._id, // Convert _id to string
-          userId: notification.userId.toString(), // Convert userId to string
+          _id: notification._id, 
+          userId: notification.userId.toString(), 
           title: notification.title,
           message: notification.message,
-          type: notification.type, // Ensure type is one of the allowed values
+          type: notification.type, 
           isRead: notification.isRead,
         };
       });
@@ -60,7 +59,6 @@ export default class NotificationService implements INotificationService {
         throw new Error('Notification not found');
       }
   
-      // Transform the notification data to match INotificationsDTO if necessary
       const formattedNotification: INotificationsDTO = {
         _id: notification._id,
         userId: notification.userId.toString(),
@@ -81,7 +79,7 @@ export default class NotificationService implements INotificationService {
   async clearAllNotifications(myId: string ,businessOwnerId: string): Promise<number> {
     try {
       const result = await this._notificationRepository.clearAllNotifications(myId ,businessOwnerId);
-      return result.deletedCount || 0; // Ensure a numeric response
+      return result.deletedCount || 0;
     } catch (error) {
       console.error("Error clearing notifications:", error);
       throw error;

@@ -10,7 +10,8 @@ import { bgBlue } from "colors";
 
 @injectable()
 export default class AttendanceService implements IAttendanceService {
-    constructor(@inject("IAttendanceRepository") private attendanceRepository: IAttendanceRepository) {
+    constructor(@inject("IAttendanceRepository")
+     private attendanceRepository: IAttendanceRepository ) {
         this.attendanceRepository = attendanceRepository;
      }
 

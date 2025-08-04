@@ -16,16 +16,11 @@ export default class DashboardService implements IDashboardService {
 
 
  async getAllDashboardData(companyId:string): Promise<any> {
-    console.log("hitinge serviceeeeeeeeeeeeeeeeeeeeeeeeeeee",companyId);
     
     try {
       const businessOwners = await this._businessOwnerRepository.getDashboardData(companyId);
       const employees = await this._employeeRepository.getDashboardData(companyId)
       const manager = await this.managerRepository.getDashboardData(companyId)
-
-      console.log("buseinessowner ========================",businessOwners);
-      console.log("employees ========================",employees);
-      console.log("employees ========================",employees);
       
       return {businessOwners , employees , manager}; 
     } catch (error) {

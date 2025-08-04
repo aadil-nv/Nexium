@@ -1,6 +1,7 @@
 import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import connectDB from '../config/connectDB';
+import { HttpStatusCode } from 'utils/enum';
 
 export interface CustomRequest extends Request { 
   user?: JwtPayload & {
@@ -15,14 +16,14 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
   try {
     const token = req.cookies?.accessToken;
     
-    if (!token) return res.status(401).json({ message: "Access denied. No token provided" });
+    if (!token) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
 
     const secret = process.env.ACCESS_TOKEN_SECRET;
-    if (!secret) return res.status(500).json({ message: 'Internal server error' });
+    if (!secret) return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
 
     jwt.verify(token, secret, async (err: VerifyErrors | null, decoded: JwtPayload | string | undefined) => {
       if (err) {
-        return res.status(401).json({ message: 'Invalid token' });
+        return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'Invalid token' });
       }
 
       req.user = decoded as JwtPayload;
@@ -30,34 +31,17 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
       let role: string | null = null;
       let businessOwnerId: string | undefined;
 
-      // if (user.employeeData) {
-      //   role = user.employeeData.role;
-      //   businessOwnerId = user.employeeData.businessOwnerId;
-      // } else if (user.managerData) {
-      //   role = user.managerData.role;
-      //   businessOwnerId = user.managerData.businessOwnerId;
-      // } else if (user.businessOwnerData) {
-      //   role = 'businessOwner';
-      //   businessOwnerId = user.businessOwnerData._id;
-      // }
-
-      // if (!role || !businessOwnerId) {
-      //   return res.status(401).json({ message: "Invalid token or missing business owner ID" });
-      // }
 
       try {
-        // Get connection for this tenant
-        // req.dbConnection = await connectDB(businessOwnerId.toString());
-        // console.log(`${role} authenticated. Connected to business owner DB for ID: ${businessOwnerId}`);
         next();
       } catch (error) {
         console.error('Database connection error:', error);
-        return res.status(500).json({ message: 'Database connection failed' });
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Database connection failed' });
       }
     });
   } catch (error) {
     console.error('Error in authenticateToken:', error);
-    return res.status(500).json({ message: 'An error occurred during authentication' });
+    return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred during authentication' });
   }
 };
 

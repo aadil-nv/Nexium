@@ -38,11 +38,9 @@ export default class ManagerService implements IManagerService {
         const businessOwnerData = await this._managerRepository.findById(businessOwnerId);
         if (!businessOwnerData) throw new Error("Business owner not found");
 
-        // Check if a manager with the same email already exists
         const existingEmail = await this._managerRepository.findByEmail(businessOwnerId, data.email);
         if (existingEmail) throw new Error("Manager with this email already exists");
 
-        // Generate manager credentials
         const managerCredentials = createManagerCredentials(
             businessOwnerData.companyDetails.companyName,
             businessOwnerId,
@@ -50,7 +48,6 @@ export default class ManagerService implements IManagerService {
         );
 
 
-        // Prepare `managerData` structure
         const newManagerData: any = {
             personalDetails: {
                 managerName: data.name,
@@ -83,14 +80,10 @@ export default class ManagerService implements IManagerService {
             subscriptionId: businessOwnerData.subscription.subscriptionId,
         };
 
-        console.log(`Prepared Manager Data:`, newManagerData);
 
-        // Send offer letter
         await this.sendOfferLetter(data.name, managerCredentials.managerCredentials, data.email);
 
         const managerData = await this._managerRepository.addManagers(businessOwnerId, newManagerData);
-
-        // rabbitMQMessager.sendToMultipleQueues({ managerData });
 
         return {
           success:true,
@@ -104,20 +97,16 @@ export default class ManagerService implements IManagerService {
 
   
   private validateManagerData(data: any): void {
-    // Validate manager name
     if (!data.name || data.name.length < 3) throw new Error("Manager name must be at least 3 characters long");
     console.log(`Manager Name: ${data.name}`.green);
   
-    // Validate email format
     if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) throw new Error("Invalid email address");
     console.log(`Manager Email: ${data.email}`.blue);
   
-    // Validate phone number
     if (!data.phoneNumber || !/^\d{10}$/.test(data.phoneNumber)) throw new Error("Phone number must be exactly 10 digits");
     if (/(.)\1{2,}/.test(data.phoneNumber)) throw new Error("Phone number must not have consecutive numbers");
     console.log(`Manager Phone Number: ${data.phoneNumber}`.yellow);
   
-    // Validate joining date (should not be in the past)
     if (!data.joiningDate || new Date(data.joiningDate) < new Date()) {
       console.log(`Invalid Joining Date: ${data.joiningDate}`.bgRed);
       throw new Error("Joining date must be today or a future date");
@@ -132,8 +121,6 @@ export default class ManagerService implements IManagerService {
     if (!data.workTime) throw new Error("Work time is required");
     if (!data.managerType) throw new Error("Manager type is required");
   
-    console.log(`Work Time: ${data.workTime}`.green);
-    console.log(`Manager Type: ${data.managerType}`.blue);
   }
   
   
@@ -171,7 +158,7 @@ export default class ManagerService implements IManagerService {
         professionalDetails: {
           managerType: manager.professionalDetails.managerType,
           workTime: manager.professionalDetails.workTime,
-          joiningDate: manager.professionalDetails.joiningDate || new Date(), // Provide default value if undefined
+          joiningDate: manager.professionalDetails.joiningDate || new Date(),
           salary: manager.professionalDetails.salary,
         },
         address: {
@@ -183,7 +170,7 @@ export default class ManagerService implements IManagerService {
         },
         companyDetails: {
           companyName: manager.companyDetails.companyName,
-          companyLogo: manager.companyDetails.companyLogo || '', // Provide default value
+          companyLogo: manager.companyDetails.companyLogo || '', 
         },
         managerCredentials: {
           companyEmail: manager.managerCredentials.companyEmail,
@@ -223,11 +210,6 @@ export default class ManagerService implements IManagerService {
         throw new Error("Failed to update manager status. Please try again.");
       }
   
-
-      
-      
-      // await rabbitMQMessager.sendToMultipleQueues({ isBlocked:managerData });
-
   
       return {
         success: true,
@@ -236,7 +218,6 @@ export default class ManagerService implements IManagerService {
     } catch (error: any) {
       console.error("Error toggling manager block status:", error);
   
-      // Add specific error names for handling in the controller
       if (error.message.includes("Invalid input")) {
         error.name = "ValidationError";
       } else if (error.message.includes("Failed to update")) {
@@ -323,8 +304,6 @@ export default class ManagerService implements IManagerService {
   async updatePersonalInfo(businessOwnerId: string, managerId: string, data: any): Promise<IManager> {
     try {
      const result = await this._managerRepository.updatePersonalInfo(businessOwnerId, managerId, data);
-
-      console.log("Updated manager:======================", result);
       
      if(!result){
       throw new Error("Manager not found");
@@ -355,8 +334,6 @@ export default class ManagerService implements IManagerService {
      if(!result){
       throw new Error("Manager not found");
      }
-
-     console.log("Updated manager:=======address===============", result);
      
      return result;
     } catch (error) {
@@ -366,7 +343,6 @@ export default class ManagerService implements IManagerService {
   }
 
   async uploadProfilePic(businessOwnerId: string, managerId: string, file: Express.Multer.File): Promise<string> {
-    console.log("update mangaer prfile pic serviceis -==>",managerId ,file);
     
     try {
       const imageUrl = await this.uploadFileToS3(businessOwnerId,managerId, file, "profilePicture");

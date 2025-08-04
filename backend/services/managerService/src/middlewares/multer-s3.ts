@@ -34,11 +34,7 @@ const s3Client = new S3Client({
 const randomFileName = (bytes = 32) => crypto.randomBytes(bytes).toString("hex");
 
 export const uploadTosS3 = async (fileBuffer: Buffer, mimeType: string): Promise<string> => {
-    console.log("11111111111111111111111111111111111111111");
-
-    
-    
-    try {
+ try {
         const fileName = randomFileName();
 
         const newMimeType = "image/jpeg";
@@ -48,14 +44,11 @@ export const uploadTosS3 = async (fileBuffer: Buffer, mimeType: string): Promise
             Body: fileBuffer,
             contentType: newMimeType,
         };
-        console.log("222222222222222222222222222222222222222222");
-      
-
+    
         const command = new PutObjectCommand(uploadParams);
         await s3Client.send(command);
         return fileName;
     } catch (error) {
-        console.log("3333333333333333333333333333333333333333333");
         console.log("error while uploading image to s3: ", error);
         return "error";
     }

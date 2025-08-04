@@ -58,7 +58,7 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
     async createMessage(chat: any, businessOwnerId: string): Promise<IMessage> {
         try {
             const switchDB = await connectDB(businessOwnerId);
-            const MessageModel = switchDB.model("messages", this._messageModel.schema); // Store model in a variable
+            const MessageModel = switchDB.model("messages", this._messageModel.schema); 
             const createdMessage = new MessageModel(chat);
             
             return await createdMessage.save();
@@ -72,17 +72,17 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
     async createGroup(data: any, myId: string, businessOwnerId: string): Promise<IChat> {
         try {
             const groupData = {
-                chatType: "group",  // Set chat type as group
+                chatType: "group", 
                 participants: [
-                    myId,  // Add the creator as the first participant
-                    ...data.members,  // Add the members from the request
+                    myId, 
+                    ...data.members, 
                 ],
                 groupName: data.groupName,
                 groupAdmin: myId,  
             };
     
             const switchDB = await connectDB(businessOwnerId);
-            const ChatModel = switchDB.model("chats", this._chatModel.schema); // Store model in a variable
+            const ChatModel = switchDB.model("chats", this._chatModel.schema);
             const createdGroup = new ChatModel(groupData);
     
             return await createdGroup.save();
@@ -134,8 +134,8 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         try {
             const switchDB = await connectDB(businessOwnerId);
             const allGroups = await switchDB.model("chats" , this._chatModel.schema).find({
-                chatType: "group", // Ensure it is a group chat
-                participants: myId, // Find groups where myId is in the participants array
+                chatType: "group", 
+                participants: myId,
             });
     
             return allGroups;
@@ -253,10 +253,10 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
             const switchDB = await connectDB(businessOwnerId);
               const chat = await switchDB.model("chats", this._chatModel.schema).findOne({
                   chatType,
-                  participants: { $all: [myId, receiverId] }, // Ensure both participants are in the array
+                  participants: { $all: [myId, receiverId] }, 
               });
       
-              // If chat found, return its _id, otherwise return null
+
               if (!chat) {
                   throw new Error("Chat not found");
               }
@@ -292,7 +292,7 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         const pipeline = [
             {
                 $match: {
-                    _id: groupObjectId // Match the specific group by ID
+                    _id: groupObjectId 
                 }
             },
             {
@@ -361,7 +361,7 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
         const pipeline = [
             {
                 $match: {
-                    _id: groupObjectId // Match the specific group by ID
+                    _id: groupObjectId 
                 }
             },
             {
@@ -502,14 +502,9 @@ export default class ChatRepository extends BaseRepository <IChat> implements IC
     }
 
 
-    async updateLastSeenForChats(userId: string ,businessOwnerId: string): Promise<any> {
-        console.log(`"update lastseen of "`.bgMagenta, userId);
-        console.log(`"update lastseen of "`.bgMagenta, businessOwnerId);
-        
-        
+    async updateLastSeenForChats(userId: string ,businessOwnerId: string): Promise<any> { 
         try {
          
-    
             const switchDB = await connectDB(businessOwnerId);
             const result = await switchDB.model("chats", this._chatModel.schema).updateMany(
                 {

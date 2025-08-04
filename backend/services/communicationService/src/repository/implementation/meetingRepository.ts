@@ -176,18 +176,11 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
     
 
     async createMeeting(meeting: any, myId: string , businessOwnerId: string): Promise<IMeeting> {
-
-        console.log("Touiching create meeting ======>from repo " ,meeting);
-        console.log("myId ======>from repo  " ,myId);
-        console.log("businessOwnerId ======> from repo" ,businessOwnerId);
-        
         
         try {
-            // Set the scheduledBy field to the current user's ID
             meeting.scheduledBy = myId;
             meeting.participants.push(myId);
     
-            // Ensure participants are properly cast to ObjectId
             if (meeting.participants) {
                 meeting.participants = meeting.participants.map((participant: any) =>
                     typeof participant === "string"
@@ -199,7 +192,6 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
             const switchDB = await connectDB(businessOwnerId);
             const createdMeeting = await switchDB.model("Meeting", this._meetingModel.schema).create(meeting);
     
-            // Ensure the result is returned with the correct type
             return createdMeeting as IMeeting;
         } catch (error: any) {
             console.error("Error creating meeting:", error.message);
@@ -222,7 +214,7 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
             throw new Error(`Meeting with ID ${meetingId} not found.`);
           }
     
-          return updatedMeeting as IMeeting; // Explicit cast to IMeeting
+          return updatedMeeting as IMeeting; 
         } catch (error:any) {
           console.error(`Error updating meeting: ${error.message}`);
           throw error;
@@ -238,7 +230,7 @@ export default class MeetingRepository extends BaseRepository<IMeeting> implemen
             throw new Error(`Meeting with ID ${meetingId} not found.`);
           }
     
-          return deletedMeeting as IMeeting; // Explicit cast to IMeeting
+          return deletedMeeting as IMeeting; 
         } catch (error:any) {
           console.error(`Error deleting meeting: ${error.message}`);
           throw error;

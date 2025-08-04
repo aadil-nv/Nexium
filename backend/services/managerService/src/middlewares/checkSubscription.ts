@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { CustomRequest } from "../middlewares/tokenAuthenticate"; // Ensure the correct path
 import ManagerRepository from "../repository/implementation/managerRepository";
 import managerModel from "../models/managerModel";
+import { HttpStatusCode } from "./../utils/enums";
 const checkSubscription = (checkType: string) => {
     
     console.log("checkType", checkType);
@@ -9,11 +10,10 @@ const checkSubscription = (checkType: string) => {
   return async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
       const businessOwnerId = req.user?.managerData?.businessOwnerId;
-      console.log("businessOwnerId==============checkSubscription-Middileware============", businessOwnerId);
 
 
       if (!businessOwnerId) {
-        return res.status(400).json({ message: "Business owner ID not found in token." });
+        return res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Business owner ID not found in token." });
       }
 
       const repository = new ManagerRepository(managerModel);
@@ -21,19 +21,18 @@ const checkSubscription = (checkType: string) => {
       
       if(checkType === "employee"){
         const isAllowed = await repository.checkSubscriptionEmployee(businessOwnerId);
-        console.log("isAllowed========>", isAllowed);
         
 
         if (!isAllowed) {
-          return res.status(409).json({ message: "Employee limit exceeded. Please upgrade your subscription." });
+          return res.status(HttpStatusCode.FORBIDDEN).json({ message: "Employee limit exceeded. Please upgrade your subscription." });
         }
       }
      
 
-      next(); // Proceed if subscription is valid
+      next(); 
     } catch (error) {
       console.error("Subscription check error:", error);
-      return res.status(500).json({ message: "Error checking subscription status." });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error checking subscription status." });
     }
   };
 };

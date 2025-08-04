@@ -20,11 +20,9 @@ export default class BusinessOwnerConsumer implements IConsumer {
     const exchange = 'fanout_exchange';
 
     try {
-      // Establish connection
       this.connection = await amqp.connect(process.env.RABBITMQ_URL as string);
       this.channel = await this.connection.createChannel();
 
-      // Declare queue and exchange
       await this.channel.assertQueue(queue, { durable: true });
       await this.channel.assertExchange(exchange, 'fanout', { durable: true });
 
@@ -32,34 +30,24 @@ export default class BusinessOwnerConsumer implements IConsumer {
 
       this.channel?.bindQueue(queue, exchange, '');
 
-      // Handle incoming messages
       this.channel?.consume(queue, async (msg) => {
         if (msg !== null) {
           try {
             const data = JSON.parse(msg.content.toString());
             console.log('rebiit data sented in fanout:', data);
 
-
-            // if (data.businessOwnerData) {
-            //   await this.businessOwnerService.registerBusinessOwner(data.businessOwnerData);
-            // }
-
-            // Acknowledge the message after processing
             this.channel?.ack(msg);
           } catch (err) {
             console.error('Error processing message:', err);
-            // Negative acknowledge to requeue the message in case of error
             this.channel?.nack(msg, false, true);
           }
         }
       });
 
-      // Handle connection close
       this.connection?.on('close', () => {
         console.log('RabbitMQ connection closed');
       });
 
-      // Handle errors on the channel
       this.channel?.on('error', (err) => {
         console.error('Channel error:', err);
       });

@@ -14,12 +14,11 @@ export interface IAttendanceEntry {
 }
 
 export interface IEmployeeAttendance extends Document {
-  employeeId: mongoose.Types.ObjectId; // Reference to the Employee
-  attendance: IAttendanceEntry[]; // Array of daily attendance
+  employeeId: mongoose.Types.ObjectId;
+  attendance: IAttendanceEntry[]; 
   
 }   
 
 
 
 
-//!============================================================================

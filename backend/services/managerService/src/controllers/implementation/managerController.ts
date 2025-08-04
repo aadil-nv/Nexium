@@ -3,6 +3,7 @@ import IManagerService from "../../service/interface/IManagerService";
 import IManagerController from "../interface/IManagerController";
 import { inject, injectable } from "inversify";
 import { CustomRequest } from '../../middlewares/tokenAuthenticate'
+import { HttpStatusCode } from "./../../utils/enums";
 
 @injectable()
 export default class ManagerController implements IManagerController {
@@ -29,16 +30,16 @@ export default class ManagerController implements IManagerController {
       const managerId = req?.user?.managerData?._id;
        if (!managerId) {
          return res
-           .status(400)
+           .status(HttpStatusCode.BAD_REQUEST)
            .json({ message: "Business owner ID not provided in cookies" });
        }
 
       const managerpersonalinfo = await this._managerService.getManagerPersonalInfo(managerId ,businessOwnerId as string);
 
-      return res.status(200).json(managerpersonalinfo);
+      return res.status(HttpStatusCode.OK).json(managerpersonalinfo);
       
     } catch (error) {
-      return res.status(500).json({ message: "Failed to get manager personal info", error });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to get manager personal info", error });
 
       
     }
@@ -51,15 +52,15 @@ export default class ManagerController implements IManagerController {
       const managerId = req?.user?.managerData?._id;
       if (!managerId) {
         return res
-          .status(400)
+          .status(HttpStatusCode.BAD_REQUEST)
           .json({ message: "Business owner ID not provided in cookies" });
       }
 
       const managerProfessionalInfo = await this._managerService.getManagerProfessionalInfo(managerId ,businessOwnerId as string);
-      return res.status(200).json(managerProfessionalInfo);
+      return res.status(HttpStatusCode.OK).json(managerProfessionalInfo);
       
     } catch (error) {
-      return res.status(500).json({ message: "Failed to get manager personal info", error });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to get manager personal info", error });
 
       
     }
@@ -71,17 +72,17 @@ export default class ManagerController implements IManagerController {
       const managerId = req?.user?.managerData?._id;
        if (!managerId) {
          return res
-           .status(400)
+           .status(HttpStatusCode.BAD_REQUEST)
            .json({ message: "Business owner ID not provided in cookies" });
        }
 
 
       const managerAddress = await this._managerService.getManagerAddress(managerId ,businessOwnerId as string);
         
-      return res.status(200).json(managerAddress);
+      return res.status(HttpStatusCode.OK).json(managerAddress);
       
     } catch (error) {
-      return res.status(500).json({ message: "Failed to get manager personal info", error });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to get manager personal info", error });
 
       
     }
@@ -95,16 +96,16 @@ export default class ManagerController implements IManagerController {
       const managerId = req?.user?.managerData?._id;
        if (!managerId) {
          return res
-           .status(400)
+           .status(HttpStatusCode.BAD_REQUEST)
            .json({ message: "Business owner ID not provided in cookies" });
        }
 
       const managerDocuments = await this._managerService.getManagerDocuments(managerId ,businessOwnerId as string);
       
-      return res.status(200).json(managerDocuments);
+      return res.status(HttpStatusCode.OK).json(managerDocuments);
       
     } catch (error) {
-      return res.status(500).json({ message: "Failed to get manager personal info", error });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to get manager personal info", error });
 
       
     }
@@ -119,16 +120,16 @@ export default class ManagerController implements IManagerController {
       const managerId = req?.user?.managerData?._id;
        if (!managerId) {
          return res
-           .status(400)
+           .status(HttpStatusCode.BAD_REQUEST)
            .json({ message: "Business owner ID not provided in cookies" });
        }
       const managerCredentials = await this._managerService.getManagerCredentials(managerId ,businessOwnerId as string);
       console.log("managerCredentials", managerCredentials);
       
-      return res.status(200).json(managerCredentials);
+      return res.status(HttpStatusCode.OK).json(managerCredentials);
       
     } catch (error) {
-      return res.status(500).json({ message: "Failed to get manager personal info", error });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to get manager personal info", error });
 
       
     }
@@ -141,16 +142,16 @@ export default class ManagerController implements IManagerController {
       const managerId = req?.user?.managerData?._id;
       if (!managerId) {
         return res
-          .status(400)
+          .status(HttpStatusCode.BAD_REQUEST)
           .json({ message: "Business owner ID not provided in cookies" });
       }
 
      
         const result = await this._managerService.updateManagerPersonalInfo(managerId, req.body ,businessOwnerId as string);        
 
-        return res.status(200).json(result);
+        return res.status(HttpStatusCode.OK).json(result);
     } catch (error) {
-        return res.status(500).json({
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
             message: "Failed to get manager personal info",
             error,
         });
@@ -165,14 +166,14 @@ export default class ManagerController implements IManagerController {
       const refreshToken = req.cookies?.refreshToken; 
     if (!refreshToken) {
       console.error("Refresh token is missing from cookies.");
-      return res.status(400).json({ message: 'Refresh token missing.' });
+      return res.status(HttpStatusCode.BAD_REQUEST).json({ message: 'Refresh token missing.' });
     } 
 
     const newAccessToken = await this._managerService.setNewAccessToken(refreshToken );
     
     if (!newAccessToken) {
       console.error("Failed to generate a new access token.");
-      return res.status(401).json({ message: 'Failed to generate new access token.' });
+      return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'Failed to generate new access token.' });
     }
 
 
@@ -184,10 +185,10 @@ export default class ManagerController implements IManagerController {
       sameSite: 'strict',
     });
 
-    return res.status(200).json({ accessToken: newAccessToken });
+    return res.status(HttpStatusCode.OK).json({ accessToken: newAccessToken });
   } catch (error) {
     console.error("Error in setNewAccessToken:", error);
-    return res.status(500).json({ error: 'Failed to generate new access token.' });
+    return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: 'Failed to generate new access token.' });
   }
 }
 
@@ -196,9 +197,9 @@ export default class ManagerController implements IManagerController {
   try {
     res.clearCookie('refreshToken');
     res.clearCookie('accessToken');
-    return res.status(200).json({ message: 'Logged out successfully.' });
+    return res.status(HttpStatusCode.OK).json({ message: 'Logged out successfully.' });
   } catch (error) {
-    return res.status(500).json({ error: 'Failed to logout.' });
+    return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: 'Failed to logout.' });
   }
 }
 
@@ -210,15 +211,15 @@ export default class ManagerController implements IManagerController {
       const businessOwnerId = req?.user?.managerData?.businessOwnerId;
       if (!managerId) {
         return res
-          .status(400)
+          .status(HttpStatusCode.BAD_REQUEST)
           .json({ message: "Business owner ID not provided in cookies" });
 
       }
 
       const result = await this._managerService.updateManagerProfilePicture(managerId, req.file as Express.Multer.File ,businessOwnerId as string);
-      return res.status(200).json(result);
+      return res.status(HttpStatusCode.OK).json(result);
     } catch (error) {
-      return res.status(500).json({
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
         message: "Failed to get manager personal info",
         error,
       });
@@ -234,13 +235,13 @@ export default class ManagerController implements IManagerController {
       const managerId = req?.user?.managerData?._id;
       if (!managerId) {
         return res
-          .status(400)
+          .status(HttpStatusCode.BAD_REQUEST)
           .json({ message: "Business owner ID not provided in cookies" });
       }
       const result = await this._managerService.getLeaveEmployees(managerId ,businessOwnerId as string);
-      return res.status(200).json(result);
+      return res.status(HttpStatusCode.OK).json(result);
     } catch (error) {
-      return res.status(500).json({
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
         message: "Failed to get manager personal info",
         error,
       });
@@ -248,8 +249,6 @@ export default class ManagerController implements IManagerController {
   }
 
  async updateManagerAddress(req: CustomRequest, res: Response): Promise<Response> {
-
-  
     try {
       const businessOwnerId = req?.user?.managerData?.businessOwnerId;
 
@@ -260,9 +259,9 @@ export default class ManagerController implements IManagerController {
           .json({ message: "Business owner ID not provided in cookies" });
       }
       const result = await this._managerService.updateManagerAddress(managerId, req.body,businessOwnerId as string);
-      return res.status(200).json(result);
+      return res.status(HttpStatusCode.OK).json(result);
     } catch (error) {
-      return res.status(500).json({
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
         message: "Failed to get manager personal info",
         error,
       });
@@ -275,22 +274,22 @@ export default class ManagerController implements IManagerController {
     const businessOwnerId = req?.user?.managerData?.businessOwnerId;
   
     if(!managerrId){
-      return res.status(400).json({ message: "Business owner ID not provided in cookies" });
+      return res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Business owner ID not provided in cookies" });
     }
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+      return res.status(HttpStatusCode.BAD_REQUEST).json({ message: "No file uploaded" });
     }
 
     const result = await this._managerService.uploadDocuments(managerrId, req.file, "resume" ,businessOwnerId as string);
 
     if(!result){
-      return res.status(400).json({ message: "Failed to upload documents" });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to upload documents" });
     }
-    return res.status(200).json(result);
+    return res.status(HttpStatusCode.OK).json(result);
     
   
   } catch (error) {
-    return res.status(500).json({
+    return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
       message: "Failed to get manager personal info",
       error,
     });
@@ -306,13 +305,13 @@ export default class ManagerController implements IManagerController {
       const managerId = req?.user?.managerData?._id;
       if (!managerId) {
         return res
-          .status(400)
+          .status(HttpStatusCode.BAD_REQUEST)
           .json({ message: "Business owner ID not provided in cookies" });
       }
       const result = await this._managerService.updateManagerIsActive(managerId,false ,businessOwnerId as string);
-      return res.status(200).json(result);
+      return res.status(HttpStatusCode.OK).json(result);
     } catch (error) {
-      return res.status(500).json({
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
         message: "Failed to get manager personal info",
         error,
       });

@@ -26,20 +26,15 @@ export default class SubscriptionService implements ISubscriptionService {
 
     async getSubscription(businessOwnerId: string): Promise<ISubscriptionDTO> {
         try {
-            // Convert businessOwnerId (string) to ObjectId
             const objectId = new mongoose.Types.ObjectId(businessOwnerId);
 
-    
-            // Use the businessOwnerRepository to fetch business owner data
-            const businessOwnerData = await this._businessOwnerRepository.findOne({ _id: objectId });
-           
+                const businessOwnerData = await this._businessOwnerRepository.findOne({ _id: objectId });
     
             const subscriptionId = businessOwnerData?.subscription?.subscriptionId;
             if (!subscriptionId) {
                 throw new Error("Subscription not found");
             }
     
-            // Get the subscription details
             const subscription = await this._subscriptionRepository.getSubscription(subscriptionId.toString()); // Ensure subscriptionId is a string
           
     
@@ -82,35 +77,25 @@ export default class SubscriptionService implements ISubscriptionService {
     async getInvoices(businessOwnerId: string): Promise<any> {
         
         try {
-            // Convert businessOwnerId (string) to ObjectId
             const objectId = new mongoose.Types.ObjectId(businessOwnerId);
     
-            // Fetch business owner data from the repository
             const businessOwnerData = await this._businessOwnerRepository.findOne({ _id: objectId });
 
-            // Ensure business owner data exists and extract subscription and customer details
             if (!businessOwnerData || !businessOwnerData?.subscription?.customerId) {
                 throw new Error('Business owner data or customer ID not found');
             }
 
             const customerId = businessOwnerData?.subscription?.customerId;
-            console.log("customerId>>>>>>>>>>>>>>", customerId);
 
             const customer = await stripe.customers.retrieve(customerId);
-
-            console.log(`customer>>>>>>>>>>>>>>`.bgWhite, customer);
             
-            
-
-            // Fetch invoices from Stripe for the customer
+        
             const invoices = await stripe.invoices.list({
                 customer: customerId,
                 limit: 10, 
             });
-            console.log(`"invoices>>>>>>>>>>>>>>"`.bgMagenta, invoices);
             
 
-            // Return the invoices to the caller
             return invoices.data;
         } catch (error) {
             console.error('Error fetching invoices:', error);

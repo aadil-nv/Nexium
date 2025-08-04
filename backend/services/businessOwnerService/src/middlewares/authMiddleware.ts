@@ -3,8 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "../utils/jwt";
 import businessOwnerRepository from "../repository/implementation/businessOwnerRepository";
 import businessOwnerModel from "../models/businessOwnerModel";
-
-// Update the CustomRequest interface to include the employee data
+import  {HttpStatusCode}  from "../utils/enums";
 export interface CustomRequest extends Request {
   user?: JwtPayload & {
     businessOwnerData?: {
@@ -23,21 +22,18 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
   }
 
   try {
-    // Verify and decode the token
     const decoded = verifyAccessToken(token);
     
 
     if (!decoded) {
-      return res.status(401).json({ message: "Invalid token" });
+      return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Invalid token" });
     }
 
-    // Attach the decoded user data, including employeeData, to the request
     req.user = {
       ...decoded,
-      employeeData: decoded.employeeData || { _id: "", employeeId: "" }, // Ensure employeeData exists
+      employeeData: decoded.employeeData || { _id: "", employeeId: "" }, 
     };
 
-    // Check if business owner is blocked
     const businessOwnerId = decoded.businessOwnerData?._id;
     if (businessOwnerId) {
       const repository = new businessOwnerRepository(businessOwnerModel);
@@ -45,17 +41,17 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
       try {
         const isBlocked = await repository.findIsBlocked(businessOwnerId);
         if (isBlocked) {
-          return res.status(403).json({ message: "Access denied. Business owner is blocked." });
+          return res.status(HttpStatusCode.FORBIDDEN).json({ message: "Access denied. Business owner is blocked." });
         }
-        next(); // Proceed to the next middleware if not blocked
+        next(); 
       } catch (error) {
-        return res.status(500).json({ message: "Error checking business owner status." });
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error checking business owner status." });
       }
     } else {
-      return res.status(400).json({ message: "Business owner ID not found in token." });
+      return res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Business owner ID not found in token." });
     }
   } catch (error) {
-    return res.status(401).json({ message: "Invalid token" });
+    return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Invalid token" });
   }
 };
 

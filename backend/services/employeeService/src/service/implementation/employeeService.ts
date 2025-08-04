@@ -45,7 +45,6 @@ export default class EmployeeService implements IEmployeeService {
   } 
 
   async updateIsActive(employeeId: string, isActive: boolean ,businessOwnerId: string): Promise<IEmployeeResponseDTO> {
-    console.log("calling updateIsActive from service---->", employeeId, isActive ,businessOwnerId);
     
     try {
       const employee = await this._employeeRepository.updateIsActive(employeeId, isActive ,businessOwnerId);
@@ -61,10 +60,7 @@ export default class EmployeeService implements IEmployeeService {
   async getProfile(employeeId: string ,businessOwnerId: string): Promise<IGetProfileDTO> {
         
         try {
-          const employee = await this._employeeRepository.getProfile( employeeId ,businessOwnerId);
-
-                console.log("data from service", employee);
-                
+          const employee = await this._employeeRepository.getProfile( employeeId ,businessOwnerId);                
 
           if (!employee) {
             throw new Error("Employee not found");
@@ -93,7 +89,6 @@ export default class EmployeeService implements IEmployeeService {
   async getPersonalInfo(employeeId: string ,businessOwnerId: string): Promise<IGetProfileDTO> {
         try {
           const employee = await this._employeeRepository.getProfile(employeeId ,businessOwnerId);
-          // const leaves = await this._leaveRepository.getEmployeeLeaves()
           if (!employee) {
             throw new Error("Employee not found");
           }
@@ -185,9 +180,7 @@ export default class EmployeeService implements IEmployeeService {
     }
   }
 
-  async updateProfile(employeeId: string, data: any,businessOwnerId:string): Promise<IEmployeeResponseDTO> {
-    console.log(`profile updatye data is ==>`.bgMagenta, data);
-    
+  async updateProfile(employeeId: string, data: any,businessOwnerId:string): Promise<IEmployeeResponseDTO> {    
         try {
              const rabbitMQMessager = new RabbitMQMessager();
              await rabbitMQMessager.init();
@@ -263,7 +256,6 @@ export default class EmployeeService implements IEmployeeService {
 
   async uploadDocuments(employeeId: string, file: Express.Multer.File, fileType: "resume",businessOwnerId:string): Promise<IGetDocumentDTO> {
   try {
-    // Upload file to S3
     const fileKey = await this.uploadFileToS3(employeeId, file, "resume" ,businessOwnerId);
     
     const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;

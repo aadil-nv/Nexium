@@ -37,7 +37,6 @@ export default class MeetingController implements IMeetingController {
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
 
             const response = await this._meetingService.getAllMeetings(myId , businessOwnerId);
-            // console.log(` responce ios ==>`.bgMagenta,response);
             
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error:any) {
@@ -47,18 +46,10 @@ export default class MeetingController implements IMeetingController {
     }
 
     async createMeeting(req: CustomRequest, res: Response): Promise<Response> {
-        
-        console.log("Touiching create meeting ======>" ,);
-        
+                
         try {
-            const myId = this.getMyId(req);
-            console.log("myId", myId);
-            
+            const myId = this.getMyId(req);            
             const businessOwnerId = this.getBusinessOwnerId(req);   
-            console.log("businessOwnerId", businessOwnerId);
-            console.log("req.body", req.body);
-            
-                     
             if (!myId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Unauthorized" });
             const response = await this._meetingService.createMeeting(req.body, myId ,businessOwnerId);
             return res.status(HttpStatusCode.CREATED).json(response);

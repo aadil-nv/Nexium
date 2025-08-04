@@ -16,12 +16,8 @@ export default class LeaveController implements ILeaveController {
 
     async applyLeave(req: CustomRequest, res: Response): Promise<Response> {
         try {
-            const employeeId = req.user?.employeeData?._id;     
-            console.log("Employe id is ===>",employeeId);
-                   
-            const data = req.body 
-            console.log("data ===>",data);
-            
+            const employeeId = req.user?.employeeData?._id;                        
+            const data = req.body             
             const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
             const leaves = await this._leaveService.applyLeave(employeeId ,data,businessOwnerId);
@@ -43,22 +39,13 @@ export default class LeaveController implements ILeaveController {
 
     }
 
-    async updateAppliedLeave(req: CustomRequest, res: Response):Promise<Response>{  
-        console.log("hitting update leave --->");
-              
+    async updateAppliedLeave(req: CustomRequest, res: Response):Promise<Response>{                
         try {
-            const employeeId = req.user?.employeeData?._id;
-            console.log("employeeId ===>",employeeId);
-            
-            const leaveId = req.params.id;       
-            console.log("leaveId ===>",leaveId);
-            
+            const employeeId = req.user?.employeeData?._id;            
+            const leaveId = req.params.id;                   
             const leaveData = req.body  
-            console.log("leaveData ===>",leaveData);
             const businessOwnerId = this.getBusinessOwnerId(req);          
-            console.log("businessOwnerId ===>",businessOwnerId);
             const leaves  = await this._leaveService.updateAppliedLeave(employeeId as string,leaveId as string,leaveData ,businessOwnerId);            
-            console.log("leaves ===>",leaves);
             return res.status(HttpStatusCode.OK).json(leaves);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });

@@ -9,11 +9,10 @@ export default class Consumer implements IConsumer {
   private _connection: amqp.Connection | null = null;
   private _channel: amqp.Channel | null = null;
 
-  // Inject IManagerService and IEmployeeService in the constructor
   constructor(
     @inject("IManagerService") _managerService: IManagerService
   ) {
-    this._managerService = _managerService; // Initialize _employeeService
+    this._managerService = _managerService; 
   }
 
   async receiveFromQueue() {
@@ -34,13 +33,7 @@ export default class Consumer implements IConsumer {
         if (msg !== null) {
           try {
             const data = JSON.parse(msg.content.toString());
-            // console.log("data ---------------QUEUE", data);
-
-
-            // Check for employeeData and send it to the employee service
-            // if (data.employeeData) {
-            //   await this._employeeService.addEmployee(data.employeeData);
-            // }
+      
             if (data.managerIsActiveData) {
               
               await this._managerService.updateManagerIsActive(data.managerIsActiveData._id, true ,data.managerIsActiveData.businessOwnerId);

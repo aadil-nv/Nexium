@@ -5,15 +5,14 @@ import IEmployeeService from '../../service/interface/IEmployeeService';
 
 @injectable()
 export default class Consumer implements IConsumer {
-  private _employeeService: IEmployeeService; // Declare _employeeService
+  private _employeeService: IEmployeeService; 
   private _connection: amqp.Connection | null = null;
   private _channel: amqp.Channel | null = null;
 
-  // Inject IManagerService and IEmployeeService in the constructor
   constructor(
     @inject("IEmployeeService") employeeService: IEmployeeService
   ) {
-    this._employeeService = employeeService; // Initialize _employeeService
+    this._employeeService = employeeService;
   }
 
   async receiveFromQueue() {
@@ -27,22 +26,13 @@ export default class Consumer implements IConsumer {
       await this._channel.assertQueue(queue, { durable: true });
       await this._channel.assertExchange(exchange, 'fanout', { durable: true });
 
-      console.log(`Waiting for messages in queue...`.bgRed.white.bold);
-
       this._channel?.bindQueue(queue, exchange, '');
       this._channel?.consume(queue, async (msg) => {
         if (msg !== null) {
           try {
             const data = JSON.parse(msg.content.toString());
-            console.log("data ---------------QUEUE", data);
 
-
-            // if (data.employeeData) {
-            //   await this._employeeService.addEmployee(data.employeeData , data.businessOwnerId);
-            // }
-            if (data.employeeIsActiveData) {
-              // console.log(`employeeIsActive:2222222222222222222 ${data.employeeIsActiveData._id}`.bgMagenta.bold);
-              
+            if (data.employeeIsActiveData) {              
               await this._employeeService.updateIsActive(data.employeeIsActiveData._id, true , data.employeeIsActiveData.businessOwnerId);
             }
 

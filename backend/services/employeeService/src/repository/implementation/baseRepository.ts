@@ -11,17 +11,9 @@ export default class BaseRepository<T extends Document> implements IBaseReposito
     }
 
 
-    async findOne(filter: FilterQuery<T>): Promise<T | null> {
-
-        console.log(`Repository calling ----------------`.bgGreen);
-        
+    async findOne(filter: FilterQuery<T>): Promise<T | null> {        
         try {
-            console.log(`Repository calling ----------------`.bgBlue,filter.employeeId);
-            console.log(`Repository calling ----------------`.bgYellow,this.model);
-            
-            const document = await this.model.findOne({employeeId: filter.employeeId}).exec();
-            console.log("DOCUMENTIS ",document);
-            
+            const document = await this.model.findOne({employeeId: filter.employeeId}).exec();            
             return document; 
         } catch (error) {
             console.error("Error finding document:", error);

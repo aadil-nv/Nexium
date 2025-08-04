@@ -10,15 +10,12 @@ export default class PayrollService implements IPayrollService {
 
     async getPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteriaDTO[]> {
         try {
-            // Fetch payroll criteria from the repository (this could be an array)
             const payrollCriteriaList = await this._payrollRepository.getPayrollCriteria(businessOwnerId);
 
-            // If not found, throw an error
             if (!payrollCriteriaList || payrollCriteriaList.length === 0) {
                 throw new Error("Payroll criteria not found");
             }
 
-            // Map each payroll criteria item to the DTO
             const payrollCriteriaDTOList: IPayrollCriteriaDTO[] = payrollCriteriaList.map(payrollCriteria => {
                 return {
                     _id: payrollCriteria._id,

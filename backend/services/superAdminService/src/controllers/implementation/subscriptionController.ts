@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import ISubscriptionService from "../../service/interface/ISubscriptionService";
 import { inject, injectable } from "inversify";
+import { HttpStatusCode } from "../../utils/httpStatusCodes";
 
 @injectable()
 export default class SubscriptionController {
@@ -9,7 +10,7 @@ export default class SubscriptionController {
   async addSubscription(req: Request, res: Response): Promise<Response> {
     try {
       const result = await this._subscriptionService.addSubscription(req.body);
-      return res.status(result ? 201 : 400).json(result);
+      return res.status(result ? HttpStatusCode.ACCEPTED : HttpStatusCode.BAD_REQUEST).json(result);
     } catch (error) {
       console.error("Error in controller:", error);
       return res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -19,7 +20,7 @@ export default class SubscriptionController {
   async fetchAllSubscriptions(req: Request, res: Response): Promise<Response> {
     try {
       const result = await this._subscriptionService.fetchAllSubscriptions();
-      return res.status(result ? 200 : 400).json(result);
+      return res.status(result ? HttpStatusCode.OK : HttpStatusCode.BAD_REQUEST).json(result);
     } catch (error) {
       console.error("Error in controller:", error);
       return res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -29,33 +30,31 @@ export default class SubscriptionController {
   async updateIsActive(req: Request, res: Response): Promise<Response> {
     try {
       const result = await this._subscriptionService.updateIsActive(req.params.id);
-      return res.status(result ? 200 : 400).json(result);
+      return res.status(result ? HttpStatusCode.OK : HttpStatusCode.BAD_REQUEST).json(result);
     } catch (error) {
       console.error("Error in controller:", error);
-      return res.status(500).json({ success: false, message: "Internal Server Error" });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal Server Error" });
     }
   }
 
   async updateSubscriptionDetails(req: Request, res: Response): Promise<Response> {
     try {
-      const updateData = req.body;
-      console.log(updateData);
-      
+      const updateData = req.body;      
       const result = await this._subscriptionService.updateSubscriptionDetails(req.params.id, updateData);
-      return res.status(result ? 200 : 400).json(result);
+      return res.status(result ? HttpStatusCode.OK : HttpStatusCode.BAD_REQUEST).json(result);
     } catch (error) {
       console.error("Error in controller:", error);
-      return res.status(500).json({ success: false, message: "Internal Server Error" });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal Server Error" });
     }
   }
 
   async getSubscriptionDetails(req: Request, res: Response): Promise<Response> {
     try {
       const result = await this._subscriptionService.fetchAllSubscriptions();
-      return res.status(result ? 200 : 400).json(result);
+      return res.status(result ? HttpStatusCode.OK : HttpStatusCode.BAD_REQUEST).json(result);
     } catch (error) {
       console.error("Error in controller:", error);
-      return res.status(500).json({ success: false, message: "Internal Server Error" });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal Server Error" });
     }
   }
 }

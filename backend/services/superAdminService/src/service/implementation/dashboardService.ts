@@ -10,11 +10,9 @@ export default class DashboardService implements IDashboardService {
 
 
  async getAllDashboardData(): Promise<any> {
-    console.log("hitinge serviceeeeeeeeeeeeeeeeeeeeeeeeeeee");
     
     try {
       const businessOwners = await this._businessOwnerRepository.getDashboardData();
-      console.log("buseinessowner ========================",businessOwners);
       
       return businessOwners 
     } catch (error) {

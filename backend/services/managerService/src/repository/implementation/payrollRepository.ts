@@ -39,13 +39,13 @@ export default class PayrollRepository extends BaseRepository<IPayrollCriteria> 
                         professionalTax: 0,
                         esiFund: 0
                     },
-                    incentives: [], // Empty array as no incentive slabs are needed
+                    incentives: [], 
                     createdAt: new Date()
                 });
 
-                // Save the new payroll criteria
+   
                 await defaultPayrollCriteria.save();
-                return [defaultPayrollCriteria]; // Return the newly created default payroll criteria
+                return [defaultPayrollCriteria];
             }
 
             return payrollCriteria;
@@ -59,7 +59,6 @@ export default class PayrollRepository extends BaseRepository<IPayrollCriteria> 
         try {
             const db = await connectDB(businessOwnerId);
     
-            // Correct model usage to access the payrollCriteria collection
             const updatedPayroll = await db.model<IPayrollCriteria>("PayrollCriteria", this.payrollCriteriaModel.schema)
                 .findByIdAndUpdate(payrollId, payrollData, { new: true })
                 .exec();

@@ -19,7 +19,7 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
     try {
       const switchDB = await connectDB(businessOwnerId);
       const employee = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema)
-        .findOne({ _id: employeeId }) // Adjusted to use `_id` if that's the field
+        .findOne({ _id: employeeId }) 
         .select({ password: 0 })
         .exec();
 
@@ -64,7 +64,7 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
             throw new Error("Business owner ID not found for the given manager.");
         }
 
-        return manager.businessOwnerId.toString(); // Return the businessOwnerId as a string
+        return manager.businessOwnerId.toString(); 
     } catch (error: any) {
         throw new Error("Error fetching business owner ID: " + error.message);
     }
@@ -109,7 +109,7 @@ async  updateProfilePicture(employeeId: string, file: string,businessOwnerId: st
       const switchDB = await connectDB(businessOwnerId);
       const result = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema).findByIdAndUpdate(
         employeeId,
-        { $set: { 'personalDetails.profilePicture': file } }, // Save the file path
+        { $set: { 'personalDetails.profilePicture': file } },
         { new: true }
       );
   
@@ -131,7 +131,7 @@ async updateAddress(employeeId: string, data: any,businessOwnerId: string): Prom
 
       const result = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema).findByIdAndUpdate(
         employeeId,
-        { $set: { 'address': data } }, // Save the file path
+        { $set: { 'address': data } }, 
         { new: true }
       );
   
@@ -152,7 +152,7 @@ async updateAddress(employeeId: string, data: any,businessOwnerId: string): Prom
 
       const result = await switchDB.model<IEmployee>("Employee", this._employeeModel.schema).findByIdAndUpdate(
         employeeId,
-        { $set: { [`documents.${fileType}`]: documentData } }, // Save the file path
+        { $set: { [`documents.${fileType}`]: documentData } },
         { new: true }
       );
   
@@ -208,7 +208,7 @@ async findBusinessOwnerIsBlocked(employeeId: string, businessOwnerId: string): P
             throw new Error(`No BusinessOwner records found for employee ID ${employeeId}`);
           }
       
-          return businessOwner.isBlocked ?? null; // Cast to `any` to avoid TypeScript errors
+          return businessOwner.isBlocked ?? null; 
   } catch (error) {
     console.error(error);
     throw error;

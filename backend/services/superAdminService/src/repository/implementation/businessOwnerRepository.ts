@@ -21,19 +21,15 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
       const _switchDb = mongoose.connection.useDb(id, { useCache: true });
       const SwitchedBusinessOwnerModel = _switchDb.model('businessowners', businessOwnerModel.schema);
   
-      // Find the business owner in the original database
       const businessOwner = await businessOwnerModel.findById(id);
       if (!businessOwner) throw new Error("Business owner not found");
   
-      // Find the business owner in the switched database
       const switchedBusinessOwner = await SwitchedBusinessOwnerModel.findById(id);
       if (!switchedBusinessOwner) throw new Error("Business owner not found in switched DB");
   
-      // Toggle isBlocked status
       businessOwner.isBlocked = !businessOwner.isBlocked;
       switchedBusinessOwner.isBlocked = !switchedBusinessOwner.isBlocked;
   
-      // Save both changes
       await businessOwner.save();
       return await switchedBusinessOwner.save();
     } catch (error) {
@@ -50,10 +46,8 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
       const startOfLastMonth = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1);
       const endOfLastMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 0);
 
-      // 1. Total count of business owners
       const totalBusinessOwners = await businessOwnerModel.countDocuments();
 
-      // 2. Last added business owner
       const lastAddedBusinessOwner = await businessOwnerModel
         .findOne()
         .sort({ createdAt: -1 })
@@ -61,27 +55,23 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
 
       let lastAddedBusinessOwnerCount = 0;
       if (lastAddedBusinessOwner) {
-        // Count how many business owners were added at the same time
         lastAddedBusinessOwnerCount = await businessOwnerModel.countDocuments({
           createdAt: lastAddedBusinessOwner.createdAt,
         });
       }
 
-      // 3. Business owners added this month
       const thisMonthBusinessOwners = await businessOwnerModel.countDocuments({
         createdAt: { $gte: startOfCurrentMonth, $lt: endOfCurrentMonth },
       });
 
-      // 4. Business owners added last month
       const lastMonthBusinessOwners = await businessOwnerModel.countDocuments({
         createdAt: { $gte: startOfLastMonth, $lt: endOfLastMonth },
       });
 
-      // 5. Plan-wise subscription count and total revenue
       const planCountsAndRevenue = await businessOwnerModel.aggregate([
         {
           $lookup: {
-            from: "subscriptions", // Ensure the collection name is correct
+            from: "subscriptions", 
             localField: "subscription.subscriptionId",
             foreignField: "_id",
             as: "subscriptionDetails",
@@ -107,10 +97,8 @@ export default class BusinessOwnerRepository implements IBusinessOwnerRepository
         },
       ]);
 
-      // 6. Subtotal revenue
       const subTotalRevenue = planCountsAndRevenue.reduce((total, plan) => total + plan.totalRevenue, 0);
 
-      // 7. Latest 4 added business owners with their company logo and details
       const latestAddedBusinessOwners = await businessOwnerModel
         .find({})
         .sort({ createdAt: -1 })

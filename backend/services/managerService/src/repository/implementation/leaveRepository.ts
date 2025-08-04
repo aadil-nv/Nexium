@@ -113,11 +113,9 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
                     attendance.leaveStatus && attendance.leaveStatus !== "null"
                 );
     
-                // Return employee data with filtered attendance
                 return { ...employee.toObject(), attendance: filteredAttendance };
             });
     
-            // Check if any valid results were found
             if (filteredResults.length === 0) {
                 throw new Error("No leave employees found with valid leave status");
             }
@@ -152,7 +150,7 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
                     studyLeave: 0        
                 });
     
-                await newLeaveTypesDoc.save(); // Save the document
+                await newLeaveTypesDoc.save(); 
                 return newLeaveTypesDoc;
             }
     
@@ -174,7 +172,6 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
                 throw new Error('Leave types document not found');
             }
     
-            // Update the corresponding leave type field with new data
             if (data.sickLeave !== undefined) leaveTypesDoc.sickLeave = data.sickLeave;
             if (data.casualLeave !== undefined) leaveTypesDoc.casualLeave = data.casualLeave;
             if (data.maternityLeave !== undefined) leaveTypesDoc.maternityLeave = data.maternityLeave;
@@ -186,10 +183,8 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
             if (data.marriageLeave !== undefined) leaveTypesDoc.marriageLeave = data.marriageLeave;
             if (data.studyLeave !== undefined) leaveTypesDoc.studyLeave = data.studyLeave;
     
-            // Save the updated document
             const updatedResult = await leaveTypesDoc.save();
     
-            // Return the updated leave type document
             return updatedResult;
         } catch (error: any) {
             console.error("Error in updateLeaveTypes repository:", error);
@@ -216,29 +211,25 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
 
     async fetchAllPreAppliedLeaves(businessOwnerId: string): Promise<IAppliedLeave[]> {
      try {
-    // Fetch all pre-applied leaves from the database
     const db = await connectDB(businessOwnerId);
 
-    // Make sure the Employee model is registered
-    const Employee = db.model<IEmployee>('Employee', this.employeeModel.schema); // Assuming employeeSchema is already defined
+    const Employee = db.model<IEmployee>('Employee', this.employeeModel.schema); 
 
     const preAppliedLeaves = await db.model<IAppliedLeave>('AppliedLeave', this.appliedLeaveModel.schema)
       .find()
       .populate({
         path: 'employeeId',
-        select: 'personalDetails', // Only select `personalDetails`
-        model: Employee // Ensure you're using the correct model here
+        select: 'personalDetails', 
+        model: Employee 
       });
 
-    // Check if no pre-applied leaves are found and throw an error
+
     if (!preAppliedLeaves || preAppliedLeaves.length === 0) {
       throw new Error('No pre-applied leaves found');
     }
 
-    // Return the list of pre-applied leaves
     return preAppliedLeaves;
   } catch (error) {
-    // Improved error handling and logging
     console.error("Error fetching pre-applied leaves:", error);
     throw new Error('Failed to fetch pre-applied leaves');
   }
@@ -255,7 +246,6 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
             const appliedLeaveData: any = await  db.model<IAppliedLeave>('AppliedLeave', this.appliedLeaveModel.schema).findById(data.leaveId);
             if (!appliedLeaveData) throw new Error('Leave not found or update failed');
     
-            // Process if approved and status is pending
             if (data.action === 'approved' && appliedLeaveData.status === 'pending') {
                 Object.assign(appliedLeaveData, {
                     status: 'approved',

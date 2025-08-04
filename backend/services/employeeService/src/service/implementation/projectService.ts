@@ -12,22 +12,18 @@ export default class ProjectService implements IProjectService {
 
     async updateEmployeeFiles(projectId: string, projectFile: Express.Multer.File,businessOwnerId:string): Promise<IProjectDTO> {
         try {
-            // Upload file to S3
             const s3Key = await uploadTosS3(projectFile.buffer, projectFile.mimetype);
             if (s3Key === "error") {
                 throw new Error("File upload to S3 failed");
             }
 
-            // Generate signed URL
             const fileUrl = await getSignedImageURL(s3Key);
 
-            // Save file URL in the database
             const updatedProject = await this._projectRepository.updateEmployeeFiles(projectId, fileUrl ,businessOwnerId);
             if (!updatedProject) {
                 throw new Error("Project not found");
             }
 
-            // Map the updated project to IProjectDTO if necessary
             return {
                 projectId: updatedProject._id,
                 projectName: updatedProject.projectName,
@@ -49,10 +45,8 @@ export default class ProjectService implements IProjectService {
 
     async getAllProjects(employeeId: string ,businessOwnerId :string ): Promise<IProjectDTO[]> {
         try {
-            // Fetch projects using the repository
             const projects = await this._projectRepository.findAllProjects(employeeId,businessOwnerId);
 
-            // Transform the projects into DTOs
             const projectDTOs: IProjectDTO[] = projects.map((project) => ({
                 projectId: project._id,
                 projectName: project.projectName,
@@ -86,7 +80,6 @@ export default class ProjectService implements IProjectService {
                 throw new Error("Project not found");
             }
 
-            // Map the updatedProject to IProjectDTO if necessary
             return {
                 projectId: updatedProject._id,
                 projectName: updatedProject.projectName,
@@ -123,14 +116,14 @@ export default class ProjectService implements IProjectService {
                 .filter((project: IProject) => project.status === 'completed')
                 .reduce((acc: Record<string, number>, project: IProject) => {
                     const month = new Date(project.endDate).toLocaleString("default", { month: "long" });
-                    acc[month] = (acc[month] || 0) + 1;  // Ensure that the count is always a number
+                    acc[month] = (acc[month] || 0) + 1;  
                     return acc;
                 }, {});
 
             const monthWiseData: { month: string; completedCount: number }[] = Object.entries(monthWiseCompletedProjects).map(
                 ([month, completedCount]) => ({
                     month,
-                    completedCount: completedCount as number,  // Explicitly cast it as a number
+                    completedCount: completedCount as number,
                 })
             );
 
@@ -149,7 +142,7 @@ export default class ProjectService implements IProjectService {
                         startDate: project.startDate,
                         endDate: project.endDate,
                         status: project.status,
-                        assignedEmployee: project.assignedEmployee.employeeName, // Adjust this based on how your data is structured
+                        assignedEmployee: project.assignedEmployee.employeeName, 
                     })),
             };
             

@@ -22,7 +22,7 @@ export default class DashboardController implements IDashboardController {
             return res.status(result ? HttpStatusCode.OK : HttpStatusCode.BAD_REQUEST).json(result);
         } catch (error) {
             console.error("Error in controller:", error);
-            return res.status(500).json({ success: false, message: "Internal Server Error" });
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: "Internal Server Error" });
         }
     }
 }

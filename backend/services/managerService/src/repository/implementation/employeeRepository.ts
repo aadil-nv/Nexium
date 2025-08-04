@@ -128,14 +128,12 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
 
     async updateAddress(employeeId: string, address: IEmployee['address'], businessOwnerId: string): Promise<IEmployee> {
         try {
-            // Connect to the correct database based on the businessOwnerId
             const switchDB = await connectDB(businessOwnerId);
             
-            // Use the dynamic employee model from the correct database context
             const updatedEmployee = await switchDB.model<IEmployee>("Employee", this.employeeModel.schema).findByIdAndUpdate(
                 employeeId,
-                { address }, // Directly update the address field
-                { new: true, runValidators: true } // Return the updated document and run schema validations
+                { address }, 
+                { new: true, runValidators: true } 
             );
     
             if (!updatedEmployee) {
@@ -152,25 +150,20 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
 
     async updateEmployeeProfessionalInfo(employeeId: string, professionalInfo: any, businessOwnerId: string): Promise<IEmployee> {
         try {
-            // Connect to the correct database
             const switchDB = await connectDB(businessOwnerId);
             
-            // Get the employee model dynamically from the correct database context
             const employeeModel = switchDB.model<IEmployee>("Employee", this.employeeModel.schema);
     
-            // Find the employee
             const employee = await employeeModel.findById(employeeId);
             if (!employee) {
                 throw new Error("Employee not found");
             }
     
-            // Update the professional details
             employee.professionalDetails = {
                 ...employee.professionalDetails,
                 ...professionalInfo
             };
     
-            // Save and return the updated employee document
             return await employee.save();
         } catch (error) {
             console.error("Error updating employee professional information:", error);
@@ -181,13 +174,10 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
     
     async getDepartmentName(departmentId: string, businessOwnerId: string): Promise<string | null> {
         try {
-            // Connect to the correct database
             const db = await connectDB(businessOwnerId);
     
-            // Get the department model dynamically from the correct database context
             const departmentModel = db.model<IDepartment>("Department", this.departmentModel.schema);
     
-            // Find the department
             const department = await departmentModel.findById(departmentId).select("departmentName");
     
             return department ? department.departmentName : null;
@@ -200,19 +190,15 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
 
     async updateProfilePicture(employeeId: string, profilePicture: any, businessOwnerId: string): Promise<string> {
         try {
-            // Connect to the correct database
             const db = await connectDB(businessOwnerId);
     
-            // Get the employee model dynamically from the correct database context
             const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
     
-            // Find the employee
             const employee = await employeeModel.findById(employeeId);
             if (!employee) {
                 throw new Error("Employee not found");
             }
     
-            // Update profile picture
             employee.personalDetails.profilePicture = profilePicture;
             await employee.save();
     
@@ -227,19 +213,15 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
 
     async updateResume(employeeId: string, documentMetadata: any, businessOwnerId: string): Promise<any> {
         try {
-            // Connect to the correct database
             const db = await connectDB(businessOwnerId);
     
-            // Get the employee model dynamically from the correct database context
             const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
     
-            // Find the employee
             const employee = await employeeModel.findById(employeeId);
             if (!employee) {
                 throw new Error("Employee not found");
             }
     
-            // Update the resume details in the `documents` section
             employee.documents.resume = documentMetadata;
     
             await employee.save();
@@ -255,25 +237,19 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
 
 
     async updateBlocking(employeeId: string,blocking: any, businessOwnerId: string): Promise<boolean> {
-        console.log("businessOwnerId from updateBlocking ==>",businessOwnerId);
         
         try {
-            // Ensure connection to the correct database
             const db = await connectDB(businessOwnerId);
     
-            // Get the employee model dynamically from the correct database context
             const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
     
-            // Find the employee
             const employee = await employeeModel.findById(employeeId);
             if (!employee) {
                 throw new Error("Employee not found");
             }
     
-            // Toggle the isBlocked value
             employee.isBlocked = !employee.isBlocked;
     
-            // Save the updated employee document
             await employee.save();
     
             return employee.isBlocked;
@@ -286,13 +262,10 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
       
     async getEmployeesWithoutDepartment(businessOwnerId: string): Promise<IEmployee[]> {
         try {
-            // Ensure connection to the correct database
             const db = await connectDB(businessOwnerId);
     
-            // Get the employee model dynamically from the correct database context
             const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
     
-            // Find employees where department is null or not assigned
             const employees = await employeeModel.find({ "professionalDetails.department": { $in: [null, undefined] } });
     
             return employees;
@@ -305,13 +278,10 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
 
     async removeEmployee(employeeId: string, businessOwnerId: string): Promise<IEmployee | null> {
         try {
-            // Ensure connection to the correct database
             const db = await connectDB(businessOwnerId);
     
-            // Get the employee model dynamically from the correct database context
             const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
     
-            // Delete the employee by ID
             const deletedEmployee = await employeeModel.findByIdAndDelete(employeeId);
     
             return deletedEmployee;
@@ -323,23 +293,18 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
     
     async updateCredentials(employeeId: string, credentials: any, businessOwnerId: string): Promise<any> {
         try {
-            // Ensure connection to the correct database
             const db = await connectDB(businessOwnerId);
             
-            // Get the employee model dynamically from the correct database context
             const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
             
-            // Find the employee by ID
             const employee = await employeeModel.findById(employeeId);
             
             if (!employee) {
                 throw new Error("Employee not found");
             }
             
-            // Update employee credentials
             employee.employeeCredentials = credentials;
             
-            // Save the updated employee and return the updated credentials
             const updatedEmployee = await employee.save();
             
             return updatedEmployee.employeeCredentials;
@@ -356,7 +321,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
             
             const employeeModel = db.model<IEmployee>("Employee", this.employeeModel.schema);
             
-            // Find employees with the position of "Team Lead"
             const employees = await employeeModel.find({
                 "professionalDetails.position": "Team Lead"
             });

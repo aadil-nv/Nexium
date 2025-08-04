@@ -20,7 +20,6 @@ export default class DepartmentRepository extends BaseRepository<any> implements
       try {
           const db = await connectDB(businessOwnerId);
           
-          // Ensure Employee model is registered in this connection
           if (!db.models.Employee) {
               db.model<IEmployee>('Employee', employeeModel.schema);
           }

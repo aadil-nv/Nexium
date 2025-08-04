@@ -159,10 +159,8 @@ export default class PayrollService implements IPayrollService {
         await this.updatePayroll(employeeId , businessOwnerId);
       }
   
-      // Retrieve payroll data for the given employee
       const payroll = await this._payrollRepository.getPayroll(employeeId , businessOwnerId);
   
-      // If payroll not found, return a default response
       if (!payroll || !payroll.employeeDetails || !payroll.payrollDetails) {
         return {
           employeeId,
@@ -263,7 +261,7 @@ export default class PayrollService implements IPayrollService {
             esiAccount:payroll.employeeDetails.esiAccount || "",
             uanNumber:payroll.employeeDetails.uanNumber || "",
             bankIfsc:payroll.employeeDetails.bankIfsc || "",
-            _id: payroll._id // Assuming _id exists
+            _id: payroll._id 
           }
         ]
       };

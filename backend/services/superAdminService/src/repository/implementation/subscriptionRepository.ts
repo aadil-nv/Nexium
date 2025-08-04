@@ -26,7 +26,6 @@ export default class SubscriptionRepository implements ISubscriptionRepository {
 
   async updateById(id: string, updateData: any): Promise<any> {
     try {
-      // Exclude planType, planName, and _id from the update data
       const { planType, planName, _id, ...allowedUpdates } = updateData;
       return await subscriptionModel.findByIdAndUpdate(id, allowedUpdates, { new: true });
     } catch (error) {

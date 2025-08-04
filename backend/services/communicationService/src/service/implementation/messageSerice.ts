@@ -10,12 +10,8 @@ import { IParticipantDetails } from "dto/chatDTO";
 export default class MessageService implements IMessageService {
     constructor(@inject("IMessageRepository") private _messageRepository: IMessageRepository) { }
     async createMessage(senderId: string,chatId: string,message: any, businessOwnerId: string): Promise<IMessageDTO> {
-        console.log(`createMessage====================>`.bgMagenta , message);
-        console.log(`createMessage==========businessOwnerId==========>`.bgMagenta , businessOwnerId);
-        console.log(`createMessage=======senderId=============>`.bgMagenta , senderId);
         
         try {
-            // Prepare message data
             const messageData = {
                 content: message,
                 sender: senderId,
@@ -24,10 +20,8 @@ export default class MessageService implements IMessageService {
                 readBy: [],
             };
     
-            // Create the message using the repository
             const createdMessage:any = await this._messageRepository.createMessage(messageData , businessOwnerId);
     
-            // Map the created message to the DTO format
             const response: IMessageDTO = {
                 messageId: createdMessage._id.toString(),
                 text: createdMessage.content,
@@ -93,7 +87,6 @@ export default class MessageService implements IMessageService {
     
     async deleteMessage(messageId: string , businessOwnerId: string): Promise<IMessageResponse> {
         try {
-            // Ensure the delete operation is awaited
             const message = await this._messageRepository.deleteMessage(messageId ,businessOwnerId);
     
             if (!message) {

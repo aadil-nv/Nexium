@@ -13,8 +13,6 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
     const token = req.cookies.accessToken;
     
     if (!token) {
-
-      console.log("NOt given token");
       return res.status(401).json({ message: "No token provided" });
     }
   

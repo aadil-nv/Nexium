@@ -38,9 +38,7 @@ export default class BusinessOwnerPaymentRepository
       throw error;
     }
   }
-  async findBusinessOwnerByEmail(email: string): Promise<IBusinessOwnerDocument> {
-    console.log("email:=====>>", email);
-    
+  async findBusinessOwnerByEmail(email: string): Promise<IBusinessOwnerDocument> {    
     try {
       const businessOwner = await this.businessOwnerModel.findOne({ "personalDetails.email": email }).exec();
       if (!businessOwner) throw new Error("Business owner not found");

@@ -115,23 +115,19 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     
         async register(businessOwnerData: Partial<IBusinessOwner>): Promise<ITokenResponse> {
           try {
-            // Hash password if it's provided
             if (businessOwnerData.password) {
               businessOwnerData.password = await bcrypt.hash(businessOwnerData.password, 10);
             }
         
-            // Ensure company name and email are provided
             if (!businessOwnerData.companyName || !businessOwnerData.email) {
               throw new Error("Company name and email are required");
             }
         
-            // Check if the business owner already exists
             const existingBusinessOwner = await this.businessOwnerRepository.findByEmail(businessOwnerData.email ?? "");
             if (existingBusinessOwner) {
               throw new Error("Email already exists");
             }
         
-            // Create a new business owner document
             const newBusinessOwnerData: IBusinessOwnerDocument = new businessOwnerModel({
               _id: new mongoose.Types.ObjectId(),
               personalDetails: {
@@ -145,21 +141,17 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
               },
               isVerified: false,
               isBlocked: false,
-              role: businessOwnerData.role ?? "BusinessOwner", // Default to "owner"
+              role: businessOwnerData.role ?? "BusinessOwner", 
             });
         
-            // Save the new business owner
             const businessOwner = await this.businessOwnerRepository.create(newBusinessOwnerData);
         
-            // Create a new database for the business owner
             const businessOwnerName = `${businessOwner._id}`;
             const businessOwnerDB = mongoose.connection.useDb(businessOwnerName);
         
-            // Create the business owners collection
             await businessOwnerDB.createCollection("businessowners");
             await businessOwnerDB.collection("businessowners").insertOne(businessOwner);
         
-            // Create the leave types collection with default values
             const leaveTypeData = {
               businessOwnerId: businessOwner._id,
               sickLeave: 0,
@@ -174,11 +166,9 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
               studyLeave: 0,
             };
             
-            // Create the leaveTypes collection
             await businessOwnerDB.createCollection("leavetypes");
             await businessOwnerDB.collection("leavetypes").insertOne(leaveTypeData);
         
-            // Create the payroll criteria collection with default values
             const payrollCriteriaData = {
               businessOwnerId: businessOwner._id,
               allowances: {
@@ -200,14 +190,12 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
                 esiFund: 0,
               },
               incentives: [],
-              payDay: 5, // Default pay day is the 5th
+              payDay: 5, 
             };
             
-            // Create the payrollCriteria collection
             await businessOwnerDB.createCollection("payrollcriterias");
             await businessOwnerDB.collection("payrollcriterias").insertOne(payrollCriteriaData);
         
-            // Generate OTP and send it
             const otp = generateOtp();
             await this.sendOtp(businessOwner.personalDetails.email, otp);
         

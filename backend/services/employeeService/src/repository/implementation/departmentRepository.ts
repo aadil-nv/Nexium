@@ -18,7 +18,7 @@ export default class DepartmentRepository extends BaseRepository<IDepartment> im
     
             const department = await DepartmentModel
                 .findOne({ _id: departmentId })
-                .populate("employees.employeeId")  // Populate employeeId reference
+                .populate("employees.employeeId") 
                 .exec();
     
             if (!department) {

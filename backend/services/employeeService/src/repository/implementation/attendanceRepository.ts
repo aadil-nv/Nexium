@@ -147,7 +147,7 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
         try {
 
             const newAttendanceEntry = {
-                date: updateData.date, // Ensure this is a valid date string
+                date: updateData.date, 
                 checkInTime: updateData.checkInTime,
                 checkOutTime: updateData.checkOutTime,
                 hours: updateData.minutes,
@@ -169,7 +169,7 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
             }
             await switchDB.model<IEmployee>('Employee', this._employeeModel.schema).findByIdAndUpdate(
               employeeId, 
-              { $set: { isActive: false } } // Update object with the correct MongoDB syntax
+              { $set: { isActive: false } } 
             );;
               
 
@@ -258,7 +258,7 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
             }
             await switchDB.model<IEmployee>('Employee', this._employeeModel.schema).findByIdAndUpdate(
                 employeeId, 
-                { $set: { isActive: false } } // Update object with the correct MongoDB syntax
+                { $set: { isActive: false } } 
               );
     
             return updatedEmployeeAttendance;
@@ -271,15 +271,15 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
     async getPreviousMonthAttendance(employeeId: string,businessOwnerId: string): Promise<IEmployeeAttendance> {
       try {
         const currentDate = new Date();    
-        const previousMonth = new Date(currentDate.setMonth(currentDate.getMonth() - 1));  // Subtract 1 month    
-        const startOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth(), 1);  // First day of previous month
-        const endOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0); // Last day of previous month
+        const previousMonth = new Date(currentDate.setMonth(currentDate.getMonth() - 1)); 
+        const startOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth(), 1);
+        const endOfPreviousMonth = new Date(previousMonth.getFullYear(), previousMonth.getMonth() + 1, 0); 
         const switchDB = await connectDB(businessOwnerId);
         const attendanceData = await switchDB.model<IEmployeeAttendance>('EmployeeAttendance', this._employeeAttendanceModel.schema).findOne({
           employeeId: employeeId,
           "attendance.date": {
-            $gte: startOfPreviousMonth.toISOString().split('T')[0], // Convert to YYYY-MM-DD format
-            $lte: endOfPreviousMonth.toISOString().split('T')[0],   // Convert to YYYY-MM-DD format
+            $gte: startOfPreviousMonth.toISOString().split('T')[0], 
+            $lte: endOfPreviousMonth.toISOString().split('T')[0],   
           }
         });
     
@@ -296,7 +296,7 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
         
         const result = {
           ...attendanceData.toObject(),
-          attendance: previousMonthAttendance,  // Only include previous month attendance records
+          attendance: previousMonthAttendance,  
         };
         
         return result as IEmployeeAttendance;
@@ -325,11 +325,9 @@ export default class AttendanceRepository extends BaseRepository<IEmployeeAttend
 
     const attendance = employeeAttendance.attendance;
 
-    // Get the start and end of the current month
     const startOfMonth = moment().startOf('month').format('YYYY-MM-DD');
     const endOfMonth = moment().endOf('month').format('YYYY-MM-DD');
 
-    // Filter attendance for the current month
     const currentMonthAttendance = attendance.filter((entry) =>
       moment(entry.date).isBetween(startOfMonth, endOfMonth, undefined, '[]')
     );

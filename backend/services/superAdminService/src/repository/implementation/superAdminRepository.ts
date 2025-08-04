@@ -19,23 +19,19 @@ export default class SuperAdminRepository implements ISuperAdminRepository {
         }
     }
 
-// Repository method
 async updateServiceRequestStatus(id: string, status: string): Promise<any> {
   try {
-    // Attempt to update the service request by ID
     const updatedServiceRequest = await ServiceRequestModel.findByIdAndUpdate(
       id,
       { status },
-      { new: true }  // This ensures the updated document is returned
+      { new: true } 
     );
 
-    // If no document was found and updated, return null
     if (!updatedServiceRequest) {
       console.error(`Service request with id ${id} not found.`);
       throw new Error(`Service request with id ${id} not found.`);
     }
 
-    // Return the updated service request
     return updatedServiceRequest;
   } catch (error) {
     console.error('Error updating service request:', error);

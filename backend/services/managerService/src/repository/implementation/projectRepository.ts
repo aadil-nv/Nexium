@@ -36,9 +36,9 @@ export default class ProjectRepository extends BaseRepository<IProject> implemen
         try {
     
             const switchDB = await connectDB(businessOwnerId);
-            const projectsCollection = switchDB.collection<IProject>("projects"); // Explicitly type the collection
+            const projectsCollection = switchDB.collection<IProject>("projects"); 
     
-            const projects = await projectsCollection.find({}).toArray(); // Convert cursor to array
+            const projects = await projectsCollection.find({}).toArray();
     
             console.log("Projects fetched:", projects);
             return projects;
@@ -59,7 +59,7 @@ export default class ProjectRepository extends BaseRepository<IProject> implemen
                 throw new Error("Failed to update project");
             }
     
-            return updatedProject; // Return the updated project
+            return updatedProject; 
         } catch (error) {
             console.error("Error updating project:", error);
             throw error;
@@ -77,7 +77,7 @@ export default class ProjectRepository extends BaseRepository<IProject> implemen
                 throw new Error("Failed to delete project");
             }
     
-            return deletedProject; // Return the deleted project
+            return deletedProject; 
         } catch (error) {
             console.error("Error deleting project:", error);
             throw error;

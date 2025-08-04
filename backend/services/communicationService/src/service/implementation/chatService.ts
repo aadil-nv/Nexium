@@ -39,7 +39,6 @@ export default  class ChatService implements IChatService {
             }));
 
     
-            // Map employee data
             const employeeDTO: IReceiverDTO[] = employees.map(employee => ({
                 senderId: myId,
                 receiverId: employee._id,
@@ -53,7 +52,6 @@ export default  class ChatService implements IChatService {
                     : employee.personalDetails.profilePicture,
             }));
     
-            // Map manager data
             const managerDTO: IReceiverDTO[] = managers.map(manager => ({
                 senderId: myId,
                 receiverId: manager._id,
@@ -82,16 +80,14 @@ export default  class ChatService implements IChatService {
 
     async getAllGroups(myId: string ,businessOwnerId: string): Promise<IGetAllGroupsDTO[]> {
         try {
-            // Fetch all the groups from the repository
             const groups = await this._chatRepository.findAllGroups(myId ,businessOwnerId);
     
-            // Map the groups to the IGetAllGroupsDTO format
             const groupsDTO: IGetAllGroupsDTO[] = groups.map(group => ({
                 senderId: myId,
-                groupId: group._id.toString(), // Convert ObjectId to string
-                groupName: group.groupName || '', // Ensure groupName is a string
-                groupAdmin: group.groupAdmin ? group.groupAdmin.toString() : '', // Ensure groupAdmin is a string
-                participants: group.participants.map(participant => participant.toString()), // Convert ObjectId to string
+                groupId: group._id.toString(),
+                groupName: group.groupName || '', 
+                groupAdmin: group.groupAdmin ? group.groupAdmin.toString() : '', 
+                participants: group.participants.map(participant => participant.toString()), 
                 chatType: group.chatType,
                 busineesOwnerId :businessOwnerId
             }));
@@ -126,8 +122,6 @@ export default  class ChatService implements IChatService {
                     }
                 })
                 .filter((chat): chat is IPrivateChatDTO => chat !== null); 
-
-                console.log("mappedChats are ===>",mappedChats);
                 
             return mappedChats;
         } catch (error:any) {
@@ -140,9 +134,7 @@ export default  class ChatService implements IChatService {
         return participant._id.toString() !== currentmyId ? participant : null;
     }
 
-    private mapToDTO(chat: IChatWithDetails, receiver: IParticipantDetails , myId: string): IPrivateChatDTO {
-            // console.log("participants are ===>",receiver);
-            
+    private mapToDTO(chat: IChatWithDetails, receiver: IParticipantDetails , myId: string): IPrivateChatDTO {            
         const receiverName = this.getReceiverName(receiver);
         const receiverPosition = this.getReceiverPosition(receiver);
         const status = this.getReceiverStatus(receiver);
@@ -195,11 +187,11 @@ export default  class ChatService implements IChatService {
             const createdChat = await this._chatRepository.createChat(myId, receiverId , businessOwnerId);
         
             return {
-                chatId: createdChat._id,        // Convert ObjectId to string
+                chatId: createdChat._id,
                 groupName: createdChat.groupName || '',
-                participants: createdChat.participants.map((participant: any) => participant.toString()), // Convert ObjectId array to string[]
+                participants: createdChat.participants.map((participant: any) => participant.toString()),
                 chatType: createdChat.chatType,
-                groupAdmin: createdChat.groupAdmin,  // Convert ObjectId to string, handle undefined
+                groupAdmin: createdChat.groupAdmin,
                 success: true
             };
         } catch (error: any) {
@@ -266,7 +258,6 @@ export default  class ChatService implements IChatService {
                 };
             }
     
-            // Fallback if none of the conditions match
             throw new Error("Invalid token data");
         } catch (error) {
             throw new Error("Error setting new access token");
@@ -279,7 +270,6 @@ export default  class ChatService implements IChatService {
 
             if (!chat) {
                 throw new Error("Chat not found");
-
             }           
             return chat._id
         } catch (error) {
@@ -298,7 +288,6 @@ export default  class ChatService implements IChatService {
             }
     
     
-            // You can return just the participants or the entire chat object
             return chat.participants;
         } catch (error) {
             console.error("Error in service layer:", error);
@@ -416,28 +405,28 @@ export default  class ChatService implements IChatService {
             const buisinessOwnereDTO: IUnAddedUsersDTO[] = businessOwners.map(businessOwner => ({
                 _id: businessOwner._id,
                 name: businessOwner.personalDetails.businessOwnerName,
-                position: businessOwner.role || "Business Owner", // Provide a default value
+                position: businessOwner.role || "Business Owner", 
                 profilePicture: businessOwner.personalDetails.profilePicture
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOwner.personalDetails.profilePicture}`
-                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", // Fallback for undefined profilePicture
+                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", 
             }));
     
             const employeeDTO: IUnAddedUsersDTO[] = employees.map(employee => ({
                 _id: employee._id,
                 name: employee.personalDetails.employeeName,
-                position: employee.professionalDetails.position || "Employee", // Provide a default value
+                position: employee.professionalDetails.position || "Employee", 
                 profilePicture: employee.personalDetails.profilePicture
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
-                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", // Fallback for undefined profilePicture
+                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", 
             }));
     
             const managerDTO: IUnAddedUsersDTO[] = managers.map(manager => ({
                 _id: manager._id,
                 name: manager.personalDetails.managerName,
-                position: manager.role || "Manager", // Provide a default value
+                position: manager.role || "Manager", 
                 profilePicture: manager.personalDetails.profilePicture
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${manager.personalDetails.profilePicture}`
-                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", // Fallback for undefined profilePicture
+                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", 
             }));
     
             const receiverDTO = [...employeeDTO, ...managerDTO, ...buisinessOwnereDTO].filter(

@@ -26,23 +26,22 @@ export default class ProjectService implements IProjectService {
             }
     
             const assignedEmployee = {
-                employeeId: teamLeadData._id, // Assuming the teamLeadData has _id field
-                employeeName: teamLeadData.personalDetails.employeeName, // Assuming employeeName is in personalDetails
+                employeeId: teamLeadData._id, 
+                employeeName: teamLeadData.personalDetails.employeeName,
             };
     
             if (data.projectFiles && Array.isArray(data.projectFiles)) {
                 const uploadedFiles = await Promise.all(
                     data.projectFiles.map(async (file: any) => {
-                        const fileBuffer = file.buffer; // Assuming `buffer` exists in file
+                        const fileBuffer = file.buffer; 
                         const mimeType = file.type;
                         const fileName = await uploadToS3(fileBuffer, mimeType);
     
-                        // Generate a signed URL for each uploaded file
                         const fileUrl = await getSignedFileURL(fileName);
     
                         return {
                             fileName: file.name,
-                            fileUrl, // The signed URL
+                            fileUrl, 
                             uploadedAt: new Date(),
                         };
                     })
@@ -84,12 +83,10 @@ export default class ProjectService implements IProjectService {
     
     async getAllTeamLeads(businessOwnerId: string): Promise<IEmployeesDTO[]> {
         try {
-            // Fetch all team leads from the repository
             const employees = await this._employeeRepository.getAllTeamLeads(businessOwnerId);
           
             
     
-            // Map the employee data to the DTO format
             const result: IEmployeesDTO[] = employees.map((employee: IEmployee) => ({
                 employeeName: employee.personalDetails?.employeeName,
                 position: employee.professionalDetails?.position,
@@ -141,7 +138,6 @@ export default class ProjectService implements IProjectService {
     }
 
     async updateProject(projectId: string, data: any,businessOwnerId:string): Promise<IProjectResponseDTO | IProjectDTO> {
-        console.log("data is from service is ===>".bgWhite.bold ,data);
         
         try {
             const updatedProject = await this._projectRepository.updateProject(projectId, data ,businessOwnerId);

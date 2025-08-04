@@ -107,7 +107,6 @@ export default class ManagerService implements IManagerService {
       const managerProfile = await this._managerRepository.findManager( managerId ,businessOwnerId);
 
   
-      // Return only professionalDetails
       if (!managerProfile?.managerCredentials) {
         throw new Error("Professional details not found for this manager");
       }
@@ -129,7 +128,6 @@ export default class ManagerService implements IManagerService {
   
       const managerProfile = await this._managerRepository.findManager(managerId , businessOwnerId);
   
-      // Return only professionalDetails
       if (!managerProfile?.documents) {
         throw new Error("Professional details not found for this manager");
       }
@@ -155,7 +153,6 @@ export default class ManagerService implements IManagerService {
         throw new Error("Personal details not found for this manager");
       }
   
-      // Return updated personal details
       return managerProfile.personalDetails;
     } catch (error: any) {
       console.error("Error in updateManagerPersonalInfo:", error.message);
@@ -246,8 +243,7 @@ export default class ManagerService implements IManagerService {
   async uploadDocuments(managerId: string, file: Express.Multer.File, fileType: "resume" ,businessOwnerId: string): Promise<IDocumentDTO> {
 
     try {
-      // Upload file to S3
-      const fileKey = await this.uploadFileToS3(managerId, file, "resume" ,businessOwnerId);
+            const fileKey = await this.uploadFileToS3(managerId, file, "resume" ,businessOwnerId);
 
       
       const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;

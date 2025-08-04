@@ -50,19 +50,19 @@ export default class LeaveService implements ILeaveService {
         const appliedLeaves = await this._leaveRepository.fetchAppliedLeaves(employeeId , businessOwnerId);
 
         const leaveDTOs: ILeaveDTO[] = appliedLeaves.map((leave) => ({
-            leaveId: leave._id,                         // Assign the leave ID
-            employeeId: leave.employeeId,               // Employee's ID
-            leaveType: leave.leaveType,   // Join all leave types into a string
-            reason: leave.reason,                       // Reason for the leave
-            startDate: leave.startDate,                 // Start date of the leave
-            endDate: leave.endDate,                     // End date of the leave
-            duration: leave.duration,                   // Duration of the leave
-            message: "Leave fetched successfully",      // Success message
-            success: true,                              // Success status
-            appliedAt: leave.appliedAt,                 // Applied date
-            approvedBy: leave.approvedBy,               // Approved date
-            rejectionReason: leave.rejectionReason,     // Rejection reason
-            status: leave.status,                       // Leave status
+            leaveId: leave._id,                        
+            employeeId: leave.employeeId,              
+            leaveType: leave.leaveType,   
+            reason: leave.reason,                      
+            startDate: leave.startDate,                
+            endDate: leave.endDate,                     
+            duration: leave.duration,                   
+            message: "Leave fetched successfully",      
+            success: true,                              
+            appliedAt: leave.appliedAt,                 
+            approvedBy: leave.approvedBy,              
+            rejectionReason: leave.rejectionReason,     
+            status: leave.status,                       
             isFirstHalf: leave.isFirstHalf,
             isSecondHalf: leave.isSecondHalf
         }));

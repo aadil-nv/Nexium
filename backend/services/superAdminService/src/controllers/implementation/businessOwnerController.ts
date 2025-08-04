@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import IBusinessOwnerController from "../interface/IBusinessOwnerController";
 import IBusinessOwnerService from "../../service/interface/IBusinessOwnerService";
 import { inject, injectable } from 'inversify';
+import { HttpStatusCode } from '../../utils/httpStatusCodes';
 
 @injectable()
 export default class BusinessOwnerController implements IBusinessOwnerController {
@@ -15,10 +16,10 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     async fetchAllBusinessOwners(req: Request, res: Response): Promise<Response> {
         try {
             const businessOwners = await this._businessOwnerService.fetchAllBusinessOwners();
-            return res.status(200).json({ businessOwners });
+            return res.status(HttpStatusCode.OK).json({ businessOwners });
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ message: "Error while fetching business owners" });
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error while fetching business owners" });
         }
     }
 
@@ -27,10 +28,10 @@ export default class BusinessOwnerController implements IBusinessOwnerController
         const { id } = req.params;
         try {
             const updatedBusinessOwner = await this._businessOwnerService.updateIsBlocked(id);
-            return res.status(200).json({ updatedBusinessOwner });
+            return res.status(HttpStatusCode.OK).json({ updatedBusinessOwner });
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ message: "Error while updating block status" });
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error while updating block status" });
         }
     }
 
@@ -39,13 +40,13 @@ export default class BusinessOwnerController implements IBusinessOwnerController
             const refreshToken = req.cookies.refreshToken;
 
             if (!refreshToken) {
-                return res.status(400).json({ message: 'Refresh token is missing.' });
+                return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'Refresh token is missing.' });
             }
 
             const newAccessToken = await this._businessOwnerService.setNewAccessToken(refreshToken);
 
             if (!newAccessToken) {
-                return res.status(403).json({ message: 'Failed to generate a new access token.' });
+                return res.status(HttpStatusCode.FORBIDDEN).json({ message: 'Failed to generate a new access token.' });
             }
 
             res.cookie('accessToken', newAccessToken, {
@@ -55,15 +56,15 @@ export default class BusinessOwnerController implements IBusinessOwnerController
                 maxAge: 1000 * 60 * 15,
             });
 
-            return res.status(200).json({ accessToken: newAccessToken });
+            return res.status(HttpStatusCode.OK).json({ accessToken: newAccessToken });
 
         } catch (error: unknown) {
             if (error instanceof Error) {
                 console.error("Error occurred:", error.message);
-                return res.status(403).json({ message: error.message });
+                return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });
             }
             console.error("Unexpected error occurred.");
-            return res.status(500).json({ message: 'An unexpected error occurred.' });
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'An unexpected error occurred.' });
         }
     }
 }

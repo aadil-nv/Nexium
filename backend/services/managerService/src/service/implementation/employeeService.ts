@@ -179,7 +179,6 @@ export default class EmployeeService implements IEmployeeService {
     try {
         const employeesData = await this._employeeRepository.getEmployees(businessOwnerId);
 
-        // Map the repository data to the DTO structure
         const employeesDTO: IEmployeesDTO[] = employeesData.map((employee) => ({
             employeeName: employee.personalDetails.employeeName, // Assuming `name` is the field in the repository data
             position: employee.professionalDetails.position,
@@ -241,7 +240,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
    async updateEmployeeProfessionalInfo(employeeId: string, professionalInfo: any,businessOwnerId:string): Promise<IEmployeeProfessionalInfoDTO> {
     try {
         if (!professionalInfo.department || professionalInfo.department === 'Not added') {
-            professionalInfo.department = null;  // Assign null if department is not added
+            professionalInfo.department = null;  
         }
 
         const employeeData = await this._employeeRepository.updateEmployeeProfessionalInfo(employeeId, professionalInfo ,businessOwnerId);
@@ -255,7 +254,7 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
         return {
             position: employeeData.professionalDetails.position,
             workTime: employeeData.professionalDetails.workTime,
-            department: departmentName || '',  // If departmentName is null, return an empty string
+            department: departmentName || '',  
             joiningDate: employeeData.professionalDetails.joiningDate,
             currentStatus: employeeData.professionalDetails.currentStatus,
             companyName: employeeData.professionalDetails.companyName,
@@ -455,7 +454,6 @@ async updateEmployeePersonalInformation(employeeId: string ,personalInformation:
             uploadedAt: new Date(),
         };
 
-        // Update employee document details in the repository
         const result = await this._employeeRepository.updateResume(employeeId, documentMetadata,businessOwnerId);
 
         return {

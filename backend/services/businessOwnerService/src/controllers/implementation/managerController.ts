@@ -32,8 +32,6 @@ export default class ManagerController implements IManagerController {
   }
 
   async blockManager(req: CustomRequest, res: Response): Promise<Response> {
-
-  
     try {
       const { body: managerData, user } = req;
       const businessOwnerId = user?.businessOwnerData?._id;
@@ -45,8 +43,6 @@ export default class ManagerController implements IManagerController {
       const response = await this._managerService.blockManager(businessOwnerId as string, managerData);
       return res.status(HttpStatusCode.OK).json(response);
     } catch (error: any) {
-      console.error("Controller Error in blockManager:", error);
-  
       const statusCode = 
         error.name === "ValidationError" ? HttpStatusCode.BAD_REQUEST : 
         error.name === "DatabaseError" ? HttpStatusCode.INTERNAL_SERVER_ERROR : 
@@ -57,21 +53,18 @@ export default class ManagerController implements IManagerController {
           ? error.message
           : "An unexpected error occurred. Please try again later.";
   
-      return res.status(statusCode).json({ error: errorMessage });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: errorMessage });
     }
   }
 
   async getManager(req: CustomRequest, res: Response): Promise<Response> {
-    
     try {
-      
       const businessOwnerId = req.user?.businessOwnerData?._id;
       const managerId = req.params.id;
       const manager = await this._managerService.getManager( businessOwnerId as string ,managerId as string);
       if(!manager){
         return res.status(HttpStatusCode.NOT_FOUND).json({ error: "Manager not found" });
       }
-      
       return res.status(HttpStatusCode.OK).json(manager);
     } catch (error) {
       return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal Server Error" });
@@ -83,7 +76,6 @@ export default class ManagerController implements IManagerController {
     try {
       const { body: managerData, user } = req;
       const businessOwnerId = user?.businessOwnerData?._id;
-      
       const managerId = req.params.id;
       const response = await this._managerService.updatePersonalInfo(businessOwnerId as string, managerId as string, managerData);
       if(!response){
@@ -161,7 +153,6 @@ export default class ManagerController implements IManagerController {
       );
   
       if (!response) {
-        console.log("Manager not found");
         return res.status(HttpStatusCode.NOT_FOUND).json({ error: "Manager not found" });
       }
       return res.status(HttpStatusCode.OK).json(response);

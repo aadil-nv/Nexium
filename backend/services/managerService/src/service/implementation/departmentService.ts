@@ -43,10 +43,8 @@ export default class DepartmentService implements IDepartmentService {
         };
       }
   
-      // Add the department if validation passes
       const department = await this._departmentRepository.addDepartments(departmentName, employees ,businessOwnerId);
   
-      console.log("Department added successfully:", department);
   
       return { 
         message: "Department added successfully.", 
@@ -130,13 +128,11 @@ export default class DepartmentService implements IDepartmentService {
 
         const departments = await this._departmentRepository.findAllDepartments(businessOwnerId);
 
-        console.log("Departments fetched:", departments);
 
         const existingDepartment = departments.find(
             (department: any) => department.departmentName.toLowerCase() === newDepartmentName.toLowerCase()
         );
 
-        console.log("Existing Department:", existingDepartment);
 
         if (existingDepartment) {
             throw new Error(`The department name "${newDepartmentName}" already exists. Please choose a different name.`);
@@ -148,10 +144,8 @@ export default class DepartmentService implements IDepartmentService {
             throw new Error("Department not found.");
         }
 
-        // Update the department name
         department.departmentName = newDepartmentName;
 
-        // Save the updated department
         return await this._departmentRepository.saveDepartment(department, businessOwnerId);
 
     } catch (error: any) {
@@ -164,20 +158,16 @@ export default class DepartmentService implements IDepartmentService {
 async addEmployeesToDepartment(employeeData: any[], departmentId: string ,businessOwnerId:string): Promise<any> {
 
   try {
-      // Fetch the department
       const department = await this._departmentRepository.findDepartment(departmentId ,businessOwnerId);
       if (!department) {
           throw new Error('Department not found.');
       } 
 
-      // Process each employee
       const results = [];
       for (const employee of employeeData) {
           const updatedInfo = await this._departmentRepository.addEmployeesToDepartment(departmentId, employee ,businessOwnerId);
           results.push(updatedInfo);
       }
-
-      console.log("results====3456fvc256326=====================", department );
       
 
       return {

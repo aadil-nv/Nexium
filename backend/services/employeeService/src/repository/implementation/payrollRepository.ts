@@ -47,8 +47,7 @@ export default class PayrollRepository extends BaseRepository<IEmployeePayroll> 
         );
 
         if (existingPayroll) {
-            console.log("Previous month's payroll already exists.");
-            return existingPayroll; // Return existing payroll without any changes
+            return existingPayroll; 
         }
 
         const newPayroll = new PayrollModel({
@@ -74,8 +73,8 @@ export default class PayrollRepository extends BaseRepository<IEmployeePayroll> 
                 professionalTax: payrollDetails.professionalTax || 0,
                 esiFund: payrollDetails.esiFund || 0,
                 netSalary: payrollDetails.netSalary || 0,
-                paymentStatus: payrollDetails.paymentStatus || "Pending", // Default status
-                paymentMethod: payrollDetails.paymentMethod || "Bank Transfer" // Default payment method
+                paymentStatus: payrollDetails.paymentStatus || "Pending", 
+                paymentMethod: payrollDetails.paymentMethod || "Bank Transfer" 
             }
         });
 
@@ -114,7 +113,7 @@ export default class PayrollRepository extends BaseRepository<IEmployeePayroll> 
       
           return {
             employeeId,
-            totalNetSalary: totalNetSalary.toFixed(2), // Format to 2 decimal places
+            totalNetSalary: totalNetSalary.toFixed(2), 
           };
         } catch (error) {
           console.error(error);

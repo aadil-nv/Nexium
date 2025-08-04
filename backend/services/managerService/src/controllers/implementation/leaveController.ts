@@ -4,6 +4,7 @@ import ILeaveController from "../interface/ILeaveController";
 import { CustomRequest } from "../../middlewares/tokenAuthenticate";
 import ILeaveService from "../../service/interface/ILeaveService";
 import { log } from "util";
+import { HttpStatusCode } from "./../../utils/enums";
 
 
 
@@ -21,20 +22,20 @@ export default class LeaveController implements ILeaveController {
             const result = await this._leaveService.updateLeaveApproval(employeeId, data ,businessOwnerId as string);
     
             if (result.success) {
-                return res.status(200).json({
+                return res.status(HttpStatusCode.OK).json({
                     message: result.message,
                     leaveStatus: result.leaveStatus,
                     success: true
                 });
             } else {
-                return res.status(400).json({
+                return res.status(HttpStatusCode.BAD_REQUEST).json({
                     message: result.message,
                     success: false
                 });
             }
         } catch (error:any) {
             console.error("Error updating leave approval:", error);
-            return res.status(500).json({
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
                 message: "Failed to update leave approval",
                 error: error.message,
                 success: false
@@ -48,10 +49,10 @@ export default class LeaveController implements ILeaveController {
         try {
             const businessOwnerId = req.user?.managerData?.businessOwnerId
             const result = await this._leaveService.getAllLeaveEmployees(businessOwnerId as string);
-            res.status(200).json(result);
+            res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error fetching leave employees:", error);
-            res.status(500).json({ message: "Failed to fetch leave employees", error });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to fetch leave employees", error });
         }
     }
 
@@ -62,10 +63,10 @@ export default class LeaveController implements ILeaveController {
         try {
             const businessOwnerId = req.user?.managerData?.businessOwnerId
             const result = await this._leaveService.getAllLeaveTypes(businessOwnerId as string);
-            return res.status(200).json(result);
+            return res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error fetching leave types:", error);
-            return res.status(500).json({ message: "Failed to fetch leave types", error });
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to fetch leave types", error });
         }
     }
 
@@ -77,10 +78,10 @@ export default class LeaveController implements ILeaveController {
             const data = req.body;
             
             const result = await this._leaveService.updateLeaveTypes(leaveTypeId, data , businessOwnerId as string);
-            return res.status(200).json(result);
+            return res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error updating leave types:", error);
-            return res.status(500).json({ message: "Failed to update leave types", error });
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to update leave types", error });
         }
     }
 
@@ -88,10 +89,10 @@ export default class LeaveController implements ILeaveController {
         try {
             const businessOwnerId = req.user?.managerData?.businessOwnerId
             const result = await this._leaveService.fetchAllPreAppliedLeaves(businessOwnerId as string);
-            return res.status(200).json(result);
+            return res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error fetch All PreAppliedLeaves  :", error);
-            return res.status(500).json({ message: "Failed to fetch leave types", error });
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to fetch leave types", error });
         }
     }
 
@@ -103,11 +104,11 @@ export default class LeaveController implements ILeaveController {
             const managerId = req.user?.managerData?._id
             const businessOwnerId = req.user?.managerData?.businessOwnerId
             const response = await this._leaveService.updatePreAppliedLeaves(employeeId , managerId as string , data ,businessOwnerId as string);
-            return res.status(200).json(response);
+            return res.status(HttpStatusCode.OK).json(response);
             
         } catch (error) {
             console.error("Error fetch All PreAppliedLeaves  :", error);
-            return res.status(500).json({ message: "Failed to update pre applied lave", error });
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to update pre applied lave", error });
         }
     }
 
