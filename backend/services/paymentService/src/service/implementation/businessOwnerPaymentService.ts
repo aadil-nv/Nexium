@@ -101,6 +101,10 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
 
     try {
       const { planId, email } = session.subscription_details.metadata;
+      console.log("planId from handleWebhook service layer ", planId);
+      console.log("email from handleWebhook service layer ", email);
+      
+      
 
       if (!session.paid) throw new Error("Payment not successful");
 

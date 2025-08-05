@@ -127,7 +127,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         axiosError.response &&
         axiosError.response.data.message === 'Not subscribed'
       ) {
-        navigate('/plans', { state: { email: axiosError.response.data.message } });
+        navigate('/plans', { state: { email: axiosError.response.data.email } });
       }
     }
   },

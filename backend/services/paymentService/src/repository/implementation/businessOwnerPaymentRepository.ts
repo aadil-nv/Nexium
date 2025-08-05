@@ -29,8 +29,12 @@ export default class BusinessOwnerPaymentRepository
   }
 
   async findBusinessOwner(businessOwnerId: string): Promise<IBusinessOwnerDocument> {
+    console.log("Email from findBusinessOwner ", businessOwnerId);
+    
     try {
       const businessOwner = await this.businessOwnerModel.findById(businessOwnerId).exec();
+      console.log("Business owner from findBusinessOwner ", businessOwner);
+      
       if (!businessOwner) throw new Error("Business owner not found");
       return businessOwner;
     } catch (error) {
@@ -39,8 +43,11 @@ export default class BusinessOwnerPaymentRepository
     }
   }
   async findBusinessOwnerByEmail(email: string): Promise<IBusinessOwnerDocument> {    
+    console.log("Email from findBusinessOwnerByEmail ", email);
+    
     try {
       const businessOwner = await this.businessOwnerModel.findOne({ "personalDetails.email": email }).exec();
+      console.log("Business owner from findBusinessOwnerByEmail ", businessOwner);
       if (!businessOwner) throw new Error("Business owner not found");
       return businessOwner;
     } catch (error) {

@@ -236,7 +236,7 @@ spec:
     spec:
       containers:
       - name: payment-service
-        image: aadilnv/nexium-paymentservice:v3
+        image: aadilnv/nexium-paymentservice:v4
         imagePullPolicy: Always
         ports:
         - containerPort: 7005

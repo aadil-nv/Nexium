@@ -73,6 +73,8 @@ export default class BusinessOwnerPaymentController
 
       if (event.type ==='invoice.payment_succeeded') {
         const session = event.data.object;
+        console.log("session from controller ==>", session);
+        
         await this._businessOwnerPaymentService.handleWebhook(session);
         return res.status(HttpStatusCode.OK).json({ message: "Webhook processed successfully" });
       }
