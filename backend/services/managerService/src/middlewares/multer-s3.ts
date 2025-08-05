@@ -7,12 +7,11 @@ import multer from "multer";
 
 
 
-// Configure Multer storage in memory
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 
-export const uploadMiddleware = upload.single('file'); // Use 'file' as the field name
+export const uploadMiddleware = upload.single('file'); 
 
 const bucketName = process.env.AWS_BUCKET_NAME;
 const region = process.env.AWS_REGION;

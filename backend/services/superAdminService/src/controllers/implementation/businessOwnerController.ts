@@ -53,7 +53,7 @@ export default class BusinessOwnerController implements IBusinessOwnerController
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge: 1000 * 60 * 15,
+                maxAge: Number(process.env.MAX_AGE),
             });
 
             return res.status(HttpStatusCode.OK).json({ accessToken: newAccessToken });

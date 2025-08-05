@@ -11,7 +11,7 @@ import { IPayrollCriteria } from "../../entities/payrollCriteriaEntities";
 
 @injectable()
 export default class BusinessOwnerService implements IBusinessOwnerService {
-  constructor(@inject("IBusinessOwnerRepository") private _businessOwnerRepository: IBusinessOwnerRepository) {}
+  constructor(@inject("IBusinessOwnerRepository") private _businessOwnerRepository: IBusinessOwnerRepository) { }
 
   private async getDetails(businessOwnerId: string) {
     if (!businessOwnerId) throw new Error("Business owner ID not found");
@@ -20,30 +20,26 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     return result;
   }
 
-  private async uploadFileToS3(
-    businessOwnerId: string,
-    file: Express.Multer.File,
-    fileType: "profilePicture" | "companyLogo" | "documents"
-  ) {
+  private async uploadFileToS3(businessOwnerId: string, file: Express.Multer.File, fileType: "profilePicture" | "companyLogo" | "documents") {
     const result = await this.getDetails(businessOwnerId);
     const existingFile =
       fileType === "profilePicture"
         ? result.personalDetails.profilePicture
         : fileType === "documents"
-        ? result.documents
-        : result.companyDetails.companyLogo;
-  
+          ? result.documents
+          : result.companyDetails.companyLogo;
+
     if (existingFile) {
       const s3Client = new S3Client({ region: 'eu-north-1' });
-  
+
       let existingFileKey: string | undefined;
-  
+
       if (typeof existingFile === "string") {
-        existingFileKey = existingFile; 
+        existingFileKey = existingFile;
       } else if (typeof existingFile === "object") {
         existingFileKey = (existingFile as any).fileName || (existingFile as any).url || undefined;
       }
-  
+
       if (existingFileKey) {
         await s3Client.send(
           new DeleteObjectCommand({
@@ -53,20 +49,20 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         );
       }
     }
-  
+
     const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
-  
+
     return fileUrl;
   }
-  
+
   async setNewAccessToken(refreshToken: string): Promise<IResponseDTO> {
     try {
       const decoded = verifyRefreshToken(refreshToken);
       const businessOwnerData = decoded?.businessOwnerData;
       if (!decoded || !businessOwnerData) throw new Error("Invalid or expired refresh token");
       const accessToken = generateAccessToken({ businessOwnerData });
-      
-      return {accessToken};
+
+      return { accessToken };
     } catch (error) {
       throw new Error("Error generating new access token: " + error);
     }
@@ -107,12 +103,12 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       const result = await this.getDetails(businessOwnerId);
       const { companyDetails } = result;
 
-       
+
       return {
         companyName: companyDetails.companyName,
         companyWebsite: companyDetails.companyWebsite,
         companyRegistrationNumber: companyDetails.companyRegistrationNumber,
-        companyLogo: companyDetails.companyLogo ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${companyDetails.companyLogo}`:companyDetails.companyLogo ,
+        companyLogo: companyDetails.companyLogo ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${companyDetails.companyLogo}` : companyDetails.companyLogo,
         companyEmail: companyDetails.companyEmail,
       };
     } catch {
@@ -141,18 +137,18 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       const documentData = await this._businessOwnerRepository.getDetails(businessOwnerId);
 
       if (!documentData || !documentData.documents || !documentData.documents.companyCertificate) {
- 
-    
+
+
         console.error("No document data found for this business owner");
         throw new Error("No document data found for this business owner");
       }
-      
-  
+
+
       return {
-        documentName:documentData.documents.companyCertificate.documentName,
-        documentUrl:documentData.documents.companyCertificate.documentUrl,
-        documentSize:documentData.documents.companyCertificate.documentSize,
-        uploadedAt:documentData.documents.companyCertificate.uploadedAt,
+        documentName: documentData.documents.companyCertificate.documentName,
+        documentUrl: documentData.documents.companyCertificate.documentUrl,
+        documentSize: documentData.documents.companyCertificate.documentSize,
+        uploadedAt: documentData.documents.companyCertificate.uploadedAt,
 
       }
     } catch (error: any) {
@@ -160,8 +156,6 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       throw new Error("Error while getting documents: " + error.message);
     }
   }
-  
-  
 
   async updatePersonalDetails(businessOwnerId: string, data: any): Promise<IResponseDTO> {
 
@@ -169,19 +163,19 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       const rabbitMQMessager = new RabbitMQMessager();
       await rabbitMQMessager.init();
       const updatedBusinessOwnerData = await this._businessOwnerRepository.updateDetails(businessOwnerId, data);
-      
+
       await rabbitMQMessager.sendToMultipleQueues({ updatedBusinessOwnerData });
       return { success: true, message: "Personal details updated successfully!" };
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error(error.message || "Error while updating personal details");
     }
   }
 
   async updateCompanyDetails(businessOwnerId: string, data: any): Promise<ICompanyDetailsDTO> {
     try {
-     const result = await this._businessOwnerRepository.updateCompanyDetails(businessOwnerId, data);
-     
-     if(!result) throw new Error("Error while updating company details");
+      const result = await this._businessOwnerRepository.updateCompanyDetails(businessOwnerId, data);
+
+      if (!result) throw new Error("Error while updating company details");
       return {
         companyName: result.companyDetails.companyName,
         companyLogo: result.companyDetails.companyLogo,
@@ -189,7 +183,7 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         companyEmail: result.companyDetails.companyEmail,
         companyWebsite: result.companyDetails.companyWebsite
       }
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error(error.message || "Error while updating company details");
     }
   }
@@ -198,16 +192,16 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     try {
       await this._businessOwnerRepository.updateAddress(businessOwnerId, data);
       return { success: true, message: "Address updated successfully!" };
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error(error.message || "Error while updating address");
-  }
+    }
   }
   async uploadImages(businessOwnerId: string, file: Express.Multer.File): Promise<IResponseDTO> {
     try {
-      const imageUrl = await this.uploadFileToS3(businessOwnerId, file, "profilePicture");      
+      const imageUrl = await this.uploadFileToS3(businessOwnerId, file, "profilePicture");
       await this._businessOwnerRepository.uploadImages(businessOwnerId, imageUrl);
-      return { success: true, message: 'Image uploaded successfully!', data: { imageUrl:`https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${imageUrl}` } };
-    } catch (error:any) {
+      return { success: true, message: 'Image uploaded successfully!', data: { imageUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${imageUrl}` } };
+    } catch (error: any) {
       throw new Error(error.message || 'Error while uploading image');
     }
   }
@@ -217,32 +211,31 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
       const imageUrl = await this.uploadFileToS3(businessOwnerId, file, "companyLogo");
       await this._businessOwnerRepository.uploadLogo(businessOwnerId, imageUrl);
 
-      return { success: true, message: 'Logo uploaded successfully!', data: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${imageUrl}` 
-     };
-    } catch (error:any) {
+      return {
+        success: true, message: 'Logo uploaded successfully!', data: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${imageUrl}`
+      };
+    } catch (error: any) {
       throw new Error(error.message || 'Error while uploading logo');
     }
   }
-
-
-  async uploadDocuments(businessOwnerId: string,file: Express.Multer.File,documentType: string): Promise<any> {
+  async uploadDocuments(businessOwnerId: string, file: Express.Multer.File, documentType: string): Promise<any> {
 
 
     try {
       const fileKey = await this.uploadFileToS3(businessOwnerId, file, "documents");
 
       const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
-      
-  
+
+
       const documentData = {
         documentName: documentType,
         documentUrl: fileUrl,
         documentSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
         uploadedAt: new Date(),
       };
-  
-      const updatedBusinessOwner = await this._businessOwnerRepository.uploadDocuments(businessOwnerId,documentType,documentData);      
-  
+
+      const updatedBusinessOwner = await this._businessOwnerRepository.uploadDocuments(businessOwnerId, documentType, documentData);
+
       return {
         documentName: documentType,
         documentUrl: fileUrl,
@@ -255,17 +248,17 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     }
   }
 
-  async  addServiceRequest(businessOwnerId: string, data: any): Promise<IResponseDTO> {    
+  async addServiceRequest(businessOwnerId: string, data: any): Promise<IResponseDTO> {
     try {
       const businessOwnerData = await this._businessOwnerRepository.findOne({ _id: businessOwnerId });
-      
+
       if (!businessOwnerData) {
         throw new Error("Business owner not found");
       }
-      const result = await this._businessOwnerRepository.addServiceRequest(businessOwnerId,businessOwnerData, data);
-      
+      const result = await this._businessOwnerRepository.addServiceRequest(businessOwnerId, businessOwnerData, data);
+
       return { success: true, message: "Service request added successfully!", data: result };
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error(error.message || "Error while adding service request");
     }
   }
@@ -273,16 +266,16 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     try {
       const result = await this._businessOwnerRepository.getAllServiceRequests(businessOwnerId);
       return result;
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error(error.message || "Error while getting service requests");
-  }
+    }
   }
 
   async updateServiceRequest(serviceRequestId: string, data: any): Promise<IResponseDTO> {
     try {
       const result = await this._businessOwnerRepository.updateServiceRequest(serviceRequestId, data);
       return { success: true, message: "Service request updated successfully!", data: result };
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error(error.message || "Error while updating service request");
     }
   }
@@ -291,131 +284,131 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
     try {
       const result = await this._businessOwnerRepository.updateLastSeenForChats(businessOwnerId);
       return { success: true, message: "Last seen updated successfully!", data: result };
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error(error.message || "Error while updating last seen");
     }
   }
 
-  async updateIsActive(businessOwnerId: string , isActive: boolean): Promise<IResponseDTO> {
+  async updateIsActive(businessOwnerId: string, isActive: boolean): Promise<IResponseDTO> {
     try {
-      const result = await this._businessOwnerRepository.updateIsActive(businessOwnerId , isActive);
+      const result = await this._businessOwnerRepository.updateIsActive(businessOwnerId, isActive);
       return { success: true, message: "Is active updated successfully!", data: result };
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error(error.message || "Error while updating is active");
     }
   }
 
   async getAllLeaveTypes(businessOwnerId: string): Promise<ILeaveTypesDTO[]> {
     try {
-        const result = await this._businessOwnerRepository.findAllLeaveTypes(businessOwnerId);
+      const result = await this._businessOwnerRepository.findAllLeaveTypes(businessOwnerId);
 
-        if (!result) {
-            throw new Error("No leave types found");
-        }
-
-        const leaveTypesDTO: ILeaveTypesDTO = {
-            _id: result._id,
-            sickLeave: result.sickLeave,
-            casualLeave: result.casualLeave,
-            maternityLeave: result.maternityLeave,
-            paternityLeave: result.paternityLeave,
-            paidLeave: result.paidLeave,
-            unpaidLeave: result.unpaidLeave,
-            compensatoryLeave: result.compensatoryLeave,
-            bereavementLeave: result.bereavementLeave,
-            marriageLeave: result.marriageLeave,
-            studyLeave: result.studyLeave,
-        };
-
-        return [leaveTypesDTO];
-    } catch (error) {
-        console.error("Error in getAllLeaveTypes service:", error);
-        throw new Error("Failed to fetch leave types");
-    }
-}
-
-async  updateLeaveTypes( leaveTypeId: string,businessOwnerId: string, data: ILeaveTypesDTO ): Promise<ILeaveResonseDTO> {
-  try {
-      const result = await this._businessOwnerRepository.updateLeaveTypes(leaveTypeId, data ,businessOwnerId);
-      return {
-          message: "Leave approval updated successfully",
-          success: true
+      if (!result) {
+        throw new Error("No leave types found");
       }
-  } catch (error) {
+
+      const leaveTypesDTO: ILeaveTypesDTO = {
+        _id: result._id,
+        sickLeave: result.sickLeave,
+        casualLeave: result.casualLeave,
+        maternityLeave: result.maternityLeave,
+        paternityLeave: result.paternityLeave,
+        paidLeave: result.paidLeave,
+        unpaidLeave: result.unpaidLeave,
+        compensatoryLeave: result.compensatoryLeave,
+        bereavementLeave: result.bereavementLeave,
+        marriageLeave: result.marriageLeave,
+        studyLeave: result.studyLeave,
+      };
+
+      return [leaveTypesDTO];
+    } catch (error) {
+      console.error("Error in getAllLeaveTypes service:", error);
+      throw new Error("Failed to fetch leave types");
+    }
+  }
+
+  async updateLeaveTypes(leaveTypeId: string, businessOwnerId: string, data: ILeaveTypesDTO): Promise<ILeaveResonseDTO> {
+    try {
+      const result = await this._businessOwnerRepository.updateLeaveTypes(leaveTypeId, data, businessOwnerId);
+      return {
+        message: "Leave approval updated successfully",
+        success: true
+      }
+    } catch (error) {
       console.error("Error in updateLeaveTypes service:", error);
       throw new Error("Failed to update leave types");
+    }
   }
-}
 
 
-async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteriaDTO[]> {
-  try {
+  async getAllPayrollCriteria(businessOwnerId: string): Promise<IPayrollCriteriaDTO[]> {
+    try {
       const payrollCriteriaList = await this._businessOwnerRepository.getAllPayrollCriteria(businessOwnerId);
 
       if (!payrollCriteriaList || payrollCriteriaList.length === 0) {
-          throw new Error("Payroll criteria not found");
+        throw new Error("Payroll criteria not found");
       }
 
       const payrollCriteriaDTOList: IPayrollCriteriaDTO[] = payrollCriteriaList.map(payrollCriteria => {
-          return {
-              _id: payrollCriteria._id,
-              allowances: {
-                  bonus: payrollCriteria.allowances.bonus,
-                  gratuity: payrollCriteria.allowances.gratuity,
-                  medicalAllowance: payrollCriteria.allowances.medicalAllowance,
-                  hra: payrollCriteria.allowances.hra,
-                  da: payrollCriteria.allowances.da,
-                  ta: payrollCriteria.allowances.ta,
-                  overTime: {
-                      type: payrollCriteria.allowances.overTime.type,
-                      overtimeEnabled: payrollCriteria.allowances.overTime.overtimeEnabled,
-                  },
-              },
-              deductions: {
-                  incomeTax: payrollCriteria.deductions.incomeTax,
-                  providentFund: payrollCriteria.deductions.providentFund,
-                  professionalTax: payrollCriteria.deductions.professionalTax,
-                  esiFund: payrollCriteria.deductions.esiFund,
-              },
-              incentives: payrollCriteria.incentives.map(incentive => ({
-                  _id: incentive._id,
-                  incentiveName: incentive.incentiveName,
-                  minTaskCount: incentive.minTaskCount,
-                  maxTaskCount: incentive.maxTaskCount,
-                  percentage: incentive.percentage,
-              })),
-              payDay:payrollCriteria.payDay,
-              createdAt: payrollCriteria.createdAt,
-          };
+        return {
+          _id: payrollCriteria._id,
+          allowances: {
+            bonus: payrollCriteria.allowances.bonus,
+            gratuity: payrollCriteria.allowances.gratuity,
+            medicalAllowance: payrollCriteria.allowances.medicalAllowance,
+            hra: payrollCriteria.allowances.hra,
+            da: payrollCriteria.allowances.da,
+            ta: payrollCriteria.allowances.ta,
+            overTime: {
+              type: payrollCriteria.allowances.overTime.type,
+              overtimeEnabled: payrollCriteria.allowances.overTime.overtimeEnabled,
+            },
+          },
+          deductions: {
+            incomeTax: payrollCriteria.deductions.incomeTax,
+            providentFund: payrollCriteria.deductions.providentFund,
+            professionalTax: payrollCriteria.deductions.professionalTax,
+            esiFund: payrollCriteria.deductions.esiFund,
+          },
+          incentives: payrollCriteria.incentives.map(incentive => ({
+            _id: incentive._id,
+            incentiveName: incentive.incentiveName,
+            minTaskCount: incentive.minTaskCount,
+            maxTaskCount: incentive.maxTaskCount,
+            percentage: incentive.percentage,
+          })),
+          payDay: payrollCriteria.payDay,
+          createdAt: payrollCriteria.createdAt,
+        };
       });
 
       return payrollCriteriaDTOList;
 
-  } catch (error) {
+    } catch (error) {
       console.error("Error in PayrollService:", error);
       throw new Error("Error fetching payroll criteria");
+    }
   }
-}
 
-async updatePayrollCriteria(payrollData: IPayrollCriteria, payrollId: string ,businessOwnerId: string): Promise<IPayrollCriteriaDTO> {
-  try {
-      const updatedPayroll = await this._businessOwnerRepository.updatePayrollCriteria(payrollData, payrollId ,businessOwnerId);
+  async updatePayrollCriteria(payrollData: IPayrollCriteria, payrollId: string, businessOwnerId: string): Promise<IPayrollCriteriaDTO> {
+    try {
+      const updatedPayroll = await this._businessOwnerRepository.updatePayrollCriteria(payrollData, payrollId, businessOwnerId);
       return updatedPayroll;
-  } catch (error) {
+    } catch (error) {
       console.error("Error in PayrollService:", error);
       throw new Error("Error updating payroll criteria");
+    }
   }
-}
 
-async deleteIncentive(incentiveId: string, data:any,businessOwnerId: string): Promise<IPayrollCriteria> {
-  try {
+  async deleteIncentive(incentiveId: string, data: any, businessOwnerId: string): Promise<IPayrollCriteria> {
+    try {
       const payrollCriteriaId = data.payrollCriteriaId;
-      const updatedPayroll = await this._businessOwnerRepository.deleteIncentive(incentiveId, payrollCriteriaId,businessOwnerId);
+      const updatedPayroll = await this._businessOwnerRepository.deleteIncentive(incentiveId, payrollCriteriaId, businessOwnerId);
       return updatedPayroll;
-  } catch (error) {
+    } catch (error) {
       console.error("Error in PayrollService:", error);
       throw new Error("Error deleting incentive");
+    }
   }
-} 
-  
+
 }

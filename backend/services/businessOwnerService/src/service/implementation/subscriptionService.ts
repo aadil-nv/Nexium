@@ -28,16 +28,16 @@ export default class SubscriptionService implements ISubscriptionService {
         try {
             const objectId = new mongoose.Types.ObjectId(businessOwnerId);
 
-                const businessOwnerData = await this._businessOwnerRepository.findOne({ _id: objectId });
-    
+            const businessOwnerData = await this._businessOwnerRepository.findOne({ _id: objectId });
+
             const subscriptionId = businessOwnerData?.subscription?.subscriptionId;
             if (!subscriptionId) {
                 throw new Error("Subscription not found");
             }
-    
+
             const subscription = await this._subscriptionRepository.getSubscription(subscriptionId.toString()); // Ensure subscriptionId is a string
-          
-    
+
+
             return {
                 _id: subscription._id,
                 planName: subscription.planName,
@@ -47,22 +47,21 @@ export default class SubscriptionService implements ISubscriptionService {
                 durationInMonths: subscription.durationInMonths,
                 features: subscription.features,
                 isActive: subscription.isActive,
-                employeeCount:subscription.employeeCount,
-                 managerCount: subscription.managerCount,
-                projectCount:subscription.projectCount,
-                 serviceRequestCount: subscription.serviceRequestCount
+                employeeCount: subscription.employeeCount,
+                managerCount: subscription.managerCount,
+                projectCount: subscription.projectCount,
+                serviceRequestCount: subscription.serviceRequestCount
             };
         } catch (error) {
             console.error("Error fetching subscription:", error);
             throw new Error("Could not fetch subscription.");
         }
     }
-    
+
 
     async getAllSubscriptions(): Promise<any> {
         try {
             const subscriptions = await this._subscriptionRepository.getAllSubscriptions();
-            console.log("All Subscriptions:", subscriptions);
             if (!subscriptions) {
                 throw new Error("Subscriptions not found");
             }
@@ -75,10 +74,10 @@ export default class SubscriptionService implements ISubscriptionService {
     }
 
     async getInvoices(businessOwnerId: string): Promise<any> {
-        
+
         try {
             const objectId = new mongoose.Types.ObjectId(businessOwnerId);
-    
+
             const businessOwnerData = await this._businessOwnerRepository.findOne({ _id: objectId });
 
             if (!businessOwnerData || !businessOwnerData?.subscription?.customerId) {
@@ -88,13 +87,13 @@ export default class SubscriptionService implements ISubscriptionService {
             const customerId = businessOwnerData?.subscription?.customerId;
 
             const customer = await stripe.customers.retrieve(customerId);
-            
-        
+
+
             const invoices = await stripe.invoices.list({
                 customer: customerId,
-                limit: 10, 
+                limit: 10,
             });
-            
+
 
             return invoices.data;
         } catch (error) {

@@ -9,105 +9,102 @@ import { IParticipantDetails } from "dto/chatDTO";
 @injectable()
 export default class MeetingService implements IMeetingService {
   constructor(@inject("IMeetingRepository") private _meetingRepository: IMeetingRepository,
-              @inject("IChatRepository") private _chatRepository: IChatRepository) {}
+    @inject("IChatRepository") private _chatRepository: IChatRepository) { }
 
-    async getAllMeetings(myId: string , businessOwnerId: string): Promise<IGetAllMeetingsDTO[]> {
-      try {
-        const meetings: IMeetingDetails[] = await this._meetingRepository.getAllMeetings(myId , businessOwnerId);
-      
-        const meetingDTOs: IGetAllMeetingsDTO[] = meetings
-            .map((meeting) => {
-                try {
-                    const receiver = this.findReceiver(meeting.participants, myId ,meeting.scheduledBy);
-                    if (!receiver) {
-                        console.warn(`Skipping meeting ${meeting._id} - no valid receiver found`);
-                        return null;
-                    }
-                    return this.mapToDTO(meeting, receiver, myId);
-                } catch (error: any) {
-                    console.error(`Error mapping meeting ${meeting._id}: ${error.message}`);
-                    return null;
-                }
-            })
-            .filter((meeting): meeting is IGetAllMeetingsDTO => meeting !== null); 
+  async getAllMeetings(myId: string, businessOwnerId: string): Promise<IGetAllMeetingsDTO[]> {
+    try {
+      const meetings: IMeetingDetails[] = await this._meetingRepository.getAllMeetings(myId, businessOwnerId);
 
-        return meetingDTOs;
+      const meetingDTOs: IGetAllMeetingsDTO[] = meetings
+        .map((meeting) => {
+          try {
+            const receiver = this.findReceiver(meeting.participants, myId, meeting.scheduledBy);
+            if (!receiver) {
+              console.warn(`Skipping meeting ${meeting._id} - no valid receiver found`);
+              return null;
+            }
+            return this.mapToDTO(meeting, receiver, myId);
+          } catch (error: any) {
+            console.error(`Error mapping meeting ${meeting._id}: ${error.message}`);
+            return null;
+          }
+        })
+        .filter((meeting): meeting is IGetAllMeetingsDTO => meeting !== null);
+
+      return meetingDTOs;
     } catch (error: any) {
-        console.error("Error getting all meetings:", error.message);
-        throw new Error(`Failed to get all meetings: ${error.message}`);
+      console.error("Error getting all meetings:", error.message);
+      throw new Error(`Failed to get all meetings: ${error.message}`);
     }
-     }
+  }
 
-
-    private findReceiver(participants: IParticipantDetails[], myId: string , scheduledBy: IParticipantDetails) : IParticipantDetails | null {
+  private findReceiver(participants: IParticipantDetails[], myId: string, scheduledBy: IParticipantDetails): IParticipantDetails | null {
     return participants.find((participant) => participant._id.toString() !== myId) || null;
-    }
+  }
 
-    private mapToDTO(meeting: IMeetingDetails, receiver: IParticipantDetails, myId: string): IGetAllMeetingsDTO {
+  private mapToDTO(meeting: IMeetingDetails, receiver: IParticipantDetails, myId: string): IGetAllMeetingsDTO {
     const dto: IGetAllMeetingsDTO = {
-        _id: meeting._id.toString(),
-        meetingTitle: meeting.meetingTitle,
-        meetingDate: meeting.meetingDate,
-        meetingTime: meeting.meetingTime,
-        participants: meeting.participants.map((participant: IParticipantDetails) => ({
-            userId: participant._id.toString(),
-            userName: this.getReceiverName(participant),
-            userPosition: this.getReceiverPosition(participant),
-            profilePicture: this.formatProfilePicture(this.getProfilePicture(participant)),
-        })),
-        meetingLink: meeting.meetingLink,
-        scheduledBy: {
-            userId: meeting.scheduledBy._id.toString(),
-            userName: this.getReceiverName(meeting.scheduledBy),
-            userPosition: this.getReceiverPosition(meeting.scheduledBy),
-            profilePicture: this.formatProfilePicture(this.getProfilePicture(meeting.scheduledBy)),
-        },
-        createdAt: meeting.createdAt,
-        updatedAt: meeting.updatedAt,
-        isRecurring: meeting.isRecurring,
-        recurringType: meeting.recurringType,
-        recurringDay: meeting.recurringDay
+      _id: meeting._id.toString(),
+      meetingTitle: meeting.meetingTitle,
+      meetingDate: meeting.meetingDate,
+      meetingTime: meeting.meetingTime,
+      participants: meeting.participants.map((participant: IParticipantDetails) => ({
+        userId: participant._id.toString(),
+        userName: this.getReceiverName(participant),
+        userPosition: this.getReceiverPosition(participant),
+        profilePicture: this.formatProfilePicture(this.getProfilePicture(participant)),
+      })),
+      meetingLink: meeting.meetingLink,
+      scheduledBy: {
+        userId: meeting.scheduledBy._id.toString(),
+        userName: this.getReceiverName(meeting.scheduledBy),
+        userPosition: this.getReceiverPosition(meeting.scheduledBy),
+        profilePicture: this.formatProfilePicture(this.getProfilePicture(meeting.scheduledBy)),
+      },
+      createdAt: meeting.createdAt,
+      updatedAt: meeting.updatedAt,
+      isRecurring: meeting.isRecurring,
+      recurringType: meeting.recurringType,
+      recurringDay: meeting.recurringDay
     };
 
     return dto;
-    }
+  }
 
-    private getReceiverName(participant: IParticipantDetails): string {
+  private getReceiverName(participant: IParticipantDetails): string {
     return (
-        participant.personalDetails?.employeeName ||
-        participant.personalDetails?.managerName ||
-        participant.personalDetails?.businessOwnerName ||
-        "Unknown"
+      participant.personalDetails?.employeeName ||
+      participant.personalDetails?.managerName ||
+      participant.personalDetails?.businessOwnerName ||
+      "Unknown"
     );
-    }
+  }
 
-    private getReceiverPosition(participant: IParticipantDetails): string {
+  private getReceiverPosition(participant: IParticipantDetails): string {
     return participant.professionalDetails?.position || participant.role || "Unknown";
-    }
+  }
 
-    private getProfilePicture(participant: IParticipantDetails): string | undefined {
+  private getProfilePicture(participant: IParticipantDetails): string | undefined {
     return participant.personalDetails?.profilePicture;
-    }
+  }
 
-   private formatProfilePicture(profilePicture?: string): string | undefined {
+  private formatProfilePicture(profilePicture?: string): string | undefined {
     return profilePicture
-        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${profilePicture}`
-        : undefined;
-   }
+      ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${profilePicture}`
+      : undefined;
+  }
 
-            
-
-async createMeeting(meeting: any, myId: string ,businessOwnerId: string): Promise<IMeetingsDTO> {
+  async createMeeting(meeting: any, myId: string, businessOwnerId: string): Promise<IMeetingsDTO> {
     try {
-     
-      const createdMeeting = await this._meetingRepository.createMeeting(meeting, myId ,businessOwnerId);
+
+      const createdMeeting = await this._meetingRepository.createMeeting(meeting, myId, businessOwnerId);
 
       const mappedMeeting: IMeetingsDTO = {
-        _id: createdMeeting._id, 
+        _id: createdMeeting._id,
         meetingTitle: createdMeeting.meetingTitle,
         meetingDate: new Date(createdMeeting.meetingDate),
         meetingTime: createdMeeting.meetingTime,
-        participants: createdMeeting.participants.map((p: any) => p.toString()), 
+        participants: createdMeeting.participants.map((p: any) => p.toString()),
         meetingLink: createdMeeting.meetingLink,
         scheduledBy: createdMeeting.scheduledBy.toString(),
         isRecurring: createdMeeting.isRecurring,
@@ -116,24 +113,24 @@ async createMeeting(meeting: any, myId: string ,businessOwnerId: string): Promis
       };
 
       return mappedMeeting;
-     } catch (error: any) {
+    } catch (error: any) {
       console.error("Error creating meeting:", error.message);
       throw new Error("Failed to create meeting. Please try again later.");
-     }
     }
+  }
 
-      async updateMeeting(meetingId: string, meeting: any ,businessOwnerId: string): Promise<IMeetingsDTO> {
+  async updateMeeting(meetingId: string, meeting: any, businessOwnerId: string): Promise<IMeetingsDTO> {
     try {
-      const updatedMeeting = await this._meetingRepository.updateMeeting(meetingId, meeting ,businessOwnerId);
+      const updatedMeeting = await this._meetingRepository.updateMeeting(meetingId, meeting, businessOwnerId);
 
       const mappedMeeting: IMeetingsDTO = {
-        _id: updatedMeeting._id, 
+        _id: updatedMeeting._id,
         meetingTitle: updatedMeeting.meetingTitle,
         meetingDate: new Date(updatedMeeting.meetingDate),
         meetingTime: updatedMeeting.meetingTime,
-        participants: updatedMeeting.participants.map((p: any) => p.toString()), 
+        participants: updatedMeeting.participants.map((p: any) => p.toString()),
         meetingLink: updatedMeeting.meetingLink,
-        scheduledBy: updatedMeeting.scheduledBy.toString(), 
+        scheduledBy: updatedMeeting.scheduledBy.toString(),
         isRecurring: updatedMeeting.isRecurring,
         recurringType: updatedMeeting.recurringType as "daily" | "weekly" | undefined,
         recurringDay: updatedMeeting.recurringDay as "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday" | undefined
@@ -144,79 +141,79 @@ async createMeeting(meeting: any, myId: string ,businessOwnerId: string): Promis
       console.error("Error updating meeting:", error.message);
       throw new Error("Failed to update meeting. Please try again later.");
     }
-      }
+  }
 
-      async deleteMeeting(meetingId: string ,businessOwnerId: string): Promise<IMeetingsDTO> {
-        try {
-          const deletedMeeting = await this._meetingRepository.deleteMeeting(meetingId , businessOwnerId);
-  
-          const mappedMeeting: IMeetingsDTO = {
-            _id: deletedMeeting._id, 
-            meetingTitle: deletedMeeting.meetingTitle,
-            meetingDate: new Date(deletedMeeting.meetingDate),
-            meetingTime: deletedMeeting.meetingTime,
-            participants: deletedMeeting.participants.map((p: any) => p.toString()), 
-            meetingLink: deletedMeeting.meetingLink,
-            scheduledBy: deletedMeeting.scheduledBy.toString(),
-            isRecurring: deletedMeeting.isRecurring,
-            recurringType: deletedMeeting.recurringType as "daily" | "weekly" | undefined,
-            recurringDay: deletedMeeting.recurringDay as "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday" | undefined
-          };
-  
-          return mappedMeeting;
-        } catch (error: any) {
-          console.error("Error deleting meeting:", error.message);
-          throw new Error("Failed to delete meeting. Please try again later.");
-        }
-      }
+  async deleteMeeting(meetingId: string, businessOwnerId: string): Promise<IMeetingsDTO> {
+    try {
+      const deletedMeeting = await this._meetingRepository.deleteMeeting(meetingId, businessOwnerId);
 
-      async getAllParticipants(myId: string ,businessOwnerId: string): Promise<IParticipantsDTO[]> {
-        try {
-          const employees = await this._chatRepository.findAllEmployees(businessOwnerId);
-          const managers = await this._chatRepository.findAllManagers(businessOwnerId);
-          const businessOwners = await this._chatRepository.findAllBusinessOwners(businessOwnerId);
-  
-          const buisinessOwner: IParticipantsDTO[] = businessOwners.map(businessOner => ({
-                         userId: businessOner._id,
-                         userName: businessOner.personalDetails.businessOwnerName,
-                         userPosition: businessOner.role, 
-                         status: true,
-                         profilePicture: businessOner.personalDetails.profilePicture
-                             ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOner.personalDetails.profilePicture}`
-                             : businessOner.personalDetails.profilePicture,
-                     }));
-         
-             
-                     const employee: IParticipantsDTO[] = employees.map(employee => ({
-                         userId: employee._id,
-                         userName: employee.personalDetails.employeeName,
-                         userPosition: employee.professionalDetails.position,
-                         status: employee.isActive,
-                         profilePicture: employee.personalDetails.profilePicture
-                             ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
-                             : employee.personalDetails.profilePicture,
-                     }));
-             
-                     const manager: IParticipantsDTO[] = managers.map(manager => ({
-                         userId: manager._id,
-                         userName: manager.personalDetails.managerName,
-                         userPosition : manager.role,
-                        profilePicture: manager.personalDetails.profilePicture
-                             ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${manager.personalDetails.profilePicture}`
-                             : manager.personalDetails.profilePicture,
-                     }));
-             
-                     
-                     const userDTO = [...employee, ...manager, ...buisinessOwner].filter(
-                         receiver => receiver.userId.toString() !== myId
-                     );
-             
-                     return userDTO;
-        } catch (error: any) {
-          console.error("Error getting all participants:", error.message);
-          throw new Error("Failed to get all participants. Please try again later.");
-        }
-      }
+      const mappedMeeting: IMeetingsDTO = {
+        _id: deletedMeeting._id,
+        meetingTitle: deletedMeeting.meetingTitle,
+        meetingDate: new Date(deletedMeeting.meetingDate),
+        meetingTime: deletedMeeting.meetingTime,
+        participants: deletedMeeting.participants.map((p: any) => p.toString()),
+        meetingLink: deletedMeeting.meetingLink,
+        scheduledBy: deletedMeeting.scheduledBy.toString(),
+        isRecurring: deletedMeeting.isRecurring,
+        recurringType: deletedMeeting.recurringType as "daily" | "weekly" | undefined,
+        recurringDay: deletedMeeting.recurringDay as "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday" | undefined
+      };
+
+      return mappedMeeting;
+    } catch (error: any) {
+      console.error("Error deleting meeting:", error.message);
+      throw new Error("Failed to delete meeting. Please try again later.");
+    }
+  }
+
+  async getAllParticipants(myId: string, businessOwnerId: string): Promise<IParticipantsDTO[]> {
+    try {
+      const employees = await this._chatRepository.findAllEmployees(businessOwnerId);
+      const managers = await this._chatRepository.findAllManagers(businessOwnerId);
+      const businessOwners = await this._chatRepository.findAllBusinessOwners(businessOwnerId);
+
+      const buisinessOwner: IParticipantsDTO[] = businessOwners.map(businessOner => ({
+        userId: businessOner._id,
+        userName: businessOner.personalDetails.businessOwnerName,
+        userPosition: businessOner.role,
+        status: true,
+        profilePicture: businessOner.personalDetails.profilePicture
+          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOner.personalDetails.profilePicture}`
+          : businessOner.personalDetails.profilePicture,
+      }));
+
+
+      const employee: IParticipantsDTO[] = employees.map(employee => ({
+        userId: employee._id,
+        userName: employee.personalDetails.employeeName,
+        userPosition: employee.professionalDetails.position,
+        status: employee.isActive,
+        profilePicture: employee.personalDetails.profilePicture
+          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
+          : employee.personalDetails.profilePicture,
+      }));
+
+      const manager: IParticipantsDTO[] = managers.map(manager => ({
+        userId: manager._id,
+        userName: manager.personalDetails.managerName,
+        userPosition: manager.role,
+        profilePicture: manager.personalDetails.profilePicture
+          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${manager.personalDetails.profilePicture}`
+          : manager.personalDetails.profilePicture,
+      }));
+
+
+      const userDTO = [...employee, ...manager, ...buisinessOwner].filter(
+        receiver => receiver.userId.toString() !== myId
+      );
+
+      return userDTO;
+    } catch (error: any) {
+      console.error("Error getting all participants:", error.message);
+      throw new Error("Failed to get all participants. Please try again later.");
+    }
+  }
 
 
 }

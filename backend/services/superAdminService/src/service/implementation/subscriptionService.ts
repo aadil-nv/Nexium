@@ -53,9 +53,7 @@ export default class SubscriptionService implements ISubscriptionService {
 
   async fetchAllSubscriptions(): Promise<any> {
     try {
-      const subscriptions = await this._subscriptionRepository.fetchAllSubscriptions();
-      console.log("Subscriptions fetched:", subscriptions);
-      
+      const subscriptions = await this._subscriptionRepository.fetchAllSubscriptions();      
       return { success: true, subscriptions };
     } catch (error) {
       console.error("Error fetching subscriptions:", error);

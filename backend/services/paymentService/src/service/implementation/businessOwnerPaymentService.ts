@@ -15,12 +15,12 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
   constructor(
     @inject("IBusinessOwnerPaymentRepository")
     private repository: IBusinessOwnerPaymentRepository
-  ) {}
+  ) { }
 
   async getAllSubscriptionPlans(): Promise<ISubscriptionDTO[]> {
     try {
       const payments = await this.repository.getAllSubscriptionPlans();
-      
+
       return payments.map(({ _id, planName, description, price, planType, durationInMonths, features, isActive }) => ({
         _id: new Types.ObjectId(_id as string),  // Cast _id to ObjectId
         planName,
@@ -54,18 +54,13 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
 
 
   private async processPaidPlan(businessOwnerId: string, plan: any, email: string): Promise<any> {
-    console.log(`processPaidPlan====================================`.bgRed.bold);
 
-    console.log("businessOwnerId:", businessOwnerId);
-    console.log("plan:", plan);
-    console.log("email:", email);
-    
     try {
 
       const businessOwner = await this.repository.findBusinessOwnerByEmail(email);
       if (businessOwner && businessOwner.subscription.subscriptionId === plan._id) {
         console.log(`You are already subscribed to this plan.`.bgRed.bold);
-        
+
         throw new Error("You are already subscribed to this plan.");
       }
 
@@ -77,9 +72,9 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
         line_items: [{
           price_data: {
             currency: "usd",
-            product_data: { 
-              name: plan.planName, 
-              description: `Payment for ${plan.features} Plan` 
+            product_data: {
+              name: plan.planName,
+              description: `Payment for ${plan.features} Plan`
             },
             unit_amount: plan.price,
             recurring: {
@@ -104,27 +99,16 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
 
   async handleWebhook(session: any): Promise<IBusinessOwnerDocument> {
 
-    console.log(`session: ${JSON.stringify(session.subscription_details)}`.bgCyan);
-    
-      
     try {
-      const { planId,email} = session.subscription_details.metadata;
+      const { planId, email } = session.subscription_details.metadata;
 
-      console.log(`"==========Email========"`.bgRed,email);
-      console.log(`"==========PlanId========"`.bgRed,planId);
-      
-      console.log("==============sessionId=============",session);
-
-      console.log("==============Customer=============",session.customer);
-      
-      
       if (!session.paid) throw new Error("Payment not successful");
 
       const businessOwner = await this.repository.findBusinessOwnerByEmail(email);
       if (businessOwner.subscription.subscriptionId === planId) {
         throw new Error("Already subscribed to this plan");
       }
-    
+
 
       const newPlan = await this.repository.findNewSubscriptionPlan(planId);
       const subscription: ISubscription = {
@@ -144,52 +128,51 @@ export default class BusinessOwnerPaymentService implements IBusinessOwnerPaymen
   async createCheckoutSession(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponseDTO> {
     try {
 
-        if(!plan) throw new Error("Plan not found");
+      if (!plan) throw new Error("Plan not found");
 
-        const result = await this.processCheckoutPlan(plan, amount, currency, email);
-        return result;
+      const result = await this.processCheckoutPlan(plan, amount, currency, email);
+      return result;
 
     } catch (error) {
-        console.error('Error in createCheckoutSession:', error);
-        throw new Error('Failed to process the request: ' + error);
+      console.error('Error in createCheckoutSession:', error);
+      throw new Error('Failed to process the request: ' + error);
     }
-}
+  }
 
-private async processCheckoutPlan(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponseDTO> {
-  console.log(`PROCesssssssssssssssssssssssssssssssssssssssssssssssssssssssss`.bgRed.bold);
-  
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    line_items: [{
-      price_data: {
-        currency: currency,
-        product_data: { 
-          name: plan.planName, 
-          description: `Payment for ${plan.features} Plan` 
+  private async processCheckoutPlan(plan: any, amount: number, currency: string, email: string): Promise<IPaymentIntentResponseDTO> {
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: currency,
+          product_data: {
+            name: plan.planName,
+            description: `Payment for ${plan.features} Plan`
+          },
+          unit_amount: amount,
+          recurring: {
+            interval: 'month', // Adjust to 'year' if your subscription is annual
+          },
         },
-        unit_amount: amount,
-        recurring: {
-          interval: 'month', // Adjust to 'year' if your subscription is annual
-        },
+        quantity: 1,
+      }],
+      mode: 'subscription',
+      subscription_data: {
+        metadata: { planId: plan._id, email },
       },
-      quantity: 1,
-    }],
-    mode: 'subscription',
-    subscription_data: {
-      metadata: { planId: plan._id, email },
-    },
-    success_url: `${process.env.CLIENT_ORIGIN}/business-owner/success`,
-        cancel_url: `${process.env.CLIENT_ORIGIN}/plan`,
-  });
+      success_url: `${process.env.CLIENT_ORIGIN}/business-owner/success`,
+      cancel_url: `${process.env.CLIENT_ORIGIN}/plan`,
+    });
 
-  console.log('Stripe Session Created:', session);
+    console.log('Stripe Session Created:', session);
 
-  return { 
-    session, 
-    success: true, 
-    message: 'Checkout session created successfully'
-  };
-}
+    return {
+      session,
+      success: true,
+      message: 'Checkout session created successfully'
+    };
+  }
 
 
 

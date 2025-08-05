@@ -84,7 +84,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
             return null;
         }
     }
-    
 
     async getEmployeeInformation(employeeId: string, businessOwnerId: string): Promise<IEmployee> {
         try {
@@ -102,7 +101,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }
     }
     
-
     async updateEmployeePersonalInformation(employeeId: string, personalInformation: any, businessOwnerId: string): Promise<IEmployee> {
         try {
             const switchDB = await connectDB(businessOwnerId);
@@ -125,7 +123,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }
     }
     
-
     async updateAddress(employeeId: string, address: IEmployee['address'], businessOwnerId: string): Promise<IEmployee> {
         try {
             const switchDB = await connectDB(businessOwnerId);
@@ -147,7 +144,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }
     }
     
-
     async updateEmployeeProfessionalInfo(employeeId: string, professionalInfo: any, businessOwnerId: string): Promise<IEmployee> {
         try {
             const switchDB = await connectDB(businessOwnerId);
@@ -171,7 +167,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }
     }
     
-    
     async getDepartmentName(departmentId: string, businessOwnerId: string): Promise<string | null> {
         try {
             const db = await connectDB(businessOwnerId);
@@ -187,7 +182,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }
     }
     
-
     async updateProfilePicture(employeeId: string, profilePicture: any, businessOwnerId: string): Promise<string> {
         try {
             const db = await connectDB(businessOwnerId);
@@ -209,8 +203,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }
     }
     
-    
-
     async updateResume(employeeId: string, documentMetadata: any, businessOwnerId: string): Promise<any> {
         try {
             const db = await connectDB(businessOwnerId);
@@ -233,9 +225,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }
     }
     
-    
-
-
     async updateBlocking(employeeId: string,blocking: any, businessOwnerId: string): Promise<boolean> {
         
         try {
@@ -314,7 +303,6 @@ export default class EmployeeRepository extends BaseRepository<IEmployee> implem
         }
     }
     
-
     async getAllTeamLeads(businessOwnerId: string): Promise<IEmployee[]> {
         try {
             const db = await connectDB(businessOwnerId);

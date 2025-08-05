@@ -84,8 +84,6 @@ export default class ProjectService implements IProjectService {
     async getAllTeamLeads(businessOwnerId: string): Promise<IEmployeesDTO[]> {
         try {
             const employees = await this._employeeRepository.getAllTeamLeads(businessOwnerId);
-          
-            
     
             const result: IEmployeesDTO[] = employees.map((employee: IEmployee) => ({
                 employeeName: employee.personalDetails?.employeeName,

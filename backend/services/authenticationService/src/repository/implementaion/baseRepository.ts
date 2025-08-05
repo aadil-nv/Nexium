@@ -1,10 +1,11 @@
-import { Model, Document, FilterQuery, UpdateQuery } from 'mongoose';
-import IBaseRepository from "../interfaces/IBaseRepository"; 
-import { injectable } from 'inversify';
+import { Model, Document, FilterQuery, UpdateQuery } from "mongoose";
+import IBaseRepository from "../interfaces/IBaseRepository";
+import { injectable } from "inversify";
 
 @injectable()
-export default class BaseRepository<T extends Document> implements IBaseRepository<T> {
-  constructor(private _model: Model<T>) {}
+export default class BaseRepository<T extends Document>
+  implements IBaseRepository<T> {
+  constructor(private _model: Model<T>) { }
 
   async findOne(filter: FilterQuery<T>): Promise<T | null> {
     try {
@@ -25,14 +26,9 @@ export default class BaseRepository<T extends Document> implements IBaseReposito
   }
 
   async create(data: Partial<T>): Promise<T> {
-    console.log("data sis ==>",data);
-    
     try {
-      console.log("model is ==>",this._model);
-      
       const createdDocument = new this._model(data);
-      console.log("careate document",createdDocument);
-      
+
       return await createdDocument.save();
     } catch (error) {
       console.log("Error creating document:", error);
@@ -40,10 +36,11 @@ export default class BaseRepository<T extends Document> implements IBaseReposito
     }
   }
 
-
   async update(id: string, data: UpdateQuery<T>): Promise<T | null> {
     try {
-      return await this._model.findByIdAndUpdate(id, data, { new: true }).exec();
+      return await this._model
+        .findByIdAndUpdate(id, data, { new: true })
+        .exec();
     } catch (error) {
       console.log("Error updating document:", error);
       return null;

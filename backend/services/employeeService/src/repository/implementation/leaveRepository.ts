@@ -15,8 +15,6 @@ export default class LeaveRepository extends BaseRepository<IAppliedLeave> imple
     }
 
     async applyLeave(employeeId: string, leaveData: any, businessOwnerId: string): Promise<IAppliedLeave> {
-       
-    
         try {
             if (!employeeId || !businessOwnerId) {
                 throw new Error("Employee ID and Business Owner ID are required");
@@ -169,13 +167,11 @@ export default class LeaveRepository extends BaseRepository<IAppliedLeave> imple
         }
     }
 
-
     async getEmployeeLeaves(employeeId: string, businessOwnerId: string): Promise<IEmployeeLeave | null> {
         try {
             const switchDB = await connectDB(businessOwnerId);
             const employeeLeave = await switchDB.model<IEmployeeLeave>('EmployeeLeave', employeeLeaveModel.schema)
             const leave = await employeeLeave.findOne({ employeeId });
-    
             return leave; 
         } catch (error) {
             console.error('Error fetching employee leaves:', error);

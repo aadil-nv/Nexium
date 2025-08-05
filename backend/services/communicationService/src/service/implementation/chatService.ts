@@ -1,11 +1,13 @@
-import { inject , injectable } from "inversify";
-import  IChatService from "../interface/IChatService";
-import { IChatResponseDTO, IChatWithDetails, ICreateGroupDTO, IGetAllGroupsDTO,
-     IGroupDTO, IMembers, IMembersDTO, IParticipantDetails, IPrivateChatDTO, IReceiverDTO, ISetNewAccessTokenDTO ,IParticipant, 
-     IUnAddedUsersDTO,
-     IResponseDTO,
-     ILastMessage} from "../../dto/chatDTO";
-import  IChatRepository  from "../../repository/interface/IChatRepository";
+import { inject, injectable } from "inversify";
+import IChatService from "../interface/IChatService";
+import {
+    IChatResponseDTO, IChatWithDetails, ICreateGroupDTO, IGetAllGroupsDTO,
+    IGroupDTO, IMembers, IMembersDTO, IParticipantDetails, IPrivateChatDTO, IReceiverDTO, ISetNewAccessTokenDTO, IParticipant,
+    IUnAddedUsersDTO,
+    IResponseDTO,
+    ILastMessage
+} from "../../dto/chatDTO";
+import IChatRepository from "../../repository/interface/IChatRepository";
 import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
 
 
@@ -14,11 +16,11 @@ import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
 
 @injectable()
 
-export default  class ChatService implements IChatService {
-    constructor(@inject("IChatRepository") private _chatRepository: IChatRepository) {}
+export default class ChatService implements IChatService {
+    constructor(@inject("IChatRepository") private _chatRepository: IChatRepository) { }
 
-    
-    async getAllReceiver(myId: string , businessOwnerId: string): Promise<IReceiverDTO[]> {
+
+    async getAllReceiver(myId: string, businessOwnerId: string): Promise<IReceiverDTO[]> {
         try {
             const employees = await this._chatRepository.findAllEmployees(businessOwnerId);
             const managers = await this._chatRepository.findAllManagers(businessOwnerId);
@@ -29,7 +31,7 @@ export default  class ChatService implements IChatService {
                 senderId: myId,
                 receiverId: businessOner._id,
                 receiverName: businessOner.personalDetails.businessOwnerName,
-                receiverPosition: businessOner.role, 
+                receiverPosition: businessOner.role,
                 status: businessOner.isActive,
                 lastSeen: lastSeen,
                 businesOwnerId: businessOner._id,
@@ -38,7 +40,7 @@ export default  class ChatService implements IChatService {
                     : businessOner.personalDetails.profilePicture,
             }));
 
-    
+
             const employeeDTO: IReceiverDTO[] = employees.map(employee => ({
                 senderId: myId,
                 receiverId: employee._id,
@@ -51,12 +53,12 @@ export default  class ChatService implements IChatService {
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
                     : employee.personalDetails.profilePicture,
             }));
-    
+
             const managerDTO: IReceiverDTO[] = managers.map(manager => ({
                 senderId: myId,
                 receiverId: manager._id,
                 receiverName: manager.personalDetails.managerName,
-                receiverPosition : manager.role,
+                receiverPosition: manager.role,
                 status: manager.isActive,
                 lastSeen: lastSeen,
                 businesOwnerId: manager.businessOwnerId,
@@ -64,77 +66,75 @@ export default  class ChatService implements IChatService {
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${manager.personalDetails.profilePicture}`
                     : manager.personalDetails.profilePicture,
             }));
-    
-            
+
+
             const receiverDTO = [...employeeDTO, ...managerDTO, ...buisinessOwnereDTO].filter(
                 receiver => receiver.receiverId.toString() !== myId
             );
-    
+
             return receiverDTO;
         } catch (error) {
             console.log(error);
-            
+
             throw new Error("Error getting all receivers");
         }
     }
 
-    async getAllGroups(myId: string ,businessOwnerId: string): Promise<IGetAllGroupsDTO[]> {
+    async getAllGroups(myId: string, businessOwnerId: string): Promise<IGetAllGroupsDTO[]> {
         try {
-            const groups = await this._chatRepository.findAllGroups(myId ,businessOwnerId);
-    
+            const groups = await this._chatRepository.findAllGroups(myId, businessOwnerId);
+
             const groupsDTO: IGetAllGroupsDTO[] = groups.map(group => ({
                 senderId: myId,
                 groupId: group._id.toString(),
-                groupName: group.groupName || '', 
-                groupAdmin: group.groupAdmin ? group.groupAdmin.toString() : '', 
-                participants: group.participants.map(participant => participant.toString()), 
+                groupName: group.groupName || '',
+                groupAdmin: group.groupAdmin ? group.groupAdmin.toString() : '',
+                participants: group.participants.map(participant => participant.toString()),
                 chatType: group.chatType,
-                busineesOwnerId :businessOwnerId
+                busineesOwnerId: businessOwnerId
             }));
-    
+
             return groupsDTO;
         } catch (error) {
             throw new Error("Error getting all groups");
         }
     }
 
-    async getAllPrivateChats(myId: string ,businessOwnerId: string): Promise<IPrivateChatDTO[]> {
+    async getAllPrivateChats(myId: string, businessOwnerId: string): Promise<IPrivateChatDTO[]> {
         try {
-            const privateChats = await this._chatRepository.findAllPrivateChats(myId ,businessOwnerId);            
-            
+            const privateChats = await this._chatRepository.findAllPrivateChats(myId, businessOwnerId);
+
             const mappedChats: IPrivateChatDTO[] = privateChats
                 .map(chat => {
                     try {
                         const typedChat = chat as IChatWithDetails;
                         const receiver = this.findReceiver(typedChat.participantDetails, myId);
 
-                        
-    
                         if (!receiver) {
                             console.warn(`Skipping chat ${chat._id} - receiver not found`);
-                            return null; 
+                            return null;
                         }
-    
-                        return this.mapToDTO(typedChat, receiver , myId);
-                    } catch (error:any) {
+
+                        return this.mapToDTO(typedChat, receiver, myId);
+                    } catch (error: any) {
                         console.error(`Error mapping chat ${chat._id}: ${error.message}`);
-                        return null; 
+                        return null;
                     }
                 })
-                .filter((chat): chat is IPrivateChatDTO => chat !== null); 
-                
+                .filter((chat): chat is IPrivateChatDTO => chat !== null);
+
             return mappedChats;
-        } catch (error:any) {
+        } catch (error: any) {
             console.error("Error in getAllPrivateChats: ", error.message);
             throw new Error(`Failed to get private chats: ${error.message}`);
         }
     }
-    
+
     private findReceiver(participant: IParticipantDetails, currentmyId: string): IParticipantDetails | null {
         return participant._id.toString() !== currentmyId ? participant : null;
     }
 
-    private mapToDTO(chat: IChatWithDetails, receiver: IParticipantDetails , myId: string): IPrivateChatDTO {            
+    private mapToDTO(chat: IChatWithDetails, receiver: IParticipantDetails, myId: string): IPrivateChatDTO {
         const receiverName = this.getReceiverName(receiver);
         const receiverPosition = this.getReceiverPosition(receiver);
         const status = this.getReceiverStatus(receiver);
@@ -142,14 +142,14 @@ export default  class ChatService implements IChatService {
         const lastMessage = (chat.lastMessage as ILastMessage | null)?.content || undefined;
 
         return {
-            senderId:myId,
+            senderId: myId,
             chatId: chat._id.toString(),
             chatType: chat.chatType,
             receiverId: receiver._id.toString(),
             receiverName,
             receiverPosition,
             status,
-            receiverProfilePicture: profilePicture 
+            receiverProfilePicture: profilePicture
                 ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${profilePicture}`
                 : undefined,
             lastMessage: lastMessage,
@@ -179,13 +179,13 @@ export default  class ChatService implements IChatService {
         if ('isActive' in receiver) {
             return !!receiver.isActive;
         }
-        return true; 
+        return true;
     }
 
-    async createChat(myId: string, receiverId: string , businessOwnerId: string): Promise<ICreateGroupDTO> {
+    async createChat(myId: string, receiverId: string, businessOwnerId: string): Promise<ICreateGroupDTO> {
         try {
-            const createdChat = await this._chatRepository.createChat(myId, receiverId , businessOwnerId);
-        
+            const createdChat = await this._chatRepository.createChat(myId, receiverId, businessOwnerId);
+
             return {
                 chatId: createdChat._id,
                 groupName: createdChat.groupName || '',
@@ -198,39 +198,39 @@ export default  class ChatService implements IChatService {
             throw new Error("Error creating chat: " + error.message);
         }
     }
-    
-    async createMessage(message: any, myId: string ,businessOwnerId: string): Promise<IChatResponseDTO> {
+
+    async createMessage(message: any, myId: string, businessOwnerId: string): Promise<IChatResponseDTO> {
         try {
-            const createdMessage = await this._chatRepository.createMessage(message, myId , businessOwnerId);
+            const createdMessage = await this._chatRepository.createMessage(message, myId, businessOwnerId);
             return {
                 message: "Message created successfully",
                 success: true
             }
-            
+
         } catch (error) {
             throw new Error("Error creating message");
-            
+
         }
     }
 
-    async createGroup(data: any, myId: string ,businessOwnerId: string): Promise<IChatResponseDTO> {
+    async createGroup(data: any, myId: string, businessOwnerId: string): Promise<IChatResponseDTO> {
         try {
-            const createdGroup = await this._chatRepository.createGroup(data, myId , businessOwnerId);
+            const createdGroup = await this._chatRepository.createGroup(data, myId, businessOwnerId);
             return {
                 message: "Group created successfully",
                 success: true
             }
-            
+
         } catch (error) {
             throw new Error("Error creating group");
-            
+
         }
-    }   
+    }
 
     async setNewAccessToken(refreshToken: string): Promise<ISetNewAccessTokenDTO> {
         try {
             const decoded = verifyRefreshToken(refreshToken);
-    
+
             if (decoded?.employeeData) {
                 const employeeData = decoded.employeeData;
                 const accessToken = generateAccessToken({ employeeData });
@@ -257,37 +257,37 @@ export default  class ChatService implements IChatService {
                     success: true,
                 };
             }
-    
+
             throw new Error("Invalid token data");
         } catch (error) {
             throw new Error("Error setting new access token");
         }
     }
 
-    async findChatId(myId: string, receiverId: string, chatType: string ,businessOwnerId: string): Promise<any> {        
+    async findChatId(myId: string, receiverId: string, chatType: string, businessOwnerId: string): Promise<any> {
         try {
-            const chat = await this._chatRepository.findChatId(myId, receiverId, chatType , businessOwnerId);
+            const chat = await this._chatRepository.findChatId(myId, receiverId, chatType, businessOwnerId);
 
-            if (!chat) {
-                throw new Error("Chat not found");
-            }           
-            return chat._id
-        } catch (error) {
-            throw new Error("Error finding chat");
-            
-        }
-    }
-
-    async getChatParticipants(chatId: string , businessOwnerId: string): Promise<any> {
-    
-        try {
-            const chat = await this._chatRepository.getChatParticipants(chatId, businessOwnerId);
-    
             if (!chat) {
                 throw new Error("Chat not found");
             }
-    
-    
+            return chat._id
+        } catch (error) {
+            throw new Error("Error finding chat");
+
+        }
+    }
+
+    async getChatParticipants(chatId: string, businessOwnerId: string): Promise<any> {
+
+        try {
+            const chat = await this._chatRepository.getChatParticipants(chatId, businessOwnerId);
+
+            if (!chat) {
+                throw new Error("Chat not found");
+            }
+
+
             return chat.participants;
         } catch (error) {
             console.error("Error in service layer:", error);
@@ -295,17 +295,17 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async getAllGroupMembers(groupId: string , businessOwnerId: string): Promise<IMembersDTO[]> {
+    async getAllGroupMembers(groupId: string, businessOwnerId: string): Promise<IMembersDTO[]> {
         try {
-            const groupDetails = await this._chatRepository.getAllGroupMembers(groupId , businessOwnerId);
-    
+            const groupDetails = await this._chatRepository.getAllGroupMembers(groupId, businessOwnerId);
+
             const participants = groupDetails.participants;
-    
+
             const membersDTO: IMembersDTO[] = [];
-    
+
             for (const participantId of participants) {
                 let member: any = null;
-    
+
                 member = groupDetails.groupMemberDetails.employees.find((emp: any) => emp._id.toString() === participantId.toString());
                 if (!member) {
                     member = groupDetails.groupMemberDetails.managers.find((mgr: any) => mgr._id.toString() === participantId.toString());
@@ -313,17 +313,17 @@ export default  class ChatService implements IChatService {
                 if (!member) {
                     member = groupDetails.groupMemberDetails.businessOwners.find((owner: any) => owner._id.toString() === participantId.toString());
                 }
-    
+
                 if (member) {
                     membersDTO.push({
                         _id: member._id.toString(),
                         name: member.personalDetails.employeeName || member.personalDetails.managerName || member.personalDetails.businessOwnerName || 'Unknown',
                         profilePicture: member.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${member.personalDetails.profilePicture}` : member.personalDetails.profilePicture,
-                        position:  member.role || 'Business Owner',
+                        position: member.role || 'Business Owner',
                     });
                 }
             }
-    
+
             return membersDTO;
         } catch (error) {
             console.error("Error in service layer:", error);
@@ -331,36 +331,36 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async getGroupDetails(groupId: string ,businessOwnerId: string): Promise<IGroupDTO> {
+    async getGroupDetails(groupId: string, businessOwnerId: string): Promise<IGroupDTO> {
         try {
-            const groupDetails = await this._chatRepository.getGroupDetails(groupId , businessOwnerId);
-    
+            const groupDetails = await this._chatRepository.getGroupDetails(groupId, businessOwnerId);
+
             if (!groupDetails) {
                 throw new Error("Group details not found");
             }
-    
+
             const participants = groupDetails.participants || [];
             const membersDTO: IMembers[] = [];
-    
+
             for (const participantId of participants) {
                 let member: any = null;
-    
+
                 if (groupDetails.groupMemberDetails) {
                     const { employees = [], managers = [], businessOwners = [] } = groupDetails.groupMemberDetails;
-    
+
                     member = employees.find((emp: any) => emp._id?.toString() === participantId.toString()) ||
-                             managers.find((mgr: any) => mgr._id?.toString() === participantId.toString()) ||
-                             businessOwners.find((owner: any) => owner._id?.toString() === participantId.toString());
+                        managers.find((mgr: any) => mgr._id?.toString() === participantId.toString()) ||
+                        businessOwners.find((owner: any) => owner._id?.toString() === participantId.toString());
                 }
-    
+
                 if (member) {
                     const name = member.name || 'Unknown';
-                    const profilePicture = member.profilePicture 
-                        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${member.profilePicture}` 
+                    const profilePicture = member.profilePicture
+                        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${member.profilePicture}`
                         : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png";
-    
+
                     const position = member.position || member.role || 'Unknown';
-    
+
                     membersDTO.push({
                         _id: member._id?.toString(),
                         name,
@@ -369,7 +369,7 @@ export default  class ChatService implements IChatService {
                     });
                 }
             }
-    
+
             return {
                 _id: groupDetails._id?.toString(),
                 groupName: groupDetails.groupName || 'Unnamed Group',
@@ -384,55 +384,55 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async deleteGroup(groupId: string , businessOwnerId: string): Promise<void> {
+    async deleteGroup(groupId: string, businessOwnerId: string): Promise<void> {
         try {
-            await this._chatRepository.deleteGroup(groupId , businessOwnerId);
+            await this._chatRepository.deleteGroup(groupId, businessOwnerId);
         } catch (error) {
             console.error("Error in service layer:", error);
             throw new Error("Error deleting group");
         }
     }
-    
 
-    async getAllUnAddedUsers(groupId: string, myId: string , businessOwnerId: string): Promise<IUnAddedUsersDTO[]> {
+
+    async getAllUnAddedUsers(groupId: string, myId: string, businessOwnerId: string): Promise<IUnAddedUsersDTO[]> {
         try {
-            const employees = await this._chatRepository.findAllEmployees(businessOwnerId) ;
+            const employees = await this._chatRepository.findAllEmployees(businessOwnerId);
             const managers = await this._chatRepository.findAllManagers(businessOwnerId);
             const businessOwners = await this._chatRepository.findAllBusinessOwners(businessOwnerId);
-            const chatData = await this._chatRepository.getChatParticipants(groupId ,businessOwnerId);
+            const chatData = await this._chatRepository.getChatParticipants(groupId, businessOwnerId);
             const chatParticipants = (chatData.participants || []).map((p: any) => p.toString());
-        
+
             const buisinessOwnereDTO: IUnAddedUsersDTO[] = businessOwners.map(businessOwner => ({
                 _id: businessOwner._id,
                 name: businessOwner.personalDetails.businessOwnerName,
-                position: businessOwner.role || "Business Owner", 
+                position: businessOwner.role || "Business Owner",
                 profilePicture: businessOwner.personalDetails.profilePicture
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${businessOwner.personalDetails.profilePicture}`
-                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", 
+                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png",
             }));
-    
+
             const employeeDTO: IUnAddedUsersDTO[] = employees.map(employee => ({
                 _id: employee._id,
                 name: employee.personalDetails.employeeName,
-                position: employee.professionalDetails.position || "Employee", 
+                position: employee.professionalDetails.position || "Employee",
                 profilePicture: employee.personalDetails.profilePicture
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
-                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", 
+                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png",
             }));
-    
+
             const managerDTO: IUnAddedUsersDTO[] = managers.map(manager => ({
                 _id: manager._id,
                 name: manager.personalDetails.managerName,
-                position: manager.role || "Manager", 
+                position: manager.role || "Manager",
                 profilePicture: manager.personalDetails.profilePicture
                     ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${manager.personalDetails.profilePicture}`
-                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png", 
+                    : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png",
             }));
-    
+
             const receiverDTO = [...employeeDTO, ...managerDTO, ...buisinessOwnereDTO].filter(
                 receiver => receiver._id.toString() !== myId && !chatParticipants.includes(receiver._id.toString())
             );
-        
+
             return receiverDTO;
         } catch (error) {
             console.error("Error in getAllUnAddedUsers:", error);
@@ -440,35 +440,35 @@ export default  class ChatService implements IChatService {
         }
     }
 
-    async updateGroup(groupId: string, data: any ,businessOwnerId: string): Promise<IGroupDTO> {
+    async updateGroup(groupId: string, data: any, businessOwnerId: string): Promise<IGroupDTO> {
         try {
-            const groupDetails = await this._chatRepository.updateGroup(groupId, data ,businessOwnerId);
+            const groupDetails = await this._chatRepository.updateGroup(groupId, data, businessOwnerId);
             if (!groupDetails) {
                 throw new Error("Group details not found");
             }
-    
+
             const participants = groupDetails.participants || [];
             const membersDTO: IMembers[] = [];
-    
+
             for (const participantId of participants) {
                 let member: any = null;
-    
+
                 if (groupDetails.groupMemberDetails) {
                     const { employees = [], managers = [], businessOwners = [] } = groupDetails.groupMemberDetails;
-    
+
                     member = employees.find((emp: any) => emp._id?.toString() === participantId.toString()) ||
-                             managers.find((mgr: any) => mgr._id?.toString() === participantId.toString()) ||
-                             businessOwners.find((owner: any) => owner._id?.toString() === participantId.toString());
+                        managers.find((mgr: any) => mgr._id?.toString() === participantId.toString()) ||
+                        businessOwners.find((owner: any) => owner._id?.toString() === participantId.toString());
                 }
-    
+
                 if (member) {
                     const name = member.name || 'Unknown';
-                    const profilePicture = member.profilePicture 
-                        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${member.profilePicture}` 
+                    const profilePicture = member.profilePicture
+                        ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${member.profilePicture}`
                         : "https://cdn.pixabay.com/photo/2018/08/28/12/41/avatar-3637425_1280.png";
-    
+
                     const position = member.position || member.role || 'Unknown';
-    
+
                     membersDTO.push({
                         _id: member._id?.toString(),
                         name,
@@ -477,7 +477,7 @@ export default  class ChatService implements IChatService {
                     });
                 }
             }
-    
+
             return {
                 _id: groupDetails._id?.toString(),
                 groupName: groupDetails.groupName || 'Unnamed Group',
@@ -485,22 +485,22 @@ export default  class ChatService implements IChatService {
                 chatType: groupDetails.chatType || 'Unknown',
                 groupAdmin: groupDetails.groupAdmin || 'Unknown',
             };
-            
+
         } catch (error) {
             console.error("Error in updateGroup:", error);
             throw new Error("Error updating group");
         }
     }
-    
-    async updateLastSeen(userId: string ,businessOwnerId: string): Promise<IResponseDTO> {
+
+    async updateLastSeen(userId: string, businessOwnerId: string): Promise<IResponseDTO> {
         try {
-          const result = await this._chatRepository.updateLastSeenForChats( userId ,businessOwnerId);
-          return { success: true, message: "Last seen updated successfully!", data: result };
-        } catch (error:any) {
-          throw new Error(error.message || "Error while updating last seen");
+            const result = await this._chatRepository.updateLastSeenForChats(userId, businessOwnerId);
+            return { success: true, message: "Last seen updated successfully!", data: result };
+        } catch (error: any) {
+            throw new Error(error.message || "Error while updating last seen");
         }
     }
-    
-    
-    
+
+
+
 }

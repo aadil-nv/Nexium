@@ -23,12 +23,10 @@ export default class NotificationController implements INotificationController {
          req.user?.managerData?.businessOwnerId || 
          req.user?.employeeData?.businessOwnerId || '';
     }
-    async getAllNotifications(req: CustomRequest, res: Response): Promise<Response> {
-        
+    async getAllNotifications(req: CustomRequest, res: Response): Promise<Response> {  
         try {
             const myId = this.getMyId(req);
             const businessOwnerId = this.getBusinessOwnerId(req);
-            
             const notifications = await this._notificationService.getAllNotifications(myId ,businessOwnerId);
             return res.status(HttpStatusCode.OK).json(notifications);
         } catch (error) {
@@ -60,7 +58,5 @@ export default class NotificationController implements INotificationController {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Internal server error" });
         }
     }
-
-    
 
 }

@@ -9,15 +9,15 @@ import { HttpStatusCode } from "./../../utils/enums";
 export default class EmployeeController implements IEmployeeController {
     constructor(
         @inject("IEmployeeService") private _employeeService: IEmployeeService
-    ) {}
+    ) { }
 
     async addEmployees(req: CustomRequest, res: Response): Promise<void> {
         try {
             const { employeedata } = req.body;
-            const managerData= req?.user?.managerData;
+            const managerData = req?.user?.managerData;
             const businessOwnerId = managerData?.businessOwnerId;
-            const result = await this._employeeService.addEmployees(employeedata, managerData ,businessOwnerId as string);
-          
+            const result = await this._employeeService.addEmployees(employeedata, managerData, businessOwnerId as string);
+
             if (result.success) {
                 res.status(HttpStatusCode.OK).json({ message: 'Employee added successfully', data: result.data });
             } else {
@@ -44,7 +44,7 @@ export default class EmployeeController implements IEmployeeController {
         try {
             const employeeId = req.params.id;
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
-            const result = await this._employeeService.getEmployeeCredentials(employeeId,businessOwnerId as string);
+            const result = await this._employeeService.getEmployeeCredentials(employeeId, businessOwnerId as string);
             res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error fetching employee credentials:", error);
@@ -56,7 +56,7 @@ export default class EmployeeController implements IEmployeeController {
         try {
             const employeeId = req.params.id;
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
-            const result = await this._employeeService.getEmployeeDocuments(employeeId ,businessOwnerId as string);
+            const result = await this._employeeService.getEmployeeDocuments(employeeId, businessOwnerId as string);
             res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error fetching employee documents:", error);
@@ -64,12 +64,12 @@ export default class EmployeeController implements IEmployeeController {
         }
     }
 
-    async getEmployee(req: CustomRequest, res: Response): Promise<void>{
-        
+    async getEmployee(req: CustomRequest, res: Response): Promise<void> {
+
         try {
             const employeeId = req.params.id;
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
-            const result = await this._employeeService.getEmployee(employeeId ,businessOwnerId as string);
+            const result = await this._employeeService.getEmployee(employeeId, businessOwnerId as string);
             res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error fetching employee:", error);
@@ -78,13 +78,13 @@ export default class EmployeeController implements IEmployeeController {
     }
 
     async updateEmployeePersonalInformation(req: CustomRequest, res: Response): Promise<void> {
-      
+
         try {
             const employeeId = req.params.id;
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
-            const personalInformation = req.body;            
-     
-            const result = await this._employeeService.updateEmployeePersonalInformation(employeeId ,personalInformation,businessOwnerId as string);
+            const personalInformation = req.body;
+
+            const result = await this._employeeService.updateEmployeePersonalInformation(employeeId, personalInformation, businessOwnerId as string);
             res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error fetching employee information:", error);
@@ -92,13 +92,12 @@ export default class EmployeeController implements IEmployeeController {
         }
     }
 
-    async updateAddress(req: CustomRequest, res: Response): Promise<void> {  
+    async updateAddress(req: CustomRequest, res: Response): Promise<void> {
         try {
             const employeeId = req.params.id;
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
-
             const address = req.body;
-            const result = await this._employeeService.updateAddress(employeeId ,address,businessOwnerId as string);
+            const result = await this._employeeService.updateAddress(employeeId, address, businessOwnerId as string);
             res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error fetching employee address:", error);
@@ -107,12 +106,11 @@ export default class EmployeeController implements IEmployeeController {
     }
 
     async updateEmployeeProfessionalInfo(req: CustomRequest, res: Response): Promise<void> {
-                
         try {
             const employeeId = req.params.id;
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
             const professionalInfo = req.body;
-            const result = await this._employeeService.updateEmployeeProfessionalInfo(employeeId ,professionalInfo ,businessOwnerId as string);
+            const result = await this._employeeService.updateEmployeeProfessionalInfo(employeeId, professionalInfo, businessOwnerId as string);
             res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error fetching employee professional information:", error);
@@ -120,15 +118,13 @@ export default class EmployeeController implements IEmployeeController {
         }
     }
 
-  
+
 
     async updateProfilePicture(req: CustomRequest, res: Response): Promise<void> {
-    
         try {
             const employeeId = req.params.id;
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
-
-            const result = await this._employeeService.updateProfilePicture(employeeId, req.file as Express.Multer.File ,businessOwnerId as string);
+            const result = await this._employeeService.updateProfilePicture(employeeId, req.file as Express.Multer.File, businessOwnerId as string);
             res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error updating profile picture:", error);
@@ -137,12 +133,11 @@ export default class EmployeeController implements IEmployeeController {
     }
 
     async updateResume(req: CustomRequest, res: Response): Promise<void> {
-        
         try {
             const employeeId = req.params.id;
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
-            const result = await this._employeeService.updateResume(employeeId, req.file as Express.Multer.File,businessOwnerId as string);
-           
+            const result = await this._employeeService.updateResume(employeeId, req.file as Express.Multer.File, businessOwnerId as string);
+
             res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error updating resume:", error);
@@ -152,14 +147,11 @@ export default class EmployeeController implements IEmployeeController {
 
 
     async updateBlocking(req: CustomRequest, res: Response): Promise<void> {
-        
         try {
             const employeeId = req.params.id;
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
             const blocking = req.body;
-           
-            const result = await this._employeeService.updateBlocking(employeeId ,blocking ,businessOwnerId as string);
-            
+            const result = await this._employeeService.updateBlocking(employeeId, blocking, businessOwnerId as string);
             res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error updating blocking:", error);
@@ -171,9 +163,7 @@ export default class EmployeeController implements IEmployeeController {
     async getEmployeeWithOutDepartment(req: CustomRequest, res: Response): Promise<void> {
         try {
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
-
             const employeesData = await this._employeeService.getEmployeeWithOutDepartment(businessOwnerId as string);
-            
             res.status(HttpStatusCode.OK).json(employeesData);
         } catch (error) {
             console.error("Error fetching employees without department:", error);
@@ -185,8 +175,7 @@ export default class EmployeeController implements IEmployeeController {
         try {
             const employeeId = req.params.id;
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
-
-            const result = await this._employeeService.removeEmployee(employeeId ,businessOwnerId as string);
+            const result = await this._employeeService.removeEmployee(employeeId, businessOwnerId as string);
             res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             console.error("Error removing employee:", error);
@@ -199,8 +188,8 @@ export default class EmployeeController implements IEmployeeController {
             const employeeId = req.params.id;
             const credentials = req.body;
             const businessOwnerId = req.user?.managerData?.businessOwnerId;
-            
-            const result = await this._employeeService.updateCredentials(employeeId, credentials ,businessOwnerId as string);
+
+            const result = await this._employeeService.updateCredentials(employeeId, credentials, businessOwnerId as string);
 
             res.status(HttpStatusCode.OK).json(result);
         } catch (error) {

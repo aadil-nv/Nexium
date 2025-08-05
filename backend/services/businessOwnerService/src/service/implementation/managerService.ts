@@ -98,26 +98,12 @@ export default class ManagerService implements IManagerService {
   
   private validateManagerData(data: any): void {
     if (!data.name || data.name.length < 3) throw new Error("Manager name must be at least 3 characters long");
-    console.log(`Manager Name: ${data.name}`.green);
-  
     if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) throw new Error("Invalid email address");
-    console.log(`Manager Email: ${data.email}`.blue);
-  
     if (!data.phoneNumber || !/^\d{10}$/.test(data.phoneNumber)) throw new Error("Phone number must be exactly 10 digits");
     if (/(.)\1{2,}/.test(data.phoneNumber)) throw new Error("Phone number must not have consecutive numbers");
-    console.log(`Manager Phone Number: ${data.phoneNumber}`.yellow);
-  
     if (!data.joiningDate || new Date(data.joiningDate) < new Date()) {
-      console.log(`Invalid Joining Date: ${data.joiningDate}`.bgRed);
       throw new Error("Joining date must be today or a future date");
     }
-    console.log(`Manager Joining Date: ${data.joiningDate}`.cyan);
-  
-    // Validate salary (must be a positive number and an integer)
-    // if (typeof data.salary !== 'number' || data.salary <= 0) throw new Error("Salary must be a positive number");
-    // console.log(`Manager Salary: ${data.salary}`.magenta);
-  
-    // Validate work time and manager type
     if (!data.workTime) throw new Error("Work time is required");
     if (!data.managerType) throw new Error("Manager type is required");
   
@@ -145,8 +131,6 @@ export default class ManagerService implements IManagerService {
   async getAllManagers(businessOwnerId: string): Promise<ManagerDTO[]> {
     try {
       const managerData = await this._managerRepository.getAllManagers(businessOwnerId);
-   
-     
       const mappedManagers: any = managerData.map(manager => ({
         personalDetails: {
           managerName: manager.personalDetails.managerName.toString(),

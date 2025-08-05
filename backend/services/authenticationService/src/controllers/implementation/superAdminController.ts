@@ -23,14 +23,14 @@ export default class SuperAdminController implements ISuperAdminController {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge: 7 * 24 * 60 * 60 * 1000
+                maxAge: Number(process.env.MAX_AGE)
             });
 
             res.cookie('accessToken', accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge:7 * 24 * 60 * 60 * 1000
+                maxAge:Number(process.env.MAX_AGE)
             });
 
             return res.status(HttpStatusCode.OK).json({ accessToken });
@@ -53,7 +53,7 @@ export default class SuperAdminController implements ISuperAdminController {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'strict',
-                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+                maxAge: Number(process.env.MAX_AGE)
             });
 
             return res.status(HttpStatusCode.CREATED).json({ accessToken, admin: newAdmin });
@@ -68,7 +68,7 @@ export default class SuperAdminController implements ISuperAdminController {
         try {
             const refreshToken = req.cookies.refreshToken;
             const newAccessToken = await this._adminService.setNewAccessToken(refreshToken);
-            return res.status(200).json({ accessToken: newAccessToken });
+            return res.status(HttpStatusCode.OK).json({ accessToken: newAccessToken });
         } catch (error: unknown) {
             return res.status(error instanceof Error ? HttpStatusCode.BAD_REQUEST : HttpStatusCode.INTERNAL_SERVER_ERROR).json({
                 message: error instanceof Error ? error.message : 'An unexpected error occurred.',

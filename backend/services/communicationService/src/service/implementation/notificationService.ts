@@ -6,19 +6,19 @@ import { INotification } from "../../entities/notificationEntities";
 
 @injectable()
 export default class NotificationService implements INotificationService {
-  constructor(@inject("INotificationRepository") private _notificationRepository: INotificationRepository) {}
+  constructor(@inject("INotificationRepository") private _notificationRepository: INotificationRepository) { }
 
-  async getAllNotifications(myId: string ,businessOwnerId: string): Promise<INotificationsDTO[]> { 
+  async getAllNotifications(myId: string, businessOwnerId: string): Promise<INotificationsDTO[]> {
     try {
-      const notifications: INotification[] = await this._notificationRepository.getAllNotifications(myId ,businessOwnerId);
+      const notifications: INotification[] = await this._notificationRepository.getAllNotifications(myId, businessOwnerId);
 
       const mappedNotificationsDTO: INotificationsDTO[] = notifications.map((notification: INotification) => {
         return {
-          _id: notification._id, 
-          userId: notification.userId.toString(), 
+          _id: notification._id,
+          userId: notification.userId.toString(),
           title: notification.title,
           message: notification.message,
-          type: notification.type, 
+          type: notification.type,
           isRead: notification.isRead,
         };
       });
@@ -29,13 +29,11 @@ export default class NotificationService implements INotificationService {
       throw error;
     }
   }
-  
 
-  async saveNotification(userId: string,message: string,type: string,title: string ,businessOwnerId: string): Promise<INotificationsDTO> {
-    console.log(`"hitting saveNotification: "`.bgMagenta,userId,message,type,title);
-    
+  async saveNotification(userId: string, message: string, type: string, title: string, businessOwnerId: string): Promise<INotificationsDTO> {
+
     try {
-       const notification:INotification = await this._notificationRepository.saveNotification(userId,message,type,title ,businessOwnerId);
+      const notification: INotification = await this._notificationRepository.saveNotification(userId, message, type, title, businessOwnerId);
 
       return {
         _id: notification._id,
@@ -45,20 +43,20 @@ export default class NotificationService implements INotificationService {
         type: notification.type,
         isRead: notification.isRead,
       };
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error(`Failed to save notification in service: ${error.message}`);
     }
   }
 
-  async deleteNotification(notificationId: string ,businessOwnerId: string): Promise<INotificationsDTO | null> {
+  async deleteNotification(notificationId: string, businessOwnerId: string): Promise<INotificationsDTO | null> {
     try {
-      const notification = await this._notificationRepository.deleteNotification(notificationId ,businessOwnerId);
-  
+      const notification = await this._notificationRepository.deleteNotification(notificationId, businessOwnerId);
+
       if (!notification) {
         console.error(`Notification with ID ${notificationId} not found.`);
         throw new Error('Notification not found');
       }
-  
+
       const formattedNotification: INotificationsDTO = {
         _id: notification._id,
         userId: notification.userId.toString(),
@@ -67,24 +65,23 @@ export default class NotificationService implements INotificationService {
         type: notification.type,
         isRead: notification.isRead,
       };
-  
+
       return formattedNotification;
     } catch (error) {
       console.error("Error deleting notification:", error);
       throw error;
     }
   }
-  
-  
-  async clearAllNotifications(myId: string ,businessOwnerId: string): Promise<number> {
+
+  async clearAllNotifications(myId: string, businessOwnerId: string): Promise<number> {
     try {
-      const result = await this._notificationRepository.clearAllNotifications(myId ,businessOwnerId);
+      const result = await this._notificationRepository.clearAllNotifications(myId, businessOwnerId);
       return result.deletedCount || 0;
     } catch (error) {
       console.error("Error clearing notifications:", error);
       throw error;
     }
   }
-  
+
 
 }

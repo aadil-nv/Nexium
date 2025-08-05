@@ -10,8 +10,7 @@ export default class DepartmentController implements IDepartmentController {
 
     constructor(@inject("IDepartmentService") private _departmentService: IDepartmentService) { }
 
-    async getDepartment(req: CustomRequest, res: Response): Promise<Response> {
-        
+    async getDepartment(req: CustomRequest, res: Response): Promise<Response> {    
         try {
             const employeeId = req.user?.employeeData?._id;
             const businessOwnerId = req.user?.employeeData?.businessOwnerId;

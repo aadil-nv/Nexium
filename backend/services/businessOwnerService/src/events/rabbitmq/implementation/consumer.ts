@@ -30,9 +30,7 @@ export default class BusinessOwnerConsumer implements IConsumer {
       channel.consume(queue, async (msg) => {
         if (msg) {
           try {
-            const data = JSON.parse(msg.content.toString());
-            console.log("data from rabbit mq------------------------------",data);
-          
+            const data = JSON.parse(msg.content.toString());          
             if (Array.isArray(data)) {
               // Process each item if it's an array
               for (const businessOwnerData of data) {
@@ -54,7 +52,6 @@ export default class BusinessOwnerConsumer implements IConsumer {
     }
   }
 
-  // Process business owner data
   private async _processBusinessOwnerData(data: any) {
     try {
     

@@ -22,7 +22,7 @@ export default class SuperAdminController implements ISuperAdminController {
       res.cookie('accessToken', newAccessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 3600000,
+        maxAge: Number(process.env.MAX_AGE),
         sameSite: 'strict',
       });
 

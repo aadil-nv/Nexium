@@ -1,24 +1,24 @@
 import { inject, injectable } from "inversify";
 import ITaskRepository from "../../repository/interface/ITaskRepository";
 import ITaskService from "../interface/ITaskService";
-import { ITaskDTO,IGetEmployeeWithoutTaskDTO, ITaskResponceDTO ,IGetEmployeeTaskDTO, IGetTaskDashboardData } from "../../dto/ITaskDTO";
-import { ITask } from "entities/taskEntities";
+import { ITaskDTO, IGetEmployeeWithoutTaskDTO, ITaskResponceDTO, IGetEmployeeTaskDTO, IGetTaskDashboardData } from "../../dto/ITaskDTO";
+import { ITask } from "../../entities/taskEntities";
 import e from "cors";
 
 @injectable()
 export default class TaskService implements ITaskService {
-  constructor(@inject("ITaskRepository") private taskRepository: ITaskRepository) {}
+  constructor(@inject("ITaskRepository") private taskRepository: ITaskRepository) { }
 
-  async getTasks(employeeId: string ,businessOwnerId:string): Promise<ITaskDTO[]> {
-  
+  async getTasks(employeeId: string, businessOwnerId: string): Promise<ITaskDTO[]> {
+
     try {
-      const tasks = await this.taskRepository.getTasks(employeeId ,businessOwnerId); 
+      const tasks = await this.taskRepository.getTasks(employeeId, businessOwnerId);
 
-        return tasks.map((task) => ({
+      return tasks.map((task) => ({
         _id: task._id,
-        employeeId: task.employeeId.toString(), 
+        employeeId: task.employeeId.toString(),
         taskName: task.taskName,
-        employeeName: task.employeeName, 
+        employeeName: task.employeeName,
         employeeProfilePicture: task.employeeProfilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${task.employeeProfilePicture}` : task.employeeProfilePicture,
         dueDate: task.dueDate,
         assignedBy: task.assignedBy.toString(),
@@ -27,8 +27,8 @@ export default class TaskService implements ITaskService {
         tasks: task.tasks.map((item) => ({
           title: item.title,
           description: item.description || "",
-          isCompleted: item.isCompleted ?? false, 
-          priority: item.priority || "low", 
+          isCompleted: item.isCompleted ?? false,
+          priority: item.priority || "low",
           response: item.response || "",
           taskStatus: item.taskStatus || "backlog",
           _id: item._id
@@ -39,12 +39,12 @@ export default class TaskService implements ITaskService {
       throw new Error("Could not retrieve tasks");
     }
   }
-  
-  async getEmployeesToAddTask(teamLeadId: string,businessOwnerId:string): Promise<IGetEmployeeWithoutTaskDTO[]> {
+
+  async getEmployeesToAddTask(teamLeadId: string, businessOwnerId: string): Promise<IGetEmployeeWithoutTaskDTO[]> {
 
     try {
-      const employees = await this.taskRepository.getEmployeesToAddTask(teamLeadId,businessOwnerId)
-      
+      const employees = await this.taskRepository.getEmployeesToAddTask(teamLeadId, businessOwnerId)
+
       return employees.map((employee: any) => ({
         _id: employee._id.toString(),
         name: employee.personalDetails.employeeName,
@@ -59,12 +59,12 @@ export default class TaskService implements ITaskService {
     }
   }
 
-  async assignTaskToEmployee(taskData: object, teamLeadId: string ,businessOwnerId:string): Promise<ITaskDTO> {
+  async assignTaskToEmployee(taskData: object, teamLeadId: string, businessOwnerId: string): Promise<ITaskDTO> {
     try {
-      const tasks = await this.taskRepository.assignTaskToEmployee(taskData, teamLeadId ,businessOwnerId);
+      const tasks = await this.taskRepository.assignTaskToEmployee(taskData, teamLeadId, businessOwnerId);
 
       const taskArray = Array.isArray(tasks) ? tasks : [tasks];
-  
+
       if (taskArray.length === 0) {
         throw new Error("Error assigning task to employee");
       }
@@ -87,21 +87,21 @@ export default class TaskService implements ITaskService {
           isCompleted: item.isCompleted ?? false,
           response: item.response || "",
           priority: item.priority || "low",
-          taskStatus: item.taskStatus || "not started", 
+          taskStatus: item.taskStatus || "not started",
           _id: item._id.toString()
         }))
-      }))[0]; 
-  
+      }))[0];
+
     } catch (error) {
       console.error("Error assigning task to employee:", error);
       throw new Error("Error assigning task to employee");
     }
   }
-  
-  async getAllTasks(teamLeadId : string ,businessOwnerId:string): Promise<ITaskDTO[]> {
+
+  async getAllTasks(teamLeadId: string, businessOwnerId: string): Promise<ITaskDTO[]> {
     try {
-      const tasks = await this.taskRepository.getAllTasks(teamLeadId ,businessOwnerId);
-      return tasks.map((task:ITask) => ({
+      const tasks = await this.taskRepository.getAllTasks(teamLeadId, businessOwnerId);
+      return tasks.map((task: ITask) => ({
         _id: task._id,
         employeeId: task.employeeId.toString(),
         employeeName: task.employeeName,
@@ -119,7 +119,7 @@ export default class TaskService implements ITaskService {
           priority: item.priority || "low",
           _id: item._id,
           taskStatus: item.taskStatus,
-          response:item.response
+          response: item.response
         })),
       }));
     } catch (error) {
@@ -128,22 +128,22 @@ export default class TaskService implements ITaskService {
     }
   }
 
-  async updateTask(taskId: string, taskData: ITask ,businessOwnerId:string): Promise<ITaskResponceDTO> {
+  async updateTask(taskId: string, taskData: ITask, businessOwnerId: string): Promise<ITaskResponceDTO> {
     try {
-      const result = await this.taskRepository.updateTask(taskId, taskData ,businessOwnerId);
-      if(!result) throw new Error("Error updating task");
+      const result = await this.taskRepository.updateTask(taskId, taskData, businessOwnerId);
+      if (!result) throw new Error("Error updating task");
       return { message: "Task updated successfully", success: true };
-    } catch (error:any) {
+    } catch (error: any) {
       console.error("Error updating task:", error.message);
       throw new Error("Error updating task");
     }
   }
 
-  async deleteTask(taskId: string,businessOwnerId:string): Promise<ITaskDTO> {
+  async deleteTask(taskId: string, businessOwnerId: string): Promise<ITaskDTO> {
     try {
-      const result = await this.taskRepository.deleteTask(taskId ,businessOwnerId);
+      const result = await this.taskRepository.deleteTask(taskId, businessOwnerId);
       if (!result) throw new Error("Error deleting task");
-  
+
       return {
         _id: result._id,
         employeeId: result.employeeId.toString(),
@@ -163,7 +163,7 @@ export default class TaskService implements ITaskService {
           priority: item.priority || "low",
           _id: item._id,
           taskStatus: item.taskStatus,
-          response:item.response
+          response: item.response
         })),
       };
     } catch (error: any) {
@@ -172,14 +172,14 @@ export default class TaskService implements ITaskService {
     }
   }
 
-  async getTasksByEmployeeId(employeeId: string, taskId: string ,businessOwnerId:string): Promise<ITaskDTO> {
+  async getTasksByEmployeeId(employeeId: string, taskId: string, businessOwnerId: string): Promise<ITaskDTO> {
     try {
-      const task = await this.taskRepository.getTasksByEmployeeId(employeeId, taskId ,businessOwnerId);
-  
+      const task = await this.taskRepository.getTasksByEmployeeId(employeeId, taskId, businessOwnerId);
+
       if (!task) {
         throw new Error("Task not found for the provided employeeId and taskId.");
       }
-    
+
       return {
         _id: task._id.toString(),
         employeeId: task.employeeId.toString(),
@@ -194,14 +194,14 @@ export default class TaskService implements ITaskService {
         assignedDate: task.assignedDate,
         tasks: task.tasks?.length
           ? task.tasks.map((item) => ({
-              _id: item._id?.toString(),
-              title: item.title ,
-              description: item.description ,
-              isCompleted: item.isCompleted ,
-              priority: item.priority,
-              taskStatus: item.taskStatus,
-              response:item.response
-            }))
+            _id: item._id?.toString(),
+            title: item.title,
+            description: item.description,
+            isCompleted: item.isCompleted,
+            priority: item.priority,
+            taskStatus: item.taskStatus,
+            response: item.response
+          }))
           : [],
       };
     } catch (error) {
@@ -209,13 +209,13 @@ export default class TaskService implements ITaskService {
       throw new Error("Could not retrieve tasks");
     }
   }
-  
 
-  async updateTaskCompletion(data: object,employeeId:string ,businessOwnerId:string): Promise<ITaskDTO> {
+
+  async updateTaskCompletion(data: object, employeeId: string, businessOwnerId: string): Promise<ITaskDTO> {
     try {
-      const result = await this.taskRepository.updateTaskCompletion(data ,employeeId ,businessOwnerId);
+      const result = await this.taskRepository.updateTaskCompletion(data, employeeId, businessOwnerId);
       if (!result) throw new Error("Error updating task completion");
-  
+
       return {
         _id: result._id,
         employeeId: result.employeeId.toString(),
@@ -238,12 +238,12 @@ export default class TaskService implements ITaskService {
       throw new Error("Error updating task completion");
     }
   }
-  
-  async updateTaskApproval(data: object,employeeId:string ,businessOwnerId:string): Promise<ITaskDTO> {
+
+  async updateTaskApproval(data: object, employeeId: string, businessOwnerId: string): Promise<ITaskDTO> {
     try {
-      const result = await this.taskRepository.updateTaskApproval(data ,employeeId ,businessOwnerId);
+      const result = await this.taskRepository.updateTaskApproval(data, employeeId, businessOwnerId);
       if (!result) throw new Error("Error updating task approval");
-  
+
       return {
         _id: result._id,
         employeeId: result.employeeId.toString(),
@@ -262,8 +262,8 @@ export default class TaskService implements ITaskService {
           isCompleted: item.isCompleted ?? false,
           priority: item.priority || "low",
           taskStatus: item.taskStatus,
-          response:item.response,
-          _id: item._id,          
+          response: item.response,
+          _id: item._id,
         })),
       };
     } catch (error: any) {
@@ -272,17 +272,17 @@ export default class TaskService implements ITaskService {
     }
   }
 
-  async getTaskListOfEmployee(employeeId: string ,businessOwnerId:string): Promise<IGetEmployeeTaskDTO[]> {
+  async getTaskListOfEmployee(employeeId: string, businessOwnerId: string): Promise<IGetEmployeeTaskDTO[]> {
     try {
-      const tasks = await this.taskRepository.getTaskListOfEmployee(employeeId ,businessOwnerId);
-  
-      return tasks.map((task:ITask) => ({
+      const tasks = await this.taskRepository.getTaskListOfEmployee(employeeId, businessOwnerId);
+
+      return tasks.map((task: ITask) => ({
         _id: task._id.toString(),
         employeeId: task.employeeId.toString(),
         employeeName: task.employeeName,
         taskName: task.taskName,
-        employeeProfilePicture: task.employeeProfilePicture 
-          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${task.employeeProfilePicture}` 
+        employeeProfilePicture: task.employeeProfilePicture
+          ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${task.employeeProfilePicture}`
           : task.employeeProfilePicture,
         dueDate: task.dueDate,
         isApproved: task.isApproved,
@@ -295,22 +295,22 @@ export default class TaskService implements ITaskService {
           isCompleted: item.isCompleted ?? false,
           priority: item.priority || "low",
           taskStatus: item.taskStatus,
-          response:item.response
+          response: item.response
         }))
-      }));    
+      }));
     } catch (error) {
       console.error("Error fetching tasks by employee ID:", error);
-      throw new Error("Could not retrieve tasks");  
+      throw new Error("Could not retrieve tasks");
 
     }
   }
-    
 
-  async updateCompletedTask(data: object,taskId:string,businessOwnerId:string): Promise<ITaskDTO> {
+
+  async updateCompletedTask(data: object, taskId: string, businessOwnerId: string): Promise<ITaskDTO> {
     try {
-      const result = await this.taskRepository.updateCompletedTask(data ,taskId ,businessOwnerId);
+      const result = await this.taskRepository.updateCompletedTask(data, taskId, businessOwnerId);
       if (!result) throw new Error("Error updating task completion");
-  
+
       return {
         _id: result._id,
         employeeId: result.employeeId.toString(),
@@ -329,8 +329,8 @@ export default class TaskService implements ITaskService {
           isCompleted: item.isCompleted ?? false,
           priority: item.priority || "low",
           taskStatus: item.taskStatus,
-          response:item.response,
-          _id: item._id,          
+          response: item.response,
+          _id: item._id,
         })),
       };
     } catch (error: any) {
@@ -339,11 +339,11 @@ export default class TaskService implements ITaskService {
     }
   }
 
-  async reassignTask( taskId: string , taskData:object ,businessOwnerId:string): Promise<ITaskDTO> {
+  async reassignTask(taskId: string, taskData: object, businessOwnerId: string): Promise<ITaskDTO> {
     try {
-      const result = await this.taskRepository.reassignTask(taskId , taskData ,businessOwnerId);
+      const result = await this.taskRepository.reassignTask(taskId, taskData, businessOwnerId);
       if (!result) throw new Error("Error reassigning task");
-  
+
       return {
         _id: result._id,
         employeeId: result.employeeId.toString(),
@@ -360,9 +360,9 @@ export default class TaskService implements ITaskService {
           title: item.title,
           description: item.description || "",
           isCompleted: item.isCompleted ?? false,
-          priority: item.priority || "low", 
+          priority: item.priority || "low",
           taskStatus: item.taskStatus,
-          response:item.response,
+          response: item.response,
           _id: item._id,
         })),
       };
@@ -371,6 +371,6 @@ export default class TaskService implements ITaskService {
       throw new Error("Error reassigning task");
     }
   }
-  
+
 
 }

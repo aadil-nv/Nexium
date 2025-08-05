@@ -7,7 +7,7 @@ import { HttpStatusCode } from "../../utils/enums";
 
 @injectable()
 export default class ManagerController implements IManagerController {
-  constructor(@inject("IManagerService") private _managerService: IManagerService) {}
+  constructor(@inject("IManagerService") private _managerService: IManagerService) { }
 
   async addManagers(req: CustomRequest, res: Response): Promise<Response> {
     try {
@@ -35,24 +35,24 @@ export default class ManagerController implements IManagerController {
     try {
       const { body: managerData, user } = req;
       const businessOwnerId = user?.businessOwnerData?._id;
-  
+
       if (!businessOwnerId) {
         return res.status(HttpStatusCode.BAD_REQUEST).json({ error: "Business Owner ID is missing. Please log in again." });
       }
-  
+
       const response = await this._managerService.blockManager(businessOwnerId as string, managerData);
       return res.status(HttpStatusCode.OK).json(response);
     } catch (error: any) {
-      const statusCode = 
-        error.name === "ValidationError" ? HttpStatusCode.BAD_REQUEST : 
-        error.name === "DatabaseError" ? HttpStatusCode.INTERNAL_SERVER_ERROR : 
-        HttpStatusCode.INTERNAL_SERVER_ERROR;
-  
+      const statusCode =
+        error.name === "ValidationError" ? HttpStatusCode.BAD_REQUEST :
+          error.name === "DatabaseError" ? HttpStatusCode.INTERNAL_SERVER_ERROR :
+            HttpStatusCode.INTERNAL_SERVER_ERROR;
+
       const errorMessage =
         error.name === "ValidationError"
           ? error.message
           : "An unexpected error occurred. Please try again later.";
-  
+
       return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: errorMessage });
     }
   }
@@ -61,8 +61,8 @@ export default class ManagerController implements IManagerController {
     try {
       const businessOwnerId = req.user?.businessOwnerData?._id;
       const managerId = req.params.id;
-      const manager = await this._managerService.getManager( businessOwnerId as string ,managerId as string);
-      if(!manager){
+      const manager = await this._managerService.getManager(businessOwnerId as string, managerId as string);
+      if (!manager) {
         return res.status(HttpStatusCode.NOT_FOUND).json({ error: "Manager not found" });
       }
       return res.status(HttpStatusCode.OK).json(manager);
@@ -72,16 +72,15 @@ export default class ManagerController implements IManagerController {
   }
 
   async updatePersonalInfo(req: CustomRequest, res: Response): Promise<Response> {
-
     try {
       const { body: managerData, user } = req;
       const businessOwnerId = user?.businessOwnerData?._id;
       const managerId = req.params.id;
       const response = await this._managerService.updatePersonalInfo(businessOwnerId as string, managerId as string, managerData);
-      if(!response){
+      if (!response) {
         return res.status(HttpStatusCode.NOT_FOUND).json({ error: "Manager not found" });
       }
-      
+
       return res.status(HttpStatusCode.OK).json(response);
     } catch (error: any) {
       const errorMessage = error.message || "Internal Server Error. Please try again later.";
@@ -95,7 +94,7 @@ export default class ManagerController implements IManagerController {
       const businessOwnerId = user?.businessOwnerData?._id;
       const managerId = req.params.id;
       const response = await this._managerService.updateProfessionalInfo(businessOwnerId as string, managerId as string, managerData);
-      if(!response){
+      if (!response) {
         return res.status(HttpStatusCode.NOT_FOUND).json({ error: "Manager not found" });
       }
       return res.status(HttpStatusCode.OK).json(response);
@@ -111,7 +110,7 @@ export default class ManagerController implements IManagerController {
       const businessOwnerId = user?.businessOwnerData?._id;
       const managerId = req.params.id;
       const response = await this._managerService.updateAddressInfo(businessOwnerId as string, managerId as string, managerData);
-      if(!response){
+      if (!response) {
         return res.status(HttpStatusCode.NOT_FOUND).json({ error: "Manager not found" });
       }
       return res.status(HttpStatusCode.OK).json(response);
@@ -131,7 +130,7 @@ export default class ManagerController implements IManagerController {
       }
 
       const response = await this._managerService.uploadProfilePic(businessOwnerId as string, managerId as string, req.file);
-      if(!response){
+      if (!response) {
         return res.status(HttpStatusCode.NOT_FOUND).json({ error: "Manager not found" });
       }
       return res.status(200).json(response);
@@ -139,7 +138,7 @@ export default class ManagerController implements IManagerController {
       const errorMessage = error.message || "Internal Server Error. Please try again later.";
       return res.status(error.name === "ValidationError" ? HttpStatusCode.BAD_REQUEST : HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: errorMessage });
     }
-  } 
+  }
 
   async updateResume(req: CustomRequest, res: Response): Promise<Response> {
     try {
@@ -151,17 +150,17 @@ export default class ManagerController implements IManagerController {
         managerId as string,
         req.file
       );
-  
+
       if (!response) {
         return res.status(HttpStatusCode.NOT_FOUND).json({ error: "Manager not found" });
       }
       return res.status(HttpStatusCode.OK).json(response);
-  
+
     } catch (error) {
       console.error("Error in controller:", error);
       return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal Server Error" });
     }
   }
-  
-  
+
+
 }

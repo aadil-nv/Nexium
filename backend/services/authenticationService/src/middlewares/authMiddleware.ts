@@ -1,5 +1,6 @@
 import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import { HttpStatusCode } from '../utils/enums';
 
 interface CustomRequest extends Request {
   user?: string | JwtPayload;
@@ -10,12 +11,12 @@ const authenticateToken = (req: CustomRequest, res: Response, next: NextFunction
     const token = req.cookies?.accessToken;
 
     if (!token) {
-      return res.status(401).json({ message: 'Access denied. No token provided' });
+      return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'Access denied. No token provided' });
     }
 
     const _secret = process.env.ACCESS_TOKEN_SECRET;
     if (!_secret) {
-      return res.status(500).json({ message: 'Internal server error' });
+      return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
     }
 
     jwt.verify(token, _secret, (err: VerifyErrors | null, decoded: JwtPayload | string | undefined) => {

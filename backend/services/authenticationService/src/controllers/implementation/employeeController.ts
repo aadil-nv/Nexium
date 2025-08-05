@@ -18,9 +18,9 @@ export default class EmployeeController implements IEmployeeController {
         const { email, password } = req.body;
         const result = await this._employeeService.employeeLogin(email, password);
         res.cookie('accessToken', result.accessToken, 
-            { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge:7 * 24 * 3600 * 1000 });
+            { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge:Number(process.env.MAX_AGE) });
         res.cookie('refreshToken', result.refreshToken, 
-            { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 3600 * 1000 }); // 7 days
+            { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: Number(process.env.MAX_AGE) }); // 7 days
         return res.status(HttpStatusCode.OK).json(result);
         
        } catch (error:any) {
@@ -38,8 +38,8 @@ export default class EmployeeController implements IEmployeeController {
             
             const response = await this._employeeService.validateOtp(email, otp);
             if (response.success) {
-                res.cookie('accessToken', response.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge:7 * 24 * 3600 * 1000 });
-                res.cookie('refreshToken', response.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 3600 * 1000 }); // 7 days
+                res.cookie('accessToken', response.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge:Number(process.env.MAX_AGE) });
+                res.cookie('refreshToken', response.refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: Number(process.env.MAX_AGE) }); // 7 days
                 res.status(HttpStatusCode.OK).json({
                     success: true,
                     message: response.message,

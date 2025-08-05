@@ -25,7 +25,6 @@ export default class BaseRepository<T extends Document> implements IBaseReposito
     }
   }
 
-
   async create(data: Partial<T>): Promise<T> {
     try {
         const createdDocument = new this._model(data);

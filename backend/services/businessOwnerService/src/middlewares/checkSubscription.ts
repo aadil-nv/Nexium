@@ -2,12 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import { CustomRequest } from "../middlewares/authMiddleware"; // Ensure the correct path
 import SubscriptionRepository from "../repository/implementation/subscriptionRepository";
 import subscriptionModel from "../models/subscriptionModel";
-import { HttpStatusCode } from "utils/enums";
+import { HttpStatusCode } from "../utils/enums";
 
 const checkSubscription = (checkType: string) => {
-    
-    console.log("checkType", checkType);
-    
+        
   return async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
       const businessOwnerId = req.user?.businessOwnerData?._id;

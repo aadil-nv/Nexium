@@ -29,14 +29,14 @@ export default class ManagerController implements IManagerController {
                 res.cookie('accessToken', result.accessToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
-                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                    maxAge: Number(process.env.MAX_AGE),
                     sameSite: 'strict',
                 });
 
                 res.cookie('refreshToken', result.refreshToken, {
                     httpOnly: true,
                     secure: process.env.NODE_ENV === 'production',
-                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                    maxAge: Number(process.env.MAX_AGE),
                     sameSite: 'strict',
                 });
             }
@@ -67,12 +67,12 @@ export default class ManagerController implements IManagerController {
                 res.cookie('accessToken', response.accessToken, { 
                     httpOnly: true, 
                     secure: process.env.NODE_ENV === 'production', 
-                    maxAge: 7 * 24 * 3600 * 1000 
+                    maxAge: Number(process.env.MAX_AGE) 
                 });
                 res.cookie('refreshToken', response.refreshToken, { 
                     httpOnly: true, 
                     secure: process.env.NODE_ENV === 'production', 
-                    maxAge: 7 * 24 * 3600 * 1000 
+                    maxAge: Number(process.env.MAX_AGE) 
                 }); 
 
                 res.status(HttpStatusCode.OK).json({

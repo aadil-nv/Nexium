@@ -46,7 +46,6 @@ export default class EmployeeController implements IEmployeeController {
     }
   }
 
-
   async blockEmployee(req: CustomRequest, res: Response): Promise<Response> {
     try {
       const businessOwnerId = req.user?.businessOwnerData?._id;
@@ -57,7 +56,6 @@ export default class EmployeeController implements IEmployeeController {
       return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal Server Error" });
     }
   }
-
 
   async removeEmployee(req: CustomRequest, res: Response): Promise<Response> {
     try {
@@ -103,7 +101,6 @@ export default class EmployeeController implements IEmployeeController {
     }
   }
 
-
   async updateSecurityInfo(req: CustomRequest, res: Response): Promise<Response> {
     try {
       const businessOwnerId = req.user?.businessOwnerData?._id;
@@ -115,7 +112,6 @@ export default class EmployeeController implements IEmployeeController {
     }
   }
 
-
   async uploadProfilePic(req: CustomRequest, res: Response): Promise<Response> {
     try {
       const businessOwnerId = req.user?.businessOwnerData?._id;
@@ -126,6 +122,7 @@ export default class EmployeeController implements IEmployeeController {
       return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal Server Error" });
     }
   }
+
   async updateEmployeeLeaveInfo(req: CustomRequest, res: Response): Promise<Response> {
     try {
       const businessOwnerId = req.user?.businessOwnerData?._id;

@@ -1,8 +1,8 @@
-import { injectable,inject } from "inversify";
-import IEmployeeRepository  from "../../repository/interface/IEmployeeRepository";
+import { injectable, inject } from "inversify";
+import IEmployeeRepository from "../../repository/interface/IEmployeeRepository";
 import IEmployeeService from "../interface/IEmployeeService";
-import { verifyRefreshToken,generateAccessToken } from "../../utils/jwt";
-import { IGetProfileDTO, ISetNewAccessTokenDTO,IEmployeeResponseDTO, IGetAddressDTO, IGetEmployeeProfessionalDTO, IGetDocumentDTO, IGetCredentailsDTO } from "../../dto/IEmployeeDTO";
+import { verifyRefreshToken, generateAccessToken } from "../../utils/jwt";
+import { IGetProfileDTO, ISetNewAccessTokenDTO, IEmployeeResponseDTO, IGetAddressDTO, IGetEmployeeProfessionalDTO, IGetDocumentDTO, IGetCredentailsDTO } from "../../dto/IEmployeeDTO";
 import { uploadTosS3 } from "../../middlewares/multer-s3";
 import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import e from "express";
@@ -14,16 +14,16 @@ import ILeaveRepository from "repository/interface/ILeaveRepository";
 @injectable()
 export default class EmployeeService implements IEmployeeService {
 
-    constructor(@inject("IEmployeeRepository")
-     private _employeeRepository: IEmployeeRepository , 
-     @inject("ILeaveRepository")
-     private _leaveRepository: ILeaveRepository) {}
-    
-  async  setNewAccessToken(refreshToken:string):Promise<ISetNewAccessTokenDTO> {
+  constructor(@inject("IEmployeeRepository")
+  private _employeeRepository: IEmployeeRepository,
+    @inject("ILeaveRepository")
+    private _leaveRepository: ILeaveRepository) { }
+
+  async setNewAccessToken(refreshToken: string): Promise<ISetNewAccessTokenDTO> {
     try {
       const decoded = verifyRefreshToken(refreshToken);
 
-      
+
       const employeeData = decoded?.employeeData;
 
       if (!decoded || !employeeData) {
@@ -39,249 +39,250 @@ export default class EmployeeService implements IEmployeeService {
       }
 
 
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error("Error generating new access token: " + error.message);
     }
-  } 
+  }
 
-  async updateIsActive(employeeId: string, isActive: boolean ,businessOwnerId: string): Promise<IEmployeeResponseDTO> {
-    
+  async updateIsActive(employeeId: string, isActive: boolean, businessOwnerId: string): Promise<IEmployeeResponseDTO> {
+
     try {
-      const employee = await this._employeeRepository.updateIsActive(employeeId, isActive ,businessOwnerId);
+      const employee = await this._employeeRepository.updateIsActive(employeeId, isActive, businessOwnerId);
       return {
         message: "Employee status updated successfully",
         success: true,
       };
-    } catch (error:any) {
+    } catch (error: any) {
       throw new Error("Error updating employee status: " + error.message);
     }
   }
 
-  async getProfile(employeeId: string ,businessOwnerId: string): Promise<IGetProfileDTO> {
-        
-        try {
-          const employee = await this._employeeRepository.getProfile( employeeId ,businessOwnerId);                
+  async getProfile(employeeId: string, businessOwnerId: string): Promise<IGetProfileDTO> {
 
-          if (!employee) {
-            throw new Error("Employee not found");
-          }
-          const profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
-          return {
-   
-            employeeName: employee?.personalDetails.employeeName,
-            email: employee?.personalDetails.email,
-            phone: employee?.personalDetails.phone,
-            profilePicture: profilePicture,
-            personalWebsite: employee?.personalDetails.personalWebsite,
-            bankAccountNumber: employee?.personalDetails.bankAccountNumber,
-            ifscCode: employee?.personalDetails.ifscCode,
-            panNumber: employee?.personalDetails.panNumber,
-            aadharNumber: employee?.personalDetails.aadharNumber,
-            gender: employee?.personalDetails.gender,
-            message: "Profile fetched successfully",
-          }
-        } catch (error:any) {
-            throw new Error("Error generating new access token: " + error.message);
-          
-        }
-  }
-
-  async getPersonalInfo(employeeId: string ,businessOwnerId: string): Promise<IGetProfileDTO> {
-        try {
-          const employee = await this._employeeRepository.getProfile(employeeId ,businessOwnerId);
-          if (!employee) {
-            throw new Error("Employee not found");
-          }
-          return {
-            employeeName: employee?.personalDetails.employeeName,
-            email: employee?.personalDetails.email,
-            phone: employee?.personalDetails.phone,
-            profilePicture: employee.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}` :employee.personalDetails.profilePicture ,
-            personalWebsite: employee?.personalDetails.personalWebsite,
-            bankAccountNumber: employee?.personalDetails.bankAccountNumber,
-            ifscCode: employee?.personalDetails.ifscCode,
-            panNumber: employee?.personalDetails.panNumber,
-            aadharNumber: employee?.personalDetails.aadharNumber,
-            gender: employee?.personalDetails.gender,
-            message: "Profile fetched successfully",
-          }
-        } catch (error:any) {
-            throw new Error("Error generating new access token: " + error.message);
-          
-        }
-  }
-
-  async getAddress(employeeId: string ,businessOwnerId: string): Promise<IGetAddressDTO> {
-        try {
-          const employee = await this._employeeRepository.getProfile( employeeId, businessOwnerId);
-          return {
-            street: employee?.address.street,
-            city: employee?.address.city,
-            state: employee?.address.state,
-            country: employee?.address.country,
-            postalCode: employee?.address.postalCode,
-          }
-        } catch (error:any) {
-            throw new Error("Error generating new access token: " + error.message);
-      } 
-       
-  }
-
-     
-  async getEmployeeProfessionalInfo(employeeId: string ,businessOwnerId: string): Promise<IGetEmployeeProfessionalDTO> {
     try {
-      const employee = await this._employeeRepository.getProfile(employeeId , businessOwnerId);
-      if (!employee) {throw new Error("Employee not found")}
+      const employee = await this._employeeRepository.getProfile(employeeId, businessOwnerId);
+
+      if (!employee) {
+        throw new Error("Employee not found");
+      }
+      const profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
       return {
-        position:employee?.professionalDetails.position, 
-        department:employee?.professionalDetails.department || "No department", 
-        workTime:employee?.professionalDetails.workTime, 
-        joiningDate:employee?.professionalDetails.joiningDate,
+
+        employeeName: employee?.personalDetails.employeeName,
+        email: employee?.personalDetails.email,
+        phone: employee?.personalDetails.phone,
+        profilePicture: profilePicture,
+        personalWebsite: employee?.personalDetails.personalWebsite,
+        bankAccountNumber: employee?.personalDetails.bankAccountNumber,
+        ifscCode: employee?.personalDetails.ifscCode,
+        panNumber: employee?.personalDetails.panNumber,
+        aadharNumber: employee?.personalDetails.aadharNumber,
+        gender: employee?.personalDetails.gender,
+        message: "Profile fetched successfully",
+      }
+    } catch (error: any) {
+      throw new Error("Error generating new access token: " + error.message);
+
+    }
+  }
+
+  async getPersonalInfo(employeeId: string, businessOwnerId: string): Promise<IGetProfileDTO> {
+    try {
+      const employee = await this._employeeRepository.getProfile(employeeId, businessOwnerId);
+      if (!employee) {
+        throw new Error("Employee not found");
+      }
+      return {
+        employeeName: employee?.personalDetails.employeeName,
+        email: employee?.personalDetails.email,
+        phone: employee?.personalDetails.phone,
+        profilePicture: employee.personalDetails.profilePicture ? `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}` : employee.personalDetails.profilePicture,
+        personalWebsite: employee?.personalDetails.personalWebsite,
+        bankAccountNumber: employee?.personalDetails.bankAccountNumber,
+        ifscCode: employee?.personalDetails.ifscCode,
+        panNumber: employee?.personalDetails.panNumber,
+        aadharNumber: employee?.personalDetails.aadharNumber,
+        gender: employee?.personalDetails.gender,
+        message: "Profile fetched successfully",
+      }
+    } catch (error: any) {
+      throw new Error("Error generating new access token: " + error.message);
+
+    }
+  }
+
+  async getAddress(employeeId: string, businessOwnerId: string): Promise<IGetAddressDTO> {
+    try {
+      const employee = await this._employeeRepository.getProfile(employeeId, businessOwnerId);
+      return {
+        street: employee?.address.street,
+        city: employee?.address.city,
+        state: employee?.address.state,
+        country: employee?.address.country,
+        postalCode: employee?.address.postalCode,
+      }
+    } catch (error: any) {
+      throw new Error("Error generating new access token: " + error.message);
+    }
+
+  }
+
+
+  async getEmployeeProfessionalInfo(employeeId: string, businessOwnerId: string): Promise<IGetEmployeeProfessionalDTO> {
+    try {
+      const employee = await this._employeeRepository.getProfile(employeeId, businessOwnerId);
+      if (!employee) { throw new Error("Employee not found") }
+      return {
+        position: employee?.professionalDetails.position,
+        department: employee?.professionalDetails.department || "No department",
+        workTime: employee?.professionalDetails.workTime,
+        joiningDate: employee?.professionalDetails.joiningDate,
         currentStatus: employee?.professionalDetails.currentStatus,
-        companyName:employee?.professionalDetails.companyName, 
+        companyName: employee?.professionalDetails.companyName,
         salary: employee?.professionalDetails.salary,
         uanNumber: employee?.professionalDetails.uanNumber,
         pfAccount: employee?.professionalDetails.pfAccount,
         esiAccount: employee?.professionalDetails.esiAccount
-          
+
       }
     } catch (error: any) {
       throw new Error("Error generating new access token: " + error.message);
     }
   }
 
-  async getDocuments(employeeId: string ,businessOwnerId:string): Promise<IGetDocumentDTO> {
+  async getDocuments(employeeId: string, businessOwnerId: string): Promise<IGetDocumentDTO> {
     try {
-        const employee = await this._employeeRepository.getProfile(employeeId ,businessOwnerId);
-        if (!employee) {throw new Error("Employee not found")}
-        return {
-          documentName:employee?.documents.resume.documentName,     
-          documentUrl: employee?.documents.resume.documentUrl,       
-          documentSize: employee?.documents.resume.documentSize || "No document",    
-          uploadedAt: employee?.documents.resume.uploadedAt
-        }
+      const employee = await this._employeeRepository.getProfile(employeeId, businessOwnerId);
+      if (!employee) { throw new Error("Employee not found") }
+      return {
+        documentName: employee?.documents.resume.documentName,
+        documentUrl: employee?.documents.resume.documentUrl,
+        documentSize: employee?.documents.resume.documentSize || "No document",
+        uploadedAt: employee?.documents.resume.uploadedAt
+      }
     } catch (error: any) {
-       throw new Error("Error generating new access token: " + error.message);
+      throw new Error("Error generating new access token: " + error.message);
     }
   }
 
-  async getEmployeeCredentials(employeeId: string,businessOwnerId:string): Promise<IGetCredentailsDTO> {
+  async getEmployeeCredentials(employeeId: string, businessOwnerId: string): Promise<IGetCredentailsDTO> {
     try {
-      const employee = await this._employeeRepository.getProfile(employeeId ,businessOwnerId);
-      if (!employee) {throw new Error("Employee not found")}
-  
+      const employee = await this._employeeRepository.getProfile(employeeId, businessOwnerId);
+      if (!employee) { throw new Error("Employee not found") }
+
       return {
         companyEmail: employee?.employeeCredentials.companyEmail,
         companyPassword: employee?.employeeCredentials.companyPassword,
       }
-      
+
     } catch (error: any) {
       throw new Error("Error generating new access token: " + error.message);
     }
   }
 
-  async updateProfile(employeeId: string, data: any,businessOwnerId:string): Promise<IEmployeeResponseDTO> {    
-        try {
-             const rabbitMQMessager = new RabbitMQMessager();
-             await rabbitMQMessager.init();
-
-            const employee = await this._employeeRepository.updateProfile(employeeId, data ,businessOwnerId); ;
-            await rabbitMQMessager.sendToMultipleQueues({ employee });
-
-            if (!employee) {throw new Error("Employee not found")}
-    
-            return { success: true,data: employee.personalDetails,  message: "Profile updated successfully" };
-        } catch (error: any) {
-            return {
-                success: false,
-                message: error.message || "An error occurred while updating the profile",};
-        }
-  }
-
-
-  async updateProfilePicture(employeeId: string, file: Express.Multer.File ,businessOwnerId:string): Promise<IEmployeeResponseDTO> {
-        try {
-          const rabbitMQMessager = new RabbitMQMessager();
-          await rabbitMQMessager.init();
-          const imageUrl = await this.uploadFileToS3(employeeId, file, "profilePicture" ,businessOwnerId);
-
-            const employee = await this._employeeRepository.updateProfilePicture(employeeId, imageUrl,businessOwnerId);
-            if (!employee) {throw new Error("Employee not found")}
-            const profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
-            await rabbitMQMessager.sendToMultipleQueues({ employee});
-
-    
-            return { success: true,data: profilePicture,  message: "Profile updated successfully" };
-        } catch (error: any) {
-            return {
-                success: false,
-                message: error.message || "An error occurred while updating the profile",};
-        }
-  }
-
-  private async getDetails(employeeId: string ,businessOwnerId:string ) {
-      if (!employeeId) throw new Error("Business owner ID not found");
-      const result = await this._employeeRepository.getProfile(employeeId ,businessOwnerId);
-      if (!result) throw new Error("Business owner not found");
-      return result;
-  }
-  
-  private async uploadFileToS3(employeeId: string, file: Express.Multer.File, fileType: "profilePicture" | "resume",businessOwnerId:string)  {
-      const result = await this.getDetails(employeeId,businessOwnerId); 
-      const existingFile = fileType
-  
-      if (existingFile) {
-        const s3Client = new S3Client({ region: 'eu-north-1' });
-        await s3Client.send(new DeleteObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, Key: existingFile }));
-      }
-  
-      const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
-
-      
-      return fileUrl
-  } 
-
-
-  async updateAddress(employeeId: string, data: any,businessOwnerId:string): Promise<IEmployeeResponseDTO> {
+  async updateProfile(employeeId: string, data: any, businessOwnerId: string): Promise<IEmployeeResponseDTO> {
     try {
-        const employee = await this._employeeRepository.updateAddress(employeeId, data ,businessOwnerId);
-        if (!employee) {throw new Error("Employee not found")}
-        return { success: true,data: employee.address,  message: "Address updated successfully" };
+      const rabbitMQMessager = new RabbitMQMessager();
+      await rabbitMQMessager.init();
+
+      const employee = await this._employeeRepository.updateProfile(employeeId, data, businessOwnerId);;
+      await rabbitMQMessager.sendToMultipleQueues({ employee });
+
+      if (!employee) { throw new Error("Employee not found") }
+
+      return { success: true, data: employee.personalDetails, message: "Profile updated successfully" };
     } catch (error: any) {
-        return {
-            success: false,
-            message: error.message || "An error occurred while updating the address",};
+      return {
+        success: false,
+        message: error.message || "An error occurred while updating the profile",
+      };
     }
   }
 
-  async uploadDocuments(employeeId: string, file: Express.Multer.File, fileType: "resume",businessOwnerId:string): Promise<IGetDocumentDTO> {
-  try {
-    const fileKey = await this.uploadFileToS3(employeeId, file, "resume" ,businessOwnerId);
-    
-    const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
 
-    const documentData = {
-      documentName: fileType,
-      documentUrl: fileUrl,
-      documentSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-      uploadedAt: new Date(),
-    };
+  async updateProfilePicture(employeeId: string, file: Express.Multer.File, businessOwnerId: string): Promise<IEmployeeResponseDTO> {
+    try {
+      const rabbitMQMessager = new RabbitMQMessager();
+      await rabbitMQMessager.init();
+      const imageUrl = await this.uploadFileToS3(employeeId, file, "profilePicture", businessOwnerId);
 
-    const updatedManager = await this._employeeRepository.uploadDocuments(employeeId,fileType,documentData ,businessOwnerId);
+      const employee = await this._employeeRepository.updateProfilePicture(employeeId, imageUrl, businessOwnerId);
+      if (!employee) { throw new Error("Employee not found") }
+      const profilePicture = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${employee.personalDetails.profilePicture}`
+      await rabbitMQMessager.sendToMultipleQueues({ employee });
 
-    return {
-      documentName: fileType,
-      documentUrl: fileUrl,
-      documentSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-      uploadedAt: new Date(),
-    };
-  } catch (error) {
-    console.error("Error while uploading document:", error);
-    throw new Error('Could not upload document.');
-  }
+
+      return { success: true, data: profilePicture, message: "Profile updated successfully" };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || "An error occurred while updating the profile",
+      };
+    }
   }
 
-  
+  private async getDetails(employeeId: string, businessOwnerId: string) {
+    if (!employeeId) throw new Error("Business owner ID not found");
+    const result = await this._employeeRepository.getProfile(employeeId, businessOwnerId);
+    if (!result) throw new Error("Business owner not found");
+    return result;
+  }
+
+  private async uploadFileToS3(employeeId: string, file: Express.Multer.File, fileType: "profilePicture" | "resume", businessOwnerId: string) {
+    const result = await this.getDetails(employeeId, businessOwnerId);
+    const existingFile = fileType
+
+    if (existingFile) {
+      const s3Client = new S3Client({ region: 'eu-north-1' });
+      await s3Client.send(new DeleteObjectCommand({ Bucket: process.env.AWS_BUCKET_NAME, Key: existingFile }));
+    }
+
+    const fileUrl = await uploadTosS3(file.buffer, file.mimetype);
+
+
+    return fileUrl
+  }
+
+
+  async updateAddress(employeeId: string, data: any, businessOwnerId: string): Promise<IEmployeeResponseDTO> {
+    try {
+      const employee = await this._employeeRepository.updateAddress(employeeId, data, businessOwnerId);
+      if (!employee) { throw new Error("Employee not found") }
+      return { success: true, data: employee.address, message: "Address updated successfully" };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || "An error occurred while updating the address",
+      };
+    }
+  }
+
+  async uploadDocuments(employeeId: string, file: Express.Multer.File, fileType: "resume", businessOwnerId: string): Promise<IGetDocumentDTO> {
+    try {
+      const fileKey = await this.uploadFileToS3(employeeId, file, "resume", businessOwnerId);
+
+      const fileUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
+
+      const documentData = {
+        documentName: fileType,
+        documentUrl: fileUrl,
+        documentSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+        uploadedAt: new Date(),
+      };
+
+      const updatedManager = await this._employeeRepository.uploadDocuments(employeeId, fileType, documentData, businessOwnerId);
+
+      return {
+        documentName: fileType,
+        documentUrl: fileUrl,
+        documentSize: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+        uploadedAt: new Date(),
+      };
+    } catch (error) {
+      console.error("Error while uploading document:", error);
+      throw new Error('Could not upload document.');
+    }
+  }
 
 
 }

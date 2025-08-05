@@ -317,85 +317,109 @@ export default class BusinessOwnerService implements IBusinessOwnerService {
         }
     }
 
-    async googleLogin(email: string, password: string, phone: string, companyName: string): Promise<IGoogleResponseDTO> {
-      try {
-        let businessOwnerData: IBusinessOwnerDocument | undefined =
-          (await this.businessOwnerRepository.findByEmail(email)) || undefined;
-    
-        if (businessOwnerData) {
-          const accessToken = generateAccessToken({ businessOwnerData });
-          const refreshToken = generateRefreshToken({ businessOwnerData });
-    
-          await this.businessOwnerRepository.updateisActive(businessOwnerData._id, true);
-    
-          return {
-            success: true,
-            message: "Login successful",
-            accessToken,
-            refreshToken,
-            isVerified: true,
-            businessOwnerData,
-            email: businessOwnerData.personalDetails.email,
-            companyName: businessOwnerData.companyDetails.companyName,
-            profilePicture: businessOwnerData.personalDetails.profilePicture ?? "",
-            companyLogo: businessOwnerData.companyDetails.companyLogo ?? "",
-          };
-        }
-    
-        if (!email || !companyName) {
-          throw new Error("Email and company name are required for registration.");
-        }
-    
-        const newBusinessOwnerData: IBusinessOwnerDocument = new businessOwnerModel({
-          _id: new mongoose.Types.ObjectId(),
-          personalDetails: {
-            email,
-            password: password ? await bcrypt.hash(password, 10) : undefined,
-          },
-          businessOwnerName: companyName,
-          companyDetails: {
-            companyName,
-          },
-          isVerified: true,
-          isBlocked: false,
-          role: "BusinessOwner",
-        });
-    
-        const businessOwner = await this.businessOwnerRepository.create(newBusinessOwnerData);
-        const businessOwnerName = `${businessOwner._id}`;
-        const businessOwnerDB = mongoose.connection.useDb(businessOwnerName);
-    
-        await businessOwnerDB.createCollection("businessOwners");
-        await businessOwnerDB.collection("businessOwners").insertOne(businessOwner);
-    
-        await this.businessOwnerRepository.updateisActive(newBusinessOwnerData._id.toString(), true);
-    
-        const accessToken = generateAccessToken({ businessOwnerData: newBusinessOwnerData });
-        const refreshToken = generateRefreshToken({ businessOwnerData: newBusinessOwnerData });
-    
-        return {
-          success: true,
-          message: "New business owner registered. OTP sent for verification.",
-          email,
-          accessToken,
-          refreshToken,
-          isVerified: true,
-          businessOwnerData: newBusinessOwnerData,
-          companyName: newBusinessOwnerData.companyDetails.companyName ?? "",
-          profilePicture: newBusinessOwnerData.personalDetails.profilePicture ?? "",
-          companyLogo: newBusinessOwnerData.companyDetails.companyLogo ?? "",
-        };
-      } catch (error) {
-        console.error("Error during Google login:", error);
+  async googleLogin(email: string, password: string, phone: string, companyName: string): Promise<IGoogleResponseDTO> {
+  try {
+    console.log("STARTING GOOGLE LOGIN");
+
+    if (!email || !companyName) {
+      throw new Error("Email and company name are required for registration.");
+    }
+
+    // Check if the business owner already exists
+    const businessOwnerData = await this.businessOwnerRepository.findByEmail(email);
+
+    if (businessOwnerData) {
+      console.log("USER FOUND: Logging in");
+
+      // Check subscription (if needed before login)
+      if (!businessOwnerData.subscription || JSON.stringify(businessOwnerData.subscription) === '{}') {
         return {
           success: false,
-          message:
-            error instanceof Error
-              ? error.message
-              : "Failed to login or register. Please try again later.",
+          message: "Not subscribed",
+          isVerified: false,
+          email: businessOwnerData.personalDetails.email,
+          isSubscribed:false
         };
       }
+
+      const accessToken = generateAccessToken({ businessOwnerData });
+      const refreshToken = generateRefreshToken({ businessOwnerData });
+
+      await this.businessOwnerRepository.updateisActive(businessOwnerData._id, true);
+
+      return {
+        success: true,
+        message: "Login successful",
+        accessToken,
+        refreshToken,
+        isVerified: true,
+        isSubscribed:true,
+        businessOwnerData,
+        email: businessOwnerData.personalDetails.email,
+        companyName: businessOwnerData.companyDetails.companyName,
+        profilePicture: businessOwnerData.personalDetails.profilePicture ?? "",
+        companyLogo: businessOwnerData.companyDetails.companyLogo ?? "",
+      };
     }
+
+    console.log("USER NOT FOUND: Registering new business owner");
+
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
+
+    const newBusinessOwnerData: IBusinessOwnerDocument = new businessOwnerModel({
+      _id: new mongoose.Types.ObjectId(),
+      personalDetails: {
+        email,
+        password: hashedPassword,
+      },
+      businessOwnerName: companyName,
+      companyDetails: {
+        companyName,
+        companyLogo: "",
+      },
+      isVerified: true,
+      isBlocked: false,
+      role: "BusinessOwner",
+    });
+
+    const businessOwner = await this.businessOwnerRepository.create(newBusinessOwnerData);
+    const businessOwnerDB = mongoose.connection.useDb(`${businessOwner._id}`);
+
+    await businessOwnerDB.createCollection("businessOwners");
+    await businessOwnerDB.collection("businessOwners").insertOne(businessOwner);
+
+    await this.businessOwnerRepository.updateisActive(newBusinessOwnerData._id.toString(), true);
+
+    const accessToken = generateAccessToken({ businessOwnerData: newBusinessOwnerData });
+    const refreshToken = generateRefreshToken({ businessOwnerData: newBusinessOwnerData });
+
+    console.log("NEW USER REGISTERED");
+
+    return {
+      success: true,
+      message: "New business owner registered. OTP sent for verification.",
+      email,
+      accessToken,
+      refreshToken,
+      isVerified: true,
+      isSubscribed:false,
+      businessOwnerData: newBusinessOwnerData,
+      companyName: newBusinessOwnerData.companyDetails.companyName ?? "",
+      profilePicture: newBusinessOwnerData.personalDetails.profilePicture ?? "",
+      companyLogo: newBusinessOwnerData.companyDetails.companyLogo ?? "",
+    };
+  } catch (error) {
+    console.error("Error during Google login:", error);
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to login or register. Please try again later.",
+    };
+  }
+}
+
     
 
   

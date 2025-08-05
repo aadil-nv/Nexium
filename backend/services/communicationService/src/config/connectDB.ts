@@ -17,10 +17,8 @@ const connectDB = async (businessOwnerId: string): Promise<Connection> => {
         const connectionString = `${mongoUrl}/${businessOwnerId}?retryWrites=true&w=majority`;
         const connection = mongoose.createConnection(connectionString);
 
-        // Wait for connection to be ready before using it
         await new Promise<void>((resolve, reject) => {
             connection.once('open', () => {
-                console.log(`Database connected for Employee ID: ${businessOwnerId}`.bgYellow.bold);
                 resolve();
             });
             connection.on('error', reject);

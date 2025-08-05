@@ -7,7 +7,7 @@ import { HttpStatusCode } from "../../utils/enum";
 
 
 @injectable()
-export default  class MessageController implements IMessageController {
+export default class MessageController implements IMessageController {
     constructor(@inject("IMessageService") private _messageService: IMessageService) { }
 
     private getMyId(req: CustomRequest): string {
@@ -20,17 +20,17 @@ export default  class MessageController implements IMessageController {
     }
     private getBusinessOwnerId(req: CustomRequest): string {
         return req.user?.businessOwnerData?._id ||
-         req.user?.managerData?.businessOwnerId || 
-         req.user?.employeeData?.businessOwnerId || '';
+            req.user?.managerData?.businessOwnerId ||
+            req.user?.employeeData?.businessOwnerId || '';
     }
 
     async getAllMessages(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const chatRoomId = req.params.id;
-            const myId = this.getMyId(req);            
+            const myId = this.getMyId(req);
             const businessOwnerId = this.getBusinessOwnerId(req);
-            const response = await this._messageService.getAllMessages(chatRoomId , myId ,businessOwnerId);
-            
+            const response = await this._messageService.getAllMessages(chatRoomId, myId, businessOwnerId);
+
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error getting messages" });
@@ -41,7 +41,7 @@ export default  class MessageController implements IMessageController {
         try {
             const messageId = req.params.id;
             const busineesOwnerId = this.getBusinessOwnerId(req);
-            const response = await this._messageService.deleteMessage(messageId , busineesOwnerId); ;
+            const response = await this._messageService.deleteMessage(messageId, busineesOwnerId);;
             return res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error deleting message" });

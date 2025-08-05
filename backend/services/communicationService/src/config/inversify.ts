@@ -4,12 +4,11 @@ import IChatController from "../controllers/interface/IChatController";
 import IChatService from "../service/interface/IChatService";
 import IChatRepository from "../repository/interface/IChatRepository";
 
-
 import ChatController from "../controllers/implementation/chatController";
 import ChatService from "../service/implementation/chatService";
 import ChatRepository from "../repository/implementation/chatRepository";
 
-import {IChat} from "../entities/chatEntities"
+import { IChat } from "../entities/chatEntities"
 import ChatModel from "../models/chatModel"
 
 import IEmployee from "../entities/employeeEntities"
@@ -42,7 +41,7 @@ import INotificationController from "../controllers/interface/INotificationContr
 import NotificationController from "../controllers/implementation/notificationController";
 
 
-import {IMeeting} from "../entities/meetingEntities"
+import { IMeeting } from "../entities/meetingEntities"
 import MeetingModel from "../models/meetingModel"
 
 

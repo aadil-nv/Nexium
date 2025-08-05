@@ -1,7 +1,7 @@
 import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import connectDB from '../config/connectDB';
-import { HttpStatusCode } from 'utils/enum';
+import { HttpStatusCode } from '../utils/enum';
 
 export interface CustomRequest extends Request { 
   user?: JwtPayload & {
@@ -9,7 +9,7 @@ export interface CustomRequest extends Request {
     businessOwnerData?: { _id: string; businessOwnerId: string };
     managerData?: { _id: string; managerId: string; role: string; businessOwnerId: string };
   };
-  dbConnection?: any; // Add this to store the connection
+  dbConnection?: any; 
 }
 
 const authenticateToken = async (req: CustomRequest, res: Response, next: NextFunction) => {

@@ -1,4 +1,4 @@
-import { injectable, inject } from "inversify"; 
+import { injectable, inject } from "inversify";
 import { Request, Response } from "express";
 import IEmployeeService from "../../service/interface/IEmployeeService";
 import { CustomRequest } from "../../middlewares/tokenAuth";
@@ -8,7 +8,7 @@ import { log } from "console";
 
 @injectable()
 export default class EmployeeController {
-    constructor(@inject("IEmployeeService") private _employeeService: IEmployeeService) {}
+    constructor(@inject("IEmployeeService") private _employeeService: IEmployeeService) { }
     private getBusinessOwnerId(req: CustomRequest): string {
         return req.user?.employeeData?.businessOwnerId || '';
     }
@@ -20,7 +20,7 @@ export default class EmployeeController {
             const result = await this._employeeService.setNewAccessToken(refreshToken);
             if (!result.accessToken) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'Failed to generate token' });
 
-            res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: 3600000, sameSite: 'strict' });
+            res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', maxAge: Number(process.env.MAX_AGE), sameSite: 'strict' });
             await connectDB(result.businessOwnerId);
 
             return res.status(HttpStatusCode.OK).json({ message: "Token set successfully", success: result.success });
@@ -44,7 +44,7 @@ export default class EmployeeController {
             const employeeId = req.user?.employeeData?._id;
             const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const employee = await this._employeeService.updateIsActive(employeeId, false ,businessOwnerId);
+            const employee = await this._employeeService.updateIsActive(employeeId, false, businessOwnerId);
             return res.status(HttpStatusCode.OK).json(employee);
         } catch (error) {
             console.error(error);
@@ -57,7 +57,7 @@ export default class EmployeeController {
             const employeeId = req.user?.employeeData?._id;
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "No token provided" });
             const businessOwnerId = this.getBusinessOwnerId(req);
-            const employee = await this._employeeService.getProfile(employeeId ,businessOwnerId);
+            const employee = await this._employeeService.getProfile(employeeId, businessOwnerId);
             return res.status(HttpStatusCode.OK).json(employee);
         } catch (error) {
             console.error(error);
@@ -70,7 +70,7 @@ export default class EmployeeController {
             const employeeId = req.user?.employeeData?._id;
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "No token provided" });
             const businessOwnerId = this.getBusinessOwnerId(req);
-            const employee = await this._employeeService.getPersonalInfo(employeeId ,businessOwnerId);
+            const employee = await this._employeeService.getPersonalInfo(employeeId, businessOwnerId);
             return res.status(HttpStatusCode.OK).json(employee);
         } catch (error) {
             console.error(error);
@@ -83,7 +83,7 @@ export default class EmployeeController {
             const employeeId = req.user?.employeeData?._id;
             const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const employee = await this._employeeService.updateProfile( employeeId,req.body, businessOwnerId);
+            const employee = await this._employeeService.updateProfile(employeeId, req.body, businessOwnerId);
             return res.status(HttpStatusCode.OK).json(employee);
         } catch (error) {
             console.error(error);
@@ -96,7 +96,7 @@ export default class EmployeeController {
             const employeeId = req.user?.employeeData?._id;
             const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const employee = await this._employeeService.updateProfilePicture(employeeId, req.file as Express.Multer.File ,businessOwnerId);
+            const employee = await this._employeeService.updateProfilePicture(employeeId, req.file as Express.Multer.File, businessOwnerId);
             return res.status(HttpStatusCode.OK).json(employee);
         } catch (error) {
             console.error(error);
@@ -105,13 +105,10 @@ export default class EmployeeController {
     }
 
     async getAddress(req: CustomRequest, res: Response): Promise<Response> {
-      
         try {
             const employeeId = req.user?.employeeData?._id;
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const employee = await this._employeeService.getAddress(employeeId ,this.getBusinessOwnerId(req));
-            console.log("employee",employee);
-            
+            const employee = await this._employeeService.getAddress(employeeId, this.getBusinessOwnerId(req));
             return res.status(HttpStatusCode.OK).json(employee);
         } catch (error) {
             console.error(error);
@@ -124,7 +121,7 @@ export default class EmployeeController {
             const employeeId = req.user?.employeeData?._id;
             const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const employee = await this._employeeService.updateAddress(employeeId, req.body ,businessOwnerId);
+            const employee = await this._employeeService.updateAddress(employeeId, req.body, businessOwnerId);
             return res.status(HttpStatusCode.OK).json(employee);
         } catch (error) {
             console.error(error);
@@ -136,7 +133,7 @@ export default class EmployeeController {
             const employeeId = req.user?.employeeData?._id;
             const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const employee = await this._employeeService.getEmployeeProfessionalInfo(employeeId ,businessOwnerId); ;
+            const employee = await this._employeeService.getEmployeeProfessionalInfo(employeeId, businessOwnerId);;
             return res.status(HttpStatusCode.OK).json(employee);
         } catch (error) {
             console.error(error);
@@ -144,59 +141,59 @@ export default class EmployeeController {
         }
     }
 
-   async getDocuments(req: CustomRequest, res: Response): Promise<Response> {
+    async getDocuments(req: CustomRequest, res: Response): Promise<Response> {
         try {
             const employeeId = req.user?.employeeData?._id;
             const businessOwnerId = this.getBusinessOwnerId(req);
             if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-            const employee = await this._employeeService.getDocuments(employeeId ,businessOwnerId);
+            const employee = await this._employeeService.getDocuments(employeeId, businessOwnerId);
             return res.status(HttpStatusCode.OK).json(employee);
         } catch (error) {
             console.error(error);
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
         }
-   } 
-
-   async updateDocuments(req: CustomRequest, res: Response): Promise<Response> {
-    try {
-        const employeeId = req?.user?.employeeData?._id;
-        const businessOwnerId = this.getBusinessOwnerId(req);
-    
-        if(!employeeId){
-          return res.status(400).json({ message: "Business owner ID not provided in cookies" });
-        }
-        if (!req.file) {
-          return res.status(400).json({ message: "No file uploaded" });
-        }
-    
-        const result = await this._employeeService.uploadDocuments(employeeId, req.file, "resume" ,businessOwnerId);
-    
-        if(!result){
-          return res.status(400).json({ message: "Failed to upload documents" });
-        }
-        return res.status(200).json(result);
-        
-      
-      } catch (error) {
-        return res.status(500).json({
-          message: "Failed to get manager personal info",
-          error,
-        });
-      }
-   }
-
-   async getEmployeeCredentials(req: CustomRequest, res: Response): Promise<Response> {
-    
-    try {
-        const employeeId = req.user?.employeeData?._id;
-        const businessOwnerId = this.getBusinessOwnerId(req);
-        if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
-        const employee = await this._employeeService.getEmployeeCredentials(employeeId ,businessOwnerId);
-        
-        return res.status(HttpStatusCode.OK).json(employee);
-    } catch (error) {
-        console.error(error);
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
     }
-   }
+
+    async updateDocuments(req: CustomRequest, res: Response): Promise<Response> {
+        try {
+            const employeeId = req?.user?.employeeData?._id;
+            const businessOwnerId = this.getBusinessOwnerId(req);
+
+            if (!employeeId) {
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Business owner ID not provided in cookies" });
+            }
+            if (!req.file) {
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ message: "No file uploaded" });
+            }
+
+            const result = await this._employeeService.uploadDocuments(employeeId, req.file, "resume", businessOwnerId);
+
+            if (!result) {
+                return res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Failed to upload documents" });
+            }
+            return res.status(HttpStatusCode.OK).json(result);
+
+
+        } catch (error) {
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to get manager personal info",
+                error,
+            });
+        }
+    }
+
+    async getEmployeeCredentials(req: CustomRequest, res: Response): Promise<Response> {
+
+        try {
+            const employeeId = req.user?.employeeData?._id;
+            const businessOwnerId = this.getBusinessOwnerId(req);
+            if (!employeeId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "Access denied. No token provided" });
+            const employee = await this._employeeService.getEmployeeCredentials(employeeId, businessOwnerId);
+
+            return res.status(HttpStatusCode.OK).json(employee);
+        } catch (error) {
+            console.error(error);
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
+        }
+    }
 }

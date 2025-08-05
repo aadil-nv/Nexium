@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
-import IMessageRepository  from "../../repository/interface/IMessageRepository";
-import {IMessage} from "../../entities/messageEntities";
+import IMessageRepository from "../../repository/interface/IMessageRepository";
+import { IMessage } from "../../entities/messageEntities";
 import BaseRepository from "./baseRepository";
 import mongoose from "mongoose";
 import connectDB from "../../config/connectDB";
@@ -14,28 +14,28 @@ export default class MessageRepository extends BaseRepository<IMessage> implemen
     }
 
     async createMessage(messageData: any, businessOwnerId: string): Promise<IMessage> {
-     
+
         try {
             const switchDB = await connectDB(businessOwnerId);
             const MessageModel = switchDB.model("messages", this._messageModel.schema);
             const ChatModel = switchDB.model("chats", chatModel.schema);
-            
+
             const createdMessage = await new MessageModel(messageData).save();
 
             await ChatModel.updateOne(
                 { _id: messageData.chatId },
                 {
-                    $set: { 
-                        lastMessage: createdMessage._id, 
-                        lastMessageTime: createdMessage.createdAt 
+                    $set: {
+                        lastMessage: createdMessage._id,
+                        lastMessageTime: createdMessage.createdAt
                     }
                 }
             );
-    
+
             const pipeline = [
                 {
                     $match: {
-                        _id: createdMessage._id 
+                        _id: createdMessage._id
                     }
                 },
                 {
@@ -89,28 +89,27 @@ export default class MessageRepository extends BaseRepository<IMessage> implemen
                     }
                 }
             ];
-    
+
             const [result] = await MessageModel.aggregate(pipeline).exec();
-    
+
             if (!result) {
                 throw new Error("Failed to retrieve the created message details");
             }
-    
+
             return result;
         } catch (error) {
             console.error("Error creating message:", error);
             throw new Error("Error creating message");
         }
     }
-    
 
-    async getAllMessages(chatRoomId: string , businessOwnerId: string): Promise<IMessage[]> {
+    async getAllMessages(chatRoomId: string, businessOwnerId: string): Promise<IMessage[]> {
         if (!mongoose.Types.ObjectId.isValid(chatRoomId)) {
             throw new Error("Invalid chatRoomId provided");
         }
-    
+
         const chatRoomObjectId = new mongoose.Types.ObjectId(chatRoomId);
-    
+
         const pipeline = [
             {
                 $match: {
@@ -168,7 +167,7 @@ export default class MessageRepository extends BaseRepository<IMessage> implemen
                 }
             }
         ];
-    
+
         try {
             const switchDB = await connectDB(businessOwnerId);
             return await switchDB.model("messages", this._messageModel.schema).aggregate(pipeline).exec();
@@ -176,18 +175,17 @@ export default class MessageRepository extends BaseRepository<IMessage> implemen
             throw new Error(`Failed to fetch messages: ${error.message}`);
         }
     }
-    
 
-    async deleteMessage(messageId: string,businessOwnerId: string): Promise<IMessage | null> {
+    async deleteMessage(messageId: string, businessOwnerId: string): Promise<IMessage | null> {
         try {
             const switchDB = await connectDB(businessOwnerId);
             return await switchDB.model("messages", this._messageModel.schema).findByIdAndDelete(messageId);
         } catch (error) {
             console.error("Error deleting message:", error);
-            throw new Error("Error deleting message"); 
+            throw new Error("Error deleting message");
         }
     }
 
 
-    
+
 }

@@ -9,8 +9,8 @@ import { IParticipantDetails } from "dto/chatDTO";
 
 export default class MessageService implements IMessageService {
     constructor(@inject("IMessageRepository") private _messageRepository: IMessageRepository) { }
-    async createMessage(senderId: string,chatId: string,message: any, businessOwnerId: string): Promise<IMessageDTO> {
-        
+    async createMessage(senderId: string, chatId: string, message: any, businessOwnerId: string): Promise<IMessageDTO> {
+
         try {
             const messageData = {
                 content: message,
@@ -19,9 +19,9 @@ export default class MessageService implements IMessageService {
                 attachments: message.attachments || [],
                 readBy: [],
             };
-    
-            const createdMessage:any = await this._messageRepository.createMessage(messageData , businessOwnerId);
-    
+
+            const createdMessage: any = await this._messageRepository.createMessage(messageData, businessOwnerId);
+
             const response: IMessageDTO = {
                 messageId: createdMessage._id.toString(),
                 text: createdMessage.content,
@@ -33,17 +33,17 @@ export default class MessageService implements IMessageService {
                 senderName: this.getSenderName(createdMessage.senderDetails),
                 senderPicture: this.getSenderPicture(createdMessage.senderDetails),
             };
-    
+
             return response;
         } catch (error) {
             console.error("Error creating message:", error);
             throw new Error("Error creating message");
         }
     }
-    
-    async getAllMessages(chatRoomId: string, myId: string , businessOwnerId: string): Promise<IMessageDTO[]> {
+
+    async getAllMessages(chatRoomId: string, myId: string, businessOwnerId: string): Promise<IMessageDTO[]> {
         try {
-            const messages: IMessage[] = await this._messageRepository.getAllMessages(chatRoomId ,businessOwnerId);
+            const messages: IMessage[] = await this._messageRepository.getAllMessages(chatRoomId, businessOwnerId);
 
             const response: IMessageDTO[] = messages.map((message: any) => ({
                 messageId: message._id.toString(),
@@ -53,21 +53,21 @@ export default class MessageService implements IMessageService {
                 attachments: JSON.stringify(message.attachments || []),
                 readBy: "read",
                 createdAt: message.createdAt?.toISOString() || "",
-                reciverId: message.sender.toString() === myId 
-                            ? message.chatId.toString() 
-                            : myId, // Fix for receiver ID logic
+                reciverId: message.sender.toString() === myId
+                    ? message.chatId.toString()
+                    : myId,
                 status: "delivered",
                 senderName: this.getSenderName(message.senderDetails),
                 senderPicture: this.getSenderPicture(message.senderDetails),
             }));
-    
+
             return response;
         } catch (error) {
             console.error("Error getting messages service:", error);
             throw new Error("Error getting messages service");
         }
     }
-    
+
     private getSenderName(senderDetails: any): string {
         if (!senderDetails) return "Unknown";
         return (
@@ -77,25 +77,25 @@ export default class MessageService implements IMessageService {
             "Unknown"
         );
     }
-    
+
     private getSenderPicture(senderDetails: any): string {
         if (!senderDetails) return "";
         return senderDetails.personalDetails.profilePicture ?
-         `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${senderDetails.personalDetails.profilePicture}` 
-         : senderDetails.personalDetails.profilePicture;
+            `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${senderDetails.personalDetails.profilePicture}`
+            : senderDetails.personalDetails.profilePicture;
     }
-    
-    async deleteMessage(messageId: string , businessOwnerId: string): Promise<IMessageResponse> {
+
+    async deleteMessage(messageId: string, businessOwnerId: string): Promise<IMessageResponse> {
         try {
-            const message = await this._messageRepository.deleteMessage(messageId ,businessOwnerId);
-    
+            const message = await this._messageRepository.deleteMessage(messageId, businessOwnerId);
+
             if (!message) {
                 return {
                     success: false,
                     message: "Message not found",
                 };
             }
-    
+
             return {
                 success: true,
                 message: "Message deleted successfully",
@@ -105,5 +105,5 @@ export default class MessageService implements IMessageService {
             throw new Error("Error deleting message");
         }
     }
-    
+
 }

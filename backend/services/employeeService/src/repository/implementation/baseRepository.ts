@@ -11,17 +11,17 @@ export default class BaseRepository<T extends Document> implements IBaseReposito
     }
 
 
-    async findOne(filter: FilterQuery<T>): Promise<T | null> {        
+    async findOne(filter: FilterQuery<T>): Promise<T | null> {
         try {
-            const document = await this.model.findOne({employeeId: filter.employeeId}).exec();            
-            return document; 
+            const document = await this.model.findOne({ employeeId: filter.employeeId }).exec();
+            return document;
         } catch (error) {
             console.error("Error finding document:", error);
-            return null; 
+            return null;
         }
     }
 
- 
+
     async findAll(filter: FilterQuery<T> = {}): Promise<T[]> {
         try {
             return await this.model.find(filter).exec();
@@ -53,7 +53,7 @@ export default class BaseRepository<T extends Document> implements IBaseReposito
         }
     }
 
-   
+
     async delete(id: string): Promise<T | null> {
         try {
             const deletedDocument = await this.model.findByIdAndDelete(id).exec();

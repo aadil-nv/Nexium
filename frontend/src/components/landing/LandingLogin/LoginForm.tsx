@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import axios,{ AxiosError } from 'axios';
 import { motion } from 'framer-motion';
 import { FaEye, FaEyeSlash, FaArrowRight } from 'react-icons/fa';
 import { useGoogleLogin, TokenResponse } from '@react-oauth/google';
@@ -25,6 +25,7 @@ interface LoginResponse {
   profilePicture?: string;
   companyLogo?: string;
   email?: string;
+  isSubscribed?:boolean
 }
 
 interface LoginFormProps {
@@ -63,62 +64,77 @@ const LoginForm: React.FC<LoginFormProps> = ({
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
 
-  const googleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse: TokenResponse) => {
-      try {
-        // Fetch user info from Google
-        const userInfo = await axios.get<{
-          sub: string;
-          email: string;
-          name: string;
-          given_name: string;
-          family_name: string;
-          picture: string;
-        }>(
-          `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`
-        );
+ const googleLogin = useGoogleLogin({
+  onSuccess: async (tokenResponse: TokenResponse) => {
+    try {
+      // Fetch user info from Google
+      const userInfo = await axios.get<{
+        sub: string;
+        email: string;
+        name: string;
+        given_name: string;
+        family_name: string;
+        picture: string;
+      }>(
+        `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`
+      );
 
-        const googleUserData: GoogleUserData = {
-          id: userInfo.data.sub,
-          email: userInfo.data.email,
-          name: userInfo.data.name,
-          givenName: userInfo.data.given_name,
-          familyName: userInfo.data.family_name,
-          picture: userInfo.data.picture
-        };
-        
-        const response = await axios.post<LoginResponse>(
-          `${API_URL}/authentication-service/api/business-owner/google-login`, 
-          { 
-            userData: googleUserData 
-          },
-          { withCredentials: true }
-        );
+      const googleUserData: GoogleUserData = {
+        id: userInfo.data.sub,
+        email: userInfo.data.email,
+        name: userInfo.data.name,
+        givenName: userInfo.data.given_name,
+        familyName: userInfo.data.family_name,
+        picture: userInfo.data.picture
+      };
 
-        if(response.data.success === true && response.data.isVerified === true){
-          dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
-          dispatch(setBusinessOwnerData({
-            companyName: response.data.companyName || '',
-            businessOwnerProfilePicture: response.data.profilePicture || '',
-            companyLogo: response.data.companyLogo || '',
-          }));
-          navigate('/business-owner/dashboard');
-        }
-        
-        if (response.data.success && response.data.email) {
-          navigate('/plans', { state: { email: response.data.email } });
-        }
+      const response = await axios.post<LoginResponse>(
+        `${API_URL}/authentication-service/api/business-owner/google-login`,
+        { userData: googleUserData },
+        { withCredentials: true }
+      );
 
-      } catch (error) {
-        console.error('Google Login Error:', error);
-        // Handle the error appropriately
+      console.log("response.data from google is", response.data);
+
+      if (
+        response.data.success === true &&
+        response.data.isVerified === true &&
+        response.data.isSubscribed === true
+      ) {
+        dispatch(login({ role: 'businessOwner', isAuthenticated: true }));
+        dispatch(setBusinessOwnerData({
+          companyName: response.data.companyName || '',
+          businessOwnerProfilePicture: response.data.profilePicture || '',
+          companyLogo: response.data.companyLogo || '',
+        }));
+        navigate('/business-owner/dashboard');
       }
-    },
-    onError: () => {
-      console.log('Login Failed');
-      // Handle the error appropriately
+
+      if (
+        response.data.success &&
+        response.data.email &&
+        response.data.isSubscribed === false
+      ) {
+        navigate('/plans', { state: { email: response.data.email } });
+      }
+
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+
+      console.error('Google Login Error:', axiosError);
+
+      if (
+        axiosError.response &&
+        axiosError.response.data.message === 'Not subscribed'
+      ) {
+        navigate('/plans', { state: { email: axiosError.response.data.message } });
+      }
     }
-  });
+  },
+  onError: () => {
+    console.log('Login Failed');
+  }
+});
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setIsLoading(true);

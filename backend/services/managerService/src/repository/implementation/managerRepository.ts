@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import IManagerRepository from "../interface/IManagerRepository";
-import {IManager} from "../../entities/managerEntities";
+import { IManager } from "../../entities/managerEntities";
 import BaseRepository from "../../repository/implementation/baseRepository";
 import { Model } from "mongoose";
 import managerModel from "../../models/managerModel";
@@ -23,279 +23,279 @@ import SubscriptionNodel from "../../models/subscriptionModel";
 
 
 @injectable()
-export default class ManagerRepository extends BaseRepository<IManager> implements IManagerRepository{
-    constructor(@inject("managerModel") managerModel: Model<IManager>) {
-        super(managerModel);
-    }
+export default class ManagerRepository extends BaseRepository<IManager> implements IManagerRepository {
+  constructor(@inject("managerModel") managerModel: Model<IManager>) {
+    super(managerModel);
+  }
 
-    async getManagers(businessOwnerId: string): Promise<IManager[]> {
-        try {   
-            const db = await connectDB(businessOwnerId);
-            return await db.model<IManager>("managers", managerModel.schema).find();  
-        } catch (error) {
-            console.log("Error finding documents:", error);
-            return []; 
-        }
+  async getManagers(businessOwnerId: string): Promise<IManager[]> {
+    try {
+      const db = await connectDB(businessOwnerId);
+      return await db.model<IManager>("managers", managerModel.schema).find();
+    } catch (error) {
+      console.log("Error finding documents:", error);
+      return [];
     }
+  }
 
-    async updateManagerPersonalInfo(managerId: string, data: any ,businessOwnerId: string): Promise<IManager | null> {
-      
-        try {
-          const db = await connectDB(businessOwnerId);
-          const manager = await db.model<IManager>("managers", managerModel.schema).findById(managerId);
-      
-          if (!manager) {
-            console.error("Manager not found");
-            return null;
-          }
-      
-          manager.personalDetails = {
-            ...manager.personalDetails, 
-            ...data, 
-          };
-      
-          await manager.save();
-      
-          return manager;
-        } catch (error) {
-          console.error("Error updating manager personal info:", error);
-          return null;
-        }
+  async updateManagerPersonalInfo(managerId: string, data: any, businessOwnerId: string): Promise<IManager | null> {
+
+    try {
+      const db = await connectDB(businessOwnerId);
+      const manager = await db.model<IManager>("managers", managerModel.schema).findById(managerId);
+
+      if (!manager) {
+        console.error("Manager not found");
+        return null;
       }
 
-      async findIsBlocked(managerId: string,businessOwnerId: string): Promise<boolean | null> {
-        try {
-          const db = await connectDB(businessOwnerId);
-          const manager = await db.model<IManager>("managers", managerModel.schema).findById(managerId);
-          
-          if (!manager) {
-            return null; 
-          }
-          return manager.isBlocked ?? null;
-        } catch (error) {
-          console.error("Error finding manager by ID:121212", error);
-          return null; 
-        }
-      }
-      async findBusinessOwnerIsBlocked(managerId: string, businessOwnerId: string): Promise<boolean | null> {
-        try {
-          const db = await connectDB(businessOwnerId);
-          const businessOwner = await db
-            .model<IBusinessOwnerDocument>("businessowners", businessOwnerModel.schema)
-            .findById(businessOwnerId)
-      
-          if (!businessOwner || !businessOwner._id) {
-            return null;
-          }
-      
-          return businessOwner.isBlocked ?? null; 
-        } catch (error) {
-          console.error("Error finding manager by ID:", error);
-          return null;
-        }
-      }
-      
-      
+      manager.personalDetails = {
+        ...manager.personalDetails,
+        ...data,
+      };
 
-      async getDetails(managerId: string, businessOwnerId: string): Promise<IManager | null> {
-        try {
-            const db = await connectDB(businessOwnerId);
-            const manager = await db.model<IManager>("managers", managerModel.schema).findById(managerId);
+      await manager.save();
 
-            return manager; 
-        } catch (error) {
-            console.error("Error finding manager by ID:", error);
-            return null;
-        }
+      return manager;
+    } catch (error) {
+      console.error("Error updating manager personal info:", error);
+      return null;
     }
+  }
 
-    async uploadProfilePicture(managerId: string, filePath: string ,businessOwnerId: string): Promise<IManager> {
-      
-      try {
-        const db = await connectDB(businessOwnerId);
-        const result = await db.model<IManager>("managers", managerModel.schema).findByIdAndUpdate(
-          managerId,
-          { $set: { 'personalDetails.profilePicture': filePath } }, // Save the file path
-          { new: true }
-        );
-    
-        if (!result) {
-          throw new Error(`No business owner found with ID: ${managerId}`);
-        }
-    
-        return result;
-      } catch (error) {
-        console.error('Error updating personal details:', error);
-        throw new Error('Could not update personal details.');
+  async findIsBlocked(managerId: string, businessOwnerId: string): Promise<boolean | null> {
+    try {
+      const db = await connectDB(businessOwnerId);
+      const manager = await db.model<IManager>("managers", managerModel.schema).findById(managerId);
+
+      if (!manager) {
+        return null;
       }
+      return manager.isBlocked ?? null;
+    } catch (error) {
+      console.error("Error finding manager by ID:121212", error);
+      return null;
     }
+  }
+  async findBusinessOwnerIsBlocked(managerId: string, businessOwnerId: string): Promise<boolean | null> {
+    try {
+      const db = await connectDB(businessOwnerId);
+      const businessOwner = await db
+        .model<IBusinessOwnerDocument>("businessowners", businessOwnerModel.schema)
+        .findById(businessOwnerId)
 
-    async getLeaveEmployees(managerId: string ,businessOwnerId: string): Promise<any> {
-      try {
-        const db = await connectDB(businessOwnerId);
-        const result = await db.model<IEmployeeAttendance>("EmployeeAttendance", attendanceModel.schema).aggregate([
-          {
-            $match: {
-              'attendance.leaveStatus': { $ne: "null" }, // Filter attendance entries with leaveStatus !== "null"
-            },
+      if (!businessOwner || !businessOwner._id) {
+        return null;
+      }
+
+      return businessOwner.isBlocked ?? null;
+    } catch (error) {
+      console.error("Error finding manager by ID:", error);
+      return null;
+    }
+  }
+
+
+
+  async getDetails(managerId: string, businessOwnerId: string): Promise<IManager | null> {
+    try {
+      const db = await connectDB(businessOwnerId);
+      const manager = await db.model<IManager>("managers", managerModel.schema).findById(managerId);
+
+      return manager;
+    } catch (error) {
+      console.error("Error finding manager by ID:", error);
+      return null;
+    }
+  }
+
+  async uploadProfilePicture(managerId: string, filePath: string, businessOwnerId: string): Promise<IManager> {
+
+    try {
+      const db = await connectDB(businessOwnerId);
+      const result = await db.model<IManager>("managers", managerModel.schema).findByIdAndUpdate(
+        managerId,
+        { $set: { 'personalDetails.profilePicture': filePath } }, // Save the file path
+        { new: true }
+      );
+
+      if (!result) {
+        throw new Error(`No business owner found with ID: ${managerId}`);
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Error updating personal details:', error);
+      throw new Error('Could not update personal details.');
+    }
+  }
+
+  async getLeaveEmployees(managerId: string, businessOwnerId: string): Promise<any> {
+    try {
+      const db = await connectDB(businessOwnerId);
+      const result = await db.model<IEmployeeAttendance>("EmployeeAttendance", attendanceModel.schema).aggregate([
+        {
+          $match: {
+            'attendance.leaveStatus': { $ne: "null" }, // Filter attendance entries with leaveStatus !== "null"
           },
-          {
-            $lookup: {
-              from: 'employees', // Reference to the Employee collection
-              localField: 'employeeId',
-              foreignField: '_id',
-              as: 'employeeDetails', // Attach employee details
-            },
+        },
+        {
+          $lookup: {
+            from: 'employees', // Reference to the Employee collection
+            localField: 'employeeId',
+            foreignField: '_id',
+            as: 'employeeDetails', // Attach employee details
           },
-          {
-            $project: {
-              employeeId: 1,
-              employeeDetails: { name: 1, email: 1 }, // Customize fields if needed
-              attendance: {
-                $filter: {
-                  input: '$attendance',
-                  as: 'entry',
-                  cond: { $ne: ['$$entry.leaveStatus', "null"] },
-                },
+        },
+        {
+          $project: {
+            employeeId: 1,
+            employeeDetails: { name: 1, email: 1 }, // Customize fields if needed
+            attendance: {
+              $filter: {
+                input: '$attendance',
+                as: 'entry',
+                cond: { $ne: ['$$entry.leaveStatus', "null"] },
               },
             },
           },
-        ]);
-    
-        return result;
-      } catch (error:any) {
-        console.error("Error in getLeaveEmployees:", error.message);
-        throw new Error("Error retrieving leave employees");
-      }
-    }
-  
-    async updateManagerAddress(managerId: string, data: any ,businessOwnerId: string): Promise<any> {
+        },
+      ]);
 
-      try {
-        const db = await connectDB(businessOwnerId);
-        const result = await db.model<IManager>("managers", managerModel.schema).findOneAndUpdate({_id: managerId }, { $set: { address: data } }, { new: true });
-        
-        if (!result) {
-          throw new Error(`No manager found with ID: ${managerId}`);
-        }
-        return result;
-      } catch (error :any) {
-        console.error("Error in updateManagerAddress:", error.message);
-        throw new Error("Error updating manager address");
-      }
+      return result;
+    } catch (error: any) {
+      console.error("Error in getLeaveEmployees:", error.message);
+      throw new Error("Error retrieving leave employees");
     }
+  }
 
-    async uploadDocuments(managerId: string, documentType: string, documentData: Object ,businessOwnerId: string): Promise<IManager> {
-      try {
-        const db = await connectDB(businessOwnerId);
-        if (documentType !== 'resume') {
-          throw new Error(`Invalid document type: ${documentType}`);
-        }
-    
-        const updateData = {
-          [`documents.${documentType}`]: documentData
-        };
-    
-        const result = await db.model<IManager>("managers", managerModel.schema).findByIdAndUpdate(
-          managerId,
-          updateData,
-          { new: true }
-        );
-    
-        if (!result) throw new Error(`No business owner found with ID: ${managerId}`);
-  
-        return result;
-      } catch (error) {
-        console.error('Error updating documents:', error);
-        throw new Error('Could not update documents.');
+  async updateManagerAddress(managerId: string, data: any, businessOwnerId: string): Promise<any> {
+
+    try {
+      const db = await connectDB(businessOwnerId);
+      const result = await db.model<IManager>("managers", managerModel.schema).findOneAndUpdate({ _id: managerId }, { $set: { address: data } }, { new: true });
+
+      if (!result) {
+        throw new Error(`No manager found with ID: ${managerId}`);
       }
+      return result;
+    } catch (error: any) {
+      console.error("Error in updateManagerAddress:", error.message);
+      throw new Error("Error updating manager address");
     }
+  }
 
-    async getDashboardData(managerId: string ,businessOwnerId: string): Promise<any> {
-      try {
-        const db = await connectDB(businessOwnerId); 
-        const manager =  await db.model<IManager>("managers", managerModel.schema)
-        const employees = await db.model<IEmployee>("employees", employeeModel.schema).find().lean();
-        
-        const departments = await db.model<IDepartment>("departments", departmentModel.schema).find().lean();
-        const tasks = await db.model<ITask>("tasks", taskModel.schema).find({ employeeId: { $in: employees.map((e) => e._id) } }).lean();
-    
-        const employeeCount = employees.length;
-        const departmentCount = departments.length;
-        const taskCount = tasks.reduce((acc, task) => acc + task.tasks.length, 0);
-        const completedTaskCount = tasks.reduce(
-          (acc, task) => acc + task.tasks.filter((t) => t.isCompleted).length,
-          0
-        );
-    
-        const departmentTaskData = departments.map((department) => {
-          const taskCount = department.employees.reduce((count, employee) => {
-            const employeeTasks = tasks.filter((task) => String(task.employeeId) === String(employee.employeeId));
-            const completedTasks = employeeTasks.reduce(
-              (acc, task) => acc + task.tasks.filter((t) => t.isCompleted).length,
-              0
-            );
-            return count + completedTasks;
-          }, 0);
-          return { department: department.departmentName, completedTasks: taskCount };
+  async uploadDocuments(managerId: string, documentType: string, documentData: Object, businessOwnerId: string): Promise<IManager> {
+    try {
+      const db = await connectDB(businessOwnerId);
+      if (documentType !== 'resume') {
+        throw new Error(`Invalid document type: ${documentType}`);
+      }
+
+      const updateData = {
+        [`documents.${documentType}`]: documentData
+      };
+
+      const result = await db.model<IManager>("managers", managerModel.schema).findByIdAndUpdate(
+        managerId,
+        updateData,
+        { new: true }
+      );
+
+      if (!result) throw new Error(`No business owner found with ID: ${managerId}`);
+
+      return result;
+    } catch (error) {
+      console.error('Error updating documents:', error);
+      throw new Error('Could not update documents.');
+    }
+  }
+
+  async getDashboardData(managerId: string, businessOwnerId: string): Promise<any> {
+    try {
+      const db = await connectDB(businessOwnerId);
+      const manager = await db.model<IManager>("managers", managerModel.schema)
+      const employees = await db.model<IEmployee>("employees", employeeModel.schema).find().lean();
+
+      const departments = await db.model<IDepartment>("departments", departmentModel.schema).find().lean();
+      const tasks = await db.model<ITask>("tasks", taskModel.schema).find({ employeeId: { $in: employees.map((e) => e._id) } }).lean();
+
+      const employeeCount = employees.length;
+      const departmentCount = departments.length;
+      const taskCount = tasks.reduce((acc, task) => acc + task.tasks.length, 0);
+      const completedTaskCount = tasks.reduce(
+        (acc, task) => acc + task.tasks.filter((t) => t.isCompleted).length,
+        0
+      );
+
+      const departmentTaskData = departments.map((department) => {
+        const taskCount = department.employees.reduce((count, employee) => {
+          const employeeTasks = tasks.filter((task) => String(task.employeeId) === String(employee.employeeId));
+          const completedTasks = employeeTasks.reduce(
+            (acc, task) => acc + task.tasks.filter((t) => t.isCompleted).length,
+            0
+          );
+          return count + completedTasks;
+        }, 0);
+        return { department: department.departmentName, completedTasks: taskCount };
+      });
+
+      const tasksByMonth = tasks.reduce<{ [key: string]: number }>((acc, task) => {
+        task.tasks.forEach((t) => {
+          if (t.isCompleted) {
+            const month = moment(task.createdAt).format("MMMM YYYY"); // Format as full month name and year
+            acc[month] = (acc[month] || 0) + 1;
+          }
         });
-    
-        const tasksByMonth = tasks.reduce<{ [key: string]: number }>((acc, task) => {
-          task.tasks.forEach((t) => {
-            if (t.isCompleted) {
-              const month = moment(task.createdAt).format("MMMM YYYY"); // Format as full month name and year
-              acc[month] = (acc[month] || 0) + 1;
-            }
-          });
-          return acc;
-        }, {});
-    
-        const tasksOverTimeData = Object.keys(tasksByMonth).map((month) => ({
-          month,
-          completedTasks: tasksByMonth[month],
-        }));
-    
-        return {
-          employeeCount,
-          departmentCount,
-          taskCount,
-          completedTaskCount,
-          areaChartData: {
-            departmentTaskData,
-            tasksOverTimeData,
-          },
-        };
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        throw new Error("Failed to fetch dashboard data");
-      }
+        return acc;
+      }, {});
+
+      const tasksOverTimeData = Object.keys(tasksByMonth).map((month) => ({
+        month,
+        completedTasks: tasksByMonth[month],
+      }));
+
+      return {
+        employeeCount,
+        departmentCount,
+        taskCount,
+        completedTaskCount,
+        areaChartData: {
+          departmentTaskData,
+          tasksOverTimeData,
+        },
+      };
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      throw new Error("Failed to fetch dashboard data");
     }
+  }
 
-    async updateManagerIsActive(managerId: string, isActive: boolean ,businessOwnerId: string): Promise<any> {
+  async updateManagerIsActive(managerId: string, isActive: boolean, businessOwnerId: string): Promise<any> {
 
-      try {
-        const db = await connectDB(businessOwnerId);
-        const result = await db.model<IManager>("managers", managerModel.schema).findOneAndUpdate({_id: managerId }, { $set: { isActive: isActive } }, { new: true });
-        
-        if (!result) {
-          throw new Error(`No manager found with ID: ${managerId}`);
-        }
-        return result;
-      } catch (error :any) {
-        console.error("Error in updateManagerIsActive:", error.message);
-        throw new Error("Error updating manager isActive");
+    try {
+      const db = await connectDB(businessOwnerId);
+      const result = await db.model<IManager>("managers", managerModel.schema).findOneAndUpdate({ _id: managerId }, { $set: { isActive: isActive } }, { new: true });
+
+      if (!result) {
+        throw new Error(`No manager found with ID: ${managerId}`);
       }
+      return result;
+    } catch (error: any) {
+      console.error("Error in updateManagerIsActive:", error.message);
+      throw new Error("Error updating manager isActive");
     }
+  }
 
-    async findManager(managerId: string, businessOwnerId: string): Promise<IManager | null> {
+  async findManager(managerId: string, businessOwnerId: string): Promise<IManager | null> {
 
-      try {
-        const db = await connectDB(businessOwnerId);
-        const result = await db.model<IManager>("managers", managerModel.schema).findOne({ _id: managerId });
-        return result;
-      } catch (error :any) {
-        console.error("Error in findManager:", error.message);
-        throw new Error("Error finding manager");
+    try {
+      const db = await connectDB(businessOwnerId);
+      const result = await db.model<IManager>("managers", managerModel.schema).findOne({ _id: managerId });
+      return result;
+    } catch (error: any) {
+      console.error("Error in findManager:", error.message);
+      throw new Error("Error finding manager");
     }
   }
 
@@ -305,7 +305,7 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
       const db = await connectDB(businessOwnerId);
       const result = await db.model<IManager>("managers", managerModel.schema).find();
       return result;
-    } catch (error :any) {
+    } catch (error: any) {
       console.error("Error in findAllManagers:", error.message);
       throw new Error("Error finding managers");
     }
@@ -314,34 +314,31 @@ export default class ManagerRepository extends BaseRepository<IManager> implemen
   async checkSubscriptionEmployee(businessOwnerId: string): Promise<boolean> {
     try {
       const db = await connectDB(businessOwnerId);
-            const employee = db.model<IEmployee>("Employee", employeeModel.schema);
-            const businessOwner = db.model<IBusinessOwnerDocument>("BusinessOwner", businessOwnerModel.schema);
-            const subscription = db.model<ISubscription>("Subscription", SubscriptionNodel.schema);
-            const subscriptionData = await subscription.find();
-            
-            const businessOwnerData = await businessOwner
-            .findOne({ _id: businessOwnerId })
-            .populate<{ subscription : ISubscription }>('subscription');
-            //   path: "subscription.subscriptionId",
-            //   model: Subscription, // Explicitly specify the model
-            // });
-        console.log(`businessOwnerData: ====>`.bgWhite.bold,businessOwnerData);
-        
-  
+      const employee = db.model<IEmployee>("Employee", employeeModel.schema);
+      const businessOwner = db.model<IBusinessOwnerDocument>("BusinessOwner", businessOwnerModel.schema);
+      const subscription = db.model<ISubscription>("Subscription", SubscriptionNodel.schema);
+      const subscriptionData = await subscription.find();
+
+      const businessOwnerData = await businessOwner
+        .findOne({ _id: businessOwnerId })
+        .populate<{ subscription: ISubscription }>('subscription');
+      //   path: "subscription.subscriptionId",
+      //   model: Subscription, // Explicitly specify the model
+      // });
+
+
       if (!businessOwnerData) {
         throw new Error(`No business owner found with ID: ${businessOwnerId}`);
       }
 
-  
+
       const employeeCount = await employee.countDocuments({ businessOwnerId });
-      console.log(`Employee count: ${employeeCount}`.bgWhite.bold);
-      
-  
-      return true; 
+
+      return true;
     } catch (error) {
       console.error("Error checking subscription repo:", error);
       throw new Error("Failed to check subscription repo.");
     }
   }
-      
+
 }

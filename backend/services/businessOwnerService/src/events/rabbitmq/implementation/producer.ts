@@ -14,10 +14,6 @@ export default class RabbitMQMessager implements IProducer {
   }
   
   async init(): Promise<void> {
-    console.log(`************************************`.bgGreen);
-    console.log( process.env.RABBITMQ_URL);
-    
-    console.log(`************************************`.bgGreen);
     await rabbitmqConnect();
     this._channel = await getChannel();
     this._connection = await amqp.connect(process.env.RABBITMQ_URL as string);

@@ -58,7 +58,7 @@ const authenticateToken = async (req: CustomRequest, res: Response, next: NextFu
         return res.status(HttpStatusCode.FORBIDDEN).json({ message: "Access denied. Business owner is blocked." });
       }
 
-      next(); // Proceed to the next middleware if not blocked
+      next();
     } catch (error) {
       console.error("Error finding business owner:", error);
       return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Error checking business owner status." });

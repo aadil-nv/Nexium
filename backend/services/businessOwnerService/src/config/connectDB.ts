@@ -1,8 +1,7 @@
 import mongoose, { Mongoose } from 'mongoose';
 import 'colors';
 
-export let dbInstance: Mongoose; // Mongoose type
-
+export let dbInstance: Mongoose; 
 const connectDB = async (): Promise<void> => {
     try {
         if (process.env.MONGODB_URL) {
@@ -13,7 +12,7 @@ const connectDB = async (): Promise<void> => {
         }
     } catch (error) {
         console.error("DB connection failed: ".red + error);
-        process.exit(1); // Exit the process if the DB connection fails
+        process.exit(1);
     }
 };
 

@@ -94,7 +94,6 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
             throw new Error(error.message);
         }
     }
-    
 
     async getAllLeaveEmployees(buisinessownerId:string): Promise<any> {
         try {
@@ -127,7 +126,6 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
         }
     }
     
-
     async findAllLeaveTypes(businessOwnerId: string): Promise<ILeaveType> {
         try {
             const db = await connectDB(businessOwnerId);
@@ -160,8 +158,6 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
             throw new Error("Failed to fetch leave types");
         }
     }
-    
-    
 
     async updateLeaveTypes(leaveTypeId: string, data: Partial<ILeaveType> , businessOwnerId: string): Promise<ILeaveType> {
         try {
@@ -192,7 +188,6 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
         }
     }
 
-    
     async getEmployeeLeaves(employeeId: string, businessOwnerId: string): Promise<IEmployeeLeave> {
         try {
             const db = await connectDB(businessOwnerId);
@@ -208,7 +203,6 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
         }
     }
     
-
     async fetchAllPreAppliedLeaves(businessOwnerId: string): Promise<IAppliedLeave[]> {
      try {
     const db = await connectDB(businessOwnerId);
@@ -234,7 +228,6 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
     throw new Error('Failed to fetch pre-applied leaves');
   }
     }
-
 
       async updatePreAppliedLeaves(employeeId: string, managerName: string, data: any , businessOwnerId: string): Promise<IAppliedLeave | null> {
 
@@ -310,5 +303,4 @@ export default class LeaveRepository extends BaseRepository<IEmployeeAttendance>
         }
     }
     
-
 }

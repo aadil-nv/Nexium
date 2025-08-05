@@ -45,5 +45,6 @@ export interface IResponseDTO{
     companyLogo?:string;
     companyName?:string;
     isVerified?:boolean
-    businessOwnerData?:IBusinessOwnerDocument
+    businessOwnerData?:IBusinessOwnerDocument;
+    isSubscribed?:boolean
  }

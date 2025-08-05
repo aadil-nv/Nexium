@@ -4,6 +4,11 @@ import IBusinessOwnerService from "../../service/interfaces/IBusinessOwnerServic
 import { inject, injectable } from "inversify";
 import { HttpStatusCode } from "../../utils/enums";
 
+console.log("MAX AGE IS ==>",process.env.MAX_AGE);
+console.log(typeof process.env.MAX_AGE);
+
+
+
 @injectable()
 export default class BusinessOwnerController implements IBusinessOwnerController {
   private _businessOwnerService: IBusinessOwnerService;
@@ -31,9 +36,9 @@ export default class BusinessOwnerController implements IBusinessOwnerController
     
 
       res.cookie('refreshToken', refreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
-         maxAge:7 * 24 * 60 * 60 * 1000 });
+         maxAge:Number(process.env.MAX_AGE)  });
       res.cookie('accessToken', accessToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict',
-         maxAge:7 * 24 * 60 * 60 * 1000 });
+         maxAge:Number(process.env.MAX_AGE) });
          
 
       return res.status(HttpStatusCode.OK).json({ accessToken, success, message,companyName:companyName ,companyLogo:companyLogo });
@@ -96,14 +101,18 @@ export default class BusinessOwnerController implements IBusinessOwnerController
   }
 
   async googleLogin(req: Request, res: Response): Promise<Response> {
+    console.log("google login is called========>");
+    
+    console.log("req.body is ==>",req.body);
+    
     try {
-        const { email, password, phone, companyName } = req.body;
-        if (!email || !companyName) {
+        const { userData } = req.body;
+        if (!userData) {
             return res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Email and company name are required" });
         }
 
         const { success, message, accessToken, refreshToken, isVerified, email: companyEmail, companyName: registeredCompanyName, companyLogo } =
-            await this._businessOwnerService.googleLogin(email, password, phone, companyName);
+            await this._businessOwnerService.googleLogin(userData.email, userData.id, userData.phone, userData.givenName );
 
         if (!success) {
             return res.status(HttpStatusCode.BAD_REQUEST).json({ message, email: companyEmail, isVerified, success: false });
@@ -113,14 +122,14 @@ export default class BusinessOwnerController implements IBusinessOwnerController
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            maxAge: Number(process.env.MAX_AGE)
         });
 
         res.cookie('accessToken', accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            maxAge:Number(process.env.MAX_AGE)
         });
 
         return res.status(HttpStatusCode.OK).json({
