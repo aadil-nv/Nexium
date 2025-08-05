@@ -119,7 +119,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
       }
 
     } catch (error) {
-      const axiosError = error as AxiosError<{ message: string }>;
+      const axiosError = error as AxiosError<{ message: string ,email: string }>;
 
       console.error('Google Login Error:', axiosError);
 
