@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: authentication-service
-        image: aadilnv/nexium-authenticationservice:v3
+        image: aadilnv/nexium-authenticationservice:v4
         imagePullPolicy: Always
         ports:
         - containerPort: 7000

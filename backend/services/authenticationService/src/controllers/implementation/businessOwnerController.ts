@@ -111,11 +111,11 @@ export default class BusinessOwnerController implements IBusinessOwnerController
             return res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Email and company name are required" });
         }
 
-        const { success, message, accessToken, refreshToken, isVerified, email: companyEmail, companyName: registeredCompanyName, companyLogo } =
+        const { success, message, accessToken, refreshToken, isVerified, email: companyEmail, companyName: registeredCompanyName, companyLogo ,isSubscribed } =
             await this._businessOwnerService.googleLogin(userData.email, userData.id, userData.phone, userData.givenName );
 
         if (!success) {
-            return res.status(HttpStatusCode.BAD_REQUEST).json({ message, email: companyEmail, isVerified, success: false });
+            return res.status(HttpStatusCode.BAD_REQUEST).json({ message, email: companyEmail, isVerified, success: false,isSubscribed });
         }
 
         res.cookie('refreshToken', refreshToken, {
@@ -137,7 +137,9 @@ export default class BusinessOwnerController implements IBusinessOwnerController
             message,
             accessToken,
             companyName: registeredCompanyName,
-            companyLogo
+            companyLogo,
+            isSubscribed,
+            isVerified
         });
     } catch (error) {
         console.error("Error during Google login:", error);

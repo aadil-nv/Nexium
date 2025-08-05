@@ -13,7 +13,11 @@ import {
   UserCog, 
   FileText,
   ChevronRight,
-  Zap 
+  Zap,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  Home
 } from 'lucide-react';
 
 type Plan = {
@@ -30,6 +34,8 @@ type Plan = {
   serviceRequestCount?: number | null;
   isActive: boolean;
 };
+
+type PaymentStatus = 'idle' | 'processing' | 'success' | 'failure';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -66,10 +72,38 @@ const cardVariants = {
   }
 };
 
+const successVariants = {
+  hidden: { 
+    opacity: 0,
+    scale: 0.5,
+    y: 100
+  },
+  visible: { 
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 200,
+      damping: 20,
+      duration: 0.6
+    }
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.5,
+    y: -100,
+    transition: {
+      duration: 0.3
+    }
+  }
+};
+
 const PlanSelection: React.FC = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
+  const [paymentMessage, setPaymentMessage] = useState<string>('');
   const email = (useLocation().state as { email: string })?.email;
  
   const stripePromise = loadStripe('pk_test_51QA84MG0KgrlY5FBKX5uMqGIPF0QRwCB52FMUeaO4mMIqlaHjWaellTk26kdZYqYgM1USvDyz7jwfoAIL5Wovdpw00AYg8dWct');
@@ -89,21 +123,46 @@ const PlanSelection: React.FC = () => {
 
   const handlePayment = async () => {
     if (!selectedPlan) return;
+    
     try {
-      setIsLoading(true);
+      setPaymentStatus('processing');
+      setPaymentMessage('Processing your payment...');
+      
       const stripe = await stripePromise;
-      if (!stripe) throw new Error('Stripe failed to load');
+      if (!stripe) {
+        throw new Error('Stripe failed to load');
+      }
 
       const data = await createCheckoutSession(email, selectedPlan);
       if (data) {
-        await stripe.redirectToCheckout({ sessionId: data.session.id });
+        // Simulate payment processing time
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // For demo purposes, randomly simulate success/failure
+        // In real implementation, this would be handled by Stripe's redirect
+        const isSuccess = Math.random() > 0.3; // 70% success rate for demo
+        
+        if (isSuccess) {
+          setPaymentStatus('success');
+          setPaymentMessage('Payment successful! Welcome to your new plan.');
+        } else {
+          setPaymentStatus('failure');
+          setPaymentMessage('Payment failed. Please check your payment details and try again.');
+        }
+        
+        // In real implementation, uncomment this line:
+        // await stripe.redirectToCheckout({ sessionId: data.session.id });
       }
     } catch (error) {
       console.error('Error processing payment:', error);
-      alert('Payment failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+      setPaymentStatus('failure');
+      setPaymentMessage('Payment failed. Please try again.');
     }
+  };
+
+  const resetPayment = () => {
+    setPaymentStatus('idle');
+    setPaymentMessage('');
   };
 
   const getCardColors = (planType: string) => {
@@ -136,6 +195,175 @@ const PlanSelection: React.FC = () => {
       <Zap className="w-5 h-5" />
       <ChevronRight className="w-4 h-4" />
     </motion.div>
+  );
+
+  const PaymentStatusOverlay: React.FC = () => (
+    <AnimatePresence>
+      {paymentStatus !== 'idle' && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        >
+          <motion.div
+            variants={successVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full text-center shadow-2xl"
+          >
+            {paymentStatus === 'processing' && (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="mx-auto mb-6 w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center"
+                >
+                  <RefreshCw className="w-8 h-8 text-blue-600" />
+                </motion.div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  Processing Payment
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  {paymentMessage}
+                </p>
+                <motion.div
+                  className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <motion.div
+                    className="bg-blue-600 h-2 rounded-full"
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 2, ease: "easeInOut" }}
+                  />
+                </motion.div>
+              </>
+            )}
+
+            {paymentStatus === 'success' && (
+              <>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 200, 
+                    damping: 10,
+                    delay: 0.2 
+                  }}
+                  className="mx-auto mb-6 w-16 h-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center"
+                >
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                </motion.div>
+                <motion.h3
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-2xl font-bold text-gray-900 dark:text-white mb-4"
+                >
+                  Payment Successful!
+                </motion.h3>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="text-gray-600 dark:text-gray-300 mb-6"
+                >
+                  {paymentMessage}
+                </motion.p>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
+                  className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 mb-6"
+                >
+                  <p className="text-sm text-green-800 dark:text-green-200">
+                    <strong>{selectedPlan?.planName}</strong> plan activated
+                  </p>
+                  <p className="text-sm text-green-600 dark:text-green-300">
+                    ${selectedPlan?.price}/month
+                  </p>
+                </motion.div>
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={resetPayment}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-xl font-semibold transition-colors duration-200 flex items-center justify-center space-x-2"
+                >
+                  <Home className="w-5 h-5" />
+                  <span>Continue to Dashboard</span>
+                </motion.button>
+              </>
+            )}
+
+            {paymentStatus === 'failure' && (
+              <>
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 200, 
+                    damping: 10,
+                    delay: 0.2 
+                  }}
+                  className="mx-auto mb-6 w-16 h-16 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center"
+                >
+                  <XCircle className="w-8 h-8 text-red-600" />
+                </motion.div>
+                <motion.h3
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-2xl font-bold text-gray-900 dark:text-white mb-4"
+                >
+                  Payment Failed
+                </motion.h3>
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="text-gray-600 dark:text-gray-300 mb-6"
+                >
+                  {paymentMessage}
+                </motion.p>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 }}
+                  className="flex space-x-3"
+                >
+                  <button
+                    onClick={resetPayment}
+                    className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 py-3 px-6 rounded-xl font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      resetPayment();
+                      setTimeout(handlePayment, 100);
+                    }}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-xl font-semibold transition-colors duration-200 flex items-center justify-center space-x-2"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    <span>Try Again</span>
+                  </motion.button>
+                </motion.div>
+              </>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 
   return (
@@ -286,12 +514,12 @@ const PlanSelection: React.FC = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handlePayment}
-              disabled={!selectedPlan || isLoading}
+              disabled={!selectedPlan || paymentStatus === 'processing'}
               className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-xl
                          font-semibold disabled:opacity-50 disabled:cursor-not-allowed
                          flex items-center space-x-2"
             >
-              {isLoading ? (
+              {paymentStatus === 'processing' ? (
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -308,6 +536,8 @@ const PlanSelection: React.FC = () => {
           </div>
         </div>
       </motion.div>
+
+      <PaymentStatusOverlay />
     </div>
   );
 };
